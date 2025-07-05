@@ -1,0 +1,32 @@
+{
+  "model": "opus",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./hooks/smart-lint.sh"
+          }
+        ]
+      }
+    ],
+    "PreCommit": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./hooks/pre-commit-verify.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "features": {
+    "autoFormat": true,
+    "strictMode": true,
+    "parallelAgents": true
+  }
+}
