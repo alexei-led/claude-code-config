@@ -1,3 +1,8 @@
+---
+allowed-tools: Bash(gemini --prompt:*)
+description: Ask Gemini for additional insights on complex problems, architectural decisions, or when you need additional context.
+---
+
 # Ask Gemini for Additional Insights
 
 Query Gemini AI to get a second perspective on complex problems, architectural decisions, or when you need additional context.

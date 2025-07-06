@@ -22,8 +22,20 @@
           }
         ]
       }
+    ],
+    "Notification": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./hooks/notify.sh"
+          }
+        ]
+      }
     ]
   },
+  "includeCoAuthoredBy": false,
   "features": {
     "autoFormat": true,
     "strictMode": true,
