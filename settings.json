@@ -12,17 +12,6 @@
         ]
       }
     ],
-    "PreCommit": [
-      {
-        "matcher": ".*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "./hooks/pre-commit-verify.sh"
-          }
-        ]
-      }
-    ],
     "Notification": [
       {
         "matcher": ".*",

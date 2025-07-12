@@ -23,9 +23,8 @@ Comprehensive development standards that override Claude's default behavior:
 - **Code evolution rules** (delete old code, no compatibility layers)
 
 ### **settings.json** - Hook Configuration
-Configures three types of automated hooks:
+Configures automated hooks:
 - **PostToolUse**: Runs after file edits (Write|Edit|MultiEdit)
-- **PreCommit**: Blocks commits with any issues
 - **Notification**: macOS notification system for status updates
 
 ### **hooks/** - Automated Quality Enforcement
@@ -37,12 +36,6 @@ Multi-language linter with automatic project detection:
 - **Comprehensive checks**: Formatting, linting, security, complexity
 - **Custom rules**: Project-specific overrides via `.claude-hooks-config.sh`
 - **Language-specific**: golangci-lint, ruff, eslint, clippy, etc.
-
-#### **pre-commit-verify.sh** - Commit Gate
-Prevents commits when any quality issues exist:
-- Runs full smart-lint verification before allowing commits
-- Blocks commits with non-zero exit codes
-- Ensures only clean code enters the repository
 
 #### **notify.sh** - macOS Integration
 Native macOS notification system:
