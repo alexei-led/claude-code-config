@@ -24,10 +24,5 @@
       }
     ]
   },
-  "includeCoAuthoredBy": false,
-  "features": {
-    "autoFormat": true,
-    "strictMode": true,
-    "parallelAgents": true
-  }
+  "includeCoAuthoredBy": false
 }
