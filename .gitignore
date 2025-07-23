@@ -1,0 +1,7 @@
+.DS_Store
+__store.db
+ide/
+projects/
+shell-snapshots/
+statsig/
+todos/

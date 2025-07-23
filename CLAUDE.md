@@ -64,6 +64,19 @@ Your code must be 100% clean. No exceptions.
 - After fixing all issues and verifying the fix, continue where you left off
 - Use the todo list to track both the fix and your original task
 
+## Modern CLI Tool Guide
+
+*   **Find Files:** Use `fd` (replaces `find`).
+*   **Find Text in Files:** Use `rg` (replaces `grep`).
+*   **Find/Rewrite Code Structure:** Use `ast-grep` or `sg` (replaces `grep`/`sed` for code).
+*   **View File Content:** Use `bat` (replaces `cat`).
+*   **View Git Diffs:** Use `git diff | delta`.
+*   **Select from a List:** Pipe to `fzf`.
+*   **Handle JSON:** Use `jq`.
+*   **Handle YAML/XML:** Use `yq`.
+*   **Simple Find/Replace:** Use `sd` (replaces `sed`).
+*   **Interactive Git:** Use `lazygit`.
+
 ## Working Memory Management
 
 ### When context gets long:

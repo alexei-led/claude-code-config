@@ -1,5 +1,25 @@
 {
-  "model": "opus",
+  "env": {
+    "__CLAUDE_CODE_USE_VERTEX": 1,
+    "__CLOUD_ML_REGION": "us-east5",
+    "__ANTHROPIC_VERTEX_PROJECT_ID": "alexei-playground-457008"
+  },
+  "permissions": {
+    "allow": [
+      "mcp__sequential-thinking__sequentialthinking",
+      "mcp__perplexity-ask__perplexity_ask",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__get-library-docs",
+      "Bash(sg:*)",
+      "Bash(bat:*)",
+      "Bash(fd:*)",
+      "Bash(gh:*)",
+      "Bash(git:*)",
+      "Bash(rg:*)",
+      "Bash(sd:*)"
+    ]
+  },
+  "includeCoAuthoredBy": false,
   "hooks": {
     "PostToolUse": [
       {
@@ -7,7 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "./hooks/smart-lint.sh"
+            "command": "$HOME/.claude/hooks/smart-lint.sh"
           }
         ]
       }
@@ -18,11 +38,10 @@
         "hooks": [
           {
             "type": "command",
-            "command": "./hooks/notify.sh"
+            "command": "$HOME/.claude/hooks/notify.sh"
           }
         ]
       }
     ]
-  },
-  "includeCoAuthoredBy": false
+  }
 }
