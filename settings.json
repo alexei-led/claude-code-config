@@ -1,27 +1,49 @@
 {
   "env": {
-    "__CLAUDE_CODE_USE_VERTEX": 1,
+    "__CLAUDE_CODE_USE_VERTEX": "1",
     "__CLOUD_ML_REGION": "us-east5",
     "__ANTHROPIC_VERTEX_PROJECT_ID": "alexei-playground-457008"
   },
+  "includeCoAuthoredBy": false,
   "permissions": {
     "allow": [
       "mcp__sequential-thinking__sequentialthinking",
       "mcp__perplexity-ask__perplexity_ask",
       "mcp__context7__resolve-library-id",
       "mcp__context7__get-library-docs",
+      "mcp__basic-memory__write_note",
+      "mcp__basic-memory__read_note",
+      "mcp__basic-memory__search_notes",
+      "mcp__basic-memory__build_context",
+      "mcp__basic-memory__edit_note",
+      "mcp__basic-memory__canvas",
+      "mcp__basic-memory__list_directory",
+      "mcp__basic-memory__sync_status",
+      "mcp__github__get_pull_request",
+      "mcp__github__get_pull_request_files",
+      "mcp__github__create_pull_request_review",
+      "mcp__github__create_repository",
+      "mcp__github__push_files",
+      "mcp__github__create_branch",
+      "mcp__github__get_pull_request_status",
       "Bash(sg:*)",
       "Bash(bat:*)",
       "Bash(fd:*)",
       "Bash(gh:*)",
       "Bash(git:*)",
       "Bash(go test:*)",
+      "Bash(go vet:*)",
+      "Bash(golangci-lint:*)",
+      "Bash(mockery:*)",
+      "Bash(kubectl:*)",
+      "Bash(helm:*)",
+      "Bash(kustomize:*)",
       "Bash(bash:*)",
       "Bash(rg:*)",
-      "Bash(sd:*)"
+      "Bash(sd:*)",
+      "WebSearch"
     ]
   },
-  "includeCoAuthoredBy": false,
   "hooks": {
     "PostToolUse": [
       {
@@ -45,5 +67,6 @@
         ]
       }
     ]
-  }
+  },
+  "model": "opusplan"
 }
