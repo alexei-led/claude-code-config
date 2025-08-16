@@ -1,151 +1,265 @@
-# Claude Code Configuration
+# Claude Code Agent Configuration
 
-A comprehensive configuration setup for Claude Code that enforces production-quality code standards through automated hooks, intelligent commands, and strict development guidelines.
+A streamlined, production-ready agent system for Go development with clean architecture focus, security-conscious practices, and efficient MCP integration. Features 5 specialized agents optimized for concise, focused interactions.
 
-## 🏗️ Architecture Overview
+## Architecture Overview
 
-This configuration transforms Claude Code into a zero-tolerance quality enforcement system that automatically detects project types, runs appropriate linters/formatters, and ensures every code change meets production standards.
+```mermaid
+graph TB
+    U[User Request] --> O[Orchestrator]
+    O --> ST[Sequential Thinking MCP]
+    O --> BM[Basic Memory MCP]
+    O --> GE[Go Engineer]
+    O --> QG[Quality Guardian]
+    O --> DK[Docs Keeper]
+    O --> DS[Deployment Specialist]
+    
+    GE --> C7[Context7 MCP]
+    GE --> BM
+    QG --> P[Perplexity MCP]
+    QG --> GH[GitHub MCP]
+    DK --> BM
+    DK --> C7
+    DS --> GH
+    DS --> BM
+    DS --> P
+```
 
-### **Key Philosophy: Zero Tolerance for Issues**
-- **ALL** linting/formatting issues are blocking - no exceptions
-- **ALL** tests must pass before proceeding
-- **ALL** hooks must show ✅ GREEN status
-- Real-time quality enforcement prevents technical debt accumulation
+## Agent Specializations
 
-## 📁 Project Structure
+### 🎯 **Orchestrator** (Sonnet)
+**Central coordinator for complex tasks**
+- Plans multi-step workflows using sequential-thinking
+- Manages project memory and context preservation
+- Delegates to specialist agents based on requirements
+- Ensures validation checkpoints with user
 
-### **CLAUDE.md** - Development Guidelines
-Comprehensive development standards that override Claude's default behavior:
-- **Research → Plan → Implement** mandatory workflow
-- **Multiple agent usage** for parallel problem-solving
-- **Language-specific rules** with strict Go standards
-- **Quality checkpoints** at every stage
-- **Code evolution rules** (delete old code, no compatibility layers)
+### 🔧 **Go Engineer** (Sonnet)
+**Go development specialist**
+- Clean architecture implementation
+- Standard library preference and Go idioms
+- Microservices and CLI tool development
+- Performance-conscious design patterns
 
-### **settings.json** - Hook Configuration
-Configures automated hooks:
-- **PostToolUse**: Runs after file edits (Write|Edit|MultiEdit)
-- **Notification**: macOS notification system for status updates
+### 🛡️ **Quality Guardian** (Opus)
+**Testing, security, and code review specialist**
+- Comprehensive test creation with testify/mockery
+- Security analysis with OWASP patterns
+- Code quality enforcement (80% coverage minimum)
+- Performance analysis and benchmarking
 
-### **hooks/** - Automated Quality Enforcement
+### 📚 **Docs Keeper** (Haiku)
+**Documentation and knowledge management**
+- GoDoc generation and maintenance
+- README and architecture documentation
+- API documentation with OpenAPI specs
+- Mermaid diagrams for system architecture
 
-#### **smart-lint.sh** - Universal Code Quality Engine
-Multi-language linter with automatic project detection:
-- **Auto-detects**: Go, Python, JavaScript/TypeScript, Rust, Nix
-- **Zero tolerance**: ALL issues must be fixed before proceeding
-- **Comprehensive checks**: Formatting, linting, security, complexity
-- **Custom rules**: Project-specific overrides via `.claude-hooks-config.sh`
-- **Language-specific**: golangci-lint, ruff, eslint, clippy, etc.
+### 🚀 **Deployment Specialist** (Sonnet)
+**Infrastructure and deployment automation**
+- Kubernetes manifests with security-first approach
+- GitHub Actions workflows and CI/CD
+- Simple infrastructure as code patterns
+- Security-conscious deployment practices
 
-#### **notify.sh** - macOS Integration
-Native macOS notification system:
-- Provides visual feedback for hook status
-- Uses osascript for system notifications
-- JSON input format for structured messages
+## MCP Server Integration
 
-#### **test-runner.sh** - Automated Testing
-Project-aware test execution:
-- Auto-detects test frameworks (go test, npm test, pytest, cargo test)
-- Integrates with Makefile if available
-- Provides detailed test result reporting
+### 🧠 **Sequential Thinking**
+Complex planning and architectural decision making
+- Multi-step analysis for complex problems
+- Architectural trade-off evaluation
+- Risk assessment and mitigation planning
 
-### **commands/** - Intelligent Slash Commands
+### 🔍 **Perplexity**
+AI research buddy for updated information
+- Latest Go security practices and vulnerabilities
+- Performance optimization techniques
+- Infrastructure and deployment best practices
 
-#### **/check** - Comprehensive Quality Verification
-**Critical**: This is a FIXING command, not a reporting command
-- Identifies ALL issues across linting, testing, building
-- **MANDATORY**: Must fix every single issue found
-- **Multi-agent**: Spawns parallel agents to fix issues
-- **No stopping**: Continues until everything shows ✅ GREEN
-- **Forbidden**: Just reporting issues without fixing them
+### 📖 **Context7**
+Up-to-date library documentation
+- Go standard library references
+- Third-party framework documentation
+- API specification standards
 
-#### **/next** - Production Implementation Workflow
-Enforces the Research → Plan → Implement sequence:
-- **MANDATORY**: "Let me research the codebase and create a plan before implementing"
-- **Multi-agent support**: Spawn agents for independent task components
-- **Reality checkpoints**: Validation after every 3 file edits
-- **Code evolution**: Delete old code, no compatibility layers
-- **Quality gates**: Linters must pass after every change
+### 💾 **Basic Memory**
+Project continuity and knowledge management
+- Architecture decisions and patterns
+- Coding conventions and standards
+- Performance baselines and lessons learned
 
-#### **/ask_gemini** - Second Opinion System
-Query Gemini AI for additional insights:
-- Architectural decisions and alternatives
-- Security analysis and best practices
-- Performance optimization strategies
-- Code review and design validation
-- Uses gemini-2.5-pro for comprehensive analysis
+### 🔗 **GitHub**
+Repository and workflow management
+- Pull request analysis and reviews
+- GitHub Actions automation
+- Repository management and branching
 
-#### **/prompt** - Template Synthesizer
-Combines next.md workflow with specific tasks:
-- Merges next.md structure with user arguments
-- Creates complete, copy-ready prompts
-- Context-aware enhancement based on technologies mentioned
-- Emphasizes relevant language-specific rules
+## Setup Guide
 
-#### **/perf** - Performance Analysis
-Comprehensive performance profiling:
-- **Go**: pprof CPU/memory profiles, benchmarks
-- **Python**: cProfile, memory_profiler, N+1 query detection
-- **JavaScript**: Chrome DevTools, Lighthouse, bundle analysis
-- **Rust**: criterion benchmarks, perf integration
+### Prerequisites
 
-#### **/reset** - State Management
-Clean working directory and reset to known good state:
-- Run all formatters and linters
-- Clear temporary files and caches
-- Verify git status and uncommitted changes
-- Regenerate TODO.md from current state
-- Optional `--hard`, `--cache`, `--format` flags
+- Node.js (for MCP servers)
+- Python 3.8+ (for basic-memory)
+- Go 1.21+ (for development)
 
-### **Configuration Files**
+### 1. Install MCP Servers
 
-#### **.claude-hooks-config.sh** - Project Overrides
-Customizable settings for project-specific requirements:
-- **Language toggles**: Enable/disable specific language checks
-- **Tool selection**: Choose formatters (black/yapf, nixpkgs-fmt/alejandra)
-- **Quality thresholds**: Coverage percentages, complexity limits
-- **Custom checks**: Add project-specific validation functions
-- **Debug options**: Timing information, verbose output
-
-#### **.claude-hooks-ignore** - Exclusion Patterns
-Define files and directories to exclude from quality checks.
-
-## 🚀 Language Support
-
-### **Go** (Strict Mode)
-- **golangci-lint** with all checks enabled
-- **Forbidden patterns**: interface{}, any{}, time.Sleep() for sync
-- **Required**: Channels for synchronization, early returns, godoc
-- **Auto-format**: gofmt, goimports
-- **Race detection**: Automatic -race flag testing
-
-### **Python**
-- **Formatters**: black (default), yapf, autopep8
-- **Linters**: ruff (default), flake8, pylint
-- **Import sorting**: isort integration
-- **Type checking**: mypy when configured
-
-### **JavaScript/TypeScript**
-- **Package managers**: npm (default), yarn, pnpm
-- **Linting**: eslint with project configuration
-- **Formatting**: prettier integration
-- **Type checking**: tsc for TypeScript projects
-
-### **Rust**
-- **Linting**: clippy with `-D warnings`
-- **Formatting**: rustfmt
-- **Testing**: cargo test integration
-
-### **Nix**
-- **Formatters**: nixpkgs-fmt (default), alejandra
-- **Validation**: nix-instantiate checks
-
-## 🔧 Installation & Setup
-
-### Quick Start
 ```bash
-# Clone to your project root or ~/.claude/
-git clone https://github.com/your-repo/claude-code-config ~/.claude
+# Install Node.js MCP servers
+npm install -g @modelcontextprotocol/server-github
+npm install -g @modelcontextprotocol/server-sequential-thinking
+npm install -g @upstash/context7-mcp
 
-# Claude Code will automatically detect and apply configurations
-# Start using slash commands immediately: /check, /next, etc.
+# Install Python MCP server
+pip install basic-memory
+
+# Install Perplexity MCP server
+npm install -g server-perplexity-ask
+```
+
+### 2. Configure API Keys
+
+Update your global `.claude.json` with API keys:
+
+```json
+{
+  "mcpServers": {
+    "perplexity-ask": {
+      "env": {
+        "PERPLEXITY_API_KEY": "your-perplexity-api-key"
+      }
+    },
+    "github": {
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "your-github-token"
+      }
+    }
+  }
+}
+```
+
+### 3. Create Memory Directory
+
+```bash
+mkdir -p ~/.claude/memory
+```
+
+### 4. Verify Configuration
+
+```bash
+# Check MCP servers are working
+claude mcp
+
+# Verify agents are loaded
+ls ~/.claude/agents/
+
+# Test commands
+/orchestrate "test the system setup"
+```
+
+## Usage Patterns
+
+### 🚀 **Complex Development Tasks**
+```bash
+/orchestrate "Implement user authentication with JWT tokens and refresh mechanism"
+```
+
+### 🔍 **Code Review Process**
+```bash
+/review  # Comprehensive pre-commit review
+```
+
+### 📊 **Quality Assurance**
+```bash
+/test-coverage  # Enforce 80% minimum coverage
+```
+
+### 📖 **Documentation Updates**
+```bash
+/docs  # Update all project documentation
+```
+
+### 🛠️ **Testing Setup**
+```bash
+/gen-mocks  # Generate mockery mocks for interfaces
+```
+
+### 🚀 **Deployment Validation**
+```bash
+/deploy-check  # Validate K8s manifests and CI/CD
+```
+
+### 💾 **Knowledge Preservation**
+```bash
+/remember "Key architectural decision or pattern"
+```
+
+## Quality Standards
+
+### Security Requirements
+- ✅ Non-root container execution
+- ✅ Read-only root filesystems
+- ✅ Network policies and resource limits
+- ✅ Secrets management best practices
+- ✅ OWASP compliance validation
+
+### Code Quality Gates
+- ✅ 80% minimum test coverage
+- ✅ Go vet and linting passing
+- ✅ Security vulnerability scanning
+- ✅ Performance regression testing
+- ✅ Documentation completeness
+
+### Infrastructure Standards
+- ✅ Kubernetes security contexts
+- ✅ Resource requests and limits
+- ✅ Health checks and readiness probes
+- ✅ Infrastructure as code patterns
+- ✅ CI/CD pipeline security
+
+## Commands Reference
+
+| Command | Agent | Purpose |
+|---------|-------|---------|
+| `/orchestrate` | orchestrator | Complex multi-step task planning |
+| `/review` | quality-guardian | Comprehensive code review |
+| `/test-coverage` | quality-guardian | Test coverage analysis |
+| `/docs` | docs-keeper | Documentation updates |
+| `/deploy-check` | deployment-specialist | Deployment validation |
+| `/gen-mocks` | go-engineer | Generate interface mocks |
+| `/remember` | orchestrator | Save project context |
+
+## Agent Communication Flow
+
+1. **Request Analysis**: Orchestrator evaluates complexity and requirements
+2. **Context Gathering**: Basic-memory retrieval of relevant project history
+3. **Planning**: Sequential-thinking for complex architectural decisions
+4. **Delegation**: Appropriate specialist agent selection
+5. **Execution**: Agent-specific implementation with MCP integration
+6. **Validation**: User confirmation checkpoints for significant changes
+7. **Memory Storage**: Outcomes and patterns saved for future reference
+
+## Best Practices
+
+### Development Workflow
+1. Use `/orchestrate` for complex features
+2. Regular `/review` before commits
+3. Maintain coverage with `/test-coverage`
+4. Keep docs current with `/docs`
+5. Validate deployments with `/deploy-check`
+
+### Memory Management
+- Save important decisions with `/remember`
+- Regular context cleanup and organization
+- Document patterns and conventions
+- Share knowledge across team members
+
+### Security Practices
+- Security-first development approach
+- Regular vulnerability scanning
+- Secure deployment configurations
+- Access control and permissions management
+
+---
+
+**Built for Go developers who value simplicity, security, and maintainable code.**
