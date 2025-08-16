@@ -64,37 +64,19 @@ Your code must be 100% clean. No exceptions.
 - After fixing all issues and verifying the fix, continue where you left off
 - Use the todo list to track both the fix and your original task
 
-## Modern CLI Tool Guide
+## Modern CLI Tools
 
-*   **Find Files:** Use `fd` (replaces `find`).
-*   **Find Text in Files:** Use `rg` (replaces `grep`).
-*   **Find/Rewrite Code Structure:** Use `ast-grep` or `sg` (replaces `grep`/`sed` for code).
-*   **View File Content:** Use `bat` (replaces `cat`).
-*   **View Git Diffs:** Use `git diff | delta`.
-*   **Select from a List:** Pipe to `fzf`.
-*   **Handle JSON:** Use `jq`.
-*   **Handle YAML/XML:** Use `yq`.
-*   **Simple Find/Replace:** Use `sd` (replaces `sed`).
-*   **Interactive Git:** Use `lazygit`.
+Use `fd` (find files), `rg` (grep text), `sg` (code structure), `bat` (view files), `jq`/`yq` (JSON/YAML), `sd` (find/replace), `lazygit` (interactive git).
 
 ## Working Memory Management
 
 ### When context gets long:
 - Re-read this CLAUDE.md file
-- Summarize progress in a PROGRESS.md file
+- Summarize progress in PROGRESS.md
 - Document current state before major changes
 
-### Maintain TODO.md:
-```
-## Current Task
-- [ ] What we're doing RIGHT NOW
-
-## Completed
-- [x] What's actually done and tested
-
-## Next Steps
-- [ ] What comes next
-```
+### Maintain TODO.md structure:
+Current Task → Completed → Next Steps
 
 ## Go-Specific Rules
 
@@ -185,22 +167,13 @@ Would you like me to [specific improvement]?"
 ## Git Commit Standards
 
 ### Commit Messages
-- **Be concise and specific**: "Fix auth token validation" not "fix bug"
-- **Use present tense**: "Add feature" not "Added feature"
-- **Focus on WHY**: "Prevent XSS in user inputs" not just "Update validation"
-- **Reference issues**: "Fix memory leak in worker pool (#123)"
-- **NEVER add Claude as co-author** - No AI attribution in commits
-- **NO emoji in commit messages** unless project convention requires it
+- **Concise and specific**: "Fix auth token validation" not "fix bug"
+- **Present tense**: "Add feature" not "Added feature"  
+- **Focus on WHY**: "Prevent XSS in user inputs" not "Update validation"
+- **Reference issues**: "Fix memory leak (#123)"
+- **NO AI attribution** or emoji unless project requires it
 
-### Example Commit Messages
-```
-✓ Fix race condition in connection pool
-✓ Add retry logic for failed API calls
-✓ Refactor auth middleware for clarity
-✗ Update code (too vague)
-✗ Various fixes (not specific)
-✗ 🤖 Generated with Claude (no AI attribution)
-```
+Examples: ✓ "Fix race condition in connection pool" ✗ "Update code" ✗ "🤖 Generated with Claude"
 
 ## Working Together
 
