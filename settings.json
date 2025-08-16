@@ -29,8 +29,6 @@
       "Bash(sg:*)",
       "Bash(bat:*)",
       "Bash(fd:*)",
-      "Bash(gh:*)",
-      "Bash(git:*)",
       "Bash(go test:*)",
       "Bash(go vet:*)",
       "Bash(golangci-lint:*)",
@@ -67,6 +65,11 @@
         ]
       }
     ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bunx -y @owloops/claude-powerline --style=powerline",
+    "padding": 0
   },
   "model": "opusplan"
 }
