@@ -48,14 +48,50 @@ print_summary_and_exit() {
     exit 2 # Always exit 2 to show output to Claude
 }
 
-# --- LINTER HELPERS ---
-run_formatter() {
-    local name="$1" cmd="$2" check_cmd="$3"
-    log_debug "Running $name formatter..."
-    # First, try to fix silently
-    $cmd >/dev/null 2>&1
-    # Then, check if issues remain
-    if output=$($check_cmd 2>&1); then
+# --- CHANGED FILES DETECTION ---
+get_changed_files() {
+    # Usage: get_changed_files ".go" or get_changed_files ".js" ".ts" ".jsx" ".tsx"
+    local extensions=("$@")
+    
+    # If not in git repo, return empty
+    if ! git rev-parse --git-dir >/dev/null 2>&1; then
+        return
+    fi
+    
+    # Get modified and untracked files
+    local changed_files
+    changed_files=$(git status --porcelain 2>/dev/null | grep -E '^[AM?]' | cut -c4- || echo "")
+    
+    # Filter by extensions and return existing files
+    while IFS= read -r file; do
+        if [[ -n "$file" && -f "$file" ]]; then
+            for ext in "${extensions[@]}"; do
+                if [[ "$file" == *"$ext" ]]; then
+                    echo "$file"
+                    break
+                fi
+            done
+        fi
+    done <<< "$changed_files"
+}
+
+# --- FORMATTER HELPERS ---
+run_formatter_on_files() {
+    local name="$1" format_cmd="$2" check_cmd="$3"; shift 3
+    local files=("$@")
+    
+    if [[ "${#files[@]}" -eq 0 ]]; then
+        log_debug "No files to format, skipping $name"
+        return 0
+    fi
+    
+    log_debug "Running $name on files: ${files[*]}"
+    
+    # Format files
+    $format_cmd "${files[@]}" >/dev/null 2>&1
+    
+    # Check if issues remain
+    if output=$($check_cmd "${files[@]}" 2>&1); then
         return 0 # All good
     else
         add_error "$name needs fixing" "$output"
@@ -76,6 +112,7 @@ run_linter() {
 detect_project_type() {
     local project_type="unknown"
     local types=()
+    
     # Go project
     if [[ -f "go.mod" ]] || [[ -f "go.sum" ]] || [[ -n "$(find . -maxdepth 3 -name "*.go" -type f -print -quit 2>/dev/null)" ]]; then
         types+=("go")
@@ -88,13 +125,29 @@ detect_project_type() {
     if [[ -f "package.json" ]] || [[ -f "tsconfig.json" ]] || [[ -n "$(find . -maxdepth 3 \( -name "*.js" -o -name "*.ts" -o -name "*.jsx" -o -name "*.tsx" \) -type f -print -quit 2>/dev/null)" ]]; then
         types+=("javascript")
     fi
-    # Rust project
-    if [[ -f "Cargo.toml" ]] || [[ -n "$(find . -maxdepth 3 -name "*.rs" -type f -print -quit 2>/dev/null)" ]]; then
-        types+=("rust")
+    # YAML files
+    if [[ -n "$(find . -maxdepth 3 \( -name "*.yaml" -o -name "*.yml" \) -type f -print -quit 2>/dev/null)" ]]; then
+        types+=("yaml")
     fi
-    # Nix project
-    if [[ -f "flake.nix" ]] || [[ -f "default.nix" ]] || [[ -f "shell.nix" ]]; then
-        types+=("nix")
+    # JSON files
+    if [[ -n "$(find . -maxdepth 3 -name "*.json" -type f -print -quit 2>/dev/null)" ]]; then
+        types+=("json")
+    fi
+    # Shell scripts
+    if [[ -n "$(find . -maxdepth 3 \( -name "*.sh" -o -name "*.bash" \) -type f -print -quit 2>/dev/null)" ]]; then
+        types+=("shell")
+    fi
+    # GitHub Actions
+    if [[ -d ".github/workflows" ]]; then
+        types+=("github_actions")
+    fi
+    # Terraform
+    if [[ -n "$(find . -maxdepth 3 \( -name "*.tf" -o -name "*.tfvars" \) -type f -print -quit 2>/dev/null)" ]]; then
+        types+=("terraform")
+    fi
+    # Markdown files
+    if [[ -n "$(find . -maxdepth 3 -name "*.md" -type f -print -quit 2>/dev/null)" ]]; then
+        types+=("markdown")
     fi
 
     # Return primary type or "mixed" if multiple
@@ -148,7 +201,10 @@ lint_go() {
     if [[ -f "Makefile" ]] && grep -q -E "^lint:" Makefile; then
         run_linter "Go (make lint)" make lint
     else
-        command_exists gofmt && run_formatter "Go Formatter (gofmt)" "gofmt -w ." "gofmt -l ."
+        if command_exists gofmt; then
+            local files=($(get_changed_files ".go"))
+            run_formatter_on_files "Go Formatter (gofmt)" "gofmt -w" "gofmt -l" "${files[@]}"
+        fi
         if command_exists golangci-lint; then
             run_golangci_lint
         elif command_exists go; then
@@ -159,7 +215,10 @@ lint_go() {
 
 lint_python() {
     log_info "Running Python checks..."
-    command_exists black && run_formatter "Python Formatter (black)" "black ." "black . --check"
+    if command_exists black; then
+        local files=($(get_changed_files ".py"))
+        run_formatter_on_files "Python Formatter (black)" "black" "black --check" "${files[@]}"
+    fi
     if command_exists ruff; then
         run_linter "Python Linter (ruff)" ruff check --fix .
     elif command_exists flake8; then
@@ -174,31 +233,113 @@ lint_javascript() {
     [[ -f "pnpm-lock.yaml" ]] && pm="pnpm"
 
     if command_exists prettier || command_exists npx; then
-        run_formatter "JS Formatter (prettier)" "npx prettier --write ." "npx prettier --check ."
+        local files=($(get_changed_files ".js" ".ts" ".jsx" ".tsx"))
+        run_formatter_on_files "JS Formatter (prettier)" "npx prettier --write" "npx prettier --check" "${files[@]}"
     fi
     if grep -q '"lint":' package.json 2>/dev/null; then
         run_linter "JS Linter (eslint)" "$pm" run lint --if-present
     fi
 }
 
-lint_rust() {
-    log_info "Running Rust checks..."
-    if ! command_exists cargo; then log_debug "cargo not found"; return; fi
-    run_formatter "Rust Formatter (cargo fmt)" "cargo fmt" "cargo fmt -- --check"
-    run_linter "Rust Linter (clippy)" cargo clippy -- -D warnings
-}
-
-lint_nix() {
-    log_info "Running Nix checks..."
-    local formatter
-    command_exists alejandra && formatter="alejandra"
-    command_exists nixpkgs-fmt && formatter="nixpkgs-fmt"
-
-    if [[ -n "$formatter" ]]; then
-        run_formatter "Nix Formatter ($formatter)" "$formatter ." "$formatter . --check"
+lint_yaml() {
+    log_info "Running YAML checks..."
+    if command_exists yq; then
+        local files=($(get_changed_files ".yaml" ".yml"))
+        run_formatter_on_files "YAML Formatter (yq)" "yq eval -P -i" "yq eval" "${files[@]}"
     fi
-    command_exists statix && run_linter "Nix Linter (statix)" statix check .
+    if command_exists yamllint; then
+        run_linter "YAML Linter (yamllint)" yamllint .
+    fi
 }
+
+lint_json() {
+    log_info "Running JSON checks..."
+    if command_exists jq; then
+        local files=($(get_changed_files ".json"))
+        if [[ "${#files[@]}" -gt 0 ]]; then
+            log_debug "Running JSON formatter on files: ${files[*]}"
+            for file in "${files[@]}"; do
+                if ! jq . "$file" > "${file}.tmp" 2>/dev/null; then
+                    add_error "JSON Formatter (jq)" "Failed to format $file"
+                else
+                    mv "${file}.tmp" "$file"
+                fi
+            done
+        fi
+    elif command_exists prettier || command_exists npx; then
+        local files=($(get_changed_files ".json"))
+        run_formatter_on_files "JSON Formatter (prettier)" "npx prettier --write" "npx prettier --check" "${files[@]}"
+    fi
+}
+
+lint_shell() {
+    log_info "Running Shell checks..."
+    if command_exists shellcheck; then
+        local files=($(get_changed_files ".sh" ".bash"))
+        if [[ "${#files[@]}" -gt 0 ]]; then
+            run_linter "Shell Linter (shellcheck)" shellcheck "${files[@]}"
+        fi
+    fi
+    if command_exists shfmt; then
+        local files=($(get_changed_files ".sh" ".bash"))
+        run_formatter_on_files "Shell Formatter (shfmt)" "shfmt -w" "shfmt -d" "${files[@]}"
+    fi
+}
+
+lint_github_actions() {
+    log_info "Running GitHub Actions checks..."
+    if command_exists actionlint && [[ -d ".github/workflows" ]]; then
+        run_linter "GitHub Actions Linter (actionlint)" actionlint
+    fi
+}
+
+lint_terraform() {
+    log_info "Running Terraform checks..."
+    if command_exists terraform; then
+        local files=($(get_changed_files ".tf" ".tfvars"))
+        if [[ "${#files[@]}" -gt 0 ]]; then
+            log_debug "Found changed Terraform files, running terraform fmt"
+            if ! terraform fmt >/dev/null 2>&1; then
+                add_error "Terraform Formatter" "terraform fmt failed"
+            elif ! output=$(terraform fmt -check 2>&1); then
+                add_error "Terraform Formatter needs fixing" "$output"
+            fi
+            # Run validate if we're in a terraform directory
+            if [[ -f "main.tf" ]] || [[ -f "*.tf" ]]; then
+                run_linter "Terraform Validator" terraform validate
+            fi
+        fi
+    fi
+    if command_exists tflint; then
+        local files=($(get_changed_files ".tf" ".tfvars"))
+        if [[ "${#files[@]}" -gt 0 ]]; then
+            run_linter "Terraform Linter (tflint)" tflint
+        fi
+    fi
+}
+
+lint_markdown() {
+    log_info "Running Markdown checks..."
+    if command_exists prettier || command_exists npx; then
+        local files=($(get_changed_files ".md"))
+        run_formatter_on_files "Markdown Formatter (prettier)" "npx prettier --write" "npx prettier --check" "${files[@]}"
+    elif command_exists mdformat; then
+        local files=($(get_changed_files ".md"))
+        run_formatter_on_files "Markdown Formatter (mdformat)" "mdformat" "mdformat --check" "${files[@]}"
+    fi
+    if command_exists markdownlint-cli2; then
+        local files=($(get_changed_files ".md"))
+        if [[ "${#files[@]}" -gt 0 ]]; then
+            run_linter "Markdown Linter (markdownlint-cli2)" markdownlint-cli2 "${files[@]}"
+        fi
+    elif command_exists markdownlint; then
+        local files=($(get_changed_files ".md"))
+        if [[ "${#files[@]}" -gt 0 ]]; then
+            run_linter "Markdown Linter (markdownlint)" markdownlint "${files[@]}"
+        fi
+    fi
+}
+
 
 # --- MAIN EXECUTION ---
 [[ "$1" == "--debug" ]] && export CLAUDE_HOOKS_DEBUG=1
@@ -223,8 +364,12 @@ for type in "${types[@]}"; do
         go) lint_go ;;
         python) lint_python ;;
         javascript) lint_javascript ;;
-        rust) lint_rust ;;
-        nix) lint_nix ;;
+        yaml) lint_yaml ;;
+        json) lint_json ;;
+        shell) lint_shell ;;
+        github_actions) lint_github_actions ;;
+        terraform) lint_terraform ;;
+        markdown) lint_markdown ;;
     esac
 done
 

@@ -144,7 +144,77 @@ Update your global `.claude.json` with API keys:
 mkdir -p ~/.claude/memory
 ```
 
-### 4. Verify Configuration
+### 4. Install Required Development Tools
+
+The smart-lint hook requires various linters and formatters. Install them using Homebrew:
+
+#### Go Development
+```bash
+# gofmt is included with Go installation
+go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+```
+**golangci-lint** - Fast Go linters aggregator with 40+ linters for comprehensive code quality checking.
+
+#### TypeScript/JavaScript
+```bash
+npm install -g prettier eslint
+```
+**prettier** - Opinionated code formatter that enforces consistent style across your codebase.  
+**eslint** - JavaScript/TypeScript linter that identifies and reports patterns for code quality.
+
+#### Python
+```bash
+brew install black ruff
+# Alternative: pip install black ruff
+```
+**black** - Uncompromising Python code formatter that eliminates style debates.  
+**ruff** - Extremely fast Python linter written in Rust, replacing flake8 and many others.
+
+#### YAML/JSON
+```bash
+brew install yq jq yamllint
+```
+**yq** - YAML processor for formatting and manipulation (you already have this).  
+**yamllint** - YAML linter for syntax and style validation, especially useful for K8s manifests.  
+**jq** - Command-line JSON processor for formatting and validation.
+
+#### Shell/Bash
+```bash
+brew install shellcheck shfmt
+```
+**shellcheck** - Static analysis tool for shell scripts that finds bugs and suggests improvements.  
+**shfmt** - Shell script formatter that maintains consistent styling across bash scripts.
+
+#### GitHub Actions
+```bash
+brew install actionlint
+```
+**actionlint** - Static checker for GitHub Actions workflows that validates syntax and best practices.
+
+#### Terraform
+```bash
+brew install terraform tflint
+```
+**terraform** - Infrastructure as code tool with built-in formatting and validation.  
+**tflint** - Terraform linter that finds possible errors and enforces best practices.
+
+#### Markdown
+```bash
+npm install -g prettier markdownlint-cli2
+# Alternative formatter: pip install mdformat
+```
+**prettier** - Code formatter with excellent markdown support including frontmatter and mermaid preservation.  
+**markdownlint-cli2** - Markdown linter for GitHub-flavored markdown with support for frontmatter and mermaid blocks.  
+**mdformat** (alternative) - Python-based markdown formatter with plugin support for GFM, frontmatter, and mermaid.
+
+#### Kubernetes/Helm (Optional)
+```bash
+brew install kubeval helm
+```
+**kubeval** - Kubernetes manifest validator that checks against official schemas.  
+**helm** - Kubernetes package manager with built-in chart linting capabilities.
+
+### 5. Verify Configuration
 
 ```bash
 # Check MCP servers are working
@@ -155,6 +225,9 @@ ls ~/.claude/agents/
 
 # Test commands
 /orchestrate "test the system setup"
+
+# Test linting tools
+$HOME/.claude/hooks/smart-lint.sh --debug
 ```
 
 ## Usage Patterns
