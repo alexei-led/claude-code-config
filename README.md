@@ -1,338 +1,366 @@
-# Claude Code Agent Configuration
+# Claude Code Configuration
 
-A streamlined, production-ready agent system for Go development with clean architecture focus, security-conscious practices, and efficient MCP integration. Features 5 specialized agents optimized for concise, focused interactions.
+Elite-tier optimized setup with 8 focused commands, 5 specialized agents, and comprehensive MCP integration. Designed for production-quality development with zero-tolerance quality enforcement.
 
-## Architecture Overview
+## 🎯 Available Commands
 
-```mermaid
-graph TB
-    U[User Request] --> O[Orchestrator]
-    O --> ST[Sequential Thinking MCP]
-    O --> BM[Basic Memory MCP]
-    O --> GE[Go Engineer]
-    O --> QG[Quality Guardian]
-    O --> DK[Docs Keeper]
-    O --> DS[Deployment Specialist]
-    
-    GE --> C7[Context7 MCP]
-    GE --> BM
-    QG --> P[Perplexity MCP]
-    QG --> GH[GitHub MCP]
-    DK --> BM
-    DK --> C7
-    DS --> GH
-    DS --> BM
-    DS --> P
+### Quality & Development
+- **`/@check`** - Zero-tolerance quality enforcement with parallel agent fixes
+- **`/@review`** - Security-focused code review via quality-guardian
+- **`/@test-coverage`** - 80% minimum coverage enforcement
+
+### Planning & Documentation  
+- **`/@orchestrate`** - Complex task planning with sequential-thinking MCP
+- **`/@docs`** - Documentation updates via docs-keeper
+- **`/@remember`** - Save decisions/context to basic-memory
+
+### Infrastructure & Git
+- **`/@deploy-check`** - K8s/CI configuration validation
+- **`/@commit`** - Group changes logically and create bundled commits
+
+## 🤖 Specialized Agents
+
+### **orchestrator** (Sonnet + MCP)
+Complex planning and coordination
+- **Tools:** sequential-thinking, basic-memory, github, perplexity
+- **Use for:** Architecture decisions, multi-step workflows, cross-domain coordination
+
+```bash
+/@orchestrate "Design microservice authentication with Redis sessions"
 ```
 
-## Agent Specializations
+### **quality-guardian** (Opus + MCP) 
+Testing, security, and code review
+- **Tools:** testify/mockery, OWASP patterns, github PR reviews
+- **Use for:** Security analysis, test creation, code quality enforcement
 
-### 🎯 **Orchestrator** (Sonnet)
-**Central coordinator for complex tasks**
-- Plans multi-step workflows using sequential-thinking
-- Manages project memory and context preservation
-- Delegates to specialist agents based on requirements
-- Ensures validation checkpoints with user
+```bash
+/@review  # Comprehensive security-focused review
+/@test-coverage  # Enforce 80% minimum with gap analysis
+```
 
-### 🔧 **Go Engineer** (Sonnet)
-**Go development specialist**
-- Clean architecture implementation
-- Standard library preference and Go idioms
-- Microservices and CLI tool development
-- Performance-conscious design patterns
+### **go-engineer** (Sonnet + MCP)
+Go development specialist
+- **Tools:** Context7 docs, clean architecture patterns, performance focus
+- **Use for:** Go implementation, API design, microservices
 
-### 🛡️ **Quality Guardian** (Opus)
-**Testing, security, and code review specialist**
-- Comprehensive test creation with testify/mockery
-- Security analysis with OWASP patterns
-- Code quality enforcement (80% coverage minimum)
-- Performance analysis and benchmarking
+### **docs-keeper** (Haiku + MCP)
+Documentation and knowledge management  
+- **Tools:** basic-memory, context7, mermaid diagrams
+- **Use for:** README updates, API docs, architecture diagrams
 
-### 📚 **Docs Keeper** (Haiku)
-**Documentation and knowledge management**
-- GoDoc generation and maintenance
-- README and architecture documentation
-- API documentation with OpenAPI specs
-- Mermaid diagrams for system architecture
+```bash
+/@docs  # Update all documentation based on recent changes
+```
 
-### 🚀 **Deployment Specialist** (Sonnet)
-**Infrastructure and deployment automation**
-- Kubernetes manifests with security-first approach
-- GitHub Actions workflows and CI/CD
-- Simple infrastructure as code patterns
-- Security-conscious deployment practices
+### **deployment-specialist** (Sonnet + MCP)
+Infrastructure and deployment automation
+- **Tools:** K8s manifests, GitHub Actions, security-first practices
+- **Use for:** Deployment validation, CI/CD workflows, infrastructure security
 
-## MCP Server Integration
+```bash
+/@deploy-check  # Validate K8s manifests and CI configurations
+```
 
-### 🧠 **Sequential Thinking**
-Complex planning and architectural decision making
-- Multi-step analysis for complex problems
-- Architectural trade-off evaluation
-- Risk assessment and mitigation planning
+## 🔧 When to Use Each Command
 
-### 🔍 **Perplexity**
-AI research buddy for updated information
-- Latest Go security practices and vulnerabilities
-- Performance optimization techniques
-- Infrastructure and deployment best practices
+### Start Complex Work
+```bash
+/@orchestrate "Implement user notification system with email/SMS/push"
+# → Plans architecture, delegates to specialists, manages workflow
+```
 
-### 📖 **Context7**
-Up-to-date library documentation
-- Go standard library references
-- Third-party framework documentation
-- API specification standards
+### Before Committing Code
+```bash
+/@check
+# → Spawns agents to fix ALL linting/test issues in parallel
+# → Zero tolerance: must be 100% clean to continue
+```
 
-### 💾 **Basic Memory**
-Project continuity and knowledge management
+### Security & Quality Review
+```bash
+/@review
+# → Security analysis, vulnerability assessment, best practices check
+```
+
+### Test Coverage Validation
+```bash
+/@test-coverage  
+# → Comprehensive test analysis, 80% minimum enforcement
+# → Identifies untested paths and improvement recommendations
+```
+
+### Documentation Maintenance
+```bash
+/@docs
+# → Updates README, GoDoc comments, API specs, architecture diagrams
+```
+
+### Infrastructure Validation
+```bash
+/@deploy-check
+# → K8s manifest validation, GitHub Actions lint, security contexts
+```
+
+### Knowledge Preservation
+```bash
+/@remember "Decided to use pgx over GORM for better performance control"
+# → Saves to basic-memory for future reference and team knowledge
+```
+
+### Git Workflow Management
+```bash
+/@commit
+# → Analyzes changed files and groups them logically
+# → Creates focused commits with descriptive messages
+# → Example: Feature + tests + docs as separate atomic commits
+```
+
+## 🚀 Quick Start Examples
+
+### Complex Feature Implementation
+```bash
+# 1. Plan the work
+/@orchestrate "Add rate limiting to API with Redis backend"
+
+# 2. Implement following the plan
+# (Regular development work)
+
+# 3. Quality check before commit  
+/@check
+
+# 4. Security review
+/@review
+
+# 5. Validate tests
+/@test-coverage
+
+# 6. Update documentation
+/@docs
+
+# 7. Remember key decisions
+/@remember "Used token bucket algorithm for rate limiting - better for burst handling"
+
+# 8. Commit changes in logical groups
+/@commit
+```
+
+### Quick Quality Check
+```bash
+/@check  # Fix ALL issues before continuing
+```
+
+### Pre-deployment Validation
+```bash
+/@deploy-check  # Ensure K8s configs are secure and valid
+```
+
+### Smart Git Workflow
+```bash
+/@commit
+# Analyzes: auth.go, auth_test.go, middleware.go, README.md, docs/auth.md
+#
+# Creates commits:
+# 1. "auth: implement JWT validation with middleware"
+#    - auth.go, middleware.go
+# 2. "auth: add comprehensive validation tests" 
+#    - auth_test.go, middleware_test.go
+# 3. "docs: add JWT authentication guide"
+#    - README.md, docs/auth.md
+```
+
+## ⚙️ MCP Integration
+
+### **sequential-thinking** - Complex Problem Analysis
+- Multi-step reasoning for architecture decisions
+- Trade-off evaluation and risk assessment
+- Used by orchestrator for planning
+
+### **basic-memory** - Project Knowledge Persistence  
+- Cross-session context retention
 - Architecture decisions and patterns
-- Coding conventions and standards
-- Performance baselines and lessons learned
+- Team knowledge sharing
 
-### 🔗 **GitHub**
-Repository and workflow management
+### **context7** - Up-to-date Library Documentation
+- Go standard library references
+- Third-party framework docs
+- Real-time API specifications
+
+### **perplexity** - AI Research Assistant
+- Latest security practices and vulnerabilities  
+- Performance optimization techniques
+- Industry best practices research
+
+### **github** - Repository Management
 - Pull request analysis and reviews
-- GitHub Actions automation
-- Repository management and branching
+- GitHub Actions workflow management
+- Automated code review integration
 
-## Setup Guide
+## 🛡️ Quality Standards
 
-### Prerequisites
+### Zero-Tolerance Enforcement
+- **ALL** linting warnings must be fixed
+- **ALL** tests must pass with meaningful coverage
+- **80%** minimum test coverage enforced
+- **Security** analysis required for all changes
 
-- Node.js (for MCP servers)
-- Python 3.8+ (for basic-memory)
-- Go 1.21+ (for development)
+### Language-Specific Requirements
 
-### 1. Install MCP Servers
+**Go Projects:**
+- No `interface{}`/`any{}` - use concrete types
+- Channels for synchronization, never `time.Sleep()`
+- `go test -race` for race detection
+- Error wrapping with context
+- mockery for test mocks
+
+**TypeScript Projects:**
+- Strict mode enabled, avoid 'any' type
+- Proper async/await patterns
+- ESLint clean with zero warnings
+
+**Python Projects:**
+- Type hints on all functions
+- mypy validation passes
+- pytest patterns, no broad exceptions
+
+## 📊 Performance Monitoring
+
+### Built-in Monitoring Tools
+
+#### **smart-lint.sh** (Automatic)
+Shows token usage with every command execution:
+```bash
+# Automatic output from any command
+markdown project ✅ Style OK 📊 ~2,666 tokens
+```
+
+#### **performance-monitor.sh** (Manual Analysis)
+Comprehensive configuration health check - run manually when needed:
 
 ```bash
-# Install Node.js MCP servers
-npm install -g @modelcontextprotocol/server-github
-npm install -g @modelcontextprotocol/server-sequential-thinking
-npm install -g @upstash/context7-mcp
-
-# Install Python MCP server
-pip install basic-memory
-
-# Install Perplexity MCP server
-npm install -g server-perplexity-ask
+# Full configuration analysis
+~/.claude/hooks/performance-monitor.sh
 ```
 
-### 2. Configure API Keys
+**Purpose:**
+- Analyze context usage efficiency 
+- Identify optimization opportunities
+- Monitor configuration health over time
+- Get detailed breakdown of all files
 
-Update your global `.claude.json` with API keys:
-
-```json
-{
-  "mcpServers": {
-    "perplexity-ask": {
-      "env": {
-        "PERPLEXITY_API_KEY": "your-perplexity-api-key"
-      }
-    },
-    "github": {
-      "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "your-github-token"
-      }
-    }
-  }
-}
-```
-
-### 3. Create Memory Directory
-
+**Sample Output:**
 ```bash
-mkdir -p ~/.claude/memory
+📊 Claude Code Performance Analysis
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Context Files:
+  CLAUDE.md              1100 words  184 lines
+  settings.json           103 words   74 lines
+  @check.md               308 words   65 lines
+  @deploy-check.md         44 words   16 lines
+  @docs.md                106 words   26 lines
+  @orchestrate.md          54 words   12 lines
+  @remember.md            137 words   27 lines
+  @review.md              100 words   26 lines
+  @test-coverage.md        48 words   17 lines
+
+Total Context: ~2666 tokens (2000 words, 447 lines)
+Context Usage: ~1% of 200K limit
+Largest File: CLAUDE.md (1100 words)
+
+Optimization Insights:
+✅ Context usage is efficient
+⚠️  Large file detected: CLAUDE.md - consider optimization
+📝 Active commands: 7
+✅ Command count is optimal
+
+Hook Performance:
+  smart-lint.sh         395 lines
+  notify.sh              16 lines
+  test-runner.sh        108 lines
+
+✅ Performance analysis complete
 ```
 
-### 4. Install Required Development Tools
-
-The smart-lint hook requires various linters and formatters. Install them using Homebrew:
-
-#### Go Development
+**When to Use:**
 ```bash
-# gofmt is included with Go installation
-go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-```
-**golangci-lint** - Fast Go linters aggregator with 40+ linters for comprehensive code quality checking.
+# Monthly configuration health check
+~/.claude/hooks/performance-monitor.sh
 
-#### TypeScript/JavaScript
-```bash
-npm install -g prettier eslint
-```
-**prettier** - Opinionated code formatter that enforces consistent style across your codebase.  
-**eslint** - JavaScript/TypeScript linter that identifies and reports patterns for code quality.
+# After adding new commands or major changes
+~/.claude/hooks/performance-monitor.sh
 
-#### Python
-```bash
-brew install black ruff
-# Alternative: pip install black ruff
-```
-**black** - Uncompromising Python code formatter that eliminates style debates.  
-**ruff** - Extremely fast Python linter written in Rust, replacing flake8 and many others.
+# When context feels slow or bloated
+~/.claude/hooks/performance-monitor.sh
 
-#### YAML/JSON
-```bash
-brew install yq jq yamllint
-```
-**yq** - YAML processor for formatting and manipulation (you already have this).  
-**yamllint** - YAML linter for syntax and style validation, especially useful for K8s manifests.  
-**jq** - Command-line JSON processor for formatting and validation.
-
-#### Shell/Bash
-```bash
-brew install shellcheck shfmt
-```
-**shellcheck** - Static analysis tool for shell scripts that finds bugs and suggests improvements.  
-**shfmt** - Shell script formatter that maintains consistent styling across bash scripts.
-
-#### GitHub Actions
-```bash
-brew install actionlint
-```
-**actionlint** - Static checker for GitHub Actions workflows that validates syntax and best practices.
-
-#### Terraform
-```bash
-brew install terraform tflint
-```
-**terraform** - Infrastructure as code tool with built-in formatting and validation.  
-**tflint** - Terraform linter that finds possible errors and enforces best practices.
-
-#### Markdown
-```bash
-npm install -g prettier markdownlint-cli2
-# Alternative formatter: pip install mdformat
-```
-**prettier** - Code formatter with excellent markdown support including frontmatter and mermaid preservation.  
-**markdownlint-cli2** - Markdown linter for GitHub-flavored markdown with support for frontmatter and mermaid blocks.  
-**mdformat** (alternative) - Python-based markdown formatter with plugin support for GFM, frontmatter, and mermaid.
-
-#### Kubernetes/Helm (Optional)
-```bash
-brew install kubeval helm
-```
-**kubeval** - Kubernetes manifest validator that checks against official schemas.  
-**helm** - Kubernetes package manager with built-in chart linting capabilities.
-
-### 5. Verify Configuration
-
-```bash
-# Check MCP servers are working
-claude mcp
-
-# Verify agents are loaded
-ls ~/.claude/agents/
-
-# Test commands
-/orchestrate "test the system setup"
-
-# Test linting tools
-$HOME/.claude/hooks/smart-lint.sh --debug
+# Before major refactoring of commands
+~/.claude/hooks/performance-monitor.sh
 ```
 
-## Usage Patterns
+**Optimization Alerts:**
+- **High context usage** (>10% of 200K limit) - suggests trimming verbose commands
+- **Large files** (>1000 words) - identifies files that might need optimization
+- **Too many commands** (>10) - recommends consolidation
+- **Hook performance** - tracks complexity of hook scripts
 
-### 🚀 **Complex Development Tasks**
-```bash
-/orchestrate "Implement user authentication with JWT tokens and refresh mechanism"
-```
+**Current Metrics:**
+- **Context Usage:** ~1% of 200K limit (excellent)
+- **Commands:** 8 focused, optimized commands
+- **Token Efficiency:** ~2,666 tokens total context
+- **Largest File:** CLAUDE.md (1,100 words)
 
-### 🔍 **Code Review Process**
-```bash
-/review  # Comprehensive pre-commit review
-```
+## 🔍 Hook System
 
-### 📊 **Quality Assurance**
-```bash
-/test-coverage  # Enforce 80% minimum coverage
-```
+### smart-lint.sh (Automatic Hook)
+**Trigger:** Runs automatically with every command execution  
+**Purpose:** Code quality enforcement + basic token monitoring
 
-### 📖 **Documentation Updates**
-```bash
-/docs  # Update all project documentation
-```
+Auto-detects project types and runs appropriate linters:
+- **Go:** golangci-lint, gofmt, go test -race
+- **TypeScript/JS:** prettier, eslint  
+- **Python:** black, ruff, mypy
+- **YAML:** yamllint
+- **Shell:** shellcheck, shfmt
+- **K8s:** kubeval, actionlint
 
-### 🛠️ **Testing Setup**
-```bash
-/gen-mocks  # Generate mockery mocks for interfaces
-```
+**Output:** `markdown project ✅ Style OK 📊 ~2,666 tokens`
 
-### 🚀 **Deployment Validation**
-```bash
-/deploy-check  # Validate K8s manifests and CI/CD
-```
+### performance-monitor.sh (Manual Tool)
+**Trigger:** Run manually when needed  
+**Purpose:** Comprehensive configuration analysis and optimization insights
 
-### 💾 **Knowledge Preservation**
-```bash
-/remember "Key architectural decision or pattern"
-```
+Features:
+- Token usage breakdown by file
+- Context efficiency recommendations  
+- Hook performance metrics
+- Optimization alerts and suggestions
+- Configuration health assessment
 
-## Quality Standards
+**Usage:** `~/.claude/hooks/performance-monitor.sh`
 
-### Security Requirements
-- ✅ Non-root container execution
-- ✅ Read-only root filesystems
-- ✅ Network policies and resource limits
-- ✅ Secrets management best practices
-- ✅ OWASP compliance validation
-
-### Code Quality Gates
-- ✅ 80% minimum test coverage
-- ✅ Go vet and linting passing
-- ✅ Security vulnerability scanning
-- ✅ Performance regression testing
-- ✅ Documentation completeness
-
-### Infrastructure Standards
-- ✅ Kubernetes security contexts
-- ✅ Resource requests and limits
-- ✅ Health checks and readiness probes
-- ✅ Infrastructure as code patterns
-- ✅ CI/CD pipeline security
-
-## Commands Reference
-
-| Command | Agent | Purpose |
-|---------|-------|---------|
-| `/orchestrate` | orchestrator | Complex multi-step task planning |
-| `/review` | quality-guardian | Comprehensive code review |
-| `/test-coverage` | quality-guardian | Test coverage analysis |
-| `/docs` | docs-keeper | Documentation updates |
-| `/deploy-check` | deployment-specialist | Deployment validation |
-| `/gen-mocks` | go-engineer | Generate interface mocks |
-| `/remember` | orchestrator | Save project context |
-
-## Agent Communication Flow
-
-1. **Request Analysis**: Orchestrator evaluates complexity and requirements
-2. **Context Gathering**: Basic-memory retrieval of relevant project history
-3. **Planning**: Sequential-thinking for complex architectural decisions
-4. **Delegation**: Appropriate specialist agent selection
-5. **Execution**: Agent-specific implementation with MCP integration
-6. **Validation**: User confirmation checkpoints for significant changes
-7. **Memory Storage**: Outcomes and patterns saved for future reference
-
-## Best Practices
+## 🎯 Best Practices
 
 ### Development Workflow
-1. Use `/orchestrate` for complex features
-2. Regular `/review` before commits
-3. Maintain coverage with `/test-coverage`
-4. Keep docs current with `/docs`
-5. Validate deployments with `/deploy-check`
+1. **Plan first:** Use `/@orchestrate` for complex features
+2. **Quality gate:** Run `/@check` before every commit
+3. **Security focus:** Use `/@review` for security analysis
+4. **Test coverage:** Maintain 80% with `/@test-coverage`
+5. **Documentation:** Keep current with `/@docs`
+6. **Knowledge sharing:** Use `/@remember` for key decisions
+7. **Smart commits:** Use `/@commit` for logical change grouping
+
+### Agent Coordination
+- **Spawn multiple agents** for parallel work when appropriate
+- **Use sequential-thinking** for complex architectural decisions
+- **Leverage basic-memory** for context across sessions
+- **Delegate appropriately** based on task complexity and domain
 
 ### Memory Management
-- Save important decisions with `/remember`
-- Regular context cleanup and organization
-- Document patterns and conventions
-- Share knowledge across team members
-
-### Security Practices
-- Security-first development approach
-- Regular vulnerability scanning
-- Secure deployment configurations
-- Access control and permissions management
+- Save important architectural decisions with `/@remember`
+- Use basic-memory for cross-session knowledge retention
+- Document patterns and conventions for team consistency
+- Build searchable project knowledge over time
 
 ---
 
-**Built for Go developers who value simplicity, security, and maintainable code.**
+**Optimized for developers who value efficiency, security, and maintainable code.**

@@ -35,15 +35,24 @@ add_error() {
 }
 
 print_summary_and_exit() {
-    echo -e "────────────────────────────────────────────" >&2
     if [ ${#ERRORS[@]} -gt 0 ]; then
-        echo -e "${RED}🛑 FAILED - Fix ${#ERRORS[@]} blocking issue(s):${NC}" >&2
+        echo -e "${RED}❌ ${#ERRORS[@]} blocking issue(s):${NC}" >&2
         for err in "${ERRORS[@]}"; do
-            echo -e "\n$err" >&2
+            echo -e "$err" >&2
         done
-        echo -e "\n${YELLOW}Run linters locally, fix issues, then proceed.${NC}" >&2
     else
-        echo -e "${GREEN}✅ Style OK${NC} | Code is clean. Continue with your task." >&2
+        # Include token monitoring inline
+        local context_files=( ~/.claude/CLAUDE.md ~/.claude/commands/@*.md ~/.claude/settings.json )
+        local total_words=0
+        for file in "${context_files[@]}"; do
+            if [[ -f "$file" ]]; then
+                local words
+                words=$(wc -w < "$file" 2>/dev/null || echo 0)
+                total_words=$((total_words + words))
+            fi
+        done
+        local approx_tokens=$((total_words * 4 / 3))
+        echo -e "${PROJECT_TYPE} project ${GREEN}✅ Style OK${NC} ${CYAN}📊 ~${approx_tokens} tokens${NC}" >&2
     fi
     exit 2 # Always exit 2 to show output to Claude
 }
@@ -197,7 +206,7 @@ run_golangci_lint() {
 }
 
 lint_go() {
-    log_info "Running Go checks..."
+    log_debug "go checks"
     if [[ -f "Makefile" ]] && grep -q -E "^lint:" Makefile; then
         run_linter "Go (make lint)" make lint
     else
@@ -214,7 +223,7 @@ lint_go() {
 }
 
 lint_python() {
-    log_info "Running Python checks..."
+    log_debug "python checks"
     if command_exists black; then
         local files=($(get_changed_files ".py"))
         run_formatter_on_files "Python Formatter (black)" "black" "black --check" "${files[@]}"
@@ -227,7 +236,7 @@ lint_python() {
 }
 
 lint_javascript() {
-    log_info "Running JS/TS checks..."
+    log_debug "js/ts checks"
     local pm="npm"
     [[ -f "yarn.lock" ]] && pm="yarn"
     [[ -f "pnpm-lock.yaml" ]] && pm="pnpm"
@@ -242,7 +251,7 @@ lint_javascript() {
 }
 
 lint_yaml() {
-    log_info "Running YAML checks..."
+    log_debug "yaml checks"
     if command_exists yq; then
         local files=($(get_changed_files ".yaml" ".yml"))
         run_formatter_on_files "YAML Formatter (yq)" "yq eval -P -i" "yq eval" "${files[@]}"
@@ -253,7 +262,7 @@ lint_yaml() {
 }
 
 lint_json() {
-    log_info "Running JSON checks..."
+    log_debug "json checks"
     if command_exists jq; then
         local files=($(get_changed_files ".json"))
         if [[ "${#files[@]}" -gt 0 ]]; then
@@ -273,7 +282,7 @@ lint_json() {
 }
 
 lint_shell() {
-    log_info "Running Shell checks..."
+    log_debug "shell checks"
     if command_exists shellcheck; then
         local files=($(get_changed_files ".sh" ".bash"))
         if [[ "${#files[@]}" -gt 0 ]]; then
@@ -287,14 +296,14 @@ lint_shell() {
 }
 
 lint_github_actions() {
-    log_info "Running GitHub Actions checks..."
+    log_debug "github actions checks"
     if command_exists actionlint && [[ -d ".github/workflows" ]]; then
         run_linter "GitHub Actions Linter (actionlint)" actionlint
     fi
 }
 
 lint_terraform() {
-    log_info "Running Terraform checks..."
+    log_debug "terraform checks"
     if command_exists terraform; then
         local files=($(get_changed_files ".tf" ".tfvars"))
         if [[ "${#files[@]}" -gt 0 ]]; then
@@ -319,7 +328,7 @@ lint_terraform() {
 }
 
 lint_markdown() {
-    log_info "Running Markdown checks..."
+    log_debug "markdown checks"
     if command_exists prettier || command_exists npx; then
         local files=($(get_changed_files ".md"))
         run_formatter_on_files "Markdown Formatter (prettier)" "npx prettier --write" "npx prettier --check" "${files[@]}"
@@ -344,16 +353,13 @@ lint_markdown() {
 # --- MAIN EXECUTION ---
 [[ "$1" == "--debug" ]] && export CLAUDE_HOOKS_DEBUG=1
 
-echo "🔍 Style Check - Validating code..." >&2
-
 # Project-specific config overrides
 [[ -f ".claude-hooks-config.sh" ]] && source ".claude-hooks-config.sh"
 
 PROJECT_TYPE=$(detect_project_type)
-log_info "Detected project type: $PROJECT_TYPE"
 
 if [[ "$PROJECT_TYPE" == "unknown" ]]; then
-    log_info "No recognized project type, skipping."
+    log_debug "No recognized project type, skipping."
     print_summary_and_exit
 fi
 
