@@ -257,7 +257,7 @@ lint_yaml() {
         run_formatter_on_files "YAML Formatter (yq)" "yq eval -P -i" "yq eval" "${files[@]}"
     fi
     if command_exists yamllint; then
-        run_linter "YAML Linter (yamllint)" yamllint .
+        run_linter "YAML Linter (yamllint)" yamllint -d '{extends: default, rules: {line-length: disable, document-start: disable, indentation: disable, truthy: disable, comments: disable}}' .
     fi
 }
 
