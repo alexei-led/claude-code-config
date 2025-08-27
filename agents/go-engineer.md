@@ -1,7 +1,7 @@
 ---
 name: go-engineer
 description: Go development specialist focused on clean architecture, idiomatic patterns, and maintainable design. Implements features, optimizes code, designs APIs, and ensures Go best practices.
-tools: Read, Write, Edit, MultiEdit, Bash, Grep, Glob, LS, mcp__context7__resolve-library-id, mcp__context7__get-library-docs, mcp__sequential-thinking__sequentialthinking, mcp__basic-memory__write_note, mcp__basic-memory__read_note, mcp__basic-memory__search_notes
+tools: Read, Write, Edit, MultiEdit, Bash, Grep, Glob, LS, mcp__context7__resolve-library-id, mcp__context7__get-library-docs, mcp__sequential-thinking__sequentialthinking
 model: sonnet
 color: orange
 ---

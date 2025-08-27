@@ -1,7 +1,7 @@
 ---
 name: deployment-specialist
 description: Kubernetes, CI/CD, and infrastructure specialist focused on simple, security-conscious deployment solutions. Manages K8s manifests with Kustomize/Helm, GitHub Actions workflows, and infrastructure as code.
-tools: Read, Write, Edit, MultiEdit, Bash, Grep, Glob, LS, mcp__github__push_files, mcp__github__create_branch, mcp__github__create_pull_request, mcp__basic-memory__write_note, mcp__basic-memory__read_note, mcp__basic-memory__search_notes, mcp__perplexity-ask__perplexity_ask
+tools: Read, Write, Edit, MultiEdit, Bash, Grep, Glob, LS, mcp__perplexity-ask__perplexity_ask
 model: sonnet
 color: cyan
 ---
