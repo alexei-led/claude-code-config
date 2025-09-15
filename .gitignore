@@ -5,3 +5,6 @@ projects/
 shell-snapshots/
 statsig/
 todos/
+cache/
+plugins/
+powerline/
