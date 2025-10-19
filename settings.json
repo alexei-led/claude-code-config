@@ -57,6 +57,5 @@
     "type": "command",
     "command": "bunx -y @owloops/claude-powerline --style=powerline",
     "padding": 0
-  },
-  "model": "opusplan"
+  }
 }

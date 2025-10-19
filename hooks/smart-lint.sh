@@ -9,8 +9,8 @@
 #   --debug       Enable debug output.
 #
 # EXIT CODES
-#   2 - Always exits with 2 to show output to the Claude agent.
-#       The content of the output indicates success or failure.
+#   0 - All checks passed successfully
+#   1 - Blocking issues found that need to be fixed
 
 set -o pipefail
 set +e
@@ -40,6 +40,7 @@ print_summary_and_exit() {
         for err in "${ERRORS[@]}"; do
             echo -e "$err" >&2
         done
+        exit 1 # Exit with error when issues found
     else
         # Include token monitoring inline
         local context_files=( ~/.claude/CLAUDE.md ~/.claude/commands/@*.md ~/.claude/settings.json )
@@ -53,8 +54,8 @@ print_summary_and_exit() {
         done
         local approx_tokens=$((total_words * 4 / 3))
         echo -e "${PROJECT_TYPE} project ${GREEN}✅ Style OK${NC} ${CYAN}📊 ~${approx_tokens} tokens${NC}" >&2
+        exit 0 # Exit successfully when all checks pass
     fi
-    exit 2 # Always exit 2 to show output to Claude
 }
 
 # --- CHANGED FILES DETECTION ---
