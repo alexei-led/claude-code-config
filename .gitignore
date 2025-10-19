@@ -8,3 +8,12 @@ todos/
 cache/
 plugins/
 powerline/
+
+# Runtime/session files (local only)
+debug/
+file-history/
+history.jsonl
+session-env/
+
+# Local settings override (for machine-specific config)
+settings.local.json
