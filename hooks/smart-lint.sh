@@ -39,7 +39,10 @@ print_summary_and_exit() {
 		for err in "${ERRORS[@]}"; do
 			echo -e "$err" >&2
 		done
-		exit 1 # Exit with error when issues found
+		# Exit code 2 = blocking error in Claude Code hooks
+		# Sends stderr to Claude for automatic processing and fixing
+		# See: https://docs.claude.com/en/docs/claude-code/hooks
+		exit 2
 	else
 		# Include token monitoring inline
 		local context_files=(~/.claude/CLAUDE.md ~/.claude/commands/@*.md ~/.claude/settings.json)
@@ -62,30 +65,54 @@ get_changed_files() {
 	# Usage: get_changed_files ".go" or get_changed_files ".js" ".ts" ".jsx" ".tsx"
 	local extensions=("$@")
 
-	# If not in git repo, return empty
 	if ! git rev-parse --git-dir >/dev/null 2>&1; then
 		return
 	fi
 
-	# Get all changed files using git diff (handles renames, copies, etc.)
+	local exclude_patterns=(
+		"node_modules/"
+		"vendor/"
+		"venv/"
+		".venv/"
+		"env/"
+		"virtualenv/"
+		"dist/"
+		"build/"
+		"target/"
+		".tox/"
+		".eggs/"
+		"__pycache__/"
+		".pytest_cache/"
+		".mypy_cache/"
+		".cargo/"
+		".next/"
+		".nuxt/"
+		"coverage/"
+	)
+
 	# ACMRTUXB = Added, Copied, Modified, Renamed, Type-changed, Unmerged, Unknown, Broken
 	# Exclude D (Deleted) as those files don't exist to lint
 	{
-		# Staged changes (comparing index to HEAD)
 		git diff --name-only --diff-filter=ACMRTUXB --cached HEAD 2>/dev/null || true
-		# Unstaged changes (comparing working tree to index)
 		git diff --name-only --diff-filter=ACMRTUXB 2>/dev/null || true
-		# Untracked files
 		git ls-files --others --exclude-standard 2>/dev/null || true
 	} | sort -u | while IFS= read -r file; do
-		# Filter by extensions and return existing files
 		if [[ -n "$file" && -f "$file" ]]; then
-			for ext in "${extensions[@]}"; do
-				if [[ "$file" == *"$ext" ]]; then
-					echo "$file"
+			local skip=0
+			for pattern in "${exclude_patterns[@]}"; do
+				if [[ "$file" == *"$pattern"* ]]; then
+					skip=1
 					break
 				fi
 			done
+			if [[ $skip -eq 0 ]]; then
+				for ext in "${extensions[@]}"; do
+					if [[ "$file" == *"$ext" ]]; then
+						echo "$file"
+						break
+					fi
+				done
+			fi
 		fi
 	done
 }
@@ -422,10 +449,8 @@ lint_markdown() {
 	elif command_exists mdformat; then
 		run_formatter_on_files "Markdown Formatter (mdformat)" "mdformat" "mdformat --check" "${files[@]}"
 	fi
-	if command_exists markdownlint-cli2; then
-		run_linter "Markdown Linter (markdownlint-cli2)" markdownlint-cli2 --disable MD013 "${files[@]}"
-	elif command_exists markdownlint; then
-		run_linter "Markdown Linter (markdownlint)" markdownlint --disable MD013 "${files[@]}"
+	if command_exists markdownlint; then
+		run_linter "Markdown Linter (markdownlint)" markdownlint --disable MD013 MD033 MD041 -- "${files[@]}"
 	fi
 }
 
