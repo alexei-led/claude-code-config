@@ -450,7 +450,7 @@ lint_markdown() {
 		run_formatter_on_files "Markdown Formatter (mdformat)" "mdformat" "mdformat --check" "${files[@]}"
 	fi
 	if command_exists markdownlint; then
-		run_linter "Markdown Linter (markdownlint)" markdownlint --disable MD013 MD033 MD041 -- "${files[@]}"
+		run_linter "Markdown Linter (markdownlint)" markdownlint --disable MD013 MD026 MD033 MD040 MD041 -- "${files[@]}"
 	fi
 }
 
