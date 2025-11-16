@@ -8,6 +8,7 @@
   "permissions": {
     "allow": [
       "mcp__sequential-thinking__sequentialthinking",
+      "mcp__morphllm-fast-apply__edit_file",
       "mcp__perplexity-ask__perplexity_ask",
       "mcp__context7__resolve-library-id",
       "mcp__context7__get-library-docs",
@@ -57,5 +58,7 @@
     "type": "command",
     "command": "bunx -y @owloops/claude-powerline --style=powerline",
     "padding": 0
-  }
+  },
+  "alwaysThinkingEnabled": true,
+  "model": "sonnet"
 }
