@@ -2,7 +2,7 @@
 
 Pattern-based code editing for bulk transformations across multiple files.
 
-Use when: Multi-file edits, style enforcement, framework updates, text replacements
+Use when: Multi-file edits, style enforcement, framework updates, multi-file text replacements
 Avoid: Single file changes, semantic operations (symbol renames, dependency tracking)
 
 Works best with: Sequential (plans strategy), native tools (individual edits)
@@ -13,3 +13,4 @@ Examples:
 - "enforce linting rules everywhere" → Morphllm
 - "replace all logger calls" → Morphllm
 - "explain this code" → native Claude
+- "careful code editing" → Claude

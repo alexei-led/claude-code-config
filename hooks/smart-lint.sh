@@ -442,10 +442,15 @@ lint_markdown() {
 		return 0
 	fi
 
+	local absolute_files=()
+	for file in "${files[@]}"; do
+		absolute_files+=("$(pwd)/${file}")
+	done
+
 	if command_exists prettier; then
-		run_formatter_on_files "Markdown Formatter (prettier)" "prettier --write" "prettier --check" "${files[@]}"
+		run_formatter_on_files "Markdown Formatter (prettier)" "prettier --write --ignore-path ''" "prettier --check --ignore-path ''" "${absolute_files[@]}"
 	elif command_exists npx; then
-		run_formatter_on_files "Markdown Formatter (prettier)" "npx prettier --write" "npx prettier --check" "${files[@]}"
+		run_formatter_on_files "Markdown Formatter (prettier)" "npx prettier --write --ignore-path ''" "npx prettier --check --ignore-path ''" "${absolute_files[@]}"
 	elif command_exists mdformat; then
 		run_formatter_on_files "Markdown Formatter (mdformat)" "mdformat" "mdformat --check" "${files[@]}"
 	fi

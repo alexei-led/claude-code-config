@@ -8,10 +8,16 @@
   "permissions": {
     "allow": [
       "mcp__sequential-thinking__sequentialthinking",
-      "mcp__morphllm-fast-apply__edit_file",
+      "mcp__morphllm__read*",
+      "mcp__morphllm__list*",
+      "mcp__morphllm__get*",
+      "mcp__morphllm__directory_tree",
+      "mcp__morphllm__search*",
       "mcp__perplexity-ask__perplexity_ask",
       "mcp__context7__resolve-library-id",
       "mcp__context7__get-library-docs",
+      "mcp__ref__ref_search_documentation",
+      "mcp__ref__ref_read_url",
       "Bash(sg:*)",
       "Bash(bat:*)",
       "Bash(fd:*)",
@@ -28,6 +34,13 @@
       "Bash(sd:*)",
       "WebFetch",
       "WebSearch"
+    ],
+    "ask": [
+      "mcp__morphllm__edit_file",
+      "mcp__morphllm__wtite_file",
+      "mcp__morphllm__tiny_edit_file",
+      "mcp__morphllm__create_directory",
+      "mcp__morphllm__move_file"
     ]
   },
   "hooks": {

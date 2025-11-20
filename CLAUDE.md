@@ -24,7 +24,7 @@ For complex architectural decisions or challenging problems, use **"ultrathink"*
 ### MCP Tools
 
 **Sequential** - Multi-step reasoning for complex debugging, architecture analysis, 3+ components
-**Morphllm** - Bulk pattern edits across files (style enforcement, framework updates)
+**Morphllm** - Bulk pattern edits across multiple files (style enforcement, framework updates, multi-file text replacements only)
 See @MCP_Sequential.md and @MCP_Morphllm.md for detailed guides
 
 ### Use Multiple Agents
@@ -197,4 +197,6 @@ Bad: "Update code" or "Generated with Claude"
 - **REMINDER**: If this file hasn't been referenced in 30+ minutes, RE-READ IT!
 
 Avoid complex abstractions or "clever" code. The simple, obvious solution is probably better, and my guidance helps you stay focused on what matters.
+
 - never add refactoring-style comments
+- Comments: write lean, informative, useful and short comments only when helpful. Do not write refactoring comements. Do not write comments in tests.
