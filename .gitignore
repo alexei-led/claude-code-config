@@ -17,3 +17,6 @@ session-env/
 
 # Local settings override (for machine-specific config)
 settings.local.json
+
+# plans
+plans/

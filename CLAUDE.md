@@ -24,7 +24,7 @@ For complex architectural decisions or challenging problems, use **"ultrathink"*
 ### MCP Tools
 
 **Sequential** - Multi-step reasoning for complex debugging, architecture analysis, 3+ components
-**Morphllm** - Bulk pattern edits across multiple files (style enforcement, framework updates, multi-file text replacements only)
+**Morphllm** - Semantic code search (codebase_search, warp_grep) and bulk multi-file edits (edit_file)
 See @MCP_Sequential.md and @MCP_Morphllm.md for detailed guides
 
 ### Use Multiple Agents
@@ -66,7 +66,7 @@ This includes formatting issues, linting violations, and pattern checks. Your co
 
 ## Code Editing Guidelines
 
-IMPORTANT: ALWAYS use `mcp__morphllm-fast-apply__edit_file` tool to make any code edits.
+Use built-in Edit tool for most changes. Consider Morphllm edit_file for bulk updates across many files.
 
 ## Modern CLI Tools
 

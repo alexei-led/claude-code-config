@@ -1,16 +1,18 @@
 # Morphllm
 
-Pattern-based code editing for bulk transformations across multiple files.
+Three tools for code search and bulk editing.
 
-Use when: Multi-file edits, style enforcement, framework updates, multi-file text replacements
-Avoid: Single file changes, semantic operations (symbol renames, dependency tracking)
+## Search Tools (always available)
 
-Works best with: Sequential (plans strategy), native tools (individual edits)
+**codebase_search** - Semantic search using AI embeddings. Finds code by meaning, not keywords.
+Use when: "Where is X implemented?", understanding unfamiliar codebases, finding related code
 
-Examples:
+**warp_grep** - AI-powered contextual search. Explores codebase automatically to find relevant snippets.
+Use when: Finding specific implementations, tracing functionality across files
 
-- "update all components to hooks" → Morphllm
-- "enforce linting rules everywhere" → Morphllm
-- "replace all logger calls" → Morphllm
-- "explain this code" → native Claude
-- "careful code editing" → Claude
+## Editing Tool (asks permission)
+
+**edit_file** - Fast bulk edits across multiple files using `// ... existing code ...` placeholders.
+Use when: Same change across 5+ files, style enforcement, framework migrations
+
+Prefer built-in Edit for: Single files, careful refactors, complex logic changes
