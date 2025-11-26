@@ -29,6 +29,14 @@
       "Bash(bash:*)",
       "Bash(rg:*)",
       "Bash(sd:*)",
+      "Bash(bq:*)",
+      "Bash(gcloud:*)",
+      "Bash(aws:*)",
+      "Bash(uv:*)",
+      "Bash(ruff:*)",
+      "Bash(terraform:*)",
+      "Bash(python3:*)",
+      "mcp__codex__spawn_agent",
       "WebFetch",
       "WebSearch"
     ],
@@ -37,6 +45,17 @@
     ]
   },
   "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/skill-enforcer.sh"
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Write|Edit|MultiEdit",
@@ -90,8 +109,5 @@
       "allowLocalBinding": true
     }
   },
-  "disabledMcpjsonServers": [
-    "codex",
-    "gemini"
-  ]
+  "disabledMcpjsonServers": []
 }
