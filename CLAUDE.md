@@ -84,59 +84,6 @@ Use `fd` (find files), `rg` (grep text), `sg` (code structure), `bat` (view file
 
 Current Task → Completed → Next Steps
 
-## Go-Specific Rules
-
-### Code Patterns - Automated Enforcement
-
-The smart-lint hook enforces these patterns:
-
-- **Use concrete types** instead of interface{} or any{}
-- **Use channels for synchronization** instead of time.Sleep()
-- **Delete old code** when replacing it
-- **Avoid migration functions** or compatibility layers
-- **Use direct names** instead of versioned functions (processV2, handleNew)
-- **Keep error handling simple** without custom struct hierarchies
-- **Remove TODOs** before final code
-
-When you see pattern violations, fix them immediately.
-
-### Required Standards
-
-- **Delete** old code when replacing it
-- **Meaningful names**: `userID` not `id`
-- **Early returns** to reduce nesting
-- **Concrete types** from constructors: `func NewServer() *Server`
-- **Simple errors**: `return fmt.Errorf("context: %w", err)`
-- **Table-driven tests** for complex logic
-- **Channels for synchronization**: Use channels to signal readiness, not sleep
-- **Select for timeouts**: Use `select` with timeout channels, not sleep loops
-
-## Implementation Standards
-
-### Our code is complete when
-
-- ? All linters pass with zero issues
-- ? All tests pass
-- ? Feature works end-to-end
-- ? Old code is deleted
-- ? Godoc on all exported symbols
-
-### Testing Strategy
-
-- Complex business logic ? Write tests first
-- Simple CRUD ? Write tests after
-- Hot paths ? Add benchmarks
-- Skip tests for main() and simple CLI parsing
-- Use table-driven test structure
-- Use testify and asserts for test result validation
-- Avoid pointless tests
-
-### Project Structure
-
-cmd/ - Application entrypoints
-internal/ - Private code (the majority goes here)
-pkg/ - Public libraries (only if truly reusable)
-
 ## Problem-Solving Together
 
 When you're stuck or confused:
