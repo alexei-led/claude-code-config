@@ -1,6 +1,6 @@
 ---
 name: looking-up-docs
-description: Look up library documentation using Context7 and Ref. Use when needing API reference, library docs, framework documentation, or technical documentation lookup.
+description: Look up library documentation using Context7 and Ref. Use when needing API reference, library docs, framework documentation, technical documentation lookup, or exploring public GitHub repositories.
 ---
 
 # Documentation Lookup
@@ -10,7 +10,7 @@ description: Look up library documentation using Context7 and Ref. Use when need
 | Tool         | Use For                                             |
 | ------------ | --------------------------------------------------- |
 | **Context7** | Library-specific docs (React, Go stdlib, K8s, etc.) |
-| **Ref**      | General documentation search                        |
+| **Ref**      | Documentation search, GitHub repo exploration       |
 
 ## Context7
 
@@ -27,4 +27,4 @@ Modes: `code` (API/examples) or `info` (concepts/guides)
 ## When to Use Which
 
 - **Context7**: Known library, specific API needed
-- **Ref**: Broader search, unknown source
+- **Ref**: Broader search, GitHub repos, unknown source
