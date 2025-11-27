@@ -37,6 +37,8 @@
       "Bash(terraform:*)",
       "Bash(python3:*)",
       "mcp__codex__spawn_agent",
+      "mcp__gemini__ask-gemini",
+      "mcp__gemini__brainstorm",
       "WebFetch",
       "WebSearch"
     ],
