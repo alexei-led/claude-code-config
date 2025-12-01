@@ -3,63 +3,54 @@ allowed-tools: all
 description: Fix ALL issues via parallel agents - zero tolerance quality enforcement
 ---
 
-# 🚨 CRITICAL: FIX ALL ISSUES - NOT A REPORTING TASK! 🚨
+# Fix All Issues
 
-**MANDATORY BEHAVIOR:**
-1. **SPAWN MULTIPLE AGENTS** immediately for parallel fixing:
-   - "Found X issues. Spawning agents: Agent 1 (linting), Agent 2 (tests), Agent 3 (build)"
-2. **FIX EVERYTHING** - zero tolerance for warnings/errors
-3. **REPEAT** until ALL GREEN ✅
+This is a FIXING task, not a reporting task.
 
-**FORBIDDEN:** Reporting without fixing, stopping before 100% clean
-**WORKFLOW:** smart-lint.sh + checks → spawn agents → fix ALL → verify → repeat
+## Workflow
 
-Re-read ~/.claude/CLAUDE.md first. Hooks block on violations.
+1. Run validation:
 
-**Universal Protocol:**
-1. Run `~/.claude/hooks/smart-lint.sh` + `make lint`/`make test`
-2. **SPAWN AGENTS** immediately for ALL issues
-3. Repeat until zero warnings ✅
+   ```bash
+   ~/.claude/hooks/smart-lint.sh
+   make lint && make test
+   ```
 
-**Universal Standards:**
-- Zero warnings across all languages
-- All tests pass, meaningful coverage
-- Proper formatting (auto-detected by smart-lint.sh)
-- Security validation, no hardcoded secrets
-- Performance awareness, no obvious bottlenecks
+2. If issues found, spawn parallel agents:
+   - "Found X issues. Spawning Agent 1 (linting), Agent 2 (tests), Agent 3 (build)"
 
-**Context-Specific Guidance (when relevant):**
+3. Fix issues and verify by re-running checks
 
-**Go Projects:**
-□ No interface{}/any{} - use concrete types
-□ Channels for sync, never time.Sleep()
-□ go test -race for race detection
-□ Error wrapping with context
-□ mockery for test mocks
+4. Repeat until clean
 
-**TypeScript Projects:**
-□ Strict mode enabled, avoid 'any' type
-□ Proper async/await patterns
-□ ESLint clean with zero warnings
+## Priority Levels
 
-**Python Projects:**
-□ Type hints on all functions
-□ mypy validation passes
-□ pytest for testing, no broad exceptions
+**Must Fix (blocking):**
 
-**Terraform Projects:**
-□ terraform validate passes
-□ Security scanning clean
-□ Proper resource naming conventions
+- Syntax errors, type errors, build failures
+- Test failures
+- Security issues (hardcoded secrets, SQL injection, etc.)
+- Logical bugs
 
-**Agent Response Protocol:**
-When issues found:
-1. **SPAWN AGENTS:** "Found X issues. Agents: Agent 1 (linting A,B), Agent 2 (tests), Agent 3 (build)"
-2. **FIX ALL** - no excuses ("just formatting" → fix NOW)
-3. **VERIFY** - re-run smart-lint.sh + tests
-4. **REPEAT** until ALL GREEN ✅
+**Should Fix:**
 
-**Ready When:**
-✓ smart-lint.sh passes ✓ All tests pass ✓ Context-specific checks clean ✓ End-to-end works
+- Significant linting violations
+- Missing error handling
+- Performance issues
 
-**Executing validation and FIXING ALL ISSUES...**
+**Can Ignore (non-blocking):**
+
+- Line length warnings
+- Whitespace/spacing between sections
+- Minor formatting inconsistencies
+- Markdown file linting (documentation doesn't need strict formatting)
+
+## Ready When
+
+- Build passes
+- All tests pass
+- No blocking issues remain
+
+Re-read ~/.claude/CLAUDE.md if needed.
+
+**Executing validation and FIXING issues...**
