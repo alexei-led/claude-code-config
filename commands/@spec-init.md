@@ -9,6 +9,34 @@ Start by reading `app_spec.txt` in your working directory. This file contains
 the complete specification for what you need to build. Read it carefully
 before proceeding.
 
+**If app_spec.txt doesn't exist**, create one with this structure:
+
+```
+# Project Name
+
+## Overview
+Brief description of what this application does.
+
+## Tech Stack
+- Language/Framework: [e.g., Go CLI, Python FastAPI, React + Node]
+- Database: [if applicable]
+- External Services: [APIs, cloud services]
+
+## Core Features
+1. Feature A - description
+2. Feature B - description
+...
+
+## User Flows
+1. User can [action] by [method]
+2. User can [action] by [method]
+...
+
+## Non-Functional Requirements
+- Performance: [targets]
+- Security: [requirements]
+```
+
 ### CRITICAL FIRST TASK: Create feature_list.json
 
 Based on `app_spec.txt`, create a file called `feature_list.json` with 200 detailed
@@ -16,6 +44,7 @@ end-to-end test cases. This file is the single source of truth for what
 needs to be built.
 
 **Format:**
+
 ```json
 [
   {
@@ -42,6 +71,7 @@ needs to be built.
 ```
 
 **Requirements for feature_list.json:**
+
 - Minimum 200 features total with testing steps for each
 - Both "functional" and "style" categories
 - Mix of narrow tests (2-5 steps) and comprehensive tests (10+ steps)
@@ -70,6 +100,7 @@ Base the script on the technology stack specified in `app_spec.txt`.
 ### THIRD TASK: Initialize Git
 
 Create a git repository and make your first commit with:
+
 - feature_list.json (complete with all 200+ features)
 - init.sh (environment setup script)
 - README.md (project overview and setup instructions)
@@ -86,6 +117,7 @@ components mentioned in the spec.
 
 If you have time remaining in this session, you may begin implementing
 the highest-priority features from feature_list.json. Remember:
+
 - Work on ONE feature at a time
 - Test thoroughly before marking "passes": true
 - Commit your progress before session ends
@@ -93,6 +125,7 @@ the highest-priority features from feature_list.json. Remember:
 ### ENDING THIS SESSION
 
 Before your context fills up:
+
 1. Commit all work with descriptive messages
 2. Create `claude-progress.txt` with a summary of what you accomplished
 3. Ensure feature_list.json is complete and saved
