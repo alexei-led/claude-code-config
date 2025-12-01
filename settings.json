@@ -46,6 +46,7 @@
       "mcp__morphllm__edit_file"
     ]
   },
+  "disabledMcpjsonServers": [],
   "hooks": {
     "UserPromptSubmit": [
       {
@@ -96,20 +97,19 @@
     "command": "bunx -y @owloops/claude-powerline --style=powerline",
     "padding": 0
   },
-  "alwaysThinkingEnabled": true,
   "sandbox": {
     "enabled": true,
     "autoAllowBashIfSandboxed": true,
+    "network": {
+      "allowAllUnixSockets": true,
+      "allowLocalBinding": true
+    },
     "excludedCommands": [
       "kubectl",
       "helm",
       "kustomize",
       "docker"
-    ],
-    "network": {
-      "allowAllUnixSockets": true,
-      "allowLocalBinding": true
-    }
+    ]
   },
-  "disabledMcpjsonServers": []
+  "alwaysThinkingEnabled": true
 }
