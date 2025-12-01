@@ -329,7 +329,12 @@ lint_yaml() {
 	fi
 
 	if command_exists yq; then
-		run_formatter_on_files "YAML Formatter (yq)" "yq eval -P -i" "yq eval" "${files[@]}"
+		# Process each file individually to prevent content merging
+		for file in "${files[@]}"; do
+			if ! yq eval -P -i "$file" 2>/dev/null; then
+				add_error "YAML Formatter (yq)" "Failed to format $file"
+			fi
+		done
 	fi
 	if command_exists yamllint; then
 		run_linter "YAML Linter (yamllint)" yamllint -d '{extends: default, rules: {line-length: disable, document-start: disable, indentation: disable, truthy: disable, comments: disable}}' "${files[@]}"
