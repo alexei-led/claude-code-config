@@ -1,22 +1,25 @@
 # Claude Code Configuration
 
-Elite-tier optimized setup with 8 focused commands, 5 specialized agents, and comprehensive MCP integration. Designed for production-quality development with zero-tolerance quality enforcement.
+Elite-tier optimized setup with focused commands organized by domain, 5 specialized agents, and comprehensive MCP integration. Designed for production-quality development with zero-tolerance quality enforcement.
 
 ## 🎯 Available Commands
 
-### Quality & Development
-- **`/@check`** - Zero-tolerance quality enforcement with parallel agent fixes
-- **`/@review`** - Security-focused code review via quality-guardian
-- **`/@test-coverage`** - 80% minimum coverage enforcement
+### Code Quality (`/code:*`)
+- **`/code:fix`** - Zero-tolerance quality enforcement with parallel agent fixes
+- **`/code:review`** - Security-focused code review via quality-guardian
+- **`/code:docs`** - Documentation updates via docs-keeper
+- **`/code:deploy-check`** - K8s/CI configuration validation
+- **`/code:commit`** - Group changes logically and create bundled commits
 
-### Planning & Documentation  
-- **`/@orchestrate`** - Complex task planning with sequential-thinking MCP
-- **`/@docs`** - Documentation updates via docs-keeper
-- **`/@remember`** - Save decisions/context to basic-memory
+### Testing (`/test:*`)
+- **`/test:coverage`** - 80% minimum coverage enforcement
+- **`/test:generate`** - Generate tests following best practices
 
-### Infrastructure & Git
-- **`/@deploy-check`** - K8s/CI configuration validation
-- **`/@commit`** - Group changes logically and create bundled commits
+### Spec-Driven Development (`/spec:*`)
+- **`/spec:init`** - Initialize specification for a new feature
+- **`/spec:gen`** - Generate implementation from specification
+- **`/spec:work`** - Work on spec-driven implementation
+- **`/spec:status`** - Check spec implementation progress
 
 ## 🤖 Specialized Agents
 
@@ -35,8 +38,8 @@ Testing, security, and code review
 - **Use for:** Security analysis, test creation, code quality enforcement
 
 ```bash
-/@review  # Comprehensive security-focused review
-/@test-coverage  # Enforce 80% minimum with gap analysis
+/code:review  # Comprehensive security-focused review
+/test:coverage  # Enforce 80% minimum with gap analysis
 ```
 
 ### **go-engineer** (Sonnet + MCP)
@@ -50,7 +53,7 @@ Documentation and knowledge management
 - **Use for:** README updates, API docs, architecture diagrams
 
 ```bash
-/@docs  # Update all documentation based on recent changes
+/code:docs  # Update all documentation based on recent changes
 ```
 
 ### **deployment-specialist** (Sonnet + MCP)
@@ -59,7 +62,7 @@ Infrastructure and deployment automation
 - **Use for:** Deployment validation, CI/CD workflows, infrastructure security
 
 ```bash
-/@deploy-check  # Validate K8s manifests and CI configurations
+/code:deploy-check  # Validate K8s manifests and CI configurations
 ```
 
 ## 🔧 When to Use Each Command
@@ -72,33 +75,33 @@ Infrastructure and deployment automation
 
 ### Before Committing Code
 ```bash
-/@check
+/code:fix
 # → Spawns agents to fix ALL linting/test issues in parallel
 # → Zero tolerance: must be 100% clean to continue
 ```
 
 ### Security & Quality Review
 ```bash
-/@review
+/code:review
 # → Security analysis, vulnerability assessment, best practices check
 ```
 
 ### Test Coverage Validation
 ```bash
-/@test-coverage  
+/test:coverage  
 # → Comprehensive test analysis, 80% minimum enforcement
 # → Identifies untested paths and improvement recommendations
 ```
 
 ### Documentation Maintenance
 ```bash
-/@docs
+/code:docs
 # → Updates README, GoDoc comments, API specs, architecture diagrams
 ```
 
 ### Infrastructure Validation
 ```bash
-/@deploy-check
+/code:deploy-check
 # → K8s manifest validation, GitHub Actions lint, security contexts
 ```
 
@@ -110,7 +113,7 @@ Infrastructure and deployment automation
 
 ### Git Workflow Management
 ```bash
-/@commit
+/code:commit
 # → Analyzes changed files and groups them logically
 # → Creates focused commits with descriptive messages
 # → Example: Feature + tests + docs as separate atomic commits
@@ -127,37 +130,37 @@ Infrastructure and deployment automation
 # (Regular development work)
 
 # 3. Quality check before commit  
-/@check
+/code:fix
 
 # 4. Security review
-/@review
+/code:review
 
 # 5. Validate tests
-/@test-coverage
+/test:coverage
 
 # 6. Update documentation
-/@docs
+/code:docs
 
 # 7. Remember key decisions
 /@remember "Used token bucket algorithm for rate limiting - better for burst handling"
 
 # 8. Commit changes in logical groups
-/@commit
+/code:commit
 ```
 
 ### Quick Quality Check
 ```bash
-/@check  # Fix ALL issues before continuing
+/code:fix  # Fix ALL issues before continuing
 ```
 
 ### Pre-deployment Validation
 ```bash
-/@deploy-check  # Ensure K8s configs are secure and valid
+/code:deploy-check  # Ensure K8s configs are secure and valid
 ```
 
 ### Smart Git Workflow
 ```bash
-/@commit
+/code:commit
 # Analyzes: auth.go, auth_test.go, middleware.go, README.md, docs/auth.md
 #
 # Creates commits:
@@ -256,13 +259,11 @@ Comprehensive configuration health check - run manually when needed:
 Context Files:
   CLAUDE.md              1100 words  184 lines
   settings.json           103 words   74 lines
-  @check.md               308 words   65 lines
-  @deploy-check.md         44 words   16 lines
-  @docs.md                106 words   26 lines
-  @orchestrate.md          54 words   12 lines
-  @remember.md            137 words   27 lines
-  @review.md              100 words   26 lines
-  @test-coverage.md        48 words   17 lines
+  code/fix.md             308 words   65 lines
+  code/deploy-check.md     44 words   16 lines
+  code/docs.md            106 words   26 lines
+  code/review.md          100 words   26 lines
+  test/coverage.md         48 words   17 lines
 
 Total Context: ~2666 tokens (2000 words, 447 lines)
 Context Usage: ~1% of 200K limit
@@ -342,12 +343,12 @@ Features:
 
 ### Development Workflow
 1. **Plan first:** Use `/@orchestrate` for complex features
-2. **Quality gate:** Run `/@check` before every commit
-3. **Security focus:** Use `/@review` for security analysis
-4. **Test coverage:** Maintain 80% with `/@test-coverage`
-5. **Documentation:** Keep current with `/@docs`
+2. **Quality gate:** Run `/code:fix` before every commit
+3. **Security focus:** Use `/code:review` for security analysis
+4. **Test coverage:** Maintain 80% with `/test:coverage`
+5. **Documentation:** Keep current with `/code:docs`
 6. **Knowledge sharing:** Use `/@remember` for key decisions
-7. **Smart commits:** Use `/@commit` for logical change grouping
+7. **Smart commits:** Use `/code:commit` for logical change grouping
 
 ### Agent Coordination
 - **Spawn multiple agents** for parallel work when appropriate
