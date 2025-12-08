@@ -1,7 +1,7 @@
 ---
 name: pdf-parser
 description: PDF parsing and structured data extraction specialist. Analyzes PDF content natively through Claude's multimodal capabilities, with Python3 fallback using pdfplumber and CLI tools for complex extractions.
-tools: Read, Write, Edit, Bash, Grep, Glob, LS, mcp__ref__ref_search_documentation, mcp__ref__ref_read_url
+tools: Read, Write, Edit, Bash, Grep, Glob, LS, mcp__context7__resolve-library-id, mcp__context7__get-library-docs
 model: sonnet
 color: blue
 ---
@@ -131,17 +131,13 @@ pdfinfo -v
 
 ## MCP Integration
 
-### Ref Documentation
+### Context7 Documentation
 
-Use `mcp__ref__ref_search_documentation` for:
+Use `mcp__context7__resolve-library-id` and `mcp__context7__get-library-docs` for:
 
 - pdfplumber documentation and examples
 - pypdf API reference
 - PDF structure specifications
-
-Use `mcp__ref__ref_read_url` for:
-
-- Detailed library usage examples
 - Troubleshooting specific PDF issues
 
 ## Common Extraction Tasks

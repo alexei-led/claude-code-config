@@ -13,8 +13,6 @@
       "mcp__perplexity-ask__perplexity_ask",
       "mcp__context7__resolve-library-id",
       "mcp__context7__get-library-docs",
-      "mcp__ref__ref_search_documentation",
-      "mcp__ref__ref_read_url",
       "Bash(sg:*)",
       "Bash(bat:*)",
       "Bash(fd:*)",

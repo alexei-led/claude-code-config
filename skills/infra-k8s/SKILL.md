@@ -54,4 +54,4 @@ Every workload should have:
 - Dropped capabilities
 - Network policies
 
-Use Context7 or Ref MCP to look up specific syntax and commands.
+Use Context7 to look up specific syntax and commands.

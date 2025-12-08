@@ -6,7 +6,7 @@ allowed-tools: Read, Bash, Grep, Glob, LS
 
 # Cloud CLI Patterns
 
-Credentials are pre-configured. Use `--help` or Context7/Ref for syntax.
+Credentials are pre-configured. Use `--help` or Context7 for syntax.
 
 ## BigQuery Best Practices
 

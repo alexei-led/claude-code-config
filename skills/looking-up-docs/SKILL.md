@@ -1,30 +1,52 @@
 ---
 name: looking-up-docs
-description: Look up library documentation using Context7 and Ref. Use when needing API reference, library docs, framework documentation, technical documentation lookup, or exploring public GitHub repositories.
+description: Look up library documentation using Context7. Use when needing API reference, library docs, framework documentation, or technical documentation lookup.
 ---
 
-# Documentation Lookup
+# Documentation Lookup with Context7
 
-## Tools
+Context7 provides up-to-date, version-specific documentation and code examples directly from source libraries.
 
-| Tool         | Use For                                             |
-| ------------ | --------------------------------------------------- |
-| **Context7** | Library-specific docs (React, Go stdlib, K8s, etc.) |
-| **Ref**      | Documentation search, GitHub repo exploration       |
+## Why Context7
 
-## Context7
+- **Current APIs**: No hallucinated or outdated patterns
+- **Version-specific**: Gets docs for exact library versions
+- **Code examples**: Real, working code from actual documentation
 
-1. Resolve library: `mcp__context7__resolve-library-id` with `libraryName`
-2. Get docs: `mcp__context7__get-library-docs` with `context7CompatibleLibraryID` and `topic`
+## Workflow
 
-Modes: `code` (API/examples) or `info` (concepts/guides)
+1. **Resolve library ID**: `mcp__context7__resolve-library-id` with `libraryName`
+2. **Get documentation**: `mcp__context7__get-library-docs` with `context7CompatibleLibraryID` and `topic`
 
-## Ref
+## Modes
 
-1. Search: `mcp__ref__ref_search_documentation` with `query`
-2. Read: `mcp__ref__ref_read_url` with URL from results
+| Mode   | Use For                                    |
+| ------ | ------------------------------------------ |
+| `code` | API references, code examples (default)    |
+| `info` | Conceptual guides, architecture, tutorials |
 
-## When to Use Which
+## Examples
 
-- **Context7**: Known library, specific API needed
-- **Ref**: Broader search, GitHub repos, unknown source
+```
+# React hooks
+resolve-library-id: "react"
+get-library-docs: context7CompatibleLibraryID="/facebook/react", topic="hooks", mode="code"
+
+# Next.js middleware
+resolve-library-id: "next.js"
+get-library-docs: context7CompatibleLibraryID="/vercel/next.js", topic="middleware"
+
+# Go net/http
+resolve-library-id: "go net/http"
+get-library-docs: context7CompatibleLibraryID="/golang/go", topic="http server"
+
+# Kubernetes API
+resolve-library-id: "kubernetes"
+get-library-docs: context7CompatibleLibraryID="/kubernetes/kubernetes", topic="deployment"
+```
+
+## Tips
+
+- Use `topic` parameter to narrow results to specific features
+- Try `mode="info"` for architectural questions
+- Paginate with `page=2`, `page=3` if initial results insufficient
