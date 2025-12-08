@@ -306,6 +306,8 @@ lint_javascript() {
 	# Use prettier if available, otherwise try via package manager
 	if command_exists prettier; then
 		run_formatter_on_files "JS Formatter (prettier)" "prettier --write" "prettier --check" "${files[@]}"
+	elif command_exists bunx; then
+		run_formatter_on_files "JS Formatter (prettier)" "bunx prettier --write" "bunx prettier --check" "${files[@]}"
 	elif command_exists npx; then
 		run_formatter_on_files "JS Formatter (prettier)" "npx prettier --write" "npx prettier --check" "${files[@]}"
 	elif [[ "$pm" != "npm" ]]; then
@@ -363,6 +365,8 @@ lint_json() {
 		done
 	elif command_exists prettier; then
 		run_formatter_on_files "JSON Formatter (prettier)" "prettier --write" "prettier --check" "${files[@]}"
+	elif command_exists bunx; then
+		run_formatter_on_files "JSON Formatter (prettier)" "bunx prettier --write" "bunx prettier --check" "${files[@]}"
 	elif command_exists npx; then
 		run_formatter_on_files "JSON Formatter (prettier)" "npx prettier --write" "npx prettier --check" "${files[@]}"
 	fi
@@ -454,6 +458,8 @@ lint_markdown() {
 
 	if command_exists prettier; then
 		run_formatter_on_files "Markdown Formatter (prettier)" "prettier --write --ignore-path ''" "prettier --check --ignore-path ''" "${absolute_files[@]}"
+	elif command_exists bunx; then
+		run_formatter_on_files "Markdown Formatter (prettier)" "bunx prettier --write --ignore-path ''" "bunx prettier --check --ignore-path ''" "${absolute_files[@]}"
 	elif command_exists npx; then
 		run_formatter_on_files "Markdown Formatter (prettier)" "npx prettier --write --ignore-path ''" "npx prettier --check --ignore-path ''" "${absolute_files[@]}"
 	elif command_exists mdformat; then
