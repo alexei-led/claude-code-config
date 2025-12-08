@@ -39,14 +39,14 @@ for the application you're building.
 
 ### STEP 2: START SERVERS (IF NOT RUNNING)
 
-If `init.sh` exists, run it:
+Use the Makefile to set up and run the project:
 
 ```bash
-chmod +x init.sh
-./init.sh
+make init  # Install dependencies (first time only)
+make run   # Start the application
 ```
 
-Otherwise, start servers manually and document the process.
+Run `make help` to see all available targets.
 
 ### STEP 3: VERIFICATION TEST (CRITICAL!)
 

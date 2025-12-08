@@ -86,26 +86,39 @@ Features can ONLY be marked as passing (change "passes": false to "passes": true
 Never remove features, never edit descriptions, never modify testing steps.
 This ensures no functionality is missed.
 
-### SECOND TASK: Create init.sh
+### SECOND TASK: Create Makefile
 
-Create a script called `init.sh` that future agents can use to quickly
-set up and run the development environment. The script should:
+Create a `Makefile` that future agents can use to manage the project.
 
-1. Install any required dependencies
-2. Start any necessary servers or services
-3. Print helpful information about how to access the running application
+**Standard targets:**
 
-Base the script on the technology stack specified in `app_spec.txt`.
+```makefile
+.PHONY: init test build lint clean run
+
+init:        ## Install dependencies and set up environment
+test:        ## Run all tests
+build:       ## Build the project
+lint:        ## Run linters
+clean:       ## Remove build artifacts
+run:         ## Start the application
+```
+
+**Requirements:**
+
+- Each target should have a help comment (## description)
+- Include a `help` target that lists all available commands
+- Base targets on the technology stack in `app_spec.txt`
+- Keep targets simple and composable
 
 ### THIRD TASK: Initialize Git
 
 Create a git repository and make your first commit with:
 
 - feature_list.json (complete with all 200+ features)
-- init.sh (environment setup script)
+- Makefile (project management)
 - README.md (project overview and setup instructions)
 
-Commit message: "Initial setup: feature_list.json, init.sh, and project structure"
+Commit message: "Initial setup: feature_list.json, Makefile, and project structure"
 
 ### FOURTH TASK: Create Project Structure
 
