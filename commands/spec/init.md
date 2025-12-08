@@ -39,46 +39,69 @@ Brief description of what this application does.
 
 ### CRITICAL FIRST TASK: Create feature_list.json
 
-Based on `app_spec.txt`, create a file called `feature_list.json` with 200 detailed
-end-to-end test cases. This file is the single source of truth for what
-needs to be built.
+Based on `app_spec.txt`, create a file called `feature_list.json` with comprehensive
+test cases. This file is the single source of truth for what needs to be built.
 
 **Format:**
 
 ```json
 [
   {
-    "category": "functional",
+    "category": "core",
     "description": "Brief description of the feature and what this test verifies",
     "steps": [
-      "Step 1: Navigate to relevant page",
+      "Step 1: Set up preconditions",
       "Step 2: Perform action",
       "Step 3: Verify expected result"
     ],
     "passes": false
   },
   {
-    "category": "style",
-    "description": "Brief description of UI/UX requirement",
+    "category": "edge-case",
+    "description": "Brief description of boundary condition or error handling",
     "steps": [
-      "Step 1: Navigate to page",
-      "Step 2: Take screenshot",
-      "Step 3: Verify visual requirements"
+      "Step 1: Set up edge condition",
+      "Step 2: Trigger the behavior",
+      "Step 3: Verify graceful handling"
     ],
     "passes": false
   }
 ]
 ```
 
-**Requirements for feature_list.json:**
+**Coverage Categories** (use these as `category` values):
 
-- Minimum 200 features total with testing steps for each
-- Both "functional" and "style" categories
-- Mix of narrow tests (2-5 steps) and comprehensive tests (10+ steps)
-- At least 25 tests MUST have 10+ steps each
-- Order features by priority: fundamental features first
-- ALL tests start with "passes": false
-- Cover every feature in the spec exhaustively
+| Category      | What to Cover                                          |
+| ------------- | ------------------------------------------------------ |
+| `core`        | Primary user flows, main features, happy paths         |
+| `edge-case`   | Boundary conditions, empty states, limits              |
+| `error`       | Invalid inputs, failure recovery, error messages       |
+| `integration` | Component interactions, API contracts, data flow       |
+| `security`    | Auth, authorization, input validation, data protection |
+| `performance` | Load handling, response times, resource usage          |
+| `style`       | UI/UX requirements, responsive design, accessibility   |
+
+**Coverage Checklist** - Ensure you address:
+
+- [ ] Every feature mentioned in app_spec.txt has at least one test
+- [ ] Each user flow has happy path AND failure path tests
+- [ ] All API endpoints cover: valid request, invalid request, auth failure
+- [ ] Form inputs test: required fields, validation, edge values
+- [ ] State transitions are tested (e.g., draft → published → archived)
+- [ ] Error messages are user-friendly and actionable
+- [ ] Security boundaries are explicitly verified
+
+**Quality over Quantity:**
+
+- Focus on COMPLETE coverage of the spec, not hitting a number
+- Each test should verify ONE specific behavior clearly
+- Steps should be concrete and verifiable, not vague
+- Prefer more granular tests over fewer comprehensive ones
+- Order features by dependency: foundational features first
+- ALL tests start with `"passes": false`
+
+**Aim for thorough coverage.** A well-specified app typically needs 100-300 tests.
+Don't pad with trivial tests, but don't skip edge cases either.
 
 **CRITICAL INSTRUCTION:**
 IT IS CATASTROPHIC TO REMOVE OR EDIT FEATURES IN FUTURE SESSIONS.
