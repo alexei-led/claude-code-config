@@ -72,33 +72,43 @@ Be specific: file:line, what's wrong, how to fix.
 
 ## Step 4: Spawn Parallel Reviewers
 
-Launch these agents IN PARALLEL (single message, multiple Task calls):
+Launch ALL THREE reviewers in a SINGLE message (three parallel tool calls):
 
-### Agent 1: Language Specialist
+### Agent 1: Language Specialist (Task)
 
-- **Go code**: Use `go-engineer` agent with the review prompt
-- **Python code**: Use `python-engineer` agent with the review prompt
+Language agents have their own tools - tell them what to review based on user's Step 1 choice:
 
-### Agent 2: Codex External Review
-
-```
-mcp__codex__spawn_agent with prompt:
-"Review this {language} code for bugs, security issues, and best practices:
-{code snippet - keep under 2000 tokens}
-Focus on: potential bugs, security vulnerabilities, performance issues.
-Format: bullet points with severity (CRITICAL/IMPORTANT/SUGGESTION)"
-```
-
-### Agent 3: Gemini Architecture Review
+- **Go code**: `Task` with `subagent_type=go-engineer`
+- **Python code**: `Task` with `subagent_type=python-engineer`
 
 ```
-mcp__gemini__ask-gemini with prompt:
-"As a senior architect, review this code diff for:
-1. Design pattern issues
-2. Architectural concerns
-3. Maintainability problems
-{code snippet - keep under 2000 tokens}
-Be concise. Format: severity + finding + recommendation"
+"Review {scope description} for {language} best practices, bugs, and code quality.
+{scope command - e.g., 'Run git diff HEAD' or 'Run git diff master...HEAD' or 'Read these files: ...'}
+Focus on: error handling, interface design, concurrency safety, readability.
+Format: CRITICAL/IMPORTANT/SUGGESTION with file:line references."
+```
+
+### Agent 2: Codex External Review (MCP)
+
+Codex has its own tools - tell it what to review based on user's Step 1 choice:
+
+```
+mcp__codex__spawn_agent:
+"Review {scope description} for bugs, security issues, and {language} best practices.
+{scope command - e.g., 'Run git diff HEAD' or 'Run git diff master...HEAD' or 'Read these files: ...'}
+Format: CRITICAL/IMPORTANT/SUGGESTION with file:line references."
+```
+
+### Agent 3: Gemini Architecture Review (MCP)
+
+Gemini has its own tools - tell it what to review based on user's Step 1 choice:
+
+```
+mcp__gemini__ask-gemini:
+"Review {scope description} for architecture and design issues.
+{scope command - e.g., 'Run git diff HEAD' or 'Run git diff master...HEAD' or 'Read these files: ...'}
+Focus on maintainability and patterns.
+Format: severity + finding + recommendation with file:line references."
 ```
 
 ## Step 5: Aggregate & Present
