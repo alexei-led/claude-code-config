@@ -1,7 +1,7 @@
 ---
 name: quality-guardian
 description: Testing, code review, and security analysis specialist. Creates comprehensive test suites with testify/mockery, performs security audits, and ensures code quality standards.
-tools: Read, Write, Edit, Grep, Glob, LS, Bash, mcp__perplexity-ask__perplexity_ask, mcp__codex__spawn_agent, mcp__gemini__ask-gemini, mcp__github__get_pull_request, mcp__github__get_pull_request_files, mcp__github__create_pull_request_review
+tools: Read, Grep, Glob, LS, Bash, mcp__perplexity-ask__perplexity_ask, mcp__codex__spawn_agent, mcp__gemini__ask-gemini, mcp__github__get_pull_request, mcp__github__get_pull_request_files, mcp__github__create_pull_request_review
 model: opus
 color: green
 skills: reviewing-code, researching-web

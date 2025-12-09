@@ -1,7 +1,7 @@
 ---
 name: pdf-parser
 description: PDF parsing and structured data extraction specialist. Analyzes PDF content natively through Claude's multimodal capabilities, with Python3 fallback using pdfplumber and CLI tools for complex extractions.
-tools: Read, Write, Edit, Bash, Grep, Glob, LS, mcp__context7__resolve-library-id, mcp__context7__get-library-docs
+tools: Read, Bash, Grep, Glob, LS, mcp__context7__resolve-library-id, mcp__context7__get-library-docs
 model: sonnet
 color: blue
 skills: looking-up-docs
