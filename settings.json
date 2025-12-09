@@ -42,7 +42,9 @@
       "WebFetch",
       "WebSearch"
     ],
-    "ask": ["mcp__morphllm__edit_file"]
+    "ask": [
+      "mcp__morphllm__edit_file"
+    ]
   },
   "disabledMcpjsonServers": [],
   "hooks": {
@@ -102,8 +104,12 @@
       "allowAllUnixSockets": true,
       "allowLocalBinding": true
     },
-    "excludedCommands": ["kubectl", "helm", "kustomize", "docker"]
+    "excludedCommands": [
+      "kubectl",
+      "helm",
+      "kustomize",
+      "docker"
+    ]
   },
-  "alwaysThinkingEnabled": true,
-  "model": "claude-opus-4-5@20251101"
+  "alwaysThinkingEnabled": true
 }
