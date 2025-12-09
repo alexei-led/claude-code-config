@@ -1,6 +1,7 @@
 ---
 name: consulting-design
-description: Consult Gemini AI for architecture alternatives, design trade-offs, and brainstorming. Use when seeking different perspectives on design, evaluating approaches, or brainstorming solutions.
+description: Consult Gemini AI for architecture alternatives, design trade-offs, and brainstorming. Use when seeking different perspectives on design, evaluating architectural approaches, comparing solutions, or generating creative ideas.
+allowed-tools: Read, Grep, Glob, mcp__gemini__ask-gemini, mcp__gemini__brainstorm
 ---
 
 # Design Consultation with Gemini
