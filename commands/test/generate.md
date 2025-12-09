@@ -78,7 +78,7 @@ Reference existing tests:
 ### Python Tests
 
 ```
-Task with quality-guardian agent:
+Task with python-engineer agent:
 "Generate pytest tests for:
 {file path and function signatures}
 

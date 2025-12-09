@@ -47,7 +47,7 @@ Run 'go build ./...' after fixing to verify."
 ### Python Issues
 
 ```
-Task with quality-guardian agent:
+Task with python-engineer agent:
 "Fix these Python issues:
 {list of issues with file:line references}
 Run 'ruff check .' after fixing to verify."

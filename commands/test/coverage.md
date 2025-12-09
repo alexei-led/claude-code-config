@@ -48,17 +48,29 @@ Flag uncovered:
 - Public API functions
 - Security-related code
 
-## Step 4: Spawn Coverage Agent
+## Step 4: Spawn Coverage Agents
 
-If gaps found, use quality-guardian to generate tests:
+If gaps found, spawn appropriate agent by language:
+
+### Go Coverage Gaps
 
 ```
-Task with quality-guardian agent:
-"Generate tests for these uncovered functions:
+Task with go-engineer agent:
+"Generate tests for these uncovered Go functions:
 {list with file:line references}
 
-Use table-driven tests for Go.
-Use pytest fixtures for Python.
+Use table-driven tests with testify.
+Focus on edge cases and error paths."
+```
+
+### Python Coverage Gaps
+
+```
+Task with python-engineer agent:
+"Generate tests for these uncovered Python functions:
+{list with file:line references}
+
+Use pytest fixtures and parametrize.
 Focus on edge cases and error paths."
 ```
 

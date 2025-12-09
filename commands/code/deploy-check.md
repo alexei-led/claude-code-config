@@ -16,11 +16,7 @@ find . -name "Dockerfile*" -o -name "docker-compose*.yml" | head -10
 find . -name "*.tf" | head -10
 ```
 
-## Step 2: Activate infra-k8s Skill
-
-Use the `infra-k8s` skill for infrastructure patterns guidance.
-
-## Step 3: Run Parallel Validations
+## Step 2: Run Parallel Validations
 
 Spawn agents IN PARALLEL for each category found:
 

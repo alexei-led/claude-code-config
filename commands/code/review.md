@@ -77,7 +77,7 @@ Launch these agents IN PARALLEL (single message, multiple Task calls):
 ### Agent 1: Language Specialist
 
 - **Go code**: Use `go-engineer` agent with the review prompt
-- **Python code**: Use `quality-guardian` agent with the review prompt
+- **Python code**: Use `python-engineer` agent with the review prompt
 
 ### Agent 2: Codex External Review
 
