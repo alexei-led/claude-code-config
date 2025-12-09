@@ -10,37 +10,35 @@ This is a FRESH context window - you have no memory of previous sessions.
 
 ### STEP 1: GET YOUR BEARINGS (MANDATORY)
 
-Start by orienting yourself and displaying progress:
+Spawn an **Explore** agent (subagent_type: Explore, thoroughness: "very thorough") to gather context:
 
-```bash
-# 1. See your working directory
-pwd
+```
+Explore this spec-driven development project and report:
 
-# 2. List files to understand project structure
-ls -la
+1. **Project Structure**: Run `pwd` and `ls -la`
 
-# 3. Read the project specification to understand what you're building
-cat app_spec.txt
+2. **App Specification**: Read `app_spec.txt` - summarize what's being built
 
-# 4. Read the feature list to see all work
-cat feature_list.json | head -50
+3. **Feature List**: Read `feature_list.json` - summarize structure and priorities
 
-# 5. Read progress notes from previous sessions
-cat claude-progress.txt
+4. **Progress Notes**: Read `claude-progress.txt` - what was done, what's next
 
-# 6. Check recent git history
-git log --oneline -10
+5. **Recent History**: Run `git log --oneline -10`
 
-# 7. PROGRESS METRICS - show completion status
-echo "=== PROGRESS ==="
-TOTAL=$(jq length feature_list.json)
-PASSING=$(jq '[.[] | select(.passes == true)] | length' feature_list.json)
-echo "Features: $PASSING/$TOTAL passing ($((PASSING * 100 / TOTAL))%)"
-echo "Remaining: $((TOTAL - PASSING)) features"
+6. **Progress Metrics**: Calculate from feature_list.json:
+   - Total features
+   - Passing features
+   - Completion percentage
+
+Return a structured summary:
+- What is this project building?
+- Current progress (X/Y features, Z%)
+- What was completed last session?
+- What should be worked on next?
+- Any issues or blockers noted?
 ```
 
-Understanding the `app_spec.txt` is critical - it contains the full requirements
-for the application you're building.
+Review the agent's summary, then proceed to Step 2.
 
 ### STEP 2: START SERVERS (IF NOT RUNNING)
 

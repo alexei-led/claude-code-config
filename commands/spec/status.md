@@ -1,52 +1,34 @@
 ---
-allowed-tools: Bash(cat:*), Bash(grep:*), Bash(wc:*), Bash(git log:*), Bash(jq:*), Read
+allowed-tools: Task
 description: Quick progress check for spec-driven development
 ---
 
 # Spec-Driven Development Status
 
-Show current progress on spec-driven development project.
-
-## Check These Items
-
-1. **Feature Progress** - Count passing vs failing tests:
-
-   ```bash
-   # Total features
-   jq length feature_list.json
-
-   # Passing
-   jq '[.[] | select(.passes == true)] | length' feature_list.json
-
-   # Failing
-   jq '[.[] | select(.passes == false)] | length' feature_list.json
-   ```
-
-2. **Recent Activity** - Show last 5 commits:
-
-   ```bash
-   git log --oneline -5
-   ```
-
-3. **Progress Notes** - Read session summary:
-
-   ```bash
-   cat claude-progress.txt
-   ```
-
-4. **Calculate Completion**:
-   - Passing / Total = completion percentage
-   - Estimate remaining sessions based on average features per session
-
-## Output Format
+Spawn an **Explore** agent (subagent_type: Explore) with this prompt:
 
 ```
+Gather spec-driven development project status:
+
+1. Run feature progress commands:
+   - `jq length feature_list.json`
+   - `jq '[.[] | select(.passes == true)] | length' feature_list.json`
+   - `jq '[.[] | select(.passes == false)] | length' feature_list.json`
+
+2. Run: `git log --oneline -5`
+
+3. Read: `claude-progress.txt`
+
+4. Calculate: passing/total percentage, estimate remaining sessions
+
+Return concise status:
+
 SPEC STATUS
 ===========
 Features: X/Y passing (Z%)
 Recent commits: [list]
-Last session: [summary from claude-progress.txt]
+Last session: [summary]
 Estimated remaining: ~N sessions
 ```
 
-Run these checks and report status.
+Display the agent's status report to the user.

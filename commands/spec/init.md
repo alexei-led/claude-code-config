@@ -1,5 +1,5 @@
 ---
-allowed-tools: Read, Bash(git:*), Bash(mkdir:*), Bash(ls:*), LS, Glob
+allowed-tools: Task, Read, Bash(git:*), Bash(mkdir:*), Bash(ls:*), LS, Glob, Write
 description: Initialize spec-driven project with feature_list.json
 ---
 
@@ -8,11 +8,32 @@ description: Initialize spec-driven project with feature_list.json
 You are the FIRST agent in a long-running autonomous development process.
 Your job is to set up the foundation for all future coding agents.
 
-### FIRST: Read the Project Specification
+### STEP 0: EXPLORE PROJECT STATE (MANDATORY)
 
-Start by reading `app_spec.txt` in your working directory. This file contains
-the complete specification for what you need to build. Read it carefully
-before proceeding.
+Spawn an **Explore** agent (subagent_type: Explore) to gather context:
+
+```
+Explore the current directory and report:
+
+1. Run `pwd` and `ls -la`
+2. Check if `app_spec.txt` exists - if yes, summarize its contents
+3. Check if `feature_list.json` exists - if yes, report its state
+4. Check if this is a git repo (`git status`)
+5. Check for existing Makefile
+6. Identify any existing project structure (src/, pkg/, etc.)
+
+Return a structured summary:
+- Does app_spec.txt exist? What does it describe?
+- Is this a fresh start or continuing existing work?
+- What's already set up?
+- What needs to be created?
+```
+
+Review the agent's findings, then proceed based on what exists.
+
+### FIRST: Read/Create the Project Specification
+
+If `app_spec.txt` exists, read it carefully before proceeding.
 
 **If app_spec.txt doesn't exist**, create one with this structure:
 

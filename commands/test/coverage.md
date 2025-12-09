@@ -7,48 +7,46 @@ description: Test coverage analysis via quality-guardian - 80% minimum enforced
 
 Analyze test coverage and identify gaps. 80% minimum on business logic.
 
-## Step 1: Detect Language & Run Coverage
+## Step 1: Gather Coverage Data
 
-### Go
+Spawn an **Explore** agent (subagent_type: Explore) to run coverage and analyze:
 
-```bash
-go test -race -coverprofile=coverage.out ./...
-go tool cover -func=coverage.out | tail -20
-go tool cover -html=coverage.out -o coverage.html
+```
+Analyze test coverage for this project:
+
+1. Detect language (look for go.mod, pyproject.toml, package.json)
+
+2. Run coverage commands:
+   - Go: `go test -race -coverprofile=coverage.out ./... && go tool cover -func=coverage.out`
+   - Python: `pytest --cov=. --cov-report=term-missing`
+
+3. Parse results and extract:
+   - Overall coverage percentage
+   - Per-package/module breakdown
+   - Files below 80% threshold
+   - Uncovered functions/methods
+
+4. Identify critical gaps (focus on business logic, not):
+   - Generated code, test files
+   - Main/CLI entrypoints
+   - Simple getters/setters
+
+5. Flag uncovered:
+   - Error handling paths
+   - Edge cases
+   - Public API functions
+   - Security-related code
+
+Return structured report:
+- Overall coverage: XX%
+- Packages below 80%: [list with percentages]
+- Critical uncovered functions: [file:line - function name]
+- Recommended priority for test generation
 ```
 
-### Python
+Review the agent's analysis, then proceed to Step 2.
 
-```bash
-pytest --cov=. --cov-report=term-missing --cov-report=html
-```
-
-## Step 2: Parse Results
-
-Extract:
-
-- Overall coverage percentage
-- Per-package/module breakdown
-- Files below 80% threshold
-- Uncovered functions/methods
-
-## Step 3: Identify Critical Gaps
-
-Focus on business logic, not:
-
-- Generated code
-- Test files
-- Main/CLI entrypoints
-- Simple getters/setters
-
-Flag uncovered:
-
-- Error handling paths
-- Edge cases
-- Public API functions
-- Security-related code
-
-## Step 4: Spawn Coverage Agents
+## Step 2: Spawn Coverage Agents
 
 If gaps found, spawn appropriate agent by language:
 
@@ -75,7 +73,7 @@ Use pytest fixtures and parametrize.
 Focus on edge cases and error paths."
 ```
 
-## Step 5: Report
+## Step 3: Report
 
 ```
 COVERAGE REPORT
