@@ -1,56 +1,95 @@
 ---
-allowed-tools: all
+allowed-tools: Task, Bash, Read, Grep, Glob, LS, mcp__codex__spawn_agent
 description: Fix ALL issues via parallel agents - zero tolerance quality enforcement
 ---
 
 # Fix All Issues
 
-This is a FIXING task, not a reporting task.
+This is a FIXING task, not a reporting task. Execute until clean.
 
-## Workflow
+## Step 1: Run Validation
 
-1. Run validation:
+```bash
+make lint 2>&1 | head -100
+make test 2>&1 | head -100
+```
 
-   ```bash
-   ~/.claude/hooks/smart-lint.sh
-   make lint && make test
-   ```
+If no Makefile, detect language and run appropriate commands:
 
-2. If issues found, spawn parallel agents:
-   - "Found X issues. Spawning Agent 1 (linting), Agent 2 (tests), Agent 3 (build)"
+- **Go**: `golangci-lint run ./... && go test -race ./...`
+- **Python**: `ruff check . && pytest`
 
-3. Fix issues and verify by re-running checks
+## Step 2: Categorize Issues
 
-4. Repeat until clean
+Parse output and categorize:
 
-## Priority Levels
+| Priority | Category                   | Action        |
+| -------- | -------------------------- | ------------- |
+| BLOCKING | Build/syntax errors        | Fix first     |
+| BLOCKING | Test failures              | Fix second    |
+| BLOCKING | Security issues            | Fix third     |
+| SHOULD   | Significant lint warnings  | Fix if simple |
+| IGNORE   | Line length, minor spacing | Skip          |
 
-**Must Fix (blocking):**
+## Step 3: Spawn Parallel Agents
 
-- Syntax errors, type errors, build failures
-- Test failures
-- Security issues (hardcoded secrets, SQL injection, etc.)
-- Logical bugs
+For 3+ issues, spawn agents IN PARALLEL by category:
 
-**Should Fix:**
+### Go Issues
 
-- Significant linting violations
-- Missing error handling
-- Performance issues
+```
+Task with go-engineer agent:
+"Fix these Go issues in the codebase:
+{list of issues with file:line references}
+Run 'go build ./...' after fixing to verify."
+```
 
-**Can Ignore (non-blocking):**
+### Python Issues
 
-- Line length warnings
-- Whitespace/spacing between sections
-- Minor formatting inconsistencies
-- Markdown file linting (documentation doesn't need strict formatting)
+```
+Task with quality-guardian agent:
+"Fix these Python issues:
+{list of issues with file:line references}
+Run 'ruff check .' after fixing to verify."
+```
 
-## Ready When
+### External Verification (Optional)
+
+For complex fixes, get second opinion:
+
+```
+mcp__codex__spawn_agent:
+"Review this fix for correctness:
+{the fix diff}
+Does this properly address the issue without side effects?"
+```
+
+## Step 4: Verify Fixes
+
+After agents complete, re-run validation:
+
+```bash
+make lint && make test
+```
+
+## Step 5: Repeat Until Clean
+
+If issues remain, return to Step 2.
+
+## Exit Criteria
 
 - Build passes
 - All tests pass
-- No blocking issues remain
+- No BLOCKING issues remain
 
-Re-read ~/.claude/CLAUDE.md if needed.
+Report final status:
 
-**Executing validation and FIXING issues...**
+```
+FIX COMPLETE
+============
+Fixed: X issues
+Remaining: Y non-blocking (ignored)
+Status: CLEAN / NEEDS ATTENTION
+```
+
+**Execute validation now.**

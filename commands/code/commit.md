@@ -1,45 +1,66 @@
 ---
-allowed-tools: Bash(git add:*), Bash(git status:*), Bash(git commit:*), Read, Grep, LS
+allowed-tools: Bash(git add:*), Bash(git status:*), Bash(git commit:*), Bash(git diff:*), Read, Grep, LS
 description: Group changes logically and create bundled commits with concise messages
 ---
 
-Intelligently group changed files by logical relationship and create focused commits with descriptive messages.
+# Smart Commit
 
-**Commit Grouping Strategy:**
-- Bundle related changes together (feature files, tests, docs)
-- Separate concerns (config changes, code changes, documentation)
-- Create atomic commits that make sense together
+Group changed files logically and create focused, atomic commits.
+
+## Step 1: Analyze Changes
+
+```bash
+git status
+git diff --stat HEAD
+```
+
+## Step 2: Group by Logical Relationship
+
+| Group Type   | Files to Bundle                         |
+| ------------ | --------------------------------------- |
+| Feature      | Implementation + related config + tests |
+| Refactor     | All files touched by the refactor       |
+| Fix          | Bug fix + test that verifies it         |
+| Docs         | Documentation changes only              |
+| Config/Infra | Build, CI, deployment changes           |
+
+## Step 3: Commit Each Group
+
+For each group:
+
+```bash
+git add <files in group>
+git commit -m "<scope>: <action> <what>
+
+<optional body explaining WHY>"
+```
 
 **Message Format:**
-- Concise, present tense ("Add feature", "Fix bug", "Update docs")
+
+- Present tense: "Add", "Fix", "Update", "Remove"
+- Scope prefix when relevant: `auth:`, `api:`, `docs:`
 - Focus on WHY, not just WHAT
-- Include scope when relevant ("auth: add JWT validation")
-- Never add Claude Code as (generated with and co-author)
+- Never mention Claude Code or AI generation
 
+## Example
 
-**Workflow:**
-1. Analyze all changed files and their relationships
-2. Group into logical commits (feature + tests, config changes, docs)
-3. Generate informative commit messages for each group
-4. Execute commits in logical order
-
-**Example Grouping:**
 ```
-Group 1: Core feature implementation
+Group 1: Core feature
 - src/auth/jwt.go (new)
 - src/auth/middleware.go (modified)
-- internal/config/auth.go (modified)
-Message: "auth: implement JWT token validation with middleware"
+→ git commit -m "auth: implement JWT validation with middleware"
 
-Group 2: Tests and validation
+Group 2: Tests
 - src/auth/jwt_test.go (new)
-- src/auth/middleware_test.go (modified)
-Message: "auth: add comprehensive JWT validation tests"
+→ git commit -m "auth: add JWT validation tests"
 
 Group 3: Documentation
 - README.md (modified)
-- docs/authentication.md (new)
-Message: "docs: add JWT authentication documentation"
+→ git commit -m "docs: add JWT authentication guide"
 ```
 
-Use when you have multiple related changes that should be committed as focused, logical units rather than one large commit.
+## Single Change?
+
+If only one logical change exists, create one commit. Don't force grouping.
+
+**Execute commit workflow now.**
