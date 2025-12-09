@@ -59,7 +59,8 @@ Task with go-engineer agent:
 "Generate tests for these uncovered Go functions:
 {list with file:line references}
 
-Use table-driven tests with testify.
+Use table-driven tests with t.Run() subtests.
+Use require for prerequisites, assert for independent checks.
 Focus on edge cases and error paths."
 ```
 

@@ -12,6 +12,41 @@ mockery --all --keeptree
 mockery --name=UserStore --dir=internal/service
 ```
 
+## require vs assert
+
+**require** stops test immediately on failure (`t.FailNow()`) — use for **prerequisites**.
+**assert** logs failure but continues (`t.Fail()`) — use for **independent checks**.
+
+```go
+func TestUser(t *testing.T) {
+    user, err := GetUser("123")
+
+    // Prerequisites: must pass or test is meaningless
+    require.NoError(t, err)
+    require.NotNil(t, user)
+
+    // Independent assertions: collect all failures
+    assert.Equal(t, "123", user.ID)
+    assert.Equal(t, "test@example.com", user.Email)
+    assert.True(t, user.IsActive)
+}
+```
+
+**When to use require:**
+
+- Nil checks before accessing fields/methods
+- Error checks when success is required to proceed
+- Setup validation (db connection, file exists)
+- Any precondition where failure makes remaining assertions meaningless
+
+**When to use assert:**
+
+- Multiple property checks on same object
+- Validating several independent conditions
+- When you want to see all failures in one run
+
+**Never call require/assert from goroutines** — must be called from test goroutine.
+
 ## Table-Driven Tests
 
 ```go

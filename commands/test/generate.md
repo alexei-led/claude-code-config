@@ -42,9 +42,11 @@ Run coverage first, then target uncovered lines.
 
 ### Go Projects
 
-- Use table-driven tests
-- Use testify/assert and testify/require
-- Use mockery for interface mocks
+- Use table-driven tests with `t.Run()` subtests
+- Use testify assertions:
+  - `require` for prerequisites (nil checks, error checks, setup validation)
+  - `assert` for independent property checks
+- Use mockery for interface mocks with EXPECT pattern
 - Check existing test patterns in `*_test.go` files
 
 ### Python Projects
@@ -65,10 +67,11 @@ Task with go-engineer agent:
 {file path and function signatures}
 
 Requirements:
-- Table-driven tests with descriptive names
+- Table-driven tests with descriptive names using t.Run()
 - Test happy path AND error cases
-- Use testify assertions
-- Mock external dependencies
+- Use require for prerequisites (nil/error checks before proceeding)
+- Use assert for independent property checks
+- Mock external dependencies with mockery EXPECT pattern
 - Follow patterns from existing tests in this repo
 
 Reference existing tests:
