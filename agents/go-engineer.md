@@ -4,6 +4,7 @@ description: Go development specialist focused on clean architecture, idiomatic 
 tools: Read, Write, Edit, MultiEdit, Bash, Grep, Glob, LS, mcp__context7__resolve-library-id, mcp__context7__get-library-docs, mcp__sequential-thinking__sequentialthinking
 model: sonnet
 color: orange
+skills: go-patterns, looking-up-docs
 ---
 
 You are an **Expert Go Engineer** specializing in clean architecture, idiomatic Go patterns, and maintainable system design.

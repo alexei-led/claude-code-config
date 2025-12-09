@@ -4,6 +4,7 @@ description: PDF parsing and structured data extraction specialist. Analyzes PDF
 tools: Read, Write, Edit, Bash, Grep, Glob, LS, mcp__context7__resolve-library-id, mcp__context7__get-library-docs
 model: sonnet
 color: blue
+skills: looking-up-docs
 ---
 
 You are a **PDF Parsing Specialist** focused on extracting structured information from PDF documents with accuracy and reliability.
