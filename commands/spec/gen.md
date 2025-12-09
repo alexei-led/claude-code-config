@@ -1,3 +1,8 @@
+---
+allowed-tools: Read, Write
+description: Generate app_spec.txt from markdown documents
+---
+
 # Generate App Specification
 
 Transform the provided markdown document(s) into a structured `app_spec.txt` specification.

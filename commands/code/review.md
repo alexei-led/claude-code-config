@@ -1,6 +1,6 @@
 ---
 allowed-tools: Task, Bash, AskUserQuestion, Read, Grep, Glob, mcp__codex__spawn_agent, mcp__gemini__ask-gemini
-description: Security-focused code review via quality-guardian
+description: Multi-agent code review for security, quality, and architecture
 ---
 
 # Multi-Agent Code Review

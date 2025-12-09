@@ -1,3 +1,8 @@
+---
+allowed-tools: Read, Write, Edit, Bash, Glob, Grep, LS, Task, SlashCommand, AskUserQuestion
+description: Continue spec-driven development session
+---
+
 ## YOUR ROLE - CODING AGENT
 
 You are continuing work on a long-running autonomous development task.
@@ -139,22 +144,28 @@ to:
 
 **ONLY CHANGE "passes" FIELD AFTER VERIFICATION WITH SCREENSHOTS.**
 
-### STEP 8: COMMIT YOUR PROGRESS
+### STEP 8: CODE REVIEW CHECKPOINT
 
-Make a descriptive git commit:
+**BEFORE committing, pause and review your changes.**
 
-```bash
-git add .
-git commit -m "Implement [feature name] - verified end-to-end
+Either:
 
-- Added [specific changes]
-- Tested with browser automation
-- Updated feature_list.json: marked test #X as passing
-- Screenshots in verification/ directory
-"
-```
+1. Run `/code:review` to get multi-agent review of your changes
+2. Or ask the user: "Ready to review changes before commit? Run /code:review or say 'skip review' to proceed."
 
-### STEP 9: UPDATE PROGRESS NOTES
+Wait for review feedback and address any CRITICAL or IMPORTANT issues before proceeding.
+
+### STEP 9: COMMIT YOUR PROGRESS
+
+Use `/code:commit` to group changes logically and create focused commits.
+
+This command will:
+
+- Analyze all changes
+- Group by logical relationship (feature, fix, docs, config)
+- Create atomic commits with clear messages
+
+### STEP 10: UPDATE PROGRESS NOTES
 
 Update `claude-progress.txt` with:
 
@@ -164,15 +175,16 @@ Update `claude-progress.txt` with:
 - What should be worked on next
 - Current completion status (e.g., "45/200 tests passing")
 
-### STEP 10: END SESSION CLEANLY
+### STEP 11: END SESSION CLEANLY
 
 Before context fills up:
 
-1. Commit all working code
-2. Update claude-progress.txt
-3. Update feature_list.json if tests verified
-4. Ensure no uncommitted changes
-5. Leave app in working state (no broken features)
+1. Run `/code:review` (if not done in Step 8)
+2. Run `/code:commit` to commit all work
+3. Update claude-progress.txt
+4. Update feature_list.json if tests verified
+5. Ensure no uncommitted changes
+6. Leave app in working state (no broken features)
 
 ---
 
