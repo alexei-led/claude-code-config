@@ -1,10 +1,10 @@
 {
   "env": {
-    "CLAUDE_CODE_USE_VERTEX": "1",
-    "CLOUD_ML_REGION": "global",
-    "ANTHROPIC_VERTEX_PROJECT_ID": "alexei-playground-457008",
-    "ANTHROPIC_MODEL": "claude-opus-4-5@20251101",
-    "ANTHROPIC_SMALL_FAST_MODEL": "claude-haiku-4-5@20251001"
+    "__CLAUDE_CODE_USE_VERTEX": "1",
+    "__CLOUD_ML_REGION": "global",
+    "__ANTHROPIC_VERTEX_PROJECT_ID": "alexei-playground-457008",
+    "__ANTHROPIC_MODEL": "claude-opus-4-5@20251101",
+    "__ANTHROPIC_SMALL_FAST_MODEL": "claude-haiku-4-5@20251001"
   },
   "includeCoAuthoredBy": false,
   "permissions": {
@@ -104,5 +104,6 @@
     },
     "excludedCommands": ["kubectl", "helm", "kustomize", "docker"]
   },
-  "alwaysThinkingEnabled": true
+  "alwaysThinkingEnabled": true,
+  "model": "claude-opus-4-5@20251101"
 }
