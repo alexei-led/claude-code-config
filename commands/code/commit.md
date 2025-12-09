@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(git add:*), Bash(git status:*), Bash(git commit:*), Bash(git diff:*), Read, Grep, LS
+allowed-tools: Task, Bash(git add:*), Bash(git status:*), Bash(git commit:*), Bash(git diff:*)
 description: Group changes logically and create bundled commits with concise messages
 ---
 
@@ -7,60 +7,56 @@ description: Group changes logically and create bundled commits with concise mes
 
 Group changed files logically and create focused, atomic commits.
 
-## Step 1: Analyze Changes
+## Step 1: Analyze Changes with Sub-Agent
 
-```bash
-git status
-git diff --stat HEAD
+Spawn an **Explore** agent (subagent_type: Explore) to analyze and group changes:
+
 ```
+Analyze git changes and propose commit groupings:
 
-## Step 2: Group by Logical Relationship
+1. Run `git status` to see all changed files
+2. Run `git diff --stat HEAD` for change overview
+3. Run `git log --oneline -5` for recent commit style reference
+4. Read key changed files to understand the nature of changes
 
+Group files by logical relationship:
 | Group Type   | Files to Bundle                         |
-| ------------ | --------------------------------------- |
 | Feature      | Implementation + related config + tests |
 | Refactor     | All files touched by the refactor       |
 | Fix          | Bug fix + test that verifies it         |
 | Docs         | Documentation changes only              |
 | Config/Infra | Build, CI, deployment changes           |
 
-## Step 3: Commit Each Group
-
-For each group:
-
-```bash
-git add <files in group>
-git commit -m "<scope>: <action> <what>
-
-<optional body explaining WHY>"
-```
-
-**Message Format:**
-
+For each group, draft a commit message:
 - Present tense: "Add", "Fix", "Update", "Remove"
 - Scope prefix when relevant: `auth:`, `api:`, `docs:`
 - Focus on WHY, not just WHAT
-- Never mention Claude Code or AI generation
+- Match style of recent commits
 
-## Example
+Return structured proposal:
+GROUP 1: [type]
+Files: [list]
+Message: "<scope>: <action> <what>"
 
-```
-Group 1: Core feature
-- src/auth/jwt.go (new)
-- src/auth/middleware.go (modified)
-→ git commit -m "auth: implement JWT validation with middleware"
+GROUP 2: [type]
+...
 
-Group 2: Tests
-- src/auth/jwt_test.go (new)
-→ git commit -m "auth: add JWT validation tests"
-
-Group 3: Documentation
-- README.md (modified)
-→ git commit -m "docs: add JWT authentication guide"
+If only one logical change exists, propose a single commit.
 ```
 
-## Single Change?
+## Step 2: Review and Execute
 
-If only one logical change exists, create one commit. Don't force grouping.
+Review the agent's grouping proposal, then for each group:
+
+```bash
+git add <files in group>
+git commit -m "<proposed message>"
+```
+
+Verify after committing:
+
+```bash
+git status
+```
 
 **Execute commit workflow now.**
