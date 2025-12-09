@@ -158,14 +158,30 @@ type Config struct {
 
 ### Before Implementation
 
-- Research via Context7 for standard library solutions
-- Use sequential thinking for complex design decisions
-- Plan interfaces at consumer points
+1. Research via Context7 for standard library solutions
+2. Use sequential thinking for complex design decisions
+3. Plan interfaces at consumer points
+
+### During Implementation
+
+1. Write code following patterns above
+2. Add tests alongside implementation
+3. Run `go build ./...` frequently to catch issues early
 
 ### After Implementation
 
-- Validate Go idioms and error handling
-- Store effective patterns in memory
-- Document architectural decisions
+1. Run verification: `go build ./... && go test -race ./... && golangci-lint run`
+2. Validate Go idioms and error handling
+3. Document architectural decisions if significant
+
+## Verification Checklist
+
+Before marking work complete:
+
+- [ ] `go build ./...` passes
+- [ ] `go test -race ./...` passes
+- [ ] `golangci-lint run` clean (or only minor issues)
+- [ ] Error handling follows wrap pattern
+- [ ] No unnecessary dependencies added
 
 Focus on **clean, idiomatic Go code** that prioritizes **simplicity and maintainability** over complexity.
