@@ -28,24 +28,24 @@ EOF
 # Part 2: PATTERN MATCHING (hints for obvious cases)
 skills=""
 
-# go-patterns: Go development
-if echo "$PROMPT_LOWER" | grep -qE '\.go\b|go\.(mod|sum)|go (test|build|run|fmt|vet|mod|get|generate)|golangci|mockery|\bgolang\b|\bgoroutine|\bchannel\b|\bdefer\b.*func|urfave|testify|cobra/|idiomatic go|in go\b|go (code|project|package|module|interface|struct)'; then
-	skills+="go-patterns "
+# writing-go: Go development
+if echo "$PROMPT_LOWER" | grep -qE '\.go\b|go\.(mod|sum)|go (test|build|run|fmt|vet|mod|get|generate)|golangci|mockery|\bgolang\b|\bgoroutine|\bchannel\b|\bdefer\b.*func|urfave|testify|cobra/|idiomatic go|\bin go\b|go (code|project|package|module|interface|struct|function|func|method|handler|server|client|service)'; then
+	skills+="writing-go "
 fi
 
-# python-dev: Python development
+# writing-python: Python development
 if echo "$PROMPT_LOWER" | grep -qE '\.pyi?\b|pyproject|requirements\.txt|setup\.py|__init__|python[3]?\b|\buv (run|pip|sync|add|lock)|\bruff\b|pytest|poetry\b|mypy\b|django|flask|fastapi|pandas|numpy|pydantic|dataclass|type hint|asyncio|pip install'; then
-	skills+="python-dev "
+	skills+="writing-python "
 fi
 
-# infra-k8s: Kubernetes/Terraform/Infrastructure
+# managing-infra: Kubernetes/Terraform/Infrastructure
 if echo "$PROMPT_LOWER" | grep -qE '\.tf\b|\.tfvars|dockerfile|docker-compose|chart\.yaml|kustomization|values\.yaml|\bkubectl\b|\bhelm\b|\bkustomize\b|\bterraform\b|kubernetes|k8s\b|\bpod[s]?\b|\bdeployment[s]?\b|\bingress\b|\bconfigmap|\bnamespace[s]?\b|\breplica[s]?\b|\bstatefulset|\bdaemonset|cronjob|\bhpa\b|networkpolic|\bcluster\b.*(deploy|scale|node|config)|manifest|container.*(image|registry|port)|service\s*account|node\s*pool'; then
-	skills+="infra-k8s "
+	skills+="managing-infra "
 fi
 
-# cloud-cli: GCP/AWS cloud CLI patterns
+# using-cloud-cli: GCP/AWS cloud CLI patterns
 if echo "$PROMPT_LOWER" | grep -qE '\bgcloud\b|\bgsutil\b|\bbq\s|\baws\s|\baz\s|bigquery|cloud\s*(run|function|sql|storage)|gke\b|gcs\b|pubsub|dataflow|firestore|spanner|\bs3\b|\bec2\b|aws.*lambda|lambda.*(function|handler)|\becs\b|\beks\b|\brds\b|dynamodb|\bsqs\b|\bsns\b|cloudformation|cloudwatch|service\s*account|iam.*(role|policy|permission)|\bbucket[s]?\b|--project\b|--region\b'; then
-	skills+="cloud-cli "
+	skills+="using-cloud-cli "
 fi
 
 # looking-up-docs: Documentation lookup
@@ -66,6 +66,11 @@ fi
 # using-git-worktrees: Git worktrees for isolation
 if echo "$PROMPT_LOWER" | grep -qE 'worktree|git\s*worktree|isolat.*(work|branch|develop|implement|environment)|separate.*(workspace|environment|branch)|parallel.*(branch|work|develop)|work.*(multiple|parallel).*branch|clean.*(workspace|environment|slate)|fresh.*(workspace|environment|branch)'; then
 	skills+="using-git-worktrees "
+fi
+
+# writing-typescript: TypeScript/Node.js/React development
+if echo "$PROMPT_LOWER" | grep -qE '\.tsx?\b|tsconfig|package\.json|\bnpm\b|\byarn\b|\bbun\b|\bpnpm\b|\bvite\b|node\.?js|\breact\b|\bnext\.?js\b|typescript|\bts\b.*code|\.mts\b|\.cts\b|express|nestjs|prisma|\bzod\b|trpc|tailwind|eslint.*ts|tsc\b|type.*interface|generic.*type'; then
+	skills+="writing-typescript "
 fi
 
 # consulting-design: Design consultation with Gemini
