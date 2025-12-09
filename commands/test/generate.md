@@ -1,5 +1,5 @@
 ---
-allowed-tools: Task, Bash, Read, Write, Edit, Grep, Glob, LS, AskUserQuestion, mcp__perplexity-ask__perplexity_ask
+allowed-tools: Task, Bash, Read, Grep, Glob, LS, AskUserQuestion, mcp__perplexity-ask__perplexity_ask
 description: Generate tests following Go/Python best practices
 ---
 

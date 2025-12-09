@@ -144,16 +144,45 @@ to:
 
 **ONLY CHANGE "passes" FIELD AFTER VERIFICATION WITH SCREENSHOTS.**
 
-### STEP 8: CODE REVIEW CHECKPOINT
+### STEP 8: MANDATORY CODE REVIEW (PAUSE HERE)
 
-**BEFORE committing, pause and review your changes.**
+**STOP - You MUST get user approval before committing.**
 
-Either:
+Show what you accomplished this session:
 
-1. Run `/code:review` to get multi-agent review of your changes
-2. Or ask the user: "Ready to review changes before commit? Run /code:review or say 'skip review' to proceed."
+```bash
+echo "=== SESSION SUMMARY ==="
+echo "Completed feature(s):"
+# List features you worked on
+echo ""
+echo "Changes made:"
+git diff --stat HEAD
+```
 
-Wait for review feedback and address any CRITICAL or IMPORTANT issues before proceeding.
+Then use AskUserQuestion:
+
+```
+Question: "Ready to review changes before committing?"
+Header: "Review"
+Options:
+1. "Run /code:review - Multi-agent code review (Recommended)"
+2. "Manual review - I'll review the changes myself"
+3. "Show me the diff - Display full changes"
+```
+
+**Based on user response:**
+
+- **If /code:review chosen**: Run the command, wait for results, fix ALL CRITICAL and IMPORTANT issues, then return to this step
+- **If Manual review chosen**: Wait for user feedback, make requested changes, then return to this step
+- **If Show diff chosen**: Run `git diff HEAD` to show changes, then ask again
+
+**Iteration Loop:**
+
+- After fixing issues, re-run `/code:review` or ask for another review
+- Continue until user explicitly approves: "looks good", "proceed to commit", "approved"
+- DO NOT assume approval - wait for explicit confirmation
+
+**DO NOT proceed to STEP 9 (commit) without explicit user approval.**
 
 ### STEP 9: COMMIT YOUR PROGRESS
 

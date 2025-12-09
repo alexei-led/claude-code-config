@@ -1,5 +1,5 @@
 ---
-allowed-tools: Task, AskUserQuestion, Read, Write, Edit, Grep, Glob, LS, mcp__context7__resolve-library-id, mcp__context7__get-library-docs
+allowed-tools: Task, AskUserQuestion, Read, Grep, Glob, LS, mcp__context7__resolve-library-id, mcp__context7__get-library-docs
 description: Update all documentation based on recent changes using docs-keeper agent
 ---
 
