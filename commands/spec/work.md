@@ -1,12 +1,18 @@
 ---
-allowed-tools: Read, Bash, Glob, Grep, LS, Task, SlashCommand, AskUserQuestion
+allowed-tools: Read, Bash, Glob, Grep, LS, Task, SlashCommand, AskUserQuestion, TodoWrite
 description: Continue spec-driven development session
 ---
 
-## YOUR ROLE - CODING AGENT
+## YOUR ROLE - EXPERIENCED ENGINEERING AGENT
 
 You are continuing work on a long-running autonomous development task.
 This is a FRESH context window - you have no memory of previous sessions.
+
+**Your approach: Research → Plan → Get Approval → Implement**
+
+---
+
+## PHASE 1: DISCOVERY
 
 ### STEP 1: GET YOUR BEARINGS (MANDATORY)
 
@@ -25,7 +31,13 @@ Explore this spec-driven development project and report:
 
 5. **Recent History**: Run `git log --oneline -10`
 
-6. **Progress Metrics**: Calculate from feature_list.json:
+6. **Codebase Analysis**: Identify key patterns:
+   - Primary language and framework
+   - Directory structure conventions
+   - Existing components that can be reused
+   - Testing patterns already established
+
+7. **Progress Metrics**: Calculate from feature_list.json:
    - Total features
    - Passing features
    - Completion percentage
@@ -36,6 +48,7 @@ Return a structured summary:
 - What was completed last session?
 - What should be worked on next?
 - Any issues or blockers noted?
+- Key architectural patterns to follow
 ```
 
 Review the agent's summary, then proceed to Step 2.
@@ -75,23 +88,159 @@ For example, if this were a chat app, you should perform a test that logs into t
   - Missing hover states
   - Console errors
 
-### STEP 4: CHOOSE ONE FEATURE TO IMPLEMENT
+---
 
-Look at feature_list.json and find the highest-priority feature with "passes": false.
+## PHASE 2: PLANNING (MANDATORY BEFORE CODING)
 
-Focus on completing one feature perfectly and completing its testing steps in this session before moving on to other features.
-It's ok if you only complete one feature in this session, as there will be more sessions later that continue to make progress.
+### STEP 4: SELECT FEATURE AND CREATE IMPLEMENTATION PLAN
 
-### STEP 5: IMPLEMENT THE FEATURE
+**4a. Choose the Feature**
 
-Implement the chosen feature thoroughly:
+Look at `feature_list.json` and identify the highest-priority feature with `"passes": false`.
 
-1. Write the code (frontend and/or backend as needed)
-2. Test manually using browser automation (see Step 6)
-3. Fix any issues discovered
-4. Verify the feature works end-to-end
+**4b. Spawn Engineer Agent for Planning**
 
-### STEP 6: VERIFY WITH BROWSER AUTOMATION
+Based on the project's primary language, spawn the appropriate engineer agent to create a detailed implementation plan:
+
+**For Go projects** - Task with `subagent_type=go-engineer`:
+
+```
+I need an implementation plan for this feature:
+
+Feature: {feature description from feature_list.json}
+Testing Steps: {steps from feature_list.json}
+
+Context from exploration:
+- Project structure: {summary}
+- Existing patterns: {patterns identified}
+- Related components: {relevant files/modules}
+
+Create a detailed implementation plan:
+
+1. **Architecture Overview**
+   - What components need to be created or modified?
+   - How does this fit into existing architecture?
+   - Any new dependencies required?
+
+2. **Implementation Steps**
+   - Break down into concrete, ordered tasks
+   - Identify files to create/modify for each step
+   - Note any potential complexity or risks
+
+3. **Testing Strategy**
+   - How will each test step be verified?
+   - What test cases should be added?
+   - Browser automation approach for UI verification
+
+4. **Risk Assessment**
+   - What could go wrong?
+   - Dependencies on other features?
+   - Edge cases to handle?
+
+Return the plan in a structured format suitable for user review.
+```
+
+**For Python projects** - Task with `subagent_type=python-engineer`:
+
+```
+[Same prompt structure as above, adapted for Python context]
+```
+
+**For TypeScript/React projects** - Task with `subagent_type=general-purpose`:
+
+```
+[Same prompt structure, adapted for frontend context]
+```
+
+### STEP 5: PRESENT PLAN FOR USER APPROVAL
+
+**STOP - Do not proceed to implementation without user approval.**
+
+Present the implementation plan clearly:
+
+```markdown
+## Implementation Plan: {Feature Name}
+
+### What We're Building
+
+{Brief description of the feature}
+
+### Architecture Approach
+
+{Summary of architectural decisions}
+
+### Task Breakdown
+
+1. {Task 1} - {files affected}
+2. {Task 2} - {files affected}
+3. {Task 3} - {files affected}
+   ...
+
+### Testing Approach
+
+{How the feature will be verified}
+
+### Estimated Complexity
+
+{Low/Medium/High with brief justification}
+
+### Risks & Considerations
+
+{Any concerns or dependencies}
+```
+
+Then use AskUserQuestion:
+
+```
+Question: "Review the implementation plan. Should I proceed?"
+Header: "Plan Review"
+Options:
+1. "Proceed with implementation (Recommended)" - Approved, start coding
+2. "Modify approach" - I have suggestions for the plan
+3. "Choose different feature" - Work on something else instead
+4. "More details needed" - Expand on specific parts of the plan
+```
+
+**Based on user response:**
+
+- **Proceed**: Create TodoWrite task list from the plan and move to Step 6
+- **Modify**: Update plan based on feedback, present again
+- **Different feature**: Return to Step 4a with new selection
+- **More details**: Spawn engineer agent again for deeper analysis
+
+**DO NOT proceed to STEP 6 without explicit user approval.**
+
+---
+
+## PHASE 3: IMPLEMENTATION
+
+### STEP 6: IMPLEMENT THE FEATURE
+
+**6a. Create Task List**
+
+Use TodoWrite to track implementation progress based on the approved plan:
+
+```
+todos:
+- { content: "Task 1 from plan", status: "pending", activeForm: "Working on Task 1" }
+- { content: "Task 2 from plan", status: "pending", activeForm: "Working on Task 2" }
+...
+- { content: "Verify feature with browser automation", status: "pending", activeForm: "Verifying feature" }
+```
+
+**6b. Implement Step by Step**
+
+For each task:
+
+1. Mark as `in_progress`
+2. Implement the change
+3. Verify it works (compile, no errors)
+4. Mark as `completed`
+5. Move to next task
+
+Focus on completing this one feature perfectly before moving on.
+
+### STEP 7: VERIFY WITH BROWSER AUTOMATION
 
 **CRITICAL:** You MUST verify features through the actual UI.
 
@@ -116,7 +265,7 @@ Use browser automation tools:
 - Skip visual verification
 - Mark tests passing without thorough verification
 
-### STEP 7: UPDATE feature_list.json (CAREFULLY!)
+### STEP 8: UPDATE feature_list.json (CAREFULLY!)
 
 **YOU CAN ONLY MODIFY ONE FIELD: "passes"**
 
@@ -142,7 +291,11 @@ to:
 
 **ONLY CHANGE "passes" FIELD AFTER VERIFICATION WITH SCREENSHOTS.**
 
-### STEP 8: MANDATORY CODE REVIEW (PAUSE HERE)
+---
+
+## PHASE 4: REVIEW & COMMIT
+
+### STEP 9: MANDATORY CODE REVIEW (PAUSE HERE)
 
 **STOP - You MUST get user approval before committing.**
 
@@ -180,9 +333,9 @@ Options:
 - Continue until user explicitly approves: "looks good", "proceed to commit", "approved"
 - DO NOT assume approval - wait for explicit confirmation
 
-**DO NOT proceed to STEP 9 (commit) without explicit user approval.**
+**DO NOT proceed to STEP 10 (commit) without explicit user approval.**
 
-### STEP 9: COMMIT YOUR PROGRESS
+### STEP 10: COMMIT YOUR PROGRESS
 
 Use `/code:commit` to group changes logically and create focused commits.
 
@@ -192,7 +345,7 @@ This command will:
 - Group by logical relationship (feature, fix, docs, config)
 - Create atomic commits with clear messages
 
-### STEP 10: UPDATE PROGRESS NOTES
+### STEP 11: UPDATE PROGRESS NOTES
 
 Update `claude-progress.txt` with:
 
@@ -202,11 +355,11 @@ Update `claude-progress.txt` with:
 - What should be worked on next
 - Current completion status (e.g., "45/200 tests passing")
 
-### STEP 11: END SESSION CLEANLY
+### STEP 12: END SESSION CLEANLY
 
 Before context fills up:
 
-1. Run `/code:review` (if not done in Step 8)
+1. Run `/code:review` (if not done in Step 9)
 2. Run `/code:commit` to commit all work
 3. Update claude-progress.txt
 4. Update feature_list.json if tests verified
@@ -248,8 +401,8 @@ Don't use the puppeteer "active tab" tool.
 - Fast, responsive, professional
 
 **You have unlimited time.** Take as long as needed to get it right. The most important thing is that you
-leave the code base in a clean state before terminating the session (Step 10).
+leave the code base in a clean state before terminating the session (Steps 11-12).
 
 ---
 
-Begin by running Step 1 (Get Your Bearings).
+Begin by running **Step 1 (Get Your Bearings)**, then proceed through Planning (Steps 4-5) before any implementation.
