@@ -1,5 +1,5 @@
 ---
-allowed-tools: Read, Write
+allowed-tools: Read 
 description: Generate app_spec.txt from markdown documents
 ---
 

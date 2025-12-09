@@ -1,8 +1,8 @@
 {
   "env": {
-    "__CLAUDE_CODE_USE_VERTEX": "1",
-    "__CLOUD_ML_REGION": "global",
-    "__ANTHROPIC_VERTEX_PROJECT_ID": "alexei-playground-457008"
+    "CLAUDE_CODE_USE_VERTEX": "1",
+    "CLOUD_ML_REGION": "global",
+    "ANTHROPIC_VERTEX_PROJECT_ID": "alexei-playground-457008"
   },
   "includeCoAuthoredBy": false,
   "permissions": {

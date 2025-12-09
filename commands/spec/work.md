@@ -1,5 +1,5 @@
 ---
-allowed-tools: Read, Write, Edit, Bash, Glob, Grep, LS, Task, SlashCommand, AskUserQuestion
+allowed-tools: Read, Bash, Glob, Grep, LS, Task, SlashCommand, AskUserQuestion
 description: Continue spec-driven development session
 ---
 
