@@ -1,11 +1,11 @@
 ---
-allowed-tools: Task, Bash, AskUserQuestion, Read, Grep, Glob, mcp__codex__spawn_agent, mcp__gemini__ask-gemini
+allowed-tools: Task, AskUserQuestion, mcp__codex__spawn_agent, mcp__gemini__ask-gemini
 description: Multi-agent code review for security, quality, and architecture
 ---
 
 # Multi-Agent Code Review
 
-Review code like an experienced engineer using parallel AI agents.
+Review code using three parallel AI agents. Main context stays clean for synthesis.
 
 ## Step 1: Ask What to Review
 
@@ -15,25 +15,21 @@ Use AskUserQuestion with these options:
 | ------------ | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Review scope | What code should I review? | 1. **Uncommitted changes** - Review staged and unstaged changes (git diff HEAD) 2. **Branch vs master** - Review all commits on this branch (git diff master...HEAD) 3. **Specific files** - I'll provide file paths or paste code |
 
-## Step 2: Get Code to Review
+## Step 2: Detect Language & Build Review Prompt
 
-Based on user choice:
+Based on user's scope choice, detect primary language from mentioned file extensions or ask if unclear.
 
-- **Uncommitted**: `git diff HEAD` (include `--staged` output too)
-- **Branch vs master**: `git diff master...HEAD --stat` for overview, then full diff
-- **Specific files**: Ask user for paths or accept pasted code
-
-## Step 3: Detect Language & Generate Review Prompt
-
-Detect primary language from file extensions (.go, .py, etc).
-
-Generate an **Experienced Engineer Review Prompt**:
+**Generate this review prompt** (fill in {placeholders}):
 
 ```
 You are a senior {language} engineer conducting a thorough code review.
 
-## Code Under Review
-{diff or code content - keep concise, summarize if very large}
+## Your Task
+
+1. First, run the appropriate git command to get the code:
+   {git_command_recommendation}
+
+2. Review the output focusing on the areas below.
 
 ## Review Focus Areas
 
@@ -44,9 +40,9 @@ You are a senior {language} engineer conducting a thorough code review.
 - Secrets or credentials exposure
 - OWASP Top 10 vulnerabilities
 
-### Code Quality
-- {Go: error handling, interface design, goroutine safety}
-- {Python: type hints, async patterns, PEP8 compliance}
+### Code Quality ({language}-specific)
+- {Go: error handling, interface design, goroutine safety, defer patterns}
+- {Python: type hints, async patterns, exception handling, PEP8}
 - Readability and maintainability
 - DRY violations and unnecessary complexity
 
@@ -56,64 +52,57 @@ You are a senior {language} engineer conducting a thorough code review.
 - Single responsibility adherence
 - Appropriate abstraction levels
 
-### Testing
-- Test coverage for critical paths
-- Edge case handling
-- Mock usage appropriateness
+### Testing Considerations
+- Missing test coverage for critical paths
+- Edge cases that need handling
+- Potential mock/stub needs
 
 ## Output Format
-Provide findings as:
-1. **CRITICAL** - Must fix before merge (security, bugs)
-2. **IMPORTANT** - Should fix (quality, patterns)
-3. **SUGGESTION** - Nice to have (style, minor improvements)
 
-Be specific: file:line, what's wrong, how to fix.
+Provide findings ONLY in this format:
+
+### CRITICAL (Must Fix)
+- `file:line` - Issue description. Recommendation.
+
+### IMPORTANT (Should Fix)
+- `file:line` - Issue description. Recommendation.
+
+### SUGGESTIONS (Nice to Have)
+- `file:line` - Issue description. Recommendation.
+
+Be specific with file:line references. Skip praise - only actionable findings.
 ```
 
-## Step 4: Spawn Parallel Reviewers
+**Git command recommendations by scope:**
 
-Launch ALL THREE reviewers in a SINGLE message (three parallel tool calls):
+- Uncommitted changes: `git diff HEAD` (also check `git diff --staged`)
+- Branch vs master: `git diff master...HEAD`
+- Specific files: `cat {file_paths}` or read the provided code directly
+
+## Step 3: Spawn All Three Reviewers in Parallel
+
+Launch ALL THREE in a SINGLE message with the SAME generated prompt:
 
 ### Agent 1: Language Specialist (Task)
 
-Language agents have their own tools - tell them what to review based on user's Step 1 choice:
+Use `Task` tool with appropriate `subagent_type`:
 
-- **Go code**: `Task` with `subagent_type=go-engineer`
-- **Python code**: `Task` with `subagent_type=python-engineer`
+- Go code → `subagent_type=go-engineer`
+- Python code → `subagent_type=python-engineer`
 
-```
-"Review {scope description} for {language} best practices, bugs, and code quality.
-{scope command - e.g., 'Run git diff HEAD' or 'Run git diff master...HEAD' or 'Read these files: ...'}
-Focus on: error handling, interface design, concurrency safety, readability.
-Format: CRITICAL/IMPORTANT/SUGGESTION with file:line references."
-```
+Pass the generated review prompt.
 
-### Agent 2: Codex External Review (MCP)
+### Agent 2: Codex (MCP)
 
-Codex has its own tools - tell it what to review based on user's Step 1 choice:
+Use `mcp__codex__spawn_agent` with the same generated review prompt.
 
-```
-mcp__codex__spawn_agent:
-"Review {scope description} for bugs, security issues, and {language} best practices.
-{scope command - e.g., 'Run git diff HEAD' or 'Run git diff master...HEAD' or 'Read these files: ...'}
-Format: CRITICAL/IMPORTANT/SUGGESTION with file:line references."
-```
+### Agent 3: Gemini (MCP)
 
-### Agent 3: Gemini Architecture Review (MCP)
+Use `mcp__gemini__ask-gemini` with the same generated review prompt.
 
-Gemini has its own tools - tell it what to review based on user's Step 1 choice:
+## Step 4: Aggregate & Present
 
-```
-mcp__gemini__ask-gemini:
-"Review {scope description} for architecture and design issues.
-{scope command - e.g., 'Run git diff HEAD' or 'Run git diff master...HEAD' or 'Read these files: ...'}
-Focus on maintainability and patterns.
-Format: severity + finding + recommendation with file:line references."
-```
-
-## Step 5: Aggregate & Present
-
-Wait for all agents to complete, then consolidate:
+Wait for all agents to complete, then consolidate findings:
 
 ```markdown
 ## Code Review Summary
@@ -130,20 +119,22 @@ Wait for all agents to complete, then consolidate:
 
 - [Source: Agent] Finding with file:line reference
 
-### Agreement Analysis
+### Consensus Analysis
 
-Issues flagged by multiple reviewers: [list]
+Issues flagged by multiple reviewers (higher confidence):
+
+- [list overlapping findings]
 
 ### Recommended Actions
 
-1. [Prioritized list of fixes]
+1. [Prioritized fix list]
 ```
 
-## Context Optimization
+## Key Principles
 
-- Keep code snippets under 2000 tokens per agent
-- For large diffs, summarize and focus on changed logic
-- Use `git diff --stat` first to identify key files
-- Skip generated files, vendor directories, lock files
+- **Agents do the git work** - Main context stays clean
+- **Same prompt to all** - Consistent review scope
+- **Parallel execution** - All three agents in one message
+- **You synthesize** - Aggregate, dedupe, prioritize findings
 
 **Execute this workflow now.**

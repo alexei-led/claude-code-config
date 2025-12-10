@@ -1,106 +1,51 @@
 ---
-allowed-tools: Task, Bash, Read, Grep, Glob, LS, mcp__perplexity-ask__perplexity_ask
+allowed-tools: Task, Bash, Grep, Glob, mcp__perplexity-ask__perplexity_ask
 description: Validate K8s/CI configs via deployment-specialist agent
 ---
 
 # Deployment Validation
 
-Validate infrastructure configs before deployment.
+Validate Kubernetes, Terraform, Helm, GitHub Actions, and Docker configs.
 
 ## Step 1: Detect Infrastructure Files
 
-```bash
-# Find infrastructure files
-find . -name "*.yaml" -o -name "*.yml" | grep -E "(k8s|kubernetes|deploy|helm|kustomize|workflow|action)" | head -20
-find . -name "Dockerfile*" -o -name "docker-compose*.yml" | head -10
-find . -name "*.tf" | head -10
+Use Glob to find infrastructure files (quick scan, no deep reads):
+
+- `**/*.yaml`, `**/*.yml` filtered for k8s/helm/kustomize keywords
+- `.github/workflows/*.yml`
+- `**/*.tf`
+- `**/Dockerfile*`, `**/docker-compose*.yml`
+
+## Step 2: Spawn Validation Agent
+
+Based on detected file types, spawn **quality-guardian** agent with validation prompt:
+
+```
+Task with quality-guardian agent:
+"Validate {detected_types} infrastructure in this repository.
+
+Run these validations:
+{include only relevant sections based on detected files}
+
+- K8s: kubectl apply --dry-run=client, check security contexts/resource limits
+- Helm: helm lint, helm template validation
+- GitHub Actions: actionlint, check secrets/permissions
+- Terraform: terraform fmt -check, validate, tflint
+- Dockerfile: multi-stage, non-root, pinned tags
+
+Output: PASS/FAIL per category with file:line issues."
 ```
 
-## Step 2: Run Parallel Validations
+## Step 3: Research if Needed
 
-Spawn agents IN PARALLEL for each category found:
+For uncertain findings, use Perplexity for current best practices.
 
-### Kubernetes Manifests
-
-```bash
-# Validate YAML syntax
-kubectl apply --dry-run=client -f <manifest> 2>&1
-
-# Check with kubeconform if available
-kubeconform -strict <manifest>
-```
-
-Review for:
-
-- Security contexts (runAsNonRoot, readOnlyRootFilesystem)
-- Resource limits and requests
-- Pod disruption budgets
-- Network policies
-
-### Helm Charts
-
-```bash
-helm lint <chart-path>
-helm template <chart-path> | kubeconform -strict
-```
-
-### Kustomize
-
-```bash
-kustomize build <path> | kubectl apply --dry-run=client -f -
-```
-
-### GitHub Actions
-
-```bash
-actionlint .github/workflows/*.yml
-```
-
-Review for:
-
-- Secrets handling (no hardcoded values)
-- Permission scoping
-- Dependency pinning
-
-### Terraform
-
-```bash
-terraform fmt -check -recursive
-terraform validate
-tflint --recursive
-```
-
-### Dockerfiles
-
-Review for:
-
-- Multi-stage builds
-- Non-root user
-- Specific image tags (not :latest)
-- .dockerignore presence
-
-## Step 4: Security Checklist
-
-Use Perplexity to research latest best practices if uncertain:
-
-| Check                     | Pass/Fail |
-| ------------------------- | --------- |
-| No secrets in configs     |           |
-| Security contexts set     |           |
-| Resource limits defined   |           |
-| Images pinned to versions |           |
-| RBAC properly scoped      |           |
-
-## Step 5: Report
+## Step 4: Present Summary
 
 ```
 DEPLOYMENT CHECK
 ================
-Kubernetes: [PASS/FAIL] - details
-Helm: [PASS/FAIL] - details
-CI/CD: [PASS/FAIL] - details
-Terraform: [PASS/FAIL] - details
-Security: [PASS/FAIL] - details
+{Category}: [PASS/FAIL] - details
 
 Critical Issues: [list]
 Recommendations: [list]

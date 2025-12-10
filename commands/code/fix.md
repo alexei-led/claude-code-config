@@ -1,11 +1,11 @@
 ---
-allowed-tools: Task, Bash, Read, Grep, Glob, LS, mcp__codex__spawn_agent
+allowed-tools: Task, Bash, mcp__codex__spawn_agent, mcp__gemini__ask-gemini
 description: Fix ALL issues via parallel agents - zero tolerance quality enforcement
 ---
 
 # Fix All Issues
 
-This is a FIXING task, not a reporting task. Execute until clean.
+Execute until clean. This is a FIXING task, not reporting.
 
 ## Step 1: Run Validation
 
@@ -14,81 +14,59 @@ make lint 2>&1 | head -100
 make test 2>&1 | head -100
 ```
 
-If no Makefile, detect language and run appropriate commands:
+No Makefile? Detect language:
 
 - **Go**: `golangci-lint run ./... && go test -race ./...`
 - **Python**: `ruff check . && pytest`
 
-## Step 2: Categorize Issues
+## Step 2: Spawn Language Agent
 
-Parse output and categorize:
-
-| Priority | Category                   | Action        |
-| -------- | -------------------------- | ------------- |
-| BLOCKING | Build/syntax errors        | Fix first     |
-| BLOCKING | Test failures              | Fix second    |
-| BLOCKING | Security issues            | Fix third     |
-| SHOULD   | Significant lint warnings  | Fix if simple |
-| IGNORE   | Line length, minor spacing | Skip          |
-
-## Step 3: Spawn Parallel Agents
-
-For 3+ issues, spawn agents IN PARALLEL by category:
-
-### Go Issues
+Spawn appropriate language-specific agent:
 
 ```
-Task with go-engineer agent:
-"Fix these Go issues in the codebase:
-{list of issues with file:line references}
-Run 'go build ./...' after fixing to verify."
+Task with {go|python}-engineer agent:
+"Fix these {language} issues:
+{list with file:line}
+Verify with: {appropriate lint/test command}"
 ```
 
-### Python Issues
-
-```
-Task with python-engineer agent:
-"Fix these Python issues:
-{list of issues with file:line references}
-Run 'ruff check .' after fixing to verify."
-```
-
-### External Verification (Optional)
-
-For complex fixes, get second opinion:
-
-```
-mcp__codex__spawn_agent:
-"Review this fix for correctness:
-{the fix diff}
-Does this properly address the issue without side effects?"
-```
-
-## Step 4: Verify Fixes
-
-After agents complete, re-run validation:
+## Step 3: Verify & Repeat
 
 ```bash
 make lint && make test
 ```
 
-## Step 5: Repeat Until Clean
-
 If issues remain, return to Step 2.
+
+## Step 4: Deep Fix (Complex Issues)
+
+When fixes are tricky, user asks for deeper analysis, or initial fixes fail—spawn Codex AND Gemini in parallel:
+
+```
+mcp__codex__spawn_agent:
+"Analyze and fix these complex issues:
+{list with file:line and context}
+Explain root cause and verify fix."
+```
+
+```
+mcp__gemini__ask-gemini:
+"Analyze these issues deeply:
+{list with file:line and context}
+Suggest fixes with side-effect analysis."
+```
 
 ## Exit Criteria
 
 - Build passes
 - All tests pass
-- No BLOCKING issues remain
-
-Report final status:
+- No BLOCKING issues
 
 ```
 FIX COMPLETE
 ============
 Fixed: X issues
-Remaining: Y non-blocking (ignored)
+Remaining: Y non-blocking
 Status: CLEAN / NEEDS ATTENTION
 ```
 

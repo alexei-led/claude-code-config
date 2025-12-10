@@ -1,5 +1,5 @@
 ---
-allowed-tools: Task, AskUserQuestion, Read, Grep, Glob, LS, mcp__context7__resolve-library-id, mcp__context7__get-library-docs
+allowed-tools: Task, AskUserQuestion, mcp__context7__resolve-library-id, mcp__context7__get-library-docs
 description: Update all documentation based on recent changes using docs-keeper agent
 ---
 
@@ -15,72 +15,55 @@ Use AskUserQuestion:
 | --------- | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Doc scope | What documentation should I update? | 1. **Auto-detect** - Scan for outdated docs based on recent changes 2. **README** - Update project README 3. **API docs** - Update API/function documentation 4. **All** - Comprehensive documentation refresh |
 
-## Step 2: Analyze Current State
+## Step 2: Spawn docs-keeper Agent
 
-Based on user choice:
-
-### Auto-detect
-
-```bash
-# Find recently changed code
-git diff --name-only HEAD~5 | grep -E "\.(go|py)$"
-
-# Find existing docs
-find . -name "*.md" -o -name "doc.go" | head -20
-```
-
-Compare code changes with doc timestamps.
-
-### README Focus
-
-Read current README.md and compare with:
-
-- Project structure (`ls -la`)
-- Available make targets (`make help` or parse Makefile)
-- Dependencies (go.mod, requirements.txt, package.json)
-
-### API Docs Focus
-
-- **Go**: Scan for missing/outdated GoDoc comments on exported functions
-- **Python**: Check docstrings on public functions/classes
-
-## Step 3: Spawn docs-keeper Agent
+Spawn **docs-keeper** agent with documentation prompt:
 
 ```
 Task with docs-keeper agent:
-"Update documentation for this project:
+"Update documentation for this project.
 
-Scope: {user's choice}
-Recent changes: {list of changed files}
+## Your Task
 
-Focus on:
-- Accurate function/method documentation
-- Updated README sections
-- Architecture diagram if significant changes
-- API endpoint documentation
+1. Analyze current state:
+   - Run `git diff --name-only HEAD~5` for recent changes
+   - Find existing docs: `find . -name '*.md' -o -name 'doc.go'`
+   - Check project structure and dependencies
 
-Use Context7 to research documentation best practices if needed."
-```
+2. Scope: {user's choice from Step 1}
 
-## Step 4: Verify Updates
+3. Update focus:
+   - Accurate function/method documentation
+   - README sections matching current state
+   - API endpoint documentation
+   - Architecture notes if significant changes
 
-After agent completes:
+4. Verify:
+   - No broken links
+   - Code examples compile/run
+   - Markdown renders correctly
 
-- Ensure no broken links
-- Check markdown renders correctly
-- Verify code examples compile/run
+## Output Format
 
-## Output
-
-```
 DOCUMENTATION UPDATE
 ====================
 Updated:
-- README.md (setup instructions, new feature X)
-- pkg/auth/doc.go (added GoDoc for AuthHandler)
-- docs/api.md (new endpoint documentation)
+- file.md (what changed)
+- pkg/doc.go (added GoDoc)
 
-Verified: All links valid, examples compile
+Verified: All links valid, examples compile"
 ```
+
+## Step 3: Research Best Practices (If Needed)
+
+Use Context7 for documentation patterns:
+
+```
+mcp__context7__get-library-docs for GoDoc, Sphinx, or framework-specific docs
+```
+
+## Step 4: Present Summary
+
+Report what was updated and verified.
 
 **Execute documentation update now.**
