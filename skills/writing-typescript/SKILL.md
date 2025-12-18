@@ -4,53 +4,136 @@ description: Idiomatic TypeScript development. Use when writing TypeScript code,
 allowed-tools: Read, Bash, Grep, Glob
 ---
 
-# TypeScript Development (2025)
+# TypeScript Development (5.x)
 
-## Core Principles
+## Core Philosophy
 
-- **Strict typing**: Enable all strict checks
-- **Parse, don't validate**: Transform untrusted data at boundaries
-- **Composition over inheritance**: Small, focused functions
-- **Explicit over implicit**: No `any`, prefer `unknown`
+1. **Strict Mode Always**
+   - Enable all strict checks in tsconfig
+   - Treat `any` as a bug—use `unknown` for untrusted input
+   - noUncheckedIndexedAccess, exactOptionalPropertyTypes
 
-## Toolchain
+2. **Interface vs Type**
+   - interface for object shapes (extensible, mergeable)
+   - type for unions, intersections, mapped types
+   - interface for React props and public APIs
 
-```bash
-bun          # Runtime + package manager (fast)
-vite         # Frontend bundling
-vitest       # Testing
-eslint       # Linting
-prettier     # Formatting
-```
+3. **Discriminated Unions**
+   - Literal `kind`/`type` tag for variants
+   - Exhaustive switch with never check
+   - Model states as unions, not boolean flags
+
+4. **Flat Control Flow**
+   - Guard clauses with early returns
+   - Type guards and predicate helpers
+   - Maximum 2 levels of nesting
+
+5. **Result Type Pattern**
+   - Result<T, E> for explicit error handling
+   - Discriminated union for success/failure
+   - Custom Error subclasses for instanceof
 
 ## Quick Patterns
+
+### Discriminated Unions (Not Boolean Flags)
+
+```typescript
+// GOOD: discriminated union for state
+type LoadState<T> =
+  | { status: "idle" }
+  | { status: "loading" }
+  | { status: "success"; data: T }
+  | { status: "error"; error: string };
+
+// BAD: boolean flags
+type LoadState = {
+  isLoading: boolean;
+  isError: boolean;
+  data: T | null;
+  error: string | null;
+};
+```
+
+### Flat Control Flow (No Nesting)
+
+```typescript
+// GOOD: guard clauses, early returns
+function process(user: User | null): Result<Data> {
+  if (!user) return err("no user");
+  if (!user.isActive) return err("inactive");
+  if (user.role !== "admin") return err("not admin");
+  return ok(doWork(user)); // happy path at end
+}
+
+// BAD: nested conditions
+function process(user: User | null): Result<Data> {
+  if (user) {
+    if (user.isActive) {
+      if (user.role === "admin") {
+        return ok(doWork(user));
+      }
+    }
+  }
+  return err("invalid");
+}
+```
 
 ### Type Guards
 
 ```typescript
 function isUser(value: unknown): value is User {
-  return typeof value === "object" && value !== null && "id" in value;
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "id" in value &&
+    "name" in value
+  );
 }
+
+// Predicate helper for flat code
+const isActiveAdmin = (u: User | null): u is User & { role: "admin" } =>
+  !!u && u.isActive && u.role === "admin";
 ```
 
-### Discriminated Unions
+### Result Type
 
 ```typescript
 type Result<T, E = Error> = { ok: true; value: T } | { ok: false; error: E };
 
-function processResult<T>(result: Result<T>): T {
-  if (result.ok) return result.value;
-  throw result.error;
+const ok = <T>(value: T): Result<T, never> => ({ ok: true, value });
+const err = <E>(error: E): Result<never, E> => ({ ok: false, error });
+
+async function fetchUser(
+  id: string,
+): Promise<Result<User, "not-found" | "network">> {
+  try {
+    const res = await fetch(`/users/${id}`);
+    if (res.status === 404) return err("not-found");
+    if (!res.ok) return err("network");
+    return ok(await res.json());
+  } catch {
+    return err("network");
+  }
 }
 ```
 
-### Utility Types
+### Exhaustive Switch
 
 ```typescript
-type UserUpdate = Partial<User>;
-type UserSummary = Pick<User, "id" | "name">;
-type UserWithoutPassword = Omit<User, "password">;
-type ReadonlyUser = Readonly<User>;
+function area(shape: Shape): number {
+  switch (shape.kind) {
+    case "circle":
+      return Math.PI * shape.radius ** 2;
+    case "square":
+      return shape.size ** 2;
+    case "rect":
+      return shape.width * shape.height;
+    default: {
+      const _exhaustive: never = shape; // Error if variant missed
+      return _exhaustive;
+    }
+  }
+}
 ```
 
 ## tsconfig.json Essentials
@@ -65,6 +148,7 @@ type ReadonlyUser = Readonly<User>;
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
     "noImplicitReturns": true,
+    "noImplicitOverride": true,
     "isolatedModules": true
   }
 }

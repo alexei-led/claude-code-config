@@ -6,39 +6,107 @@ allowed-tools: Read, Bash, Grep, Glob
 
 # Go Development (1.25+)
 
-## Core Principles
+## Core Philosophy
 
-- **Stdlib first**: External deps only when justified
-- **Concrete types**: Define interfaces at consumer, return structs
-- **Composition**: Over inheritance, always
-- **Fail fast**: Clear errors with context
-- **Simple**: The obvious solution is usually correct
+1. **Stdlib and Mature Libraries First**
+   - Always prefer Go stdlib solutions
+   - External deps only when stdlib is insufficient
+   - Choose mature, well-maintained libs when needed
+   - Don't reinvent the wheel—use existing solutions
+
+2. **Concrete Types Over `any`**
+   - Never use `interface{}` or `any` when concrete type works
+   - Generics for reusable utilities, concrete types for business logic
+   - Accept interfaces, return structs
+
+3. **Private Interfaces at Consumer**
+   - Define interfaces private (lowercase) where used
+   - Decouples code, enables testing
+   - Implementation returns concrete types
+
+4. **Flat Control Flow**
+   - Early returns, guard clauses
+   - No nested IFs—max 2 levels
+   - Switch for multi-case logic
+
+5. **Explicit Error Handling**
+   - Always wrap with context
+   - Use `errors.Is()`/`errors.As()`
+   - No bare `return err`
 
 ## Quick Patterns
+
+### Private Interface at Consumer
+
+```go
+// service/user.go - private interface where it's USED
+type userStore interface {
+    Get(ctx context.Context, id string) (*User, error)
+}
+
+type Service struct {
+    store userStore  // accepts interface
+}
+
+// repo/postgres.go - returns concrete type
+func NewPostgresStore(db *sql.DB) *PostgresStore {
+    return &PostgresStore{db: db}
+}
+```
+
+### Flat Control Flow (No Nesting)
+
+```go
+// GOOD: guard clauses, early returns
+func process(user *User) error {
+    if user == nil {
+        return ErrNilUser
+    }
+    if user.Email == "" {
+        return ErrMissingEmail
+    }
+    if !isValidEmail(user.Email) {
+        return ErrInvalidEmail
+    }
+    return doWork(user)
+}
+
+// BAD: nested conditions
+func process(user *User) error {
+    if user != nil {
+        if user.Email != "" {
+            if isValidEmail(user.Email) {
+                return doWork(user)
+            }
+        }
+    }
+    return nil
+}
+```
 
 ### Error Handling
 
 ```go
 if err := doThing(); err != nil {
-    return fmt.Errorf("do thing: %w", err)
+    return fmt.Errorf("do thing: %w", err)  // always wrap
+}
+
+// Sentinel errors
+if errors.Is(err, ErrNotFound) {
+    return http.StatusNotFound
 }
 ```
 
-### Struct with Options
+### Concrete Types (Avoid `any`)
 
 ```go
-type Server struct {
-    addr    string
-    timeout time.Duration
-}
+// GOOD: concrete types
+func ProcessUsers(users []User) error { ... }
+func GetUserByID(id string) (*User, error) { ... }
 
-func NewServer(addr string, opts ...Option) *Server {
-    s := &Server{addr: addr, timeout: 30 * time.Second}
-    for _, opt := range opts {
-        opt(s)
-    }
-    return s
-}
+// BAD: unnecessary any
+func ProcessItems(items []any) error { ... }
+func GetByID(id any) (any, error) { ... }
 ```
 
 ### Table-Driven Tests
@@ -68,16 +136,15 @@ for _, tt := range tests {
 
 ## Go 1.25 Features
 
-- **testing/synctest**: Deterministic concurrent testing with simulated clock
-- **encoding/json/v2**: Experimental, 3-10x faster (GOEXPERIMENT=jsonv2)
-- **runtime/trace.FlightRecorder**: Production trace capture on-demand
+- **testing/synctest**: Deterministic concurrent testing
+- **encoding/json/v2**: 3-10x faster (GOEXPERIMENT=jsonv2)
+- **runtime/trace.FlightRecorder**: Production trace capture
 - **Container-aware GOMAXPROCS**: Auto-detects cgroup limits
-- **GreenTea GC**: Experimental, lower latency (GOEXPERIMENT=greenteagc)
 
 ## References
 
 - [PATTERNS.md](PATTERNS.md) - Detailed code patterns
-- [TESTING.md](TESTING.md) - Testing strategies with testify/mockery
+- [TESTING.md](TESTING.md) - Testing with testify/mockery
 - [CLI.md](CLI.md) - CLI application patterns
 
 ## Tooling
