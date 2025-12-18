@@ -12,119 +12,284 @@ internal/      # Private application code
 pkg/           # Public libraries (rarely needed)
 ```
 
-## Interfaces
+## Interfaces: Private at Consumer
 
-### Define at Consumer
+Interfaces belong where they're USED, not where implemented. Always private (lowercase).
 
-Interfaces belong where they're USED, not where they're implemented.
+### Pattern
 
 ```go
-// service/user.go - consumer defines what it needs
-type UserStore interface {
+// internal/service/user.go - consumer defines what it needs
+type userStore interface {  // private!
     Get(ctx context.Context, id string) (*User, error)
     Save(ctx context.Context, user *User) error
 }
 
 type Service struct {
-    store UserStore
+    store userStore  // depends on interface
+}
+
+func NewService(store userStore) *Service {
+    return &Service{store: store}
 }
 ```
 
 ```go
-// repo/postgres.go - implementation returns concrete type
+// internal/repo/postgres.go - implementation returns concrete
 type PostgresStore struct{ db *sql.DB }
 
+func NewPostgresStore(db *sql.DB) *PostgresStore {  // returns concrete!
+    return &PostgresStore{db: db}
+}
+
 func (s *PostgresStore) Get(ctx context.Context, id string) (*User, error) {
-    // ...
+    // implementation
 }
 ```
 
-### Keep Interfaces Focused
+### Why Private Interfaces?
 
-Small interfaces are better. Prefer composition.
+- **Decoupling**: Consumer defines contract, not provider
+- **Testability**: Easy to mock in tests
+- **Flexibility**: Multiple implementations satisfy same interface
+- **No import cycles**: Interface lives with consumer
+
+### Keep Interfaces Small
 
 ```go
-// Good: focused interfaces
-type Reader interface { Read(ctx context.Context, id string) (*Entity, error) }
-type Writer interface { Write(ctx context.Context, e *Entity) error }
-type Deleter interface { Delete(ctx context.Context, id string) error }
+// GOOD: focused interfaces
+type reader interface { Read(ctx context.Context, id string) (*Entity, error) }
+type writer interface { Write(ctx context.Context, e *Entity) error }
 
 // Compose when needed
-type ReadWriter interface {
-    Reader
-    Writer
+type readWriter interface {
+    reader
+    writer
 }
 ```
 
 ```go
-// Bad: kitchen sink interface
+// BAD: kitchen sink interface
 type Repository interface {
     Get(ctx context.Context, id string) (*Entity, error)
     List(ctx context.Context, filter Filter) ([]*Entity, error)
     Save(ctx context.Context, e *Entity) error
     Delete(ctx context.Context, id string) error
     Archive(ctx context.Context, id string) error
-    // ... 10 more methods
+    // ... too many methods
 }
 ```
 
-## Type Visibility
+## Flat Control Flow: No Nested IFs
 
-Prefer private (lowercase) types unless they need external access.
+### Guard Clauses Pattern
 
 ```go
-// internal/service/user.go
+// GOOD: flat, readable
+func processOrder(order *Order) error {
+    if order == nil {
+        return ErrNilOrder
+    }
+    if order.ID == "" {
+        return ErrMissingOrderID
+    }
+    if len(order.Items) == 0 {
+        return ErrEmptyOrder
+    }
+    if order.Total <= 0 {
+        return ErrInvalidTotal
+    }
 
-// userService is private - exposed via interface or constructor
-type userService struct {
-    store UserStore
-    cache cache
+    // Happy path at lowest nesting level
+    return s.store.Save(ctx, order)
 }
 
-// NewUserService exposes a public interface, not the struct
-func NewUserService(store UserStore) *userService {
-    return &userService{store: store}
-}
-
-// config is private, no reason to export
-type config struct {
-    timeout time.Duration
-    retries int
+// BAD: deeply nested
+func processOrder(order *Order) error {
+    if order != nil {
+        if order.ID != "" {
+            if len(order.Items) > 0 {
+                if order.Total > 0 {
+                    return s.store.Save(ctx, order)
+                }
+            }
+        }
+    }
+    return errors.New("invalid order")
 }
 ```
 
-Public types only when:
-
-- Part of your API contract
-- Needed by external packages
-- Used in function signatures that must be public
-
-## Comments
-
-Write comments that explain WHY, not WHAT. Avoid obvious comments.
+### Extract Complex Conditions
 
 ```go
-// Bad: obvious
-// GetUser gets a user
-func GetUser(id string) (*User, error)
+// GOOD: extract to functions
+func (s *Service) canProcessPayment(user *User, amount float64) error {
+    if !user.IsActive {
+        return ErrInactiveUser
+    }
+    if user.Balance < amount {
+        return ErrInsufficientFunds
+    }
+    if amount > s.maxTransaction {
+        return ErrExceedsLimit
+    }
+    return nil
+}
 
-// incrementCounter increments the counter by 1
-counter++
+func (s *Service) ProcessPayment(ctx context.Context, userID string, amount float64) error {
+    user, err := s.users.Get(ctx, userID)
+    if err != nil {
+        return fmt.Errorf("get user: %w", err)
+    }
 
-// Good: explains non-obvious behavior
-// GetUser returns ErrNotFound if user doesn't exist, not nil.
-func GetUser(id string) (*User, error)
+    if err := s.canProcessPayment(user, amount); err != nil {
+        return err
+    }
 
-// Batch size tuned for Postgres query planner; larger batches cause seq scans.
-const batchSize = 100
+    return s.processTransaction(ctx, user, amount)
+}
 ```
 
-Package comments are useful:
+### Switch for Multi-Case Logic
 
 ```go
-// Package ratelimit provides token bucket rate limiting with
-// automatic backpressure and circuit breaking for HTTP clients.
-package ratelimit
+// GOOD: switch instead of if-else chain
+func handleStatus(status Status) error {
+    switch status {
+    case StatusPending:
+        return processPending()
+    case StatusActive:
+        return processActive()
+    case StatusComplete:
+        return nil
+    case StatusFailed:
+        return ErrFailed
+    default:
+        return fmt.Errorf("unknown status: %s", status)
+    }
+}
+
+// BAD: if-else chain
+func handleStatus(status Status) error {
+    if status == StatusPending {
+        return processPending()
+    } else if status == StatusActive {
+        return processActive()
+    } else if status == StatusComplete {
+        return nil
+    } else if status == StatusFailed {
+        return ErrFailed
+    } else {
+        return fmt.Errorf("unknown status: %s", status)
+    }
+}
+```
+
+## Concrete Types Over `any`
+
+### Use Concrete Types
+
+```go
+// GOOD: concrete types
+func ProcessUsers(users []User) error { ... }
+func GetConfig() *Config { ... }
+func ParseResponse(data []byte) (*Response, error) { ... }
+
+// BAD: unnecessary any
+func ProcessItems(items []any) error { ... }
+func GetConfig() any { ... }
+func ParseResponse(data []byte) (any, error) { ... }
+```
+
+### When Generics Are Appropriate
+
+```go
+// GOOD: generic utility for reuse
+func Map[T, U any](items []T, fn func(T) U) []U {
+    result := make([]U, len(items))
+    for i, item := range items {
+        result[i] = fn(item)
+    }
+    return result
+}
+
+// GOOD: generic retry logic
+func Retry[T any](ctx context.Context, fn func() (T, error), maxAttempts int) (T, error) {
+    var result T
+    var err error
+    for i := 0; i < maxAttempts; i++ {
+        result, err = fn()
+        if err == nil {
+            return result, nil
+        }
+        select {
+        case <-ctx.Done():
+            return result, ctx.Err()
+        case <-time.After(time.Second * time.Duration(i+1)):
+        }
+    }
+    return result, err
+}
+```
+
+### Generics vs Concrete: Decision Guide
+
+| Use Case              | Choice         |
+| --------------------- | -------------- |
+| Business logic        | Concrete types |
+| Domain entities       | Concrete types |
+| Hot paths             | Concrete types |
+| Utility functions     | Generics       |
+| Collection helpers    | Generics       |
+| Retry/circuit breaker | Generics       |
+
+## Error Handling
+
+### Always Wrap with Context
+
+```go
+// GOOD: meaningful context
+if err := db.QueryRow(ctx, query, id).Scan(&user); err != nil {
+    if errors.Is(err, sql.ErrNoRows) {
+        return nil, ErrNotFound
+    }
+    return nil, fmt.Errorf("query user %s: %w", id, err)
+}
+
+// BAD: bare return
+if err := db.QueryRow(ctx, query, id).Scan(&user); err != nil {
+    return nil, err  // no context!
+}
+```
+
+### Sentinel Errors
+
+```go
+var (
+    ErrNotFound     = errors.New("not found")
+    ErrUnauthorized = errors.New("unauthorized")
+    ErrConflict     = errors.New("conflict")
+)
+
+// Check with errors.Is
+if errors.Is(err, ErrNotFound) {
+    return http.StatusNotFound
+}
+```
+
+### Error Inspection
+
+```go
+// errors.Is for sentinel errors
+if errors.Is(err, context.DeadlineExceeded) {
+    return nil, ErrTimeout
+}
+
+// errors.As for typed errors
+var validationErr *ValidationError
+if errors.As(err, &validationErr) {
+    return nil, fmt.Errorf("validation failed: %s", validationErr.Field)
+}
 ```
 
 ## Design Patterns
@@ -138,8 +303,12 @@ func WithTimeout(d time.Duration) Option {
     return func(c *Config) { c.Timeout = d }
 }
 
+func WithRetries(n int) Option {
+    return func(c *Config) { c.Retries = n }
+}
+
 func New(opts ...Option) *Client {
-    cfg := &Config{Timeout: 30 * time.Second}
+    cfg := &Config{Timeout: 30 * time.Second, Retries: 3}
     for _, opt := range opts {
         opt(cfg)
     }
@@ -186,42 +355,16 @@ func main() {
 }
 ```
 
-## Error Handling
-
-### Wrap with Context
-
-```go
-if err := db.QueryRow(ctx, query, id).Scan(&user); err != nil {
-    if errors.Is(err, sql.ErrNoRows) {
-        return nil, ErrNotFound
-    }
-    return nil, fmt.Errorf("query user %s: %w", id, err)
-}
-```
-
-### Sentinel Errors
-
-```go
-var (
-    ErrNotFound     = errors.New("not found")
-    ErrUnauthorized = errors.New("unauthorized")
-)
-
-if errors.Is(err, ErrNotFound) {
-    return http.StatusNotFound
-}
-```
-
 ## Concurrency
 
-### Worker Pool
+### Worker Pool with errgroup
 
 ```go
 func ProcessBatch(ctx context.Context, items []Item, workers int) error {
     g, ctx := errgroup.WithContext(ctx)
     ch := make(chan Item)
 
-    for i := 0; i < workers; i++ {
+    for range workers {
         g.Go(func() error {
             for item := range ch {
                 if err := process(ctx, item); err != nil {
@@ -266,10 +409,29 @@ func loadConfig() (*config, error) {
 }
 ```
 
-## Style
+## Comments
 
-- Early returns reduce nesting
+Write comments that explain WHY, not WHAT.
+
+```go
+// BAD: obvious
+// GetUser gets a user
+func GetUser(id string) (*User, error)
+
+// GOOD: explains non-obvious behavior
+// GetUser returns ErrNotFound if user doesn't exist, not nil.
+func GetUser(id string) (*User, error)
+
+// GOOD: explains tuning decision
+// Batch size tuned for Postgres query planner; larger batches cause seq scans.
+const batchSize = 100
+```
+
+## Style Summary
+
+- Early returns reduce nesting (max 2 levels)
 - Meaningful names: `userID` not `id`, `cfg` not `c`
 - Short names in small scopes: `for i, v := range items`
 - No stuttering: `user.Name` not `user.UserName`
 - Group imports: stdlib, external, internal
+- Private by default, public only when necessary

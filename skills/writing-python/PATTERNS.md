@@ -14,22 +14,149 @@ tests/
 pyproject.toml
 ```
 
-## Type Hints
+## Protocol-Based Interfaces
 
-### Functions
+Protocols enable duck typing with type hints. Define at consumer (like Go interfaces).
+
+### Pattern
 
 ```python
+from typing import Protocol
+
+# Protocol at consumer—defines what it needs
+class UserStore(Protocol):
+    def get(self, id: str) -> User | None: ...
+    def save(self, user: User) -> None: ...
+
+class UserService:
+    def __init__(self, store: UserStore):
+        self.store = store  # accepts any matching impl
+
+# Any class with matching methods satisfies the Protocol
+class PostgresStore:
+    def get(self, id: str) -> User | None: ...
+    def save(self, user: User) -> None: ...
+
+# Works! No explicit inheritance needed
+service = UserService(PostgresStore())
+```
+
+### Protocol vs ABC
+
+| Use Case                    | Choice   |
+| --------------------------- | -------- |
+| Duck typing with hints      | Protocol |
+| Runtime isinstance() checks | ABC      |
+| Implicit satisfaction       | Protocol |
+| Explicit method enforcement | ABC      |
+
+```python
+# Protocol: implicit satisfaction (preferred)
+class Readable(Protocol):
+    def read(self, n: int = -1) -> bytes: ...
+
+# ABC: explicit inheritance required
+from abc import ABC, abstractmethod
+
+class Readable(ABC):
+    @abstractmethod
+    def read(self, n: int = -1) -> bytes: ...
+```
+
+## Flat Control Flow: No Nested Conditions
+
+### Guard Clauses Pattern
+
+```python
+# GOOD: flat, readable
+def process_order(order: Order | None) -> Result:
+    if order is None:
+        raise ValueError("order required")
+    if not order.id:
+        raise ValueError("order ID required")
+    if not order.items:
+        raise ValueError("order must have items")
+    if order.total <= 0:
+        raise ValueError("invalid total")
+
+    # Happy path at lowest nesting level
+    return save_order(order)
+
+# BAD: deeply nested
+def process_order(order: Order | None) -> Result:
+    if order is not None:
+        if order.id:
+            if order.items:
+                if order.total > 0:
+                    return save_order(order)
+    raise ValueError("invalid order")
+```
+
+### Pattern Matching to Flatten
+
+```python
+# GOOD: match instead of if-elif chain
+def handle_event(event: Event) -> None:
+    match event:
+        case ClickEvent(x=x, y=y):
+            handle_click(x, y)
+        case KeyEvent(code=code):
+            handle_key(code)
+        case ScrollEvent(delta=delta):
+            handle_scroll(delta)
+        case _:
+            raise ValueError(f"Unknown event: {event}")
+
+# GOOD: match on dict patterns
+match response:
+    case {"status": "success", "data": data}:
+        return process_data(data)
+    case {"status": "error", "message": msg}:
+        raise ApiError(msg)
+    case {"status": status}:
+        raise ValueError(f"Unknown status: {status}")
+```
+
+### Extract Complex Conditions
+
+```python
+# GOOD: extract to functions
+def can_process_payment(user: User, amount: float) -> bool:
+    if not user.is_active:
+        return False
+    if user.balance < amount:
+        return False
+    if amount > MAX_TRANSACTION:
+        return False
+    return True
+
+def process_payment(user: User, amount: float) -> Result:
+    if not can_process_payment(user, amount):
+        raise PaymentError("Cannot process payment")
+    return execute_payment(user, amount)
+```
+
+## Type Hints (No Any)
+
+### Concrete Types
+
+```python
+# GOOD: concrete types everywhere
 def get_user(user_id: str) -> User | None:
     ...
 
-def process_items(items: Iterable[Item], *, limit: int = 100) -> list[Result]:
+def process_items(items: list[Item], *, limit: int = 100) -> list[Result]:
     ...
 
 async def fetch(url: str, timeout: float = 30.0) -> bytes:
     ...
+
+# BAD: unnecessary Any
+def process(data: Any) -> Any:  # Don't do this
+    ...
 ```
 
-### Generics
+### Generics When Needed
 
 ```python
 from typing import TypeVar
@@ -38,22 +165,18 @@ T = TypeVar("T")
 
 def first(items: list[T]) -> T | None:
     return items[0] if items else None
+
+def retry(fn: Callable[[], T], attempts: int = 3) -> T:
+    for i in range(attempts):
+        try:
+            return fn()
+        except Exception:
+            if i == attempts - 1:
+                raise
+    raise RuntimeError("Unreachable")
 ```
 
-### Protocol (Structural Typing)
-
-```python
-from typing import Protocol
-
-class Readable(Protocol):
-    def read(self, n: int = -1) -> bytes: ...
-
-def process(source: Readable) -> str:
-    data = source.read()
-    return data.decode()
-```
-
-### TypedDict
+### TypedDict for Dict Schemas
 
 ```python
 from typing import TypedDict, NotRequired
@@ -62,15 +185,18 @@ class UserDict(TypedDict):
     id: str
     name: str
     email: NotRequired[str]
+
+def process_user(data: UserDict) -> User:
+    return User(id=data["id"], name=data["name"])
 ```
 
 ## Error Handling
 
-### Custom Exceptions
+### Custom Exception Hierarchy
 
 ```python
 class AppError(Exception):
-    pass
+    """Base for all application errors."""
 
 class NotFoundError(AppError):
     def __init__(self, resource: str, id: str):
@@ -84,19 +210,62 @@ class ValidationError(AppError):
         super().__init__(f"{field}: {message}")
 ```
 
-### Error Handling Pattern
+### Raise Early, Handle at Boundaries
 
 ```python
+# Service layer: raise specific errors
 def get_user(user_id: str) -> User:
     user = db.get(user_id)
     if user is None:
         raise NotFoundError("User", user_id)
     return user
+
+# API boundary: handle and convert
+@app.get("/users/{user_id}")
+def get_user_endpoint(user_id: str) -> UserResponse:
+    try:
+        user = get_user(user_id)
+        return UserResponse.from_domain(user)
+    except NotFoundError:
+        raise HTTPException(status_code=404)
+```
+
+### Python 3.14 Exception Syntax
+
+```python
+# No parens needed for multiple exceptions
+except ValueError | TypeError | KeyError:
+    handle_error()
+
+# With binding
+except ValueError | TypeError as e:
+    log_error(e)
+```
+
+## Async Patterns
+
+### TaskGroup (3.11+)
+
+```python
+async def fetch_all(urls: list[str]) -> list[bytes]:
+    async with asyncio.TaskGroup() as tg:
+        tasks = [tg.create_task(fetch_one(url)) for url in urls]
+    return [task.result() for task in tasks]
+```
+
+### Timeout
+
+```python
+async def fetch_with_timeout(url: str, timeout: float = 30.0) -> bytes:
+    async with asyncio.timeout(timeout):
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as resp:
+                return await resp.read()
 ```
 
 ## Configuration
 
-### Environment-Based
+### Dataclass-Based
 
 ```python
 import os
@@ -117,49 +286,19 @@ class Config:
         )
 ```
 
-## Async Patterns
-
-### Concurrent Tasks
-
-```python
-import asyncio
-
-async def fetch_all(urls: list[str]) -> list[bytes]:
-    async with aiohttp.ClientSession() as session:
-        tasks = [fetch_one(session, url) for url in urls]
-        return await asyncio.gather(*tasks)
-```
-
-### Timeout
-
-```python
-async def fetch_with_timeout(url: str, timeout: float = 30.0) -> bytes:
-    async with asyncio.timeout(timeout):
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as resp:
-                return await resp.read()
-```
-
 ## Context Managers
 
-### Resource Management
-
 ```python
-from contextlib import contextmanager
+from contextlib import contextmanager, asynccontextmanager
 
 @contextmanager
-def open_db_connection(url: str):
-    conn = create_connection(url)
+def db_transaction(conn: Connection):
     try:
         yield conn
-    finally:
-        conn.close()
-```
-
-### Async Context Manager
-
-```python
-from contextlib import asynccontextmanager
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
 
 @asynccontextmanager
 async def get_session():
@@ -170,28 +309,7 @@ async def get_session():
         await session.close()
 ```
 
-## Data Validation
-
-### With Pydantic (when needed)
-
-```python
-from pydantic import BaseModel, EmailStr, field_validator
-
-class CreateUserRequest(BaseModel):
-    name: str
-    email: EmailStr
-
-    @field_validator("name")
-    @classmethod
-    def name_not_empty(cls, v: str) -> str:
-        if not v.strip():
-            raise ValueError("name cannot be empty")
-        return v.strip()
-```
-
 ## File Operations
-
-### Pathlib
 
 ```python
 from pathlib import Path
@@ -203,31 +321,14 @@ def read_config(path: Path) -> dict:
     return json.loads(path.read_text())
 ```
 
-## Logging
+## Style Summary
 
-### Structured Logging
-
-```python
-import logging
-import sys
-
-def setup_logging(level: str = "INFO") -> None:
-    logging.basicConfig(
-        level=level,
-        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
-        handlers=[logging.StreamHandler(sys.stderr)],
-    )
-
-logger = logging.getLogger(__name__)
-logger.info("Processing started", extra={"count": len(items)})
-```
-
-## Style Guidelines
-
-- Use `snake_case` for functions and variables
-- Use `PascalCase` for classes
-- Use `UPPER_CASE` for constants
-- Prefer `pathlib.Path` over `os.path`
-- Use f-strings for formatting
-- Use context managers for resources
-- Avoid mutable default arguments
+- Guard clauses reduce nesting (max 2 levels)
+- Pattern matching for complex conditionals
+- Protocol for interfaces (not ABC)
+- Concrete types (no Any)
+- `snake_case` for functions/variables
+- `PascalCase` for classes
+- `pathlib.Path` over `os.path`
+- f-strings for formatting
+- Context managers for resources

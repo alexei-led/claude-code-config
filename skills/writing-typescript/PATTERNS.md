@@ -13,116 +13,204 @@ tsconfig.json
 package.json
 ```
 
-## Type Patterns
+## Interface vs Type
 
-### Avoid `any`, Use `unknown`
+### When to Use Each
+
+| Use Case             | Choice    |
+| -------------------- | --------- |
+| Object shapes        | interface |
+| React props          | interface |
+| Public APIs          | interface |
+| Unions/intersections | type      |
+| Mapped types         | type      |
+| Utility types        | type      |
 
 ```typescript
-// Bad
-function parse(data: any): User { ... }
-
-// Good
-function parse(data: unknown): User {
-  if (!isUser(data)) throw new Error("Invalid user data");
-  return data;
+// interface: object shapes, extensible
+interface User {
+  id: string;
+  name: string;
 }
+
+interface Admin extends User {
+  permissions: string[];
+}
+
+// type: unions, intersections, utilities
+type UserId = string | number;
+type Role = "user" | "admin";
+type UserSummary = Pick<User, "id" | "name"> & { role: Role };
 ```
 
-### Discriminated Unions
+## Discriminated Unions
+
+Model states as unions with literal tags, not boolean flags.
+
+### Pattern
 
 ```typescript
+// GOOD: discriminated union
 type RequestState<T> =
   | { status: "idle" }
   | { status: "loading" }
   | { status: "success"; data: T }
   | { status: "error"; error: Error };
 
-function render<T>(state: RequestState<T>) {
+// BAD: boolean flags
+type RequestState<T> = {
+  isLoading: boolean;
+  isError: boolean;
+  data: T | null;
+  error: Error | null;
+};
+```
+
+### Exhaustive Switch
+
+```typescript
+function render<T>(state: RequestState<T>): JSX.Element {
   switch (state.status) {
     case "idle":
-      return null;
+      return <Idle />;
     case "loading":
       return <Spinner />;
     case "success":
       return <Data data={state.data} />;
     case "error":
       return <Error error={state.error} />;
+    default: {
+      const _exhaustive: never = state;  // Compile error if case missed
+      return _exhaustive;
+    }
   }
 }
 ```
 
-### Type Guards
+## Flat Control Flow: No Nested Conditions
+
+### Guard Clauses Pattern
 
 ```typescript
-function isString(value: unknown): value is string {
-  return typeof value === "string";
+// GOOD: flat, readable
+function processOrder(order: Order | null): Result<Receipt> {
+  if (!order) return err("order required");
+  if (!order.id) return err("order ID required");
+  if (order.items.length === 0) return err("order must have items");
+  if (order.total <= 0) return err("invalid total");
+
+  // Happy path at lowest nesting level
+  return ok(saveOrder(order));
 }
 
-function hasId(value: unknown): value is { id: string } {
-  return typeof value === "object" && value !== null && "id" in value;
+// BAD: deeply nested
+function processOrder(order: Order | null): Result<Receipt> {
+  if (order) {
+    if (order.id) {
+      if (order.items.length > 0) {
+        if (order.total > 0) {
+          return ok(saveOrder(order));
+        }
+      }
+    }
+  }
+  return err("invalid order");
 }
 ```
 
-### Generic Constraints
+### Type Guard Predicates
 
 ```typescript
-function getProperty<T, K extends keyof T>(obj: T, key: K): T[K] {
-  return obj[key];
+// Type guard for narrowing
+function isUser(value: unknown): value is User {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "id" in value &&
+    "name" in value
+  );
 }
 
-type WithId = { id: string };
-function updateById<T extends WithId>(
-  items: T[],
+// Predicate helper for flat code
+const isActiveAdmin = (u: User | null): u is User & { role: "admin" } =>
+  !!u && u.isActive && u.role === "admin";
+
+// Usage: flat conditional
+if (isActiveAdmin(user)) {
+  // user is narrowed to User & { role: "admin" }
+}
+```
+
+### Switch for Multi-Case
+
+```typescript
+// GOOD: switch instead of if-else chain
+function handleEvent(event: AppEvent): void {
+  switch (event.type) {
+    case "click":
+      handleClick(event.x, event.y);
+      break;
+    case "key":
+      handleKey(event.code);
+      break;
+    case "scroll":
+      handleScroll(event.delta);
+      break;
+  }
+}
+```
+
+## Avoid `any`, Use `unknown`
+
+```typescript
+// BAD: any bypasses type checking
+function parse(data: any): User { ... }
+
+// GOOD: unknown requires narrowing
+function parse(data: unknown): User {
+  if (!isUser(data)) throw new Error("Invalid user data");
+  return data;  // narrowed to User
+}
+```
+
+## Result Type Pattern
+
+### Implementation
+
+```typescript
+type Ok<T> = { ok: true; value: T };
+type Err<E> = { ok: false; error: E };
+type Result<T, E = Error> = Ok<T> | Err<E>;
+
+const ok = <T>(value: T): Ok<T> => ({ ok: true, value });
+const err = <E>(error: E): Err<E> => ({ ok: false, error });
+```
+
+### Usage
+
+```typescript
+async function fetchUser(
   id: string,
-  update: Partial<T>,
-): T[] {
-  return items.map((item) => (item.id === id ? { ...item, ...update } : item));
-}
-```
-
-## Validation (Zod)
-
-```typescript
-import { z } from "zod";
-
-const UserSchema = z.object({
-  id: z.string().uuid(),
-  email: z.string().email(),
-  name: z.string().min(1),
-  role: z.enum(["admin", "user"]),
-});
-
-type User = z.infer<typeof UserSchema>;
-
-function parseUser(data: unknown): User {
-  return UserSchema.parse(data);
-}
-```
-
-## Error Handling
-
-### Result Type
-
-```typescript
-type Result<T, E = Error> = { ok: true; value: T } | { ok: false; error: E };
-
-function ok<T>(value: T): Result<T, never> {
-  return { ok: true, value };
-}
-
-function err<E>(error: E): Result<never, E> {
-  return { ok: false, error };
-}
-
-async function fetchUser(id: string): Promise<Result<User, ApiError>> {
+): Promise<Result<User, "not-found" | "network">> {
   try {
-    const response = await fetch(`/users/${id}`);
-    if (!response.ok) return err(new ApiError(response.status));
-    return ok(await response.json());
-  } catch (e) {
-    return err(new ApiError(500, e));
+    const res = await fetch(`/users/${id}`);
+    if (res.status === 404) return err("not-found");
+    if (!res.ok) return err("network");
+    return ok(await res.json());
+  } catch {
+    return err("network");
   }
 }
+
+// Caller handles explicitly
+const result = await fetchUser("123");
+if (!result.ok) {
+  if (result.error === "not-found") {
+    // handle not found
+  }
+  return;
+}
+// result.value is User here
 ```
 
 ### Custom Errors
@@ -146,16 +234,59 @@ class NotFoundError extends AppError {
 }
 ```
 
+## Dependency Injection
+
+### Interface-Based DI
+
+```typescript
+interface UserRepo {
+  findById(id: string): Promise<User | null>;
+  save(user: User): Promise<void>;
+}
+
+interface Logger {
+  info(msg: string): void;
+  error(msg: string, error?: unknown): void;
+}
+
+interface Services {
+  userRepo: UserRepo;
+  logger: Logger;
+}
+
+function createUserService({ userRepo, logger }: Services) {
+  return {
+    async getUser(id: string): Promise<Result<User, "not-found">> {
+      const user = await userRepo.findById(id);
+      if (!user) {
+        logger.info(`User ${id} not found`);
+        return err("not-found");
+      }
+      return ok(user);
+    },
+  };
+}
+```
+
+### React Context for DI
+
+```typescript
+const ServiceContext = createContext<Services | null>(null);
+
+export function useServices(): Services {
+  const ctx = useContext(ServiceContext);
+  if (!ctx) throw new Error("ServiceContext not provided");
+  return ctx;
+}
+```
+
 ## Async Patterns
 
 ### Concurrent Requests
 
 ```typescript
 async function fetchAll<T>(urls: string[]): Promise<T[]> {
-  const results = await Promise.all(
-    urls.map((url) => fetch(url).then((r) => r.json())),
-  );
-  return results;
+  return Promise.all(urls.map((url) => fetch(url).then((r) => r.json())));
 }
 
 async function fetchAllSettled<T>(urls: string[]): Promise<Result<T>[]> {
@@ -181,64 +312,40 @@ async function retry<T>(
       return await fn();
     } catch (error) {
       if (i === attempts - 1) throw error;
-      await new Promise((r) => setTimeout(r, delay * Math.pow(2, i)));
+      await new Promise((r) => setTimeout(r, delay * 2 ** i));
     }
   }
   throw new Error("Unreachable");
 }
 ```
 
-## Configuration
+## Validation (Zod)
 
 ```typescript
-const ConfigSchema = z.object({
-  PORT: z.coerce.number().default(3000),
-  DATABASE_URL: z.string().url(),
-  NODE_ENV: z
-    .enum(["development", "production", "test"])
-    .default("development"),
+import { z } from "zod";
+
+const UserSchema = z.object({
+  id: z.string().uuid(),
+  email: z.string().email(),
+  name: z.string().min(1),
+  role: z.enum(["admin", "user"]),
 });
 
-export const config = ConfigSchema.parse(process.env);
-```
+type User = z.infer<typeof UserSchema>;
 
-## Module Organization
-
-### Barrel Exports
-
-```typescript
-// domain/index.ts
-export { User } from "./user";
-export { Product } from "./product";
-export type { UserService } from "./user-service";
-```
-
-### Dependency Injection
-
-```typescript
-interface Dependencies {
-  userRepo: UserRepository;
-  emailService: EmailService;
-  logger: Logger;
-}
-
-function createUserService(deps: Dependencies): UserService {
-  return {
-    async createUser(data: CreateUserInput) {
-      const user = await deps.userRepo.create(data);
-      await deps.emailService.sendWelcome(user.email);
-      deps.logger.info("User created", { userId: user.id });
-      return user;
-    },
-  };
+function parseUser(data: unknown): User {
+  return UserSchema.parse(data);
 }
 ```
 
-## Style Guidelines
+## Style Summary
 
-- Use `const` by default, `let` when needed
-- Prefer `interface` for object shapes
-- Use `type` for unions, intersections, mapped types
+- Guard clauses reduce nesting (max 2 levels)
+- Discriminated unions for state (not boolean flags)
+- Exhaustive switch with never check
+- interface for objects, type for unions
+- unknown for untrusted input (never any)
+- Result type for explicit error handling
+- Pass dependencies as parameters
+- `const` by default, `let` when needed
 - Export types explicitly
-- No `any` - use `unknown` and narrow
-- Prefer `readonly` for immutable data
