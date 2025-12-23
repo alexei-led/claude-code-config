@@ -24,8 +24,7 @@ For complex architectural decisions or challenging problems, use **"ultrathink"*
 ### MCP Tools
 
 **Sequential** - Multi-step reasoning for complex debugging, architecture analysis, 3+ components
-**Morphllm** - Semantic code search (codebase_search, warp_grep) and bulk multi-file edits (edit_file)
-See @MCP_Sequential.md and @MCP_Morphllm.md for detailed guides
+See @MCP_Sequential.md for detailed guide
 
 ### Use Multiple Agents
 
