@@ -1,5 +1,5 @@
 {
-  "env": {
+  "env.skip": {
     "CLAUDE_CODE_USE_VERTEX": "1",
     "CLOUD_ML_REGION": "global",
     "ANTHROPIC_VERTEX_PROJECT_ID": "alexei-playground-457008",
@@ -97,9 +97,7 @@
     "autoAllowBashIfSandboxed": true,
     "filesystem": {
       "write": {
-        "allowOnly": [
-          "/Users/alexei/.gemini"
-        ]
+        "allowOnly": ["/Users/alexei/.gemini"]
       }
     },
     "network": {
