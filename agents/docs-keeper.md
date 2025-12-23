@@ -1,8 +1,8 @@
 ---
 name: docs-keeper
 description: Documentation specialist focused on maintaining comprehensive, clear, and up-to-date project documentation. Manages GoDoc comments, Python docstrings, README files, API specifications, and architecture diagrams.
-tools: Read, Grep, Glob, LS, mcp__context7__resolve-library-id, mcp__context7__get-library-docs
-model: haiku
+tools: Read, Edit, Write, MultiEdit, Grep, Glob, LS, mcp__context7__resolve-library-id, mcp__context7__get-library-docs
+model: opus
 color: purple
 skills: looking-up-docs
 ---
