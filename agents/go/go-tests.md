@@ -16,17 +16,14 @@ You are a Go testing specialist reviewing **table-driven tests**, **testify/mock
 **ALWAYS execute these commands before manual review** to assess test quality:
 
 ```bash
-# Run tests with verbose output (see what passes/fails)
-go test -v -short ./... 2>&1
+# Run tests with race detector (5 min timeout)
+go test -race -short -timeout=5m ./... 2>&1
 
-# Race detector (catches concurrency bugs)
-go test -race -short ./... 2>&1
+# Test-specific linters (2 min timeout)
+golangci-lint run --timeout=2m --enable=tparallel,paralleltest,testifylint,testableexamples,thelper,usetesting ./... 2>&1
 
-# Test-specific linters
-golangci-lint run --enable=tparallel,paralleltest,testifylint,testableexamples,thelper,usetesting ./... 2>&1
-
-# Coverage report (identify untested code)
-go test -short -coverprofile=/tmp/claude/coverage.out ./... 2>&1 && go tool cover -func=/tmp/claude/coverage.out 2>&1
+# Coverage report
+go test -short -timeout=5m -coverprofile=/tmp/claude/coverage.out ./... 2>&1 && go tool cover -func=/tmp/claude/coverage.out 2>&1
 ```
 
 **Use LSP for code navigation** (understand test coverage):

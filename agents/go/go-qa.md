@@ -17,17 +17,13 @@ You are a Go 1.25+ QA specialist reviewing for **logic correctness**, **security
 
 ```bash
 # Build and vet (catches logic issues)
-go build ./... 2>&1
-go vet ./... 2>&1
+go build ./... 2>&1 && go vet ./... 2>&1
 
-# Security & correctness linters
-golangci-lint run --enable=gosec,bodyclose,nilerr,nilnil,nilnesserr,errcheck,staticcheck,contextcheck,rowserrcheck,sqlclosecheck,nosprintfhostport ./... 2>&1
+# Security, correctness & performance linters (2 min timeout)
+golangci-lint run --timeout=2m --enable=gosec,bodyclose,nilerr,nilnil,nilnesserr,errcheck,staticcheck,contextcheck,rowserrcheck,sqlclosecheck,nosprintfhostport,prealloc,perfsprint,ineffassign,wastedassign ./... 2>&1
 
-# Performance linters
-golangci-lint run --enable=prealloc,perfsprint,ineffassign,wastedassign ./... 2>&1
-
-# Race detector on tests
-go test -race -short ./... 2>&1
+# Race detector on tests (5 min timeout)
+go test -race -short -timeout=5m ./... 2>&1
 ```
 
 **Use LSP for code navigation** (trace security-sensitive data flow):

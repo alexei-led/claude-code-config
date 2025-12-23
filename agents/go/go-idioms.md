@@ -16,14 +16,11 @@ You are a Go 1.25+ idioms specialist reviewing **control flow**, **naming**, **i
 **ALWAYS execute these commands before manual review** to catch idiom violations:
 
 ```bash
-# Format check (shows diffs for unformatted code)
-gofmt -d . 2>&1
+# Format check and vet
+gofmt -d . 2>&1 && go vet ./... 2>&1
 
-# Go vet for standard issues
-go vet ./... 2>&1
-
-# Idiom & style linters
-golangci-lint run --enable=revive,gocritic,gofmt,predeclared,usestdlibvars,intrange,modernize,nestif,nakedret ./... 2>&1
+# Idiom & style linters (2 min timeout)
+golangci-lint run --timeout=2m --enable=revive,gocritic,gofmt,predeclared,usestdlibvars,intrange,modernize,nestif,nakedret ./... 2>&1
 ```
 
 **Use LSP for code navigation** (verify idiomatic patterns):

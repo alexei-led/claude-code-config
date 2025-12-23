@@ -16,17 +16,14 @@ You are a Go 1.25+ implementation specialist reviewing **requirements compliance
 **ALWAYS execute these commands before manual review** to verify implementation:
 
 ```bash
-# Build verification
-go build ./... 2>&1
+# Build and vet
+go build ./... 2>&1 && go vet ./... 2>&1
 
-# Go 1.25 vet (includes waitgroup, hostport analyzers)
-go vet ./... 2>&1
+# Implementation linters (2 min timeout)
+golangci-lint run --timeout=2m --enable=staticcheck,unparam,iface,ireturn,recvcheck ./... 2>&1
 
-# Implementation linters (interface usage, unused params)
-golangci-lint run --enable=staticcheck,unparam,iface,ireturn,recvcheck ./... 2>&1
-
-# Run tests to verify implementation
-go test -short ./... 2>&1
+# Run tests (5 min timeout)
+go test -short -timeout=5m ./... 2>&1
 ```
 
 **Use LSP for code navigation** (verify DI wiring and interface compliance):

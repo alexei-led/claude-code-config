@@ -16,11 +16,8 @@ You are a Go documentation specialist reviewing **godoc comments**, **comment qu
 **ALWAYS execute these commands before manual review** to check documentation quality:
 
 ```bash
-# Documentation linters
-golangci-lint run --enable=godot,godoclint,godox,revive ./... 2>&1
-
-# List exported symbols to check for missing docs
-go doc ./... 2>&1 | head -100
+# Documentation linters (2 min timeout)
+golangci-lint run --timeout=2m --enable=godot,godoclint,godox,revive ./... 2>&1
 ```
 
 **Use LSP for code navigation** (verify documentation coverage):

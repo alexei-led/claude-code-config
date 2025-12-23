@@ -16,14 +16,8 @@ You are a Go simplification specialist reviewing for **over-abstraction**, **unn
 **ALWAYS execute these commands before manual review** to find simplification opportunities:
 
 ```bash
-# Dead code and unused analysis
-golangci-lint run --enable=unused,unparam,wastedassign,ineffassign ./... 2>&1
-
-# Complexity analysis (high = simplification candidate)
-golangci-lint run --enable=gocyclo,gocognit,cyclop,funlen,nestif,maintidx ./... 2>&1
-
-# Duplication detection
-golangci-lint run --enable=dupl ./... 2>&1
+# Dead code, complexity & duplication analysis (2 min timeout)
+golangci-lint run --timeout=2m --enable=unused,unparam,wastedassign,ineffassign,gocyclo,gocognit,cyclop,funlen,nestif,maintidx,dupl ./... 2>&1
 ```
 
 **Use LSP for code navigation** (find unused and over-abstracted code):
