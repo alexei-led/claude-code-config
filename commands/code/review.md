@@ -1,140 +1,159 @@
 ---
-allowed-tools: Task, AskUserQuestion, mcp__codex__spawn_agent, mcp__gemini__ask-gemini
+allowed-tools: Task, AskUserQuestion, Bash
 description: Multi-agent code review for security, quality, and architecture
+argument-hint: [deep] [external]
 ---
 
 # Multi-Agent Code Review
 
-Review code using three parallel AI agents. Main context stays clean for synthesis.
+**Parse `$ARGUMENTS`:**
 
-## Step 1: Ask What to Review
+- `deep` → 6-12 specialized sub-agents instead of language engineers
+- `external` → Add Codex + Gemini reviewers
 
-Use AskUserQuestion with these options:
+| Arguments     | Local Agents                                                        | External       |
+| ------------- | ------------------------------------------------------------------- | -------------- |
+| (none)        | go-engineer, python-engineer                                        | No             |
+| deep          | go-qa, go-idioms, go-tests, go-impl, go-docs, go-simplify (+ py-\*) | No             |
+| external      | go-engineer, python-engineer                                        | Codex + Gemini |
+| deep external | All 6-12 sub-agents                                                 | Codex + Gemini |
 
-| Header       | Question                   | Options                                                                                                                                                                                                                            |
-| ------------ | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Review scope | What code should I review? | 1. **Uncommitted changes** - Review staged and unstaged changes (git diff HEAD) 2. **Branch vs master** - Review all commits on this branch (git diff master...HEAD) 3. **Specific files** - I'll provide file paths or paste code |
+---
 
-## Step 2: Detect Language & Build Review Prompt
+## Step 1: Detect Language & Ask Scope
 
-Based on user's scope choice, detect primary language from mentioned file extensions or ask if unclear.
+Detect languages in changes:
 
-**Generate this review prompt** (fill in {placeholders}):
-
-```
-You are a senior {language} engineer conducting a thorough code review.
-
-## Your Task
-
-1. First, run the appropriate git command to get the code:
-   {git_command_recommendation}
-
-2. Review the output focusing on the areas below.
-
-## Review Focus Areas
-
-### Security (Critical)
-- Input validation at boundaries
-- SQL injection / command injection risks
-- Authentication/authorization gaps
-- Secrets or credentials exposure
-- OWASP Top 10 vulnerabilities
-
-### Code Quality ({language}-specific)
-- {Go: error handling, interface design, goroutine safety, defer patterns}
-- {Python: type hints, async patterns, exception handling, PEP8}
-- Readability and maintainability
-- DRY violations and unnecessary complexity
-
-### Architecture
-- Clean architecture principles
-- Dependency injection patterns
-- Single responsibility adherence
-- Appropriate abstraction levels
-
-### Testing Considerations
-- Missing test coverage for critical paths
-- Edge cases that need handling
-- Potential mock/stub needs
-
-## Output Format
-
-Provide findings ONLY in this format:
-
-### CRITICAL (Must Fix)
-- `file:line` - Issue description. Recommendation.
-
-### IMPORTANT (Should Fix)
-- `file:line` - Issue description. Recommendation.
-
-### SUGGESTIONS (Nice to Have)
-- `file:line` - Issue description. Recommendation.
-
-Be specific with file:line references. Skip praise - only actionable findings.
+```bash
+git diff --name-only HEAD | grep -E '\.(go|py|ts|tsx)$' | head -20
 ```
 
-**Git command recommendations by scope:**
+Then use AskUserQuestion:
 
-- Uncommitted changes: `git diff HEAD` (also check `git diff --staged`)
-- Branch vs master: `git diff master...HEAD`
-- Specific files: `cat {file_paths}` or read the provided code directly
+| Header       | Question                   | Options                                                                                                                                |
+| ------------ | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Review scope | What code should I review? | 1. **Uncommitted changes** - git diff HEAD 2. **Branch vs master** - git diff master...HEAD 3. **Specific files** - I'll provide paths |
 
-## Step 3: Spawn All Three Reviewers in Parallel
+Build git command based on choice.
 
-Launch ALL THREE in a SINGLE message with the SAME generated prompt:
+---
 
-### Agent 1: Language Specialist (Task)
+## Step 2: Spawn Agents (ALL in ONE message)
 
-Use `Task` tool with appropriate `subagent_type`:
+### Default Mode: Language Engineers
 
-- Go code → `subagent_type=go-engineer`
-- Python code → `subagent_type=python-engineer`
+For each detected language, spawn ONE Task:
 
-Pass the generated review prompt.
+- Go files → `Task(subagent_type="go-engineer", ...)`
+- Python files → `Task(subagent_type="python-engineer", ...)`
 
-### Agent 2: Codex (MCP)
+### Deep Mode: Specialized Sub-Agents
 
-Use `mcp__codex__spawn_agent` with the same generated review prompt.
+Invoke agents by their `subagent_type` (models defined in agent metadata):
 
-### Agent 3: Gemini (MCP)
+**Go agents** (if Go files detected):
 
-Use `mcp__gemini__ask-gemini` with the same generated review prompt.
+| subagent_type | Focus                        |
+| ------------- | ---------------------------- |
+| go-qa         | Logic, security, performance |
+| go-tests      | Test coverage, quality       |
+| go-impl       | Implementation concerns      |
+| go-idioms     | Patterns, error handling     |
+| go-docs       | Documentation, comments      |
+| go-simplify   | Over-abstraction, dead code  |
 
-## Step 4: Aggregate & Present
+**Python agents** (if Python files detected):
 
-Wait for all agents to complete, then consolidate findings:
+| subagent_type | Focus                        |
+| ------------- | ---------------------------- |
+| py-qa         | Logic, security, performance |
+| py-tests      | Test coverage, quality       |
+| py-impl       | Implementation concerns      |
+| py-idioms     | Patterns, typing             |
+| py-docs       | Docstrings, documentation    |
+| py-simplify   | Over-abstraction, dead code  |
+
+Spawn each agent using its subagent_type directly:
+
+```
+Task(subagent_type="{agent}", prompt="Review code from: {git_command}. Output: file:line - Issue. Fix.")
+```
+
+Agent's own `model` setting (from metadata) is respected automatically.
+
+### External Mode: Add Codex + Gemini CLIs
+
+If `external` in arguments, ALSO invoke these CLI tools (using **asking-codex** and **asking-gemini** skills):
+
+**Codex** (code review with `codex review`):
+
+```bash
+codex review --uncommitted "Senior {language} engineer. Focus: Security (OWASP), code quality, architecture, testing gaps."
+```
+
+Or for branch comparison:
+
+```bash
+codex review --base master "Senior {language} engineer. Focus: Security, code quality, architecture."
+```
+
+**Gemini** (design review with `gemini`):
+
+```bash
+gemini "Code review for {language} changes:
+{paste relevant git diff output}
+
+Focus: Security (OWASP), code quality, architecture, testing gaps.
+Output: CRITICAL/IMPORTANT/SUGGESTIONS with file:line references."
+```
+
+---
+
+## Step 3: Aggregate & Present
 
 ```markdown
 ## Code Review Summary
 
-### Critical Issues (Must Fix)
+**Mode**: {default|deep} {+external}
+**Scope**: {description}
+**Agents**: {count} reviewers
 
-- [Source: Agent] Finding with file:line reference
+---
 
-### Important Issues (Should Fix)
+### CRITICAL (Must Fix)
 
-- [Source: Agent] Finding with file:line reference
+- [{source}] `file:line` - Issue. Fix.
 
-### Suggestions (Nice to Have)
+### IMPORTANT (Should Fix)
 
-- [Source: Agent] Finding with file:line reference
+- [{source}] `file:line` - Issue. Fix.
 
-### Consensus Analysis
+### SUGGESTIONS
 
-Issues flagged by multiple reviewers (higher confidence):
+- [{source}] `file:line` - Issue. Fix.
 
-- [list overlapping findings]
+---
+
+### Consensus (Multi-Agent Agreement)
+
+| Issue | Flagged By | Confidence |
+| ----- | ---------- | ---------- |
+| ...   | ...        | High       |
 
 ### Recommended Actions
 
-1. [Prioritized fix list]
+1. {prioritized list}
 ```
 
-## Key Principles
+---
 
-- **Agents do the git work** - Main context stays clean
-- **Same prompt to all** - Consistent review scope
-- **Parallel execution** - All three agents in one message
-- **You synthesize** - Aggregate, dedupe, prioritize findings
+## Examples
+
+```
+/code:review                    # Go/Python engineers only
+/code:review deep               # 6-12 specialized sub-agents
+/code:review external           # Engineers + Codex + Gemini
+/code:review deep external      # All sub-agents + Codex + Gemini
+```
 
 **Execute this workflow now.**

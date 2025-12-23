@@ -10,8 +10,6 @@
   "permissions": {
     "allow": [
       "mcp__sequential-thinking__sequentialthinking",
-      "mcp__morphllm__warp_grep",
-      "mcp__morphllm__codebase_search",
       "mcp__perplexity-ask__perplexity_ask",
       "mcp__context7__resolve-library-id",
       "mcp__context7__get-library-docs",
@@ -36,15 +34,12 @@
       "Bash(ruff:*)",
       "Bash(terraform:*)",
       "Bash(python3:*)",
-      "mcp__codex__spawn_agent",
-      "mcp__gemini__ask-gemini",
-      "mcp__gemini__brainstorm",
+      "Bash(gemini:*)",
+      "Bash(codex:*)",
       "WebFetch",
       "WebSearch"
     ],
-    "ask": [
-      "mcp__morphllm__edit_file"
-    ]
+    "ask": []
   },
   "disabledMcpjsonServers": [],
   "hooks": {
@@ -111,5 +106,8 @@
       "docker"
     ]
   },
-  "alwaysThinkingEnabled": true
+  "alwaysThinkingEnabled": true,
+  "enabledPlugins": {
+    "gopls-lsp@claude-plugins-official": true
+  }
 }

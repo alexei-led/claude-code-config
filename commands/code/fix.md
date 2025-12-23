@@ -1,5 +1,5 @@
 ---
-allowed-tools: Task, Bash, mcp__codex__spawn_agent, mcp__gemini__ask-gemini
+allowed-tools: Task, Bash
 description: Fix ALL issues via parallel agents - zero tolerance quality enforcement
 ---
 
@@ -40,18 +40,20 @@ If issues remain, return to Step 2.
 
 ## Step 4: Deep Fix (Complex Issues)
 
-When fixes are tricky, user asks for deeper analysis, or initial fixes fail—spawn Codex AND Gemini in parallel:
+When fixes are tricky, user asks for deeper analysis, or initial fixes fail—use Codex AND Gemini CLIs (via **asking-codex** and **asking-gemini** skills):
 
-```
-mcp__codex__spawn_agent:
-"Analyze and fix these complex issues:
+**Codex** (autonomous fix with `codex exec --full-auto`):
+
+```bash
+codex exec --full-auto "Analyze and fix these complex issues:
 {list with file:line and context}
 Explain root cause and verify fix."
 ```
 
-```
-mcp__gemini__ask-gemini:
-"Analyze these issues deeply:
+**Gemini** (analysis with `gemini`):
+
+```bash
+gemini "Analyze these issues deeply:
 {list with file:line and context}
 Suggest fixes with side-effect analysis."
 ```
