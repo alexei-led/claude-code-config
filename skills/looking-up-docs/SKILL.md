@@ -1,6 +1,6 @@
 ---
 name: looking-up-docs
-description: Look up library documentation using Context7. Use when needing API reference, library docs, framework documentation, or technical documentation lookup. Provides up-to-date, version-specific docs and code examples.
+description: Fetches up-to-date library documentation via Context7. Use when needing API references, code examples, or framework docs. Not for general web search or research (use researching-web instead).
 allowed-tools: Read, Grep, Glob, mcp__context7__resolve-library-id, mcp__context7__get-library-docs
 ---
 

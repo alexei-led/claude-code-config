@@ -1,6 +1,6 @@
 ---
 name: researching-web
-description: Search the web using Perplexity AI. Use when needing to search, look up, research, find current information, best practices, compare technologies, or answer factual questions about tools and libraries.
+description: Searches the web via Perplexity AI for current information. Use when needing best practices, technology comparisons, or factual questions about tools. Not for library documentation (use looking-up-docs instead).
 allowed-tools: Read, Grep, Glob, mcp__perplexity-ask__perplexity_ask
 ---
 
