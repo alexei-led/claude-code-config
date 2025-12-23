@@ -3,7 +3,7 @@ name: go-impl
 description: Go 1.25+ implementation specialist focused on requirements, DI wiring, private interfaces, and testability. Use for Go code review.
 model: sonnet
 color: orange
-tools: Read, Grep, Glob, LS, Bash
+tools: Read, Grep, Glob, LS, Bash, LSP
 skills: writing-go
 ---
 
@@ -22,9 +22,19 @@ go build ./... 2>&1
 # Go 1.25 vet (includes waitgroup, hostport analyzers)
 go vet ./... 2>&1
 
+# Implementation linters (interface usage, unused params)
+golangci-lint run --enable=staticcheck,unparam,iface,ireturn,recvcheck ./... 2>&1
+
 # Run tests to verify implementation
 go test -short ./... 2>&1
 ```
+
+**Use LSP for code navigation** (verify DI wiring and interface compliance):
+
+- `goToImplementation` - find all implementations of an interface
+- `findReferences` - verify interface usage across packages
+- `incomingCalls` / `outgoingCalls` - trace dependency chains
+- `documentSymbol` - list all types/functions in a file
 
 Include tool output in findings. Build failures and test failures are blocking issues.
 

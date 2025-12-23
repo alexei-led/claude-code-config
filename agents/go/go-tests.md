@@ -3,7 +3,7 @@ name: go-tests
 description: Go testing specialist focused on idiomatic table-driven tests, testify assert/require, mockery EXPECT patterns, and test design quality. Identifies pointless/duplicate tests and recommends implementation refactoring when complex setup signals design problems.
 model: sonnet
 color: orange
-tools: Read, Grep, Glob, LS, Bash
+tools: Read, Grep, Glob, LS, Bash, LSP
 skills: writing-go
 ---
 
@@ -22,9 +22,18 @@ go test -v -short ./... 2>&1
 # Race detector (catches concurrency bugs)
 go test -race -short ./... 2>&1
 
+# Test-specific linters
+golangci-lint run --enable=tparallel,paralleltest,testifylint,testableexamples,thelper,usetesting ./... 2>&1
+
 # Coverage report (identify untested code)
-go test -short -coverprofile=/tmp/coverage.out ./... 2>&1 && go tool cover -func=/tmp/coverage.out 2>&1
+go test -short -coverprofile=/tmp/claude/coverage.out ./... 2>&1 && go tool cover -func=/tmp/claude/coverage.out 2>&1
 ```
+
+**Use LSP for code navigation** (understand test coverage):
+
+- `findReferences` - check which functions have tests
+- `goToDefinition` - trace mock implementations to interfaces
+- `incomingCalls` - find all test functions calling a helper
 
 Include test failures and coverage gaps in findings. Race conditions are blocking issues.
 

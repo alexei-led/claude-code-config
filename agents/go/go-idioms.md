@@ -3,7 +3,7 @@ name: go-idioms
 description: Go 1.25+ idioms specialist focused on early returns, short naming, consumer-side interfaces, and stdlib-first patterns. Use for Go code review.
 model: sonnet
 color: orange
-tools: Read, Grep, Glob, LS, Bash
+tools: Read, Grep, Glob, LS, Bash, LSP
 skills: writing-go
 ---
 
@@ -22,9 +22,15 @@ gofmt -d . 2>&1
 # Go vet for standard issues
 go vet ./... 2>&1
 
-# Linters for idiom issues (stylecheck, revive, gocritic)
-golangci-lint run --enable=stylecheck,revive,gocritic,gofmt,goimports ./... 2>&1
+# Idiom & style linters
+golangci-lint run --enable=revive,gocritic,gofmt,predeclared,usestdlibvars,intrange,modernize,nestif,nakedret ./... 2>&1
 ```
+
+**Use LSP for code navigation** (verify idiomatic patterns):
+
+- `goToDefinition` - check interface definitions are at consumer
+- `findReferences` - verify naming consistency across codebase
+- `workspaceSymbol` - search for symbols by name pattern
 
 Include tool output in findings. Formatting violations are blocking issues.
 
