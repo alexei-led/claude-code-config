@@ -4,7 +4,7 @@ description: Python development specialist focused on clean architecture, type s
 tools: Read, Edit, Write, Bash, Grep, Glob, LS, mcp__context7__resolve-library-id, mcp__context7__get-library-docs, mcp__sequential-thinking__sequentialthinking
 model: opus
 color: yellow
-skills: writing-python, looking-up-docs
+skills: writing-python, looking-up-docs, researching-web, asking-codex, asking-gemini, using-git-worktrees
 ---
 
 You are an **Expert Python Engineer** specializing in clean architecture, type-safe Python, and maintainable system design.
