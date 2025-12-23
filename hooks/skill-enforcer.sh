@@ -1,85 +1,22 @@
 #!/bin/bash
-# Hybrid skill-enforcer: AI judgment + pattern matching as hints
-# Gives Claude freedom to evaluate skill relevance while providing pattern-based suggestions
+# Minimal skill reminder - trusts Claude's natural skill selection
+# Claude uses skill descriptions from <available_skills> to choose relevant skills
 
 set -euo pipefail
 
 # Read prompt from stdin (JSON input from Claude Code)
 INPUT=$(cat)
 PROMPT=$(echo "$INPUT" | jq -r '.prompt // .' 2>/dev/null || echo "$INPUT")
-PROMPT_LOWER=$(echo "$PROMPT" | tr '[:upper:]' '[:lower:]')
 
-# Skip very short prompts (likely greetings, confirmations)
-[[ ${#PROMPT_LOWER} -lt 15 ]] && exit 0
+# Skip very short prompts (greetings, confirmations)
+[[ ${#PROMPT} -lt 15 ]] && exit 0
 
 # Skip if user is already explicitly activating skills
-[[ "$PROMPT_LOWER" =~ skill\( ]] && exit 0
+[[ "$PROMPT" =~ [Ss]kill\( ]] && exit 0
 
 # Skip common follow-up patterns
+PROMPT_LOWER=$(echo "$PROMPT" | tr '[:upper:]' '[:lower:]')
 [[ "$PROMPT_LOWER" =~ ^(yes|no|ok|okay|sure|thanks|continue|proceed|go ahead|do it|looks good|lgtm)$ ]] && exit 0
 
-# Part 1: GENERAL GUIDANCE (AI judgment)
-cat <<'EOF'
-SKILL ACTIVATION: Check <available_skills> for relevance.
-If skills clearly apply: state which and activate with Skill(name).
-Use judgment - not every task needs skills.
-EOF
-
-# Part 2: PATTERN MATCHING (hints for obvious cases)
-skills=""
-
-# writing-go: Go development
-if echo "$PROMPT_LOWER" | grep -qE '\.go\b|go\.(mod|sum)|go (test|build|run|fmt|vet|mod|get|generate)|golangci|mockery|\bgolang\b|\bgoroutine|\bchannel\b|\bdefer\b.*func|urfave|testify|cobra/|idiomatic go|\bin go\b|go (code|project|package|module|interface|struct|function|func|method|handler|server|client|service)'; then
-	skills+="writing-go "
-fi
-
-# writing-python: Python development
-if echo "$PROMPT_LOWER" | grep -qE '\.pyi?\b|pyproject|requirements\.txt|setup\.py|__init__|python[3]?\b|\buv (run|pip|sync|add|lock)|\bruff\b|pytest|poetry\b|mypy\b|django|flask|fastapi|pandas|numpy|pydantic|dataclass|type hint|asyncio|pip install'; then
-	skills+="writing-python "
-fi
-
-# managing-infra: Kubernetes/Terraform/Infrastructure
-if echo "$PROMPT_LOWER" | grep -qE '\.tf\b|\.tfvars|dockerfile|docker-compose|chart\.yaml|kustomization|values\.yaml|\bkubectl\b|\bhelm\b|\bkustomize\b|\bterraform\b|kubernetes|k8s\b|\bpod[s]?\b|\bdeployment[s]?\b|\bingress\b|\bconfigmap|\bnamespace[s]?\b|\breplica[s]?\b|\bstatefulset|\bdaemonset|cronjob|\bhpa\b|networkpolic|\bcluster\b.*(deploy|scale|node|config)|manifest|container.*(image|registry|port)|service\s*account|node\s*pool'; then
-	skills+="managing-infra "
-fi
-
-# using-cloud-cli: GCP/AWS cloud CLI patterns
-if echo "$PROMPT_LOWER" | grep -qE '\bgcloud\b|\bgsutil\b|\bbq\s|\baws\s|\baz\s|bigquery|cloud\s*(run|function|sql|storage)|gke\b|gcs\b|pubsub|dataflow|firestore|spanner|\bs3\b|\bec2\b|aws.*lambda|lambda.*(function|handler)|\becs\b|\beks\b|\brds\b|dynamodb|\bsqs\b|\bsns\b|cloudformation|cloudwatch|service\s*account|iam.*(role|policy|permission)|\bbucket[s]?\b|--project\b|--region\b'; then
-	skills+="using-cloud-cli "
-fi
-
-# looking-up-docs: Documentation lookup
-if echo "$PROMPT_LOWER" | grep -qE '\bdocs\b|\bdocumentation\b|api\s*(reference|docs)|look\s*up.*(docs|api|syntax|usage|reference)|find.*(docs|documentation|reference)|check.*(docs|documentation)|man\s*page|reference.*(guide|manual)|rtfm|read\s*the\s*docs|official.*(docs|documentation)'; then
-	skills+="looking-up-docs "
-fi
-
-# researching-web: Web research with Perplexity
-if echo "$PROMPT_LOWER" | grep -qE '\bresearch\b|search.*(web|online)|look\s*up.*online|find\s*out.*(about|if|whether)|compare.*(tool|lib|framework|approach|option|technolog)|(\w+)\s+vs\s+(\w+)|pros\s*(and|&)\s*cons|trade[\s-]?off.*(between|of|for|consider)|which.*(better|should|recommend)|latest.*(version|release|update)|current.*(version|best)|what.?s\s*new\s*in|best\s*practice|recommended.*(way|approach|pattern)|up[\s-]?to[\s-]?date|2024|2025'; then
-	skills+="researching-web "
-fi
-
-# reviewing-code: Code review with Codex
-if echo "$PROMPT_LOWER" | grep -qE 'review.*(code|this|my|pr|pull|change|implementation|file)|code\s*review|check.*(code|implementation|this).*(for|quality)|find.*(bug|issue|problem)|security.*(audit|review|check|scan)|vulnerabil|code.*(quality|smell)|potential.*(issue|bug|problem|vulnerabil)|what.?s\s*wrong\s*with.*(code|this|implementation)|audit.*(code|security)'; then
-	skills+="reviewing-code "
-fi
-
-# using-git-worktrees: Git worktrees for isolation
-if echo "$PROMPT_LOWER" | grep -qE 'worktree|git\s*worktree|isolat.*(work|branch|develop|implement|environment)|separate.*(workspace|environment|branch)|parallel.*(branch|work|develop)|work.*(multiple|parallel).*branch|clean.*(workspace|environment|slate)|fresh.*(workspace|environment|branch)'; then
-	skills+="using-git-worktrees "
-fi
-
-# writing-typescript: TypeScript/Node.js/React development
-if echo "$PROMPT_LOWER" | grep -qE '\.tsx?\b|tsconfig|package\.json|\bnpm\b|\byarn\b|\bbun\b|\bpnpm\b|\bvite\b|node\.?js|\breact\b|\bnext\.?js\b|typescript|\bts\b.*code|\.mts\b|\.cts\b|express|nestjs|prisma|\bzod\b|trpc|tailwind|eslint.*ts|tsc\b|type.*interface|generic.*type'; then
-	skills+="writing-typescript "
-fi
-
-# consulting-design: Design consultation with Gemini
-if echo "$PROMPT_LOWER" | grep -qE '\barchitect|\bsystem\s*design|design\s*pattern|component.*(design|architect)|trade[\s-]?off.*(between|of|for|consider)|alternative.*(approach|solution|design|way|option|method)|which.*(approach|way|design|method|pattern).*(better|should|recommend|prefer)|how\s*should.*(design|architect|structure|approach|organize)|brainstorm.*(solution|idea|approach|option|way)|explore.*(option|possibilit|approach|alternative|idea)|evaluate.*(approach|design|option|trade|architectur)'; then
-	skills+="consulting-design "
-fi
-
-# Output pattern hints if any detected
-if [[ -n "$skills" ]]; then
-	skills="${skills% }"
-	echo "→ Patterns suggest: $skills"
-fi
+# Minimal guidance - Claude decides relevance based on skill descriptions
+echo "SKILL ACTIVATION: Check <available_skills> for relevance."
