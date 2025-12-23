@@ -20,3 +20,4 @@ settings.local.json
 
 # plans
 plans/
+stats-cache.json
