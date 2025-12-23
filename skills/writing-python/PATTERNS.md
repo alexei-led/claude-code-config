@@ -1,5 +1,18 @@
 # Python Patterns Reference
 
+## Contents
+
+- [Project Structure](#project-structure)
+- [Protocol-Based Interfaces](#protocol-based-interfaces)
+- [Flat Control Flow: No Nested Conditions](#flat-control-flow-no-nested-conditions)
+- [Type Hints (No Any)](#type-hints-no-any)
+- [Error Handling](#error-handling)
+- [Async Patterns](#async-patterns)
+- [Configuration](#configuration)
+- [Context Managers](#context-managers)
+- [File Operations](#file-operations)
+- [Style Summary](#style-summary)
+
 ## Project Structure
 
 ```

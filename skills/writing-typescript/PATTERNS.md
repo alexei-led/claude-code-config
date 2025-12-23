@@ -1,5 +1,18 @@
 # TypeScript Patterns Reference
 
+## Contents
+
+- [Project Structure](#project-structure)
+- [Interface vs Type](#interface-vs-type)
+- [Discriminated Unions](#discriminated-unions)
+- [Flat Control Flow: No Nested Conditions](#flat-control-flow-no-nested-conditions)
+- [Avoid `any`, Use `unknown`](#avoid-any-use-unknown)
+- [Result Type Pattern](#result-type-pattern)
+- [Dependency Injection](#dependency-injection)
+- [Async Patterns](#async-patterns)
+- [Validation (Zod)](#validation-zod)
+- [Style Summary](#style-summary)
+
 ## Project Structure
 
 ```

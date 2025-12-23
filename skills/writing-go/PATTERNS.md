@@ -1,5 +1,18 @@
 # Go Patterns Reference
 
+## Contents
+
+- [Project Structure](#project-structure)
+- [Interfaces: Private at Consumer](#interfaces-private-at-consumer)
+- [Flat Control Flow: No Nested IFs](#flat-control-flow-no-nested-ifs)
+- [Concrete Types Over `any`](#concrete-types-over-any)
+- [Error Handling](#error-handling)
+- [Design Patterns](#design-patterns)
+- [Concurrency](#concurrency)
+- [Configuration](#configuration)
+- [Comments](#comments)
+- [Style Summary](#style-summary)
+
 ## Project Structure
 
 ```
