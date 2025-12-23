@@ -88,6 +88,56 @@ type userRepo interface {  // lowercase, single-impl is fine for DB dep
 type Service struct { repo userRepo }
 ```
 
+### 3a. External Service Wrappers (Thin Adapter Pattern)
+
+External dependencies (DB, APIs, filesystem, queues) benefit from a **thin wrapper struct** that:
+
+- Encapsulates vendor-specific types and initialization
+- Exposes domain-focused methods with domain types (not vendor types)
+- Can have **multiple consumer-side interfaces** defined by different consumers
+
+This is idiomatic Go—NOT over-abstraction:
+
+```go
+// internal/sqs/wrapper.go - Thin wrapper hides AWS types
+type Wrapper struct {
+    client   *sqs.Client
+    queueURL string
+}
+
+func (w *Wrapper) Send(ctx context.Context, body string) (string, error) {
+    out, err := w.client.SendMessage(ctx, &sqs.SendMessageInput{
+        QueueUrl:    &w.queueURL,
+        MessageBody: &body,
+    })
+    if err != nil {
+        return "", fmt.Errorf("send message: %w", err)
+    }
+    return *out.MessageId, nil
+}
+
+func (w *Wrapper) Receive(ctx context.Context) ([]Message, error) { ... }
+func (w *Wrapper) Delete(ctx context.Context, receiptHandle string) error { ... }
+
+// Consumer 1 only needs Send
+package notifier
+type queue interface { Send(ctx context.Context, body string) (string, error) }
+
+// Consumer 2 needs Receive and Delete
+package worker
+type queue interface {
+    Receive(ctx context.Context) ([]Message, error)
+    Delete(ctx context.Context, receiptHandle string) error
+}
+```
+
+**Why this is correct:**
+
+- Wrapper is concrete (no interface at producer)
+- Each consumer defines minimal interface it needs
+- Same wrapper satisfies multiple consumer interfaces (Go's implicit interfaces)
+- Easy to mock: implement 1-2 methods, not entire client
+
 ### 4. Stdlib First (Go 1.25)
 
 - **External deps**: Use stdlib before third-party (slog > logrus, errors > pkg/errors)

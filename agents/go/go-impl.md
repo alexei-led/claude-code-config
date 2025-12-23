@@ -97,6 +97,62 @@ func TestService_GetUser(t *testing.T) {
 }
 ```
 
+### 3a. Thin Wrapper Pattern for External Services
+
+For external dependencies (DB, APIs, queues, filesystems), use a **thin wrapper struct**:
+
+```go
+// internal/stripe/client.go - Thin wrapper, no interface here
+type Client struct {
+    api    *stripe.API
+    apiKey string
+}
+
+func NewClient(apiKey string) *Client {
+    return &Client{api: stripe.New(apiKey), apiKey: apiKey}
+}
+
+// Domain methods with domain types (not stripe types)
+func (c *Client) Charge(ctx context.Context, amount int64, currency, customerID string) (string, error) {
+    params := &stripe.ChargeParams{Amount: &amount, Currency: &currency, Customer: &customerID}
+    ch, err := c.api.Charges.New(params)
+    if err != nil {
+        return "", fmt.Errorf("stripe charge: %w", err)
+    }
+    return ch.ID, nil
+}
+
+func (c *Client) Refund(ctx context.Context, chargeID string) error { ... }
+func (c *Client) GetCustomer(ctx context.Context, id string) (*Customer, error) { ... }
+```
+
+**Multiple consumers define their own interfaces:**
+
+```go
+// package billing - only needs Charge
+type paymentGateway interface {
+    Charge(ctx context.Context, amount int64, currency, customerID string) (string, error)
+}
+
+// package refunds - only needs Refund
+type refunder interface {
+    Refund(ctx context.Context, chargeID string) error
+}
+
+// package accounts - needs GetCustomer
+type customerStore interface {
+    GetCustomer(ctx context.Context, id string) (*Customer, error)
+}
+```
+
+**Why this is correct:**
+
+- Single concrete wrapper encapsulates vendor complexity
+- Each consumer defines minimal interface (Interface Segregation)
+- Same wrapper satisfies all consumer interfaces (implicit implementation)
+- Tests mock only methods they need—no bloated mock implementations
+- Vendor swap (Stripe → Adyen) only changes wrapper, not consumers
+
 ### 4. Edge Cases
 
 - **Nil handling**: Check before dereferencing pointers, maps, channels

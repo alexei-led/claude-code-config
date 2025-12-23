@@ -36,6 +36,32 @@ gocyclo .
 | Anything you need to mock           | Internal utilities                   |
 | Structs needing initialization      | Simple structs with safe zero values |
 
+**External Service Wrappers: NOT Over-Abstraction**
+
+Thin wrapper structs for external services (DB, APIs, queues) with multiple consumer-side interfaces is idiomatic Go:
+
+```go
+// GOOD: Thin wrapper (concrete, no interface at producer)
+// internal/sqs/wrapper.go
+type Wrapper struct { client *sqs.Client; queueURL string }
+func (w *Wrapper) Send(ctx context.Context, body string) (string, error) { ... }
+func (w *Wrapper) Receive(ctx context.Context) ([]Message, error) { ... }
+
+// GOOD: Multiple consumers define their own minimal interfaces
+// package notifier
+type queue interface { Send(ctx context.Context, body string) (string, error) }
+
+// package worker
+type queue interface { Receive(ctx context.Context) ([]Message, error) }
+```
+
+Do NOT flag this pattern as over-abstraction—it enables:
+
+- Vendor encapsulation (hide SQS/Stripe/Postgres types)
+- Interface Segregation (each consumer gets minimal interface)
+- Easy mocking (mock 1-2 methods, not entire client)
+- Vendor swapability (change wrapper, not consumers)
+
 ### 2. One-Line Functions (Delete or Inline)
 
 - **Trivial wrappers**: Functions that just call another function → inline

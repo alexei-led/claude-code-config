@@ -74,6 +74,39 @@ type Service struct {
 }
 ```
 
+### 4a. Mocking External Service Wrappers
+
+When a thin wrapper exists for external services (DB, APIs, queues), mocks only need to implement the consumer's interface—not the entire wrapper:
+
+```go
+// Wrapper has 5 methods, but consumer only uses 2
+// internal/stripe/client.go
+type Client struct { ... }
+func (c *Client) Charge(...) { ... }
+func (c *Client) Refund(...) { ... }
+func (c *Client) GetCustomer(...) { ... }
+func (c *Client) CreateCustomer(...) { ... }
+func (c *Client) UpdateCustomer(...) { ... }
+
+// Consumer defines minimal interface
+// package billing
+type paymentGateway interface {
+    Charge(ctx context.Context, amount int64, currency, customerID string) (string, error)
+}
+
+// Test mock only implements Charge—no bloat!
+type mockPaymentGateway struct{}
+func (m *mockPaymentGateway) Charge(ctx context.Context, amount int64, currency, customerID string) (string, error) {
+    return "ch_test_123", nil
+}
+```
+
+This is **correct design**—consumer-side interfaces mean:
+
+- Mocks are minimal (1-2 methods, not 10)
+- Tests are focused on behavior being tested
+- Different consumers can have different mock implementations
+
 ### 5. Mockery with EXPECT (Typesafe Mocks)
 
 ```bash
