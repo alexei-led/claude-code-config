@@ -20,7 +20,7 @@ You are a Go 1.25+ idioms specialist reviewing **control flow**, **naming**, **i
 gofmt -d . 2>&1 && go vet ./... 2>&1
 
 # Idiom & style linters (2 min timeout)
-golangci-lint run --timeout=2m --enable=revive,gocritic,gofmt,predeclared,usestdlibvars,intrange,modernize,nestif,nakedret ./... 2>&1
+golangci-lint run --timeout=2m --enable=revive,gocritic,predeclared,usestdlibvars,intrange,modernize,nestif,nakedret ./... 2>&1
 ```
 
 **Use LSP for code navigation** (verify idiomatic patterns):
@@ -30,6 +30,15 @@ golangci-lint run --timeout=2m --enable=revive,gocritic,gofmt,predeclared,usestd
 - `workspaceSymbol` - search for symbols by name pattern
 
 Include tool output in findings. Formatting violations are blocking issues.
+
+**If golangci-lint fails**, explore the tool to debug:
+
+```bash
+golangci-lint --help          # Main help
+golangci-lint run --help      # Run command options
+golangci-lint linters         # List available linters (not formatters!)
+golangci-lint formatters      # List available formatters
+```
 
 ## Focus Areas (ONLY these)
 

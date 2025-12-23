@@ -35,6 +35,14 @@ go test -short -timeout=5m ./... 2>&1
 
 Include tool output in findings. Build failures and test failures are blocking issues.
 
+**If golangci-lint fails**, explore the tool to debug:
+
+```bash
+golangci-lint --help          # Main help
+golangci-lint run --help      # Run command options
+golangci-lint linters         # List available linters
+```
+
 ## Go 1.25 Patterns (Enforce)
 
 - **sync.WaitGroup.Go**: `wg.Go(func() {...})` over manual Add/Done

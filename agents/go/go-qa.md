@@ -35,6 +35,15 @@ go test -race -short -timeout=5m ./... 2>&1
 
 Include tool output in findings. If tools report issues, those are your primary findings.
 
+**If golangci-lint fails**, explore the tool to debug:
+
+```bash
+golangci-lint --help          # Main help
+golangci-lint run --help      # Run command options
+golangci-lint linters         # List available linters
+golangci-lint linters --json  # Machine-readable linter list
+```
+
 ## Go 1.25 Specific Issues
 
 - **WaitGroup misuse**: `go vet` now catches `Add()` after goroutine spawn

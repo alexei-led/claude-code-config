@@ -28,6 +28,14 @@ golangci-lint run --timeout=2m --enable=godot,godoclint,godox,revive ./... 2>&1
 
 Include linter output for missing exports. Missing godoc on exported functions is a blocking issue.
 
+**If golangci-lint fails**, explore the tool to debug:
+
+```bash
+golangci-lint --help          # Main help
+golangci-lint run --help      # Run command options
+golangci-lint linters         # List available linters
+```
+
 ## Focus Areas (ONLY these)
 
 ### 1. Godoc Comments (Required)

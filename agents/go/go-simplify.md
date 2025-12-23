@@ -29,6 +29,14 @@ golangci-lint run --timeout=2m --enable=unused,unparam,wastedassign,ineffassign,
 
 Include tool output in findings. Unused code and high complexity are primary targets.
 
+**If golangci-lint fails**, explore the tool to debug:
+
+```bash
+golangci-lint --help          # Main help
+golangci-lint run --help      # Run command options
+golangci-lint linters         # List available linters
+```
+
 ## Focus Areas (ONLY these)
 
 ### 1. Over-Abstraction

@@ -34,6 +34,14 @@ go test -short -timeout=5m -coverprofile=/tmp/claude/coverage.out ./... 2>&1 && 
 
 Include test failures and coverage gaps in findings. Race conditions are blocking issues.
 
+**If golangci-lint fails**, explore the tool to debug:
+
+```bash
+golangci-lint --help          # Main help
+golangci-lint run --help      # Run command options
+golangci-lint linters         # List available linters
+```
+
 ## Focus Areas (ONLY these)
 
 ### 1. Table-Driven Tests
