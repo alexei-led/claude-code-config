@@ -95,6 +95,13 @@
   "sandbox": {
     "enabled": true,
     "autoAllowBashIfSandboxed": true,
+    "filesystem": {
+      "write": {
+        "allowOnly": [
+          "/Users/alexei/.gemini"
+        ]
+      }
+    },
     "network": {
       "allowAllUnixSockets": true,
       "allowLocalBinding": true
@@ -103,7 +110,9 @@
       "kubectl",
       "helm",
       "kustomize",
-      "docker"
+      "docker",
+      "codex",
+      "gemini"
     ]
   },
   "alwaysThinkingEnabled": true,
