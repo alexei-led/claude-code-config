@@ -1,6 +1,17 @@
 ---
 name: asking-gemini
-description: Consults Gemini AI for architecture alternatives, design trade-offs, and brainstorming. Use when evaluating architectural approaches, comparing design options, or generating creative ideas. Not for implementation or documentation lookup.
+description: |
+  Consults Gemini AI for architecture alternatives, design trade-offs, and brainstorming. Use when evaluating architectural approaches, comparing design options, or generating creative ideas. Not for implementation or documentation lookup.
+
+  <example>
+  user: "What are the trade-offs of microservices vs monolith?"
+  → Use this skill for architecture analysis
+  </example>
+
+  <example>
+  user: "Brainstorm solutions for rate limiting"
+  → Use this skill for creative alternatives
+  </example>
 allowed-tools: Bash
 ---
 

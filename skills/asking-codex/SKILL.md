@@ -1,6 +1,17 @@
 ---
 name: asking-codex
-description: Delegates coding tasks to OpenAI Codex agent. Use for code review (/review), implementation help, or autonomous task execution. Not for research or documentation.
+description: |
+  Delegates coding tasks to OpenAI Codex agent. Use for code review (/review), implementation help, or autonomous task execution. Not for research or documentation.
+
+  <example>
+  user: "Get a second opinion on this algorithm"
+  → Use this skill for alternative implementation perspectives
+  </example>
+
+  <example>
+  user: "Have Codex review my code changes"
+  → Use this skill for external code review
+  </example>
 allowed-tools: Bash
 ---
 

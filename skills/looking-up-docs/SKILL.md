@@ -1,6 +1,17 @@
 ---
 name: looking-up-docs
-description: Fetches up-to-date library documentation via Context7. Use when needing API references, code examples, or framework docs. Not for general web search or research (use researching-web instead).
+description: |
+  Fetches up-to-date library documentation via Context7. Use when needing API references, code examples, or framework docs. Not for general web search or research (use researching-web instead).
+
+  <example>
+  user: "How do I use React hooks?"
+  → Use this skill for React documentation
+  </example>
+
+  <example>
+  user: "Show me FastAPI dependency injection examples"
+  → Use this skill for library code examples
+  </example>
 allowed-tools: Read, Grep, Glob, mcp__context7__resolve-library-id, mcp__context7__get-library-docs
 ---
 
