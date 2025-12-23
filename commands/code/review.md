@@ -81,31 +81,13 @@ Task(subagent_type="{agent}", prompt="Review code from: {git_command}. Output: f
 
 Agent's own `model` setting (from metadata) is respected automatically.
 
-### External Mode: Add Codex + Gemini CLIs
+### External Mode: Add Codex + Gemini
 
-If `external` in arguments, ALSO invoke these CLI tools (using **asking-codex** and **asking-gemini** skills):
+If `external` in arguments, ALSO use the **asking-codex** and **asking-gemini** skills for additional review perspectives:
 
-**Codex** (code review with `codex review`):
+**Codex** (via asking-codex skill): Delegate code review for a senior engineer perspective on security (OWASP), code quality, architecture, and testing gaps.
 
-```bash
-codex review --uncommitted "Senior {language} engineer. Focus: Security (OWASP), code quality, architecture, testing gaps."
-```
-
-Or for branch comparison:
-
-```bash
-codex review --base master "Senior {language} engineer. Focus: Security, code quality, architecture."
-```
-
-**Gemini** (design review with `gemini`):
-
-```bash
-gemini "Code review for {language} changes:
-{paste relevant git diff output}
-
-Focus: Security (OWASP), code quality, architecture, testing gaps.
-Output: CRITICAL/IMPORTANT/SUGGESTIONS with file:line references."
-```
+**Gemini** (via asking-gemini skill): Consult Gemini AI for architecture alternatives and design trade-offs on the code changes.
 
 ---
 
