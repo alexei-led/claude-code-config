@@ -86,6 +86,6 @@ if [[ -n "$skills" ]]; then
 	skills="${skills% }"
 	echo "→ Consider skills: $skills"
 else
-	# Minimal fallback - Claude should still check available_skills
-	echo "SKILL ACTIVATION: Check <available_skills> for relevance."
+	# Minimal prompt for Claude to check skills
+	echo "→ Check <available_skills> if relevant"
 fi

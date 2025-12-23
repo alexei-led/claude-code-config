@@ -49,7 +49,20 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/skill-enforcer.sh"
+            "command": "$HOME/.claude/hooks/skill-enforcer.sh",
+            "timeout": 2
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/file-protector.sh",
+            "timeout": 2
           }
         ]
       }
@@ -60,7 +73,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/smart-lint.sh"
+            "command": "$HOME/.claude/hooks/smart-lint.sh",
+            "timeout": 60
           }
         ]
       }
@@ -71,7 +85,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/notify.sh"
+            "command": "$HOME/.claude/hooks/notify.sh",
+            "timeout": 5
           }
         ]
       }
@@ -97,7 +112,9 @@
     "autoAllowBashIfSandboxed": true,
     "filesystem": {
       "write": {
-        "allowOnly": ["/Users/alexei/.gemini"]
+        "allowOnly": [
+          "/Users/alexei/.gemini"
+        ]
       }
     },
     "network": {
