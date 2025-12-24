@@ -2,9 +2,29 @@
 
 Elite-tier optimized setup with focused commands organized by domain, 5 specialized agents, and comprehensive MCP integration. Designed for production-quality development with zero-tolerance quality enforcement.
 
+## 🔄 Copilot Proxy (Rate Limit Fallback)
+
+When hitting API limits, use [Copilot API](https://github.com/ericc-ch/copilot-api) proxy.
+
+```bash
+~/.claude/scripts/copilot-proxy.sh           # Start in background
+~/.claude/scripts/copilot-proxy.sh --status  # Check if running
+~/.claude/scripts/copilot-proxy.sh --stop    # Stop proxy
+~/.claude/scripts/copilot-proxy.sh --fg      # Foreground (debug)
+
+# Or manually: bunx copilot-api@latest start --claude-code
+```
+
+First run requires GitHub authentication.
+
+**To switch configurations**, edit `settings.json` and swap contents between `env` and `env.copilot`/`env.vertex`. Only the `env` section is active.
+
+---
+
 ## 🎯 Available Commands
 
 ### Code Quality (`/code:*`)
+
 - **`/code:fix`** - Zero-tolerance quality enforcement with parallel agent fixes
 - **`/code:review`** - Security-focused code review via quality-guardian
 - **`/code:docs`** - Documentation updates via docs-keeper
@@ -12,10 +32,12 @@ Elite-tier optimized setup with focused commands organized by domain, 5 speciali
 - **`/code:commit`** - Group changes logically and create bundled commits
 
 ### Testing (`/test:*`)
+
 - **`/test:coverage`** - 80% minimum coverage enforcement
 - **`/test:generate`** - Generate tests following best practices
 
 ### Spec-Driven Development (`/spec:*`)
+
 - **`/spec:init`** - Initialize specification for a new feature
 - **`/spec:gen`** - Generate implementation from specification
 - **`/spec:work`** - Work on spec-driven implementation
@@ -24,7 +46,9 @@ Elite-tier optimized setup with focused commands organized by domain, 5 speciali
 ## 🤖 Specialized Agents
 
 ### **orchestrator** (Sonnet + MCP)
+
 Complex planning and coordination
+
 - **Tools:** sequential-thinking, basic-memory, github, perplexity
 - **Use for:** Architecture decisions, multi-step workflows, cross-domain coordination
 
@@ -32,8 +56,10 @@ Complex planning and coordination
 /@orchestrate "Design microservice authentication with Redis sessions"
 ```
 
-### **quality-guardian** (Opus + MCP) 
+### **quality-guardian** (Opus + MCP)
+
 Testing, security, and code review
+
 - **Tools:** testify/mockery, OWASP patterns, github PR reviews
 - **Use for:** Security analysis, test creation, code quality enforcement
 
@@ -43,12 +69,16 @@ Testing, security, and code review
 ```
 
 ### **go-engineer** (Sonnet + MCP)
+
 Go development specialist
+
 - **Tools:** Context7 docs, clean architecture patterns, performance focus
 - **Use for:** Go implementation, API design, microservices
 
 ### **docs-keeper** (Haiku + MCP)
-Documentation and knowledge management  
+
+Documentation and knowledge management
+
 - **Tools:** basic-memory, context7, mermaid diagrams
 - **Use for:** README updates, API docs, architecture diagrams
 
@@ -57,7 +87,9 @@ Documentation and knowledge management
 ```
 
 ### **deployment-specialist** (Sonnet + MCP)
+
 Infrastructure and deployment automation
+
 - **Tools:** K8s manifests, GitHub Actions, security-first practices
 - **Use for:** Deployment validation, CI/CD workflows, infrastructure security
 
@@ -68,12 +100,14 @@ Infrastructure and deployment automation
 ## 🔧 When to Use Each Command
 
 ### Start Complex Work
+
 ```bash
 /@orchestrate "Implement user notification system with email/SMS/push"
 # → Plans architecture, delegates to specialists, manages workflow
 ```
 
 ### Before Committing Code
+
 ```bash
 /code:fix
 # → Spawns agents to fix ALL linting/test issues in parallel
@@ -81,37 +115,43 @@ Infrastructure and deployment automation
 ```
 
 ### Security & Quality Review
+
 ```bash
 /code:review
 # → Security analysis, vulnerability assessment, best practices check
 ```
 
 ### Test Coverage Validation
+
 ```bash
-/test:coverage  
+/test:coverage
 # → Comprehensive test analysis, 80% minimum enforcement
 # → Identifies untested paths and improvement recommendations
 ```
 
 ### Documentation Maintenance
+
 ```bash
 /code:docs
 # → Updates README, GoDoc comments, API specs, architecture diagrams
 ```
 
 ### Infrastructure Validation
+
 ```bash
 /code:deploy-check
 # → K8s manifest validation, GitHub Actions lint, security contexts
 ```
 
 ### Knowledge Preservation
+
 ```bash
 /@remember "Decided to use pgx over GORM for better performance control"
 # → Saves to basic-memory for future reference and team knowledge
 ```
 
 ### Git Workflow Management
+
 ```bash
 /code:commit
 # → Analyzes changed files and groups them logically
@@ -122,6 +162,7 @@ Infrastructure and deployment automation
 ## 🚀 Quick Start Examples
 
 ### Complex Feature Implementation
+
 ```bash
 # 1. Plan the work
 /@orchestrate "Add rate limiting to API with Redis backend"
@@ -129,7 +170,7 @@ Infrastructure and deployment automation
 # 2. Implement following the plan
 # (Regular development work)
 
-# 3. Quality check before commit  
+# 3. Quality check before commit
 /code:fix
 
 # 4. Security review
@@ -149,16 +190,19 @@ Infrastructure and deployment automation
 ```
 
 ### Quick Quality Check
+
 ```bash
 /code:fix  # Fix ALL issues before continuing
 ```
 
 ### Pre-deployment Validation
+
 ```bash
 /code:deploy-check  # Ensure K8s configs are secure and valid
 ```
 
 ### Smart Git Workflow
+
 ```bash
 /code:commit
 # Analyzes: auth.go, auth_test.go, middleware.go, README.md, docs/auth.md
@@ -166,7 +210,7 @@ Infrastructure and deployment automation
 # Creates commits:
 # 1. "auth: implement JWT validation with middleware"
 #    - auth.go, middleware.go
-# 2. "auth: add comprehensive validation tests" 
+# 2. "auth: add comprehensive validation tests"
 #    - auth_test.go, middleware_test.go
 # 3. "docs: add JWT authentication guide"
 #    - README.md, docs/auth.md
@@ -175,26 +219,31 @@ Infrastructure and deployment automation
 ## ⚙️ MCP Integration
 
 ### **sequential-thinking** - Complex Problem Analysis
+
 - Multi-step reasoning for architecture decisions
 - Trade-off evaluation and risk assessment
 - Used by orchestrator for planning
 
-### **basic-memory** - Project Knowledge Persistence  
+### **basic-memory** - Project Knowledge Persistence
+
 - Cross-session context retention
 - Architecture decisions and patterns
 - Team knowledge sharing
 
 ### **context7** - Up-to-date Library Documentation
+
 - Go standard library references
 - Third-party framework docs
 - Real-time API specifications
 
 ### **perplexity** - AI Research Assistant
-- Latest security practices and vulnerabilities  
+
+- Latest security practices and vulnerabilities
 - Performance optimization techniques
 - Industry best practices research
 
 ### **github** - Repository Management
+
 - Pull request analysis and reviews
 - GitHub Actions workflow management
 - Automated code review integration
@@ -202,6 +251,7 @@ Infrastructure and deployment automation
 ## 🛡️ Quality Standards
 
 ### Zero-Tolerance Enforcement
+
 - **ALL** linting warnings must be fixed
 - **ALL** tests must pass with meaningful coverage
 - **80%** minimum test coverage enforced
@@ -210,6 +260,7 @@ Infrastructure and deployment automation
 ### Language-Specific Requirements
 
 **Go Projects:**
+
 - No `interface{}`/`any{}` - use concrete types
 - Channels for synchronization, never `time.Sleep()`
 - `go test -race` for race detection
@@ -217,11 +268,13 @@ Infrastructure and deployment automation
 - mockery for test mocks
 
 **TypeScript Projects:**
+
 - Strict mode enabled, avoid 'any' type
 - Proper async/await patterns
 - ESLint clean with zero warnings
 
 **Python Projects:**
+
 - Type hints on all functions
 - mypy validation passes
 - pytest patterns, no broad exceptions
@@ -231,13 +284,16 @@ Infrastructure and deployment automation
 ### Built-in Monitoring Tools
 
 #### **smart-lint.sh** (Automatic)
+
 Shows token usage with every command execution:
+
 ```bash
 # Automatic output from any command
 markdown project ✅ Style OK 📊 ~2,666 tokens
 ```
 
 #### **performance-monitor.sh** (Manual Analysis)
+
 Comprehensive configuration health check - run manually when needed:
 
 ```bash
@@ -246,12 +302,14 @@ Comprehensive configuration health check - run manually when needed:
 ```
 
 **Purpose:**
-- Analyze context usage efficiency 
+
+- Analyze context usage efficiency
 - Identify optimization opportunities
 - Monitor configuration health over time
 - Get detailed breakdown of all files
 
 **Sample Output:**
+
 ```bash
 📊 Claude Code Performance Analysis
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -284,6 +342,7 @@ Hook Performance:
 ```
 
 **When to Use:**
+
 ```bash
 # Monthly configuration health check
 ~/.claude/hooks/performance-monitor.sh
@@ -299,12 +358,14 @@ Hook Performance:
 ```
 
 **Optimization Alerts:**
+
 - **High context usage** (>10% of 200K limit) - suggests trimming verbose commands
 - **Large files** (>1000 words) - identifies files that might need optimization
 - **Too many commands** (>10) - recommends consolidation
 - **Hook performance** - tracks complexity of hook scripts
 
 **Current Metrics:**
+
 - **Context Usage:** ~1% of 200K limit (excellent)
 - **Commands:** 8 focused, optimized commands
 - **Token Efficiency:** ~2,666 tokens total context
@@ -313,12 +374,14 @@ Hook Performance:
 ## 🔍 Hook System
 
 ### smart-lint.sh (Automatic Hook)
+
 **Trigger:** Runs automatically with every command execution  
 **Purpose:** Code quality enforcement + basic token monitoring
 
 Auto-detects project types and runs appropriate linters:
+
 - **Go:** golangci-lint, gofmt, go test -race
-- **TypeScript/JS:** prettier, eslint  
+- **TypeScript/JS:** prettier, eslint
 - **Python:** black, ruff, mypy
 - **YAML:** yamllint
 - **Shell:** shellcheck, shfmt
@@ -327,12 +390,14 @@ Auto-detects project types and runs appropriate linters:
 **Output:** `markdown project ✅ Style OK 📊 ~2,666 tokens`
 
 ### performance-monitor.sh (Manual Tool)
+
 **Trigger:** Run manually when needed  
 **Purpose:** Comprehensive configuration analysis and optimization insights
 
 Features:
+
 - Token usage breakdown by file
-- Context efficiency recommendations  
+- Context efficiency recommendations
 - Hook performance metrics
 - Optimization alerts and suggestions
 - Configuration health assessment
@@ -342,6 +407,7 @@ Features:
 ## 🎯 Best Practices
 
 ### Development Workflow
+
 1. **Plan first:** Use `/@orchestrate` for complex features
 2. **Quality gate:** Run `/code:fix` before every commit
 3. **Security focus:** Use `/code:review` for security analysis
@@ -351,12 +417,14 @@ Features:
 7. **Smart commits:** Use `/code:commit` for logical change grouping
 
 ### Agent Coordination
+
 - **Spawn multiple agents** for parallel work when appropriate
 - **Use sequential-thinking** for complex architectural decisions
 - **Leverage basic-memory** for context across sessions
 - **Delegate appropriately** based on task complexity and domain
 
 ### Memory Management
+
 - Save important architectural decisions with `/@remember`
 - Use basic-memory for cross-session knowledge retention
 - Document patterns and conventions for team consistency

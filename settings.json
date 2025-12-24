@@ -1,10 +1,20 @@
 {
-  "env.skip": {
+  "env": {},
+  "env.vertex": {
     "CLAUDE_CODE_USE_VERTEX": "1",
     "CLOUD_ML_REGION": "global",
     "ANTHROPIC_VERTEX_PROJECT_ID": "alexei-playground-457008",
     "ANTHROPIC_MODEL": "claude-opus-4-5@20251101",
-    "ANTHROPIC_SMALL_FAST_MODEL": "claude-haiku-4-5@20251001"
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-haiku-4-5@20251001"
+  },
+  "env.copilot": {
+    "ANTHROPIC_BASE_URL": "http://localhost:4141",
+    "ANTHROPIC_AUTH_TOKEN": "dummy",
+    "ANTHROPIC_MODEL": "claude-opus-4.5",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-4.5",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-haiku-4.5",
+    "DISABLE_NON_ESSENTIAL_MODEL_CALLS": "1",
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
   },
   "includeCoAuthoredBy": false,
   "permissions": {
@@ -112,9 +122,7 @@
     "autoAllowBashIfSandboxed": true,
     "filesystem": {
       "write": {
-        "allowOnly": [
-          "/Users/alexei/.gemini"
-        ]
+        "allowOnly": ["/Users/alexei/.gemini"]
       }
     },
     "network": {
