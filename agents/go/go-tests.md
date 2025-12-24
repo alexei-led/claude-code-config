@@ -44,13 +44,15 @@ golangci-lint linters         # List available linters
 
 ## Focus Areas (ONLY these)
 
-### 1. Table-Driven Tests
+### 1. Table-Driven Tests (Mandatory for Similar Cases)
 
-- **Repetitive tests**: Multiple similar tests → consolidate into table-driven
-- **Test case naming**: Use descriptive `name` field (what's being tested, expected outcome)
-- **Edge cases**: Include nil, empty, zero, boundary, error cases in table
+- **Repetitive tests**: Multiple similar tests → **MUST consolidate into table-driven** (no exceptions)
+- **Combine threshold**: 2+ tests with same structure but different inputs → table-driven
+- **Test case naming**: Use descriptive `name` field: `"valid_email"`, `"empty_returns_error"`, `"zero_value_handled"`
+- **Edge cases**: Every table MUST include: nil, empty, zero, boundary, error cases
 - **Parallel execution**: Add `t.Parallel()` for independent test cases
 - **Subtest structure**: Use `t.Run(tc.name, func(t *testing.T) {...})`
+- **Table size**: Keep tables under 15-20 rows; split logically if larger
 
 ### 2. Testify: assert vs require
 
@@ -59,13 +61,19 @@ golangci-lint linters         # List available linters
 - **require.NoError(t, err)**: Always check errors that would cause nil panics
 - **assert.Equal order**: `assert.Equal(t, expected, actual)` - expected first
 
-### 3. Test Design Quality
+### 3. Test Design Quality (Zero Tolerance for Waste)
 
-- **Pointless tests**: Tests that verify trivial behavior (getters returning fields)
-- **Duplicate tests**: Same scenario tested multiple ways → keep one, delete others
-- **Related tests**: Tests for same feature → combine into single table-driven test
+**CRITICAL: Avoid pointless, naive, and duplicate tests. Each test must provide real value.**
+
+- **Pointless tests**: Tests that verify trivial behavior (getters returning fields, constructors setting fields) → **DELETE**
+- **Naive tests**: Tests that only cover obvious happy paths without edge cases → **EXPAND or DELETE**
+- **Duplicate tests**: Same scenario tested multiple ways → **KEEP ONE, DELETE OTHERS**
+- **Related tests**: Tests for same function with different inputs → **COMBINE into single table-driven test**
 - **Test helpers**: Repeated setup code → extract to `testhelper` package or `_test.go` helpers
 - **Helper naming**: Prefix with `test` or use `t.Helper()` for better stack traces
+- **No comments in tests**: Tests should be self-explanatory. Only add comments when logic is genuinely non-obvious
+
+**Combine aggressively**: If you have 3+ tests for the same function, they should almost always be a single table-driven test
 
 ### 4. Complex Setup = Design Smell
 

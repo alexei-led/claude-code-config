@@ -198,8 +198,19 @@ export default defineConfig({
 
 ## Guidelines
 
+**CRITICAL: Zero tolerance for test waste**
+
+- **No pointless tests**: Don't test trivial behavior (prop renders, default state)
+- **No naive tests**: Don't just test obvious happy paths—include edge cases
+- **No duplicate tests**: Same scenario tested multiple ways → keep one, delete others
+- **Combine with test.each**: 2+ tests for same function → single `it.each` (mandatory)
+- **No comments in tests**: Tests should be self-explanatory unless logic is genuinely non-obvious
+
+**Standard Guidelines**
+
 - Test behavior, not implementation
-- Use descriptive test names
+- Use descriptive test names with template strings: `("validates $input → $expected", ...)`
 - One assertion per test (when practical)
-- Mock external dependencies
+- Mock external dependencies with msw for APIs
 - Keep tests independent
+- Query by role for React components (validates accessibility)

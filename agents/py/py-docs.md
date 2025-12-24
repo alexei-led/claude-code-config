@@ -36,13 +36,30 @@ sphinx-build -b html docs/ docs/_build/
 - Prefer Google-style docstrings for consistency
 - Type hints reduce need for type info in docstrings
 
+### Comment Style
+
+**Style**: lowercase, no trailing dots—lean and informal is fine
+
+**What makes a comment valuable:**
+
+- explains why, not what
+- captures reasoning, constraints, or trade-offs
+- documents non-obvious behavior or edge cases
+- references external context (tickets, specs, API limits)
+
+**Delete if:**
+
+- competent dev would understand without it
+- paraphrases the code
+- states the obvious
+
 ## Focus Areas (ONLY these)
 
 ### 1. Docstrings
 
 - **Module docstrings**: Missing docstring at top of module files
 - **Function docstrings**: Public functions without docstrings
-- **Google/NumPy style**: Inconsistent format (Args/Returns/Raises sections)
+- **Google/NumPy style**: Consistent format (Args/Returns/Raises sections)
 - **Examples**: Missing usage examples for complex functions
 - **Outdated docs**: Docstring doesn't match current implementation
 

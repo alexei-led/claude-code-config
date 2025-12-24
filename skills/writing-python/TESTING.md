@@ -166,9 +166,19 @@ pytest --cov=src --cov-fail-under=80
 
 ## Guidelines
 
+**CRITICAL: Zero tolerance for test waste**
+
+- **No pointless tests**: Don't test trivial behavior (getters, constructors)
+- **No naive tests**: Don't just test obvious happy paths—include edge cases
+- **No duplicate tests**: Same scenario tested multiple ways → keep one, delete others
+- **Combine with parametrize**: 2+ tests for same function → single `@pytest.mark.parametrize` (mandatory)
+- **No comments in tests**: Tests should be self-explanatory unless logic is genuinely non-obvious
+
+**Standard Guidelines**
+
 - One assertion per test (when practical)
-- Descriptive test names
+- Descriptive test names: `test_validate_email_empty_raises_error`
 - Use fixtures for setup
-- Parametrize for multiple cases
+- Use `pytest.param(..., id="desc")` for readable parametrized test names
 - Keep tests independent
 - Test behavior, not implementation

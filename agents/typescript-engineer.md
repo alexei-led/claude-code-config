@@ -127,21 +127,26 @@ package.json
 - **Testing Library** for React components
 - Aim for meaningful tests, not coverage numbers
 
+**CRITICAL: Zero tolerance for test waste**
+
+- **No pointless tests**: Don't test trivial behavior (prop renders, default state)
+- **No duplicate tests**: Same scenario tested multiple ways → keep one
+- **Combine with test.each**: 2+ tests for same function → single test.each (mandatory)
+- **No comments in tests**: Tests should be self-explanatory
+- **Test behavior, not implementation**: Don't test state/hooks directly
+
 ```typescript
 import { describe, it, expect } from "vitest";
 
 describe("UserService", () => {
-  it("creates user with valid email", async () => {
-    const result = await service.createUser("test@example.com");
-    expect(result.ok).toBe(true);
-  });
-
+  // GOOD: Combined with test.each - no duplication
   it.each([
-    ["", "empty email"],
-    ["invalid", "missing @"],
-  ])("rejects %s (%s)", async (email) => {
+    { email: "test@example.com", expected: true, desc: "valid email" },
+    { email: "", expected: false, desc: "empty email" },
+    { email: "invalid", expected: false, desc: "missing @" },
+  ])("createUser $desc → $expected", async ({ email, expected }) => {
     const result = await service.createUser(email);
-    expect(result.ok).toBe(false);
+    expect(result.ok).toBe(expected);
   });
 });
 ```

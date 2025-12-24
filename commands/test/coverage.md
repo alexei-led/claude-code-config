@@ -19,6 +19,7 @@ Analyze test coverage for this project:
 2. Run coverage commands:
    - Go: `go test -race -coverprofile=coverage.out ./... && go tool cover -func=coverage.out`
    - Python: `pytest --cov=. --cov-report=term-missing`
+   - TypeScript: `bun test --coverage`
 
 3. Parse results and extract:
    - Overall coverage percentage
@@ -48,7 +49,14 @@ Review the agent's analysis, then proceed to Step 2.
 
 ## Step 2: Spawn Coverage Agents
 
-If gaps found, spawn appropriate agent by language:
+If gaps found, spawn appropriate agent by language.
+
+**CRITICAL: Zero tolerance for test waste when generating coverage tests**
+
+- NO pointless tests (trivial getters, constructors)
+- NO duplicate tests - each scenario tested exactly once
+- MUST combine similar cases into table-driven/parametrized tests
+- NO comments in tests unless logic is genuinely non-obvious
 
 ### Go Coverage Gaps
 
@@ -57,9 +65,13 @@ Task with go-engineer agent:
 "Generate tests for these uncovered Go functions:
 {list with file:line references}
 
-Use table-driven tests with t.Run() subtests.
-Use require for prerequisites, assert for independent checks.
-Focus on edge cases and error paths."
+CRITICAL REQUIREMENTS:
+- MUST use table-driven tests - combine ALL similar cases
+- Include edge cases: nil, empty, zero, boundary, error cases
+- NO pointless tests - each test must verify meaningful behavior
+- NO duplicate tests - each scenario tested exactly once
+- NO comments in tests unless logic is genuinely non-obvious
+- Use require for prerequisites, assert for independent checks"
 ```
 
 ### Python Coverage Gaps
@@ -69,8 +81,30 @@ Task with python-engineer agent:
 "Generate tests for these uncovered Python functions:
 {list with file:line references}
 
-Use pytest fixtures and parametrize.
-Focus on edge cases and error paths."
+CRITICAL REQUIREMENTS:
+- MUST use @pytest.mark.parametrize - combine ALL similar cases
+- Use pytest.param(..., id="desc") for readable test names
+- Include edge cases: None, empty, zero, boundary, exception cases
+- NO pointless tests - each test must verify meaningful behavior
+- NO duplicate tests - each scenario tested exactly once
+- NO comments in tests unless logic is genuinely non-obvious"
+```
+
+### TypeScript Coverage Gaps
+
+```
+Task with typescript-engineer agent:
+"Generate tests for these uncovered TypeScript functions:
+{list with file:line references}
+
+CRITICAL REQUIREMENTS:
+- MUST use test.each/it.each - combine ALL similar cases
+- Use object syntax with descriptive template: { input, expected, desc }
+- Include edge cases: null, undefined, empty, boundary, rejection cases
+- NO pointless tests - each test must verify meaningful behavior
+- NO duplicate tests - each scenario tested exactly once
+- NO comments in tests unless logic is genuinely non-obvious
+- Use Testing Library for React (query by role)"
 ```
 
 ## Step 3: Report

@@ -1,6 +1,6 @@
 ---
 allowed-tools: Task, Bash, Read, Grep, Glob, LS, AskUserQuestion, mcp__perplexity-ask__perplexity_ask
-description: Generate tests following Go/Python best practices
+description: Generate tests following Go/Python/TypeScript best practices - zero tolerance for waste
 ---
 
 # Test Generation
@@ -22,7 +22,7 @@ Based on choice:
 ### Recent Changes
 
 ```bash
-git diff --name-only HEAD | grep -E "\.(go|py)$"
+git diff --name-only HEAD | grep -E "\.(go|py|ts|tsx)$"
 ```
 
 ### Specific File
@@ -55,6 +55,13 @@ Run coverage first, then target uncovered lines.
 - Use unittest.mock or pytest-mock
 - Follow existing test patterns in `test_*.py` files
 
+### TypeScript Projects
+
+- Use Vitest with test.each for parameterized tests
+- Use Testing Library for React components
+- Use msw for API mocking
+- Follow existing test patterns in `*.test.ts` or `*.spec.ts` files
+
 ## Step 4: Generate Tests
 
 Spawn appropriate agent:
@@ -63,16 +70,18 @@ Spawn appropriate agent:
 
 ```
 Task with go-engineer agent:
-"Generate comprehensive tests for:
+"Generate tests for:
 {file path and function signatures}
 
-Requirements:
-- Table-driven tests with descriptive names using t.Run()
-- Test happy path AND error cases
-- Use require for prerequisites (nil/error checks before proceeding)
+CRITICAL REQUIREMENTS:
+- MUST use table-driven tests - combine ALL similar cases into single test
+- Include edge cases: nil, empty, zero, boundary, error cases
+- NO pointless tests (trivial getters/constructors)
+- NO duplicate tests - each scenario tested exactly once
+- NO comments in tests unless logic is genuinely non-obvious
+- Use require for prerequisites (nil/error checks)
 - Use assert for independent property checks
-- Mock external dependencies with mockery EXPECT pattern
-- Follow patterns from existing tests in this repo
+- Mock with mockery EXPECT pattern
 
 Reference existing tests:
 {snippet from similar test file}"
@@ -85,11 +94,35 @@ Task with python-engineer agent:
 "Generate pytest tests for:
 {file path and function signatures}
 
-Requirements:
-- Use pytest fixtures for setup
-- Test success and failure cases
-- Mock external dependencies with pytest-mock
-- Follow patterns from existing tests
+CRITICAL REQUIREMENTS:
+- MUST use @pytest.mark.parametrize - combine ALL similar cases
+- Use pytest.param(..., id="desc") for readable test names
+- Include edge cases: None, empty, zero, boundary, exception cases
+- NO pointless tests (trivial getters/constructors)
+- NO duplicate tests - each scenario tested exactly once
+- NO comments in tests unless logic is genuinely non-obvious
+- Use fixtures for setup, mock with pytest-mock
+
+Reference existing tests:
+{snippet from similar test file}"
+```
+
+### TypeScript Tests
+
+```
+Task with typescript-engineer agent:
+"Generate Vitest tests for:
+{file path and function signatures}
+
+CRITICAL REQUIREMENTS:
+- MUST use test.each/it.each - combine ALL similar cases
+- Use object syntax with descriptive template: { input, expected, desc }
+- Include edge cases: null, undefined, empty, boundary, rejection cases
+- NO pointless tests (trivial prop renders, default state)
+- NO duplicate tests - each scenario tested exactly once
+- NO comments in tests unless logic is genuinely non-obvious
+- Use Testing Library for React (query by role)
+- Use msw for API mocking
 
 Reference existing tests:
 {snippet from similar test file}"
@@ -103,15 +136,33 @@ go test -v -run TestNewFunction ./...
 
 # Python
 pytest -v test_new_module.py
+
+# TypeScript
+bun test --run new_module.test.ts
 ```
 
-## Guidelines (Always Follow)
+## Guidelines (CRITICAL - Zero Tolerance for Waste)
 
-- **No pointless tests** - Each test verifies meaningful behavior
-- **Learn from existing tests** - Match repo style and patterns
-- **Prefer adding to existing files** - Don't create new test files unnecessarily
-- **Test behavior, not implementation** - Focus on inputs/outputs
-- **Descriptive names** - Test name should explain what's being verified
+**AVOID POINTLESS, NAIVE, AND DUPLICATE TESTS**
+
+- **No pointless tests**: Don't test trivial behavior (getters, constructors, prop rendering)
+- **No naive tests**: Don't just test obvious happy paths—include edge cases, errors, boundaries
+- **No duplicate tests**: Never test same scenario multiple ways
+- **Combine tests**: 2+ tests for same function → single table-driven/parametrized test (mandatory)
+- **No comments in tests**: Tests should be self-explanatory
+
+**Language-Specific Combining**
+
+- **Go**: Table-driven tests with `t.Run()` - combine ALL similar tests
+- **Python**: `@pytest.mark.parametrize` with `pytest.param(..., id="desc")`
+- **TypeScript**: `it.each([...])` with template strings for descriptions
+
+**Standard Guidelines**
+
+- Learn from existing tests - Match repo style and patterns
+- Prefer adding to existing test files - Don't create new files unnecessarily
+- Test behavior, not implementation - Focus on inputs/outputs
+- Descriptive names: `TestValidateEmail_EmptyReturnsError`, `test_validate_email_empty_raises`, `"validates empty → error"`
 
 ## Output
 

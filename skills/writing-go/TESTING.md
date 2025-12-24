@@ -244,8 +244,19 @@ go tool cover -func=coverage.out | grep total
 
 ## Guidelines
 
+**CRITICAL: Zero tolerance for test waste**
+
+- **No pointless tests**: Don't test trivial behavior (getters, constructors setting fields)
+- **No naive tests**: Don't just test obvious happy paths—include edge cases
+- **No duplicate tests**: Same scenario tested multiple ways → keep one, delete others
+- **Combine with table-driven**: 2+ tests for same function → single table-driven test (mandatory)
+- **No comments in tests**: Tests should be self-explanatory unless logic is genuinely non-obvious
+
+**Standard Guidelines**
+
 - Test behavior, not implementation
 - One logical assertion per test case
 - Use `t.Parallel()` for independent tests
-- Prefer table-driven for multiple cases
-- Keep tests focused and readable
+- Table-driven tests are **mandatory** for multiple cases (not optional)
+- Descriptive `name` fields: `"valid_email"`, `"empty_returns_error"`, `"boundary_max_value"`
+- Keep tables under 15-20 rows; split logically if larger
