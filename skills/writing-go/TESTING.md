@@ -76,22 +76,51 @@ func TestValidateEmail(t *testing.T) {
 
 ## Mocking with Mockery
 
-Generate mocks with EXPECT pattern (typesafe):
+**Generate typesafe mocks with EXPECT pattern (mandatory):**
+
+```bash
+# For private interfaces (avoid import cycles) - generate in-package
+mockery --name=userStore --inpackage --with-expecter
+
+# For public interfaces - generate in mocks package
+mockery --name=UserStore --with-expecter --dir=internal/service --output=internal/service/mocks
+
+# Project-wide generation (use go:generate comments)
+mockery --all --with-expecter --keeptree
+```
+
+**Interface annotation pattern:**
 
 ```go
-//go:generate mockery --name=UserStore
-type UserStore interface {
+// Private interface at consumer - use --inpackage to avoid import cycles
+//go:generate mockery --name=userStore --inpackage --with-expecter
+type userStore interface {
     Get(ctx context.Context, id string) (*User, error)
     Save(ctx context.Context, user *User) error
 }
 ```
 
+### mock.Anything vs Exact Values vs mock.MatchedBy
+
+**CRITICAL: Choose argument matchers deliberately—overusing `mock.Anything` weakens tests.**
+
+| Matcher              | Use When                                                       | Example                                             |
+| -------------------- | -------------------------------------------------------------- | --------------------------------------------------- |
+| **Exact value**      | Business-critical values from test fixtures                    | `"project.dataset.table"`, `"wu-123"`, `customerId` |
+| **`mock.Anything`**  | Don't-care values: `context.Context`, loggers, tracing spans   | `mock.Anything` for ctx                             |
+| **`mock.MatchedBy`** | Partial matching: SQL patterns, complex structs, generated IDs | `mock.MatchedBy(func(q string) bool { ... })`       |
+
+**Examples:**
+
 ```go
 func TestService_GetUser(t *testing.T) {
-    store := mocks.NewUserStore(t)
+    store := NewMockuserStore(t)
     svc := NewService(store)
 
     expected := &User{ID: "123", Name: "Test"}
+
+    // context.Context → mock.Anything (correct)
+    // user ID "123" → exact value (business-critical!)
     store.EXPECT().
         Get(mock.Anything, "123").
         Return(expected, nil)
@@ -101,13 +130,25 @@ func TestService_GetUser(t *testing.T) {
     assert.Equal(t, expected, user)
 }
 
+func TestService_SetRunning(t *testing.T) {
+    state := NewMockstateTracker(t)
+
+    // Use EXACT values for business-critical parameters
+    state.EXPECT().
+        SetRunning(mock.Anything, "project.dataset.table", "20241201", "wu-123").
+        Return(nil)
+
+    // ...
+}
+
 func TestService_CreateUser(t *testing.T) {
-    store := mocks.NewUserStore(t)
+    store := NewMockuserStore(t)
     svc := NewService(store)
 
+    // mock.MatchedBy for partial struct validation
     store.EXPECT().
         Save(mock.Anything, mock.MatchedBy(func(u *User) bool {
-            return u.Email == "test@example.com"
+            return u.Email == "test@example.com" && u.ID != ""
         })).
         Return(nil)
 
@@ -115,8 +156,22 @@ func TestService_CreateUser(t *testing.T) {
     require.NoError(t, err)
 }
 
+func TestService_ExecuteQuery(t *testing.T) {
+    db := NewMockdatabase(t)
+
+    // mock.MatchedBy for SQL pattern matching (normalize whitespace)
+    db.EXPECT().
+        Exec(mock.MatchedBy(func(q string) bool {
+            normalized := strings.Join(strings.Fields(q), " ")
+            return strings.HasPrefix(normalized, "INSERT INTO users")
+        }), mock.Anything).
+        Return(sqlResult, nil)
+
+    // ...
+}
+
 func TestService_GetUser_NotFound(t *testing.T) {
-    store := mocks.NewUserStore(t)
+    store := NewMockuserStore(t)
     svc := NewService(store)
 
     store.EXPECT().
@@ -128,15 +183,48 @@ func TestService_GetUser_NotFound(t *testing.T) {
 }
 ```
 
+### Argument Matcher Decision Tree
+
+1. **Is it context.Context, logger, or tracer?** → `mock.Anything`
+2. **Is it a business value from test fixture?** → **Exact value** (table name, partition ID, customer ID, work unit ID)
+3. **Is it a complex object with some important fields?** → `mock.MatchedBy` checking key fields
+4. **Is it SQL or JSON with variable formatting?** → `mock.MatchedBy` with normalization
+5. **Is it a generated ID/timestamp?** → `mock.Anything` or `mock.MatchedBy` with type check
+
+### Helper Matchers for Common Patterns
+
+```go
+// Reusable matcher for SQL validation
+func SQLContains(pattern string) interface{} {
+    return mock.MatchedBy(func(q string) bool {
+        normalized := strings.Join(strings.Fields(q), " ")
+        return strings.Contains(normalized, pattern)
+    })
+}
+
+// Reusable matcher for struct field validation
+func UserWithEmail(email string) interface{} {
+    return mock.MatchedBy(func(u *User) bool {
+        return u.Email == email
+    })
+}
+
+// Usage
+db.EXPECT().Exec(SQLContains("INSERT INTO users"), mock.Anything).Return(result, nil)
+store.EXPECT().Save(mock.Anything, UserWithEmail("test@example.com")).Return(nil)
+```
+
 ## HTTP Handler Tests
 
 ```go
 func TestHandler_CreateUser(t *testing.T) {
-    svc := mocks.NewUserService(t)
+    svc := NewMockuserService(t)
     h := NewHandler(svc)
 
     svc.EXPECT().
-        CreateUser(mock.Anything, mock.AnythingOfType("CreateUserRequest")).
+        CreateUser(mock.Anything, mock.MatchedBy(func(req CreateUserRequest) bool {
+            return req.Email == "test@example.com" && req.Name == "Test"
+        })).
         Return(&User{ID: "123"}, nil)
 
     body := `{"name": "Test", "email": "test@example.com"}`

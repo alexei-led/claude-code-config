@@ -130,19 +130,78 @@ This is **correct design**—consumer-side interfaces mean:
 
 ### 5. Mockery with EXPECT (Typesafe Mocks)
 
+**NEVER write mocks manually. Use mockery for all mock generation.**
+
 ```bash
-mockery --name=Repository --with-expecter  # generates EXPECT() methods
+# Private interfaces (avoid import cycles) - generate in-package
+mockery --name=userStore --inpackage --with-expecter
+
+# Public interfaces - generate in mocks subpackage
+mockery --name=UserStore --with-expecter --dir=internal/service --output=internal/service/mocks
 ```
 
-- **EXPECT pattern**: `mockRepo.EXPECT().Get(mock.Anything, "id").Return(user, nil)`
-- **Type safety**: EXPECT methods are typesafe, catch signature changes at compile time
-- **Call validation**: Use `.Times(1)`, `.Once()`, `.Maybe()` for call count expectations
-- **Argument matchers**: `mock.Anything`, `mock.MatchedBy(func(x int) bool { return x > 0 })`
-- **Mock assertion**: Always call `mockRepo.AssertExpectations(t)` in test cleanup
+**Interface annotation for go:generate:**
+
+```go
+// Private interface - use --inpackage
+//go:generate mockery --name=userStore --inpackage --with-expecter
+type userStore interface {
+    Get(ctx context.Context, id string) (*User, error)
+}
+```
+
+### 6. Mock Argument Matchers (CRITICAL)
+
+**Overusing `mock.Anything` weakens tests. Choose matchers deliberately:**
+
+| Matcher              | Use When                                                                          |
+| -------------------- | --------------------------------------------------------------------------------- |
+| **Exact value**      | Business-critical values: table names, partition IDs, customer IDs, work unit IDs |
+| **`mock.Anything`**  | ONLY for: `context.Context`, loggers, tracers, truly don't-care values            |
+| **`mock.MatchedBy`** | SQL queries, complex structs, generated IDs, partial matching                     |
+
+**Decision tree:**
+
+1. `context.Context`, logger, tracer? → `mock.Anything`
+2. Business value from test fixture? → **Exact value** (mandatory!)
+3. Complex object with important fields? → `mock.MatchedBy`
+4. SQL/JSON with variable formatting? → `mock.MatchedBy` with normalization
+5. Generated ID/timestamp? → `mock.MatchedBy` with type check
+
+**Examples:**
+
+```go
+// GOOD: Exact values for business-critical parameters
+state.EXPECT().
+    SetRunning(mock.Anything, "project.dataset.table", "20241201", "wu-123").
+    Return(nil)
+
+// GOOD: mock.MatchedBy for SQL pattern validation
+db.EXPECT().
+    Exec(mock.MatchedBy(func(q string) bool {
+        normalized := strings.Join(strings.Fields(q), " ")
+        return strings.HasPrefix(normalized, "INSERT INTO users")
+    }), mock.Anything).
+    Return(result, nil)
+
+// GOOD: mock.MatchedBy for struct field validation
+store.EXPECT().
+    Save(mock.Anything, mock.MatchedBy(func(u *User) bool {
+        return u.Email == "test@example.com" && u.ID != ""
+    })).
+    Return(nil)
+
+// BAD: mock.Anything for business values
+state.EXPECT().
+    SetRunning(mock.Anything, mock.Anything, mock.Anything, mock.Anything). // WRONG!
+    Return(nil)
+```
+
+**Mock constructor and assertions:**
 
 ```go
 func TestService_GetUser(t *testing.T) {
-    mockRepo := mocks.NewMockRepository(t)  // auto-cleanup with t
+    mockRepo := NewMockuserStore(t)  // auto-cleanup with t
     mockRepo.EXPECT().Get(mock.Anything, "123").Return(&User{ID: "123"}, nil).Once()
 
     svc := NewService(mockRepo)
@@ -150,11 +209,11 @@ func TestService_GetUser(t *testing.T) {
 
     require.NoError(t, err)
     assert.Equal(t, "123", user.ID)
-    // AssertExpectations called automatically when using NewMockRepository(t)
+    // AssertExpectations called automatically when using NewMock*(t)
 }
 ```
 
-### 6. Test Organization
+### 7. Test Organization
 
 - **One test file per source file**: `user.go` → `user_test.go`
 - **Test helper package**: `internal/testhelper/` for shared test utilities
@@ -166,6 +225,10 @@ func TestService_GetUser(t *testing.T) {
 ### TEST ISSUES
 
 - `file:line` - Issue description. Concrete recommendation.
+
+### MOCK ISSUES
+
+- `file:line` - Mock matcher issue. Fix recommendation.
 
 ### REFACTORING RECOMMENDATIONS
 
@@ -187,6 +250,13 @@ If clean: "No issues found."
 - `db_test.go:102` - Mock not using EXPECT pattern. Use `mockRepo.EXPECT().Get(...).Return(...).Once()`
 - `order_test.go:45` - Pointless test: just checks constructor sets field. Delete or test actual behavior
 - `auth_test.go:67` - Duplicate: same scenario as `auth_test.go:45`. Delete one
+
+### MOCK ISSUES
+
+- `worker_test.go:89` - `mock.Anything` used for business value `workUnitID`. Use exact value from fixture: `"wu-123"`
+- `state_test.go:102` - `mock.Anything` used for table name and partition. Use exact values: `"project.dataset.table"`, `"20241201"`
+- `db_test.go:156` - SQL query matched with exact string. Use `mock.MatchedBy` with normalization for whitespace resilience
+- `api_test.go:201` - Manual mock implementation. Generate with: `mockery --name=apiClient --inpackage --with-expecter`
 
 ### REFACTORING RECOMMENDATIONS
 

@@ -46,8 +46,40 @@ Run coverage first, then target uncovered lines.
 - Use testify assertions:
   - `require` for prerequisites (nil checks, error checks, setup validation)
   - `assert` for independent property checks
-- Use mockery for interface mocks with EXPECT pattern
+- **NEVER write mocks manually** - use mockery for interface mocks
 - Check existing test patterns in `*_test.go` files
+
+**Mockery generation (mandatory):**
+
+```bash
+# For private interfaces (avoid import cycles) - generate in-package
+mockery --name=userStore --inpackage --with-expecter
+
+# For public interfaces - generate in mocks package
+mockery --name=UserStore --with-expecter --dir=internal/service --output=internal/service/mocks
+```
+
+**Mock argument matchers (CRITICAL):**
+
+| Matcher          | Use When                                                    |
+| ---------------- | ----------------------------------------------------------- |
+| Exact value      | Business-critical values (table names, IDs, partition keys) |
+| `mock.Anything`  | ONLY for `context.Context`, loggers, tracers                |
+| `mock.MatchedBy` | SQL queries, complex structs, partial matching              |
+
+```go
+// GOOD: Exact values for business-critical parameters
+state.EXPECT().
+    SetRunning(mock.Anything, "project.dataset.table", "20241201", "wu-123").
+    Return(nil)
+
+// GOOD: mock.MatchedBy for SQL
+db.EXPECT().
+    Exec(mock.MatchedBy(func(q string) bool {
+        return strings.Contains(strings.Join(strings.Fields(q), " "), "INSERT INTO")
+    }), mock.Anything).
+    Return(result, nil)
+```
 
 ### Python Projects
 
@@ -81,7 +113,19 @@ CRITICAL REQUIREMENTS:
 - NO comments in tests unless logic is genuinely non-obvious
 - Use require for prerequisites (nil/error checks)
 - Use assert for independent property checks
-- Mock with mockery EXPECT pattern
+
+MOCKING REQUIREMENTS (CRITICAL):
+- NEVER write mocks manually - use mockery with go:generate
+- For private interfaces: mockery --name=interfaceName --inpackage --with-expecter
+- For public interfaces: mockery --name=InterfaceName --with-expecter --output=./mocks
+- Use mock.Anything ONLY for context.Context, loggers, tracers
+- Use EXACT VALUES for business-critical parameters (table names, IDs, partition keys)
+- Use mock.MatchedBy for SQL queries, complex structs, partial matching
+
+Example mock expectation:
+state.EXPECT().
+    SetRunning(mock.Anything, \"project.dataset.table\", \"20241201\", \"wu-123\").
+    Return(nil)
 
 Reference existing tests:
 {snippet from similar test file}"

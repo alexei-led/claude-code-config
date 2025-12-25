@@ -108,10 +108,40 @@ pkg/           # Public libraries (only if truly reusable)
 
 - **Table-driven tests** for comprehensive coverage
 - **Testify framework** for clear assertions
-- **Mockery** for interface mocking with typesafe EXCEPT
+- **Mockery** for interface mocking - NEVER write mocks manually
 - **Benchmarks** for performance-critical paths
 - Avoid naive and pointless tests
 - Avoid commenting in tests, unless necessary for clarity or debugging
+
+**Mockery generation:**
+
+```bash
+# Private interfaces (avoid import cycles) - in-package generation
+mockery --name=userStore --inpackage --with-expecter
+
+# Public interfaces - separate mocks package
+mockery --name=UserStore --with-expecter --output=./mocks
+```
+
+**Mock argument matchers (CRITICAL):**
+
+| Matcher          | Use When                                                    |
+| ---------------- | ----------------------------------------------------------- |
+| Exact value      | Business-critical values (table names, IDs, partition keys) |
+| `mock.Anything`  | ONLY for `context.Context`, loggers, tracers                |
+| `mock.MatchedBy` | SQL queries, complex structs, partial matching              |
+
+```go
+// GOOD: Exact values for business parameters
+store.EXPECT().
+    Get(mock.Anything, "customer-123", "order-456").
+    Return(order, nil)
+
+// BAD: mock.Anything for business values
+store.EXPECT().
+    Get(mock.Anything, mock.Anything, mock.Anything). // WRONG!
+    Return(order, nil)
+```
 
 ## Implementation Patterns
 
