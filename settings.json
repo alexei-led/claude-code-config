@@ -1,5 +1,9 @@
 {
-  "env": {},
+  "env": {
+    "ANTHROPIC_MODEL": "claude-opus-4.5",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-4.5",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-haiku-4.5"
+  },
   "env.vertex": {
     "CLAUDE_CODE_USE_VERTEX": "1",
     "CLOUD_ML_REGION": "global",

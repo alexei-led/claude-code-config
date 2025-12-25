@@ -14,6 +14,11 @@ PORT="${COPILOT_PROXY_PORT:-4141}"
 PID_FILE="${TMPDIR:-/tmp}/copilot-proxy.pid"
 LOG_FILE="${TMPDIR:-/tmp}/copilot-proxy.log"
 
+# Claude Code model configuration (used when sourcing this script's output)
+CLAUDE_MODEL="claude-opus-4.5"
+CLAUDE_SONNET_MODEL="claude-sonnet-4.5"
+CLAUDE_HAIKU_MODEL="claude-haiku-4.5"
+
 start_proxy() {
 	local foreground="${1:-false}"
 
@@ -24,15 +29,15 @@ start_proxy() {
 	fi
 
 	echo "Starting Copilot API proxy on port $PORT..."
-	echo "Models: claude-opus-4.5, claude-sonnet-4.5, claude-haiku-4.5"
 
 	if [[ "$foreground" == "true" ]]; then
+		# --claude-code enables interactive model selection (requires TTY)
 		exec bunx copilot-api@latest start \
 			--claude-code \
 			--port "$PORT"
 	else
+		# Background mode: skip --claude-code (requires TTY for interactive prompts)
 		nohup bunx copilot-api@latest start \
-			--claude-code \
 			--port "$PORT" \
 			>"$LOG_FILE" 2>&1 &
 
@@ -41,15 +46,29 @@ start_proxy() {
 
 		if is_running; then
 			echo "✅ Proxy started (PID: $(cat "$PID_FILE"))"
+			echo "   Port: $PORT"
 			echo "   Logs: $LOG_FILE"
 			echo ""
-			echo "Configure Claude Code with:"
-			echo "  ANTHROPIC_BASE_URL=http://localhost:$PORT"
+			echo "Run this to configure Claude Code:"
+			echo "  eval \"\$($0 --env)\""
 		else
 			echo "❌ Failed to start proxy. Check logs: $LOG_FILE"
 			exit 1
 		fi
 	fi
+}
+
+print_env() {
+	cat <<EOF
+export ANTHROPIC_BASE_URL=http://localhost:$PORT
+export ANTHROPIC_AUTH_TOKEN=dummy
+export ANTHROPIC_MODEL=$CLAUDE_MODEL
+export ANTHROPIC_DEFAULT_SONNET_MODEL=$CLAUDE_SONNET_MODEL
+export ANTHROPIC_SMALL_FAST_MODEL=$CLAUDE_HAIKU_MODEL
+export ANTHROPIC_DEFAULT_HAIKU_MODEL=$CLAUDE_HAIKU_MODEL
+export DISABLE_NON_ESSENTIAL_MODEL_CALLS=1
+export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1
+EOF
 }
 
 stop_proxy() {
@@ -100,7 +119,7 @@ show_status() {
 }
 
 show_usage() {
-	cat <<'EOF'
+	cat <<EOF
 Copilot API Proxy for Claude Code
 
 Usage:
@@ -108,18 +127,22 @@ Usage:
 
 Options:
   (none)      Start proxy in background
-  --fg        Start proxy in foreground (for debugging)
+  --fg        Start proxy in foreground (interactive model selection)
   --stop      Stop running proxy
   --status    Check proxy status
+  --env       Print environment variables for Claude Code
   --help      Show this help
 
 Environment:
-  COPILOT_PROXY_PORT  Port to run on (default: 4141)
+  COPILOT_PROXY_PORT    Port to run on (default: 4141)
 
-Models mapped:
-  claude-opus-4.5    → gpt-4.1 (via Copilot)
-  claude-sonnet-4.5  → gpt-4.1 (via Copilot)
-  claude-haiku-4.5   → gpt-4.1 (via Copilot)
+Models (configured via env vars):
+  ANTHROPIC_MODEL              = $CLAUDE_MODEL
+  ANTHROPIC_DEFAULT_SONNET_MODEL = $CLAUDE_SONNET_MODEL
+  ANTHROPIC_SMALL_FAST_MODEL   = $CLAUDE_HAIKU_MODEL
+
+To configure Claude Code after starting:
+  eval "\$(copilot-proxy.sh --env)"
 
 Note: First run requires GitHub authentication via browser.
 EOF
@@ -134,6 +157,9 @@ case "${1:-}" in
 	;;
 --status)
 	show_status
+	;;
+--env)
+	print_env
 	;;
 --help | -h)
 	show_usage
