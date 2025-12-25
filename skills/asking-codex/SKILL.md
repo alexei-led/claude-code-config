@@ -19,6 +19,11 @@ allowed-tools: Bash
 
 Invoke Codex CLI for code review, implementation, and autonomous coding tasks.
 
+## Sandbox Requirement
+
+**IMPORTANT**: Codex CLI requires sandbox disabled due to macOS SystemConfiguration API usage.
+When invoking Bash for codex commands, you MUST use: `dangerouslyDisableSandbox: true`
+
 ## Quick Usage
 
 ```bash

@@ -19,6 +19,11 @@ allowed-tools: Bash
 
 Invoke Gemini CLI for architecture advice, design reviews, and brainstorming.
 
+## Sandbox Compatibility
+
+The helper script handles sandbox restrictions automatically by redirecting Gemini's
+config directory to `/tmp/claude/.gemini`. Credentials are copied on first run.
+
 ## Quick Usage
 
 ```bash

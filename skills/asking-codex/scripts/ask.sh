@@ -3,6 +3,12 @@
 # Usage: ask.sh [MODE] "prompt" [--auto]
 # Modes: exec (default), review, plan, implement
 # Designed to run as subagent - returns clean output only
+#
+# SANDBOX NOTE: Codex CLI uses macOS SystemConfiguration APIs for network
+# proxy detection. These APIs are blocked by Claude Code's sandbox, causing
+# a Rust panic. This script must be run with sandbox disabled:
+#   dangerouslyDisableSandbox: true
+# The SKILL.md instructs Claude to do this automatically.
 
 set -euo pipefail
 

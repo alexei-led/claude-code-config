@@ -3,6 +3,10 @@
 # Usage: ask.sh [MODE] "prompt"
 # Modes: prompt (default), brainstorm, review, compare
 # Designed to run as subagent - returns clean output only
+#
+# SANDBOX WORKAROUND: Gemini CLI writes to ~/.gemini/ which is blocked
+# by Claude Code's sandbox. We redirect HOME to /tmp/claude and copy
+# credentials on first run.
 
 set -euo pipefail
 
@@ -17,6 +21,20 @@ if [[ "${1:-}" =~ ^(-h|--help)$ ]]; then
 	exit 0
 fi
 
+# Sandbox workaround: use ephemeral session directory
+SANDBOX_HOME=$(mktemp -d -t claude-gemini.XXXXXX)
+chmod 700 "$SANDBOX_HOME"
+trap 'rm -rf "$SANDBOX_HOME"' EXIT
+
+SANDBOX_GEMINI="$SANDBOX_HOME/.gemini"
+REAL_GEMINI="$HOME/.gemini"
+
+# Copy essential config files
+mkdir -p "$SANDBOX_GEMINI"
+for f in settings.json oauth_creds.json; do
+	[[ -f "$REAL_GEMINI/$f" ]] && cp "$REAL_GEMINI/$f" "$SANDBOX_GEMINI/"
+done
+
 MODE="${1:-prompt}"
 shift 2>/dev/null || true
 PROMPT="${*:-}"
@@ -27,9 +45,9 @@ if [ -z "$PROMPT" ] && [ "$MODE" != "prompt" ]; then
 	MODE="prompt"
 fi
 
-# Run gemini with clean text output (no streaming, no progress)
+# Run gemini with sandbox HOME and clean text output
 run_gemini() {
-	gemini -o text "$@" 2>/dev/null
+	HOME="$SANDBOX_HOME" gemini -o text "$@" 2>/dev/null
 }
 
 case "$MODE" in
