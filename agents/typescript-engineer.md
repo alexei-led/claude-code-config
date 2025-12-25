@@ -135,8 +135,16 @@ package.json
 - **No comments in tests**: Tests should be self-explanatory
 - **Test behavior, not implementation**: Don't test state/hooks directly
 
+**Mocking best practices:**
+
 ```typescript
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
+
+// Always cleanup mocks
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.resetAllMocks();
+});
 
 describe("UserService", () => {
   // GOOD: Combined with test.each - no duplication
@@ -148,8 +156,32 @@ describe("UserService", () => {
     const result = await service.createUser(email);
     expect(result.ok).toBe(expected);
   });
+
+  it("saves user with correct data", async () => {
+    const mockRepo = { save: vi.fn() };
+    const service = new UserService(mockRepo);
+
+    await service.createUser({ email: "test@example.com" });
+
+    // GOOD: Exact value for business param, any for generated
+    expect(mockRepo.save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        email: "test@example.com",
+        id: expect.any(String),
+      }),
+    );
+  });
 });
 ```
+
+**Mock argument matching (CRITICAL):**
+
+| Matcher                     | Use When                                          |
+| --------------------------- | ------------------------------------------------- |
+| Exact value                 | Business-critical values (IDs, keys, table names) |
+| `expect.any(Type)`          | Generated values (IDs, timestamps)                |
+| `expect.objectContaining()` | Partial object matching                           |
+| `vi.mocked()`               | Type-safe mock access                             |
 
 ## Common Patterns
 

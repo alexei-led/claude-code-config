@@ -43,43 +43,116 @@ describe("fetchUser", () => {
 
 ## Mocking
 
+**Use Vitest's built-in `vi` utilities for all mocking. Use msw for HTTP APIs.**
+
+### Mock Functions
+
+| Function      | Use When                                                      |
+| ------------- | ------------------------------------------------------------- |
+| `vi.fn()`     | Standalone mock function for return values and assertions     |
+| `vi.spyOn()`  | Spy on existing method while keeping original (use sparingly) |
+| `vi.mock()`   | Mock entire module (hoisted, applies module-wide)             |
+| `vi.mocked()` | Wrap for type-safe access: `vi.mocked(fn)`                    |
+
 ```typescript
-import { vi, describe, it, expect, beforeEach } from "vitest";
+import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
 
-const mockFetch = vi.fn();
-vi.stubGlobal("fetch", mockFetch);
+// Always cleanup mocks
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.resetAllMocks();
+});
+```
 
-describe("api", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
+### Argument Matching (CRITICAL)
+
+**Choose matchers deliberately—don't over-match or under-match:**
+
+| Matcher                     | Use When                                                   |
+| --------------------------- | ---------------------------------------------------------- |
+| Exact value                 | Business-critical values (IDs, keys, table names)          |
+| `expect.any(Type)`          | Type check without exact value (generated IDs, timestamps) |
+| `expect.objectContaining()` | Partial object matching                                    |
+| `expect.stringContaining()` | Partial string matching                                    |
+
+```typescript
+describe("UserService", () => {
+  it("calls repository with exact business values", async () => {
+    const mockRepo = { save: vi.fn() };
+    const service = new UserService(mockRepo);
+
+    await service.processOrder("order-123", "customer-456");
+
+    // GOOD: Exact values for business-critical parameters
+    expect(mockRepo.save).toHaveBeenCalledWith("order-123", "customer-456");
   });
 
-  it("calls fetch with correct url", async () => {
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve({ id: "123" }),
-    });
+  it("uses expect.any for generated values", async () => {
+    const mockRepo = { save: vi.fn() };
+    const service = new UserService(mockRepo);
 
-    await getUser("123");
+    await service.createUser({ email: "test@example.com" });
 
-    expect(mockFetch).toHaveBeenCalledWith("/api/users/123");
+    // GOOD: Exact value for email, any for generated ID
+    expect(mockRepo.save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        email: "test@example.com",
+        id: expect.any(String),
+        createdAt: expect.any(Date),
+      }),
+    );
+  });
+
+  it("validates SQL query patterns", async () => {
+    const mockDb = { exec: vi.fn() };
+
+    await mockDb.exec("INSERT INTO users (id, email) VALUES (?, ?)");
+
+    // GOOD: Pattern match for SQL
+    expect(mockDb.exec).toHaveBeenCalledWith(
+      expect.stringContaining("INSERT INTO users"),
+    );
   });
 });
 ```
 
-## Module Mocking
+### Type-Safe Mocking
+
+```typescript
+import { vi, type MockedFunction } from "vitest";
+import { fetchUser } from "./api";
+
+// Type-safe mock wrapping
+vi.mock("./api");
+const mockedFetchUser = vi.mocked(fetchUser);
+
+// Now properly typed
+mockedFetchUser.mockResolvedValue({ id: "123", name: "Test" });
+```
+
+### Module Mocking
 
 ```typescript
 import { vi, describe, it, expect } from "vitest";
 import { sendEmail } from "./email";
 import { createUser } from "./user-service";
 
+// Full module mock
 vi.mock("./email", () => ({
   sendEmail: vi.fn(),
 }));
 
+// Partial module mock (keep some real implementations)
+vi.mock("./utils", async (importOriginal) => {
+  const mod = await importOriginal<typeof import("./utils")>();
+  return {
+    ...mod,
+    generateId: vi.fn(() => "test-id"),
+  };
+});
+
 describe("createUser", () => {
-  it("sends welcome email", async () => {
+  it("sends welcome email with correct data", async () => {
     await createUser({ email: "test@example.com" });
 
     expect(sendEmail).toHaveBeenCalledWith(
@@ -88,6 +161,38 @@ describe("createUser", () => {
   });
 });
 ```
+
+### HTTP Mocking with msw
+
+**Prefer msw over vi.mock for API testing:**
+
+```typescript
+import { http, HttpResponse } from "msw";
+import { setupServer } from "msw/node";
+
+const server = setupServer(
+  http.get("/api/users/:id", ({ params }) => {
+    return HttpResponse.json({ id: params.id, name: "Test" });
+  }),
+  http.post("/api/users", async ({ request }) => {
+    const body = await request.json();
+    return HttpResponse.json({ id: "new-123", ...body }, { status: 201 });
+  }),
+);
+
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
+```
+
+### Common Mistakes to Avoid
+
+- **Forgetting cleanup**: Always use `afterEach(() => { vi.restoreAllMocks() })`
+- **Partial mocks with spyOn**: Prefer full `vi.mock` for isolation
+- **Missing vi.mocked**: Lose type inference without it
+- **Mocking internals**: `vi.mock` only affects external imports
+- **Not using msw for HTTP**: vi.mock fetch is brittle—use msw
+- **Wrong mock location**: vi.mock must be at top level (hoisted)
 
 ## React Component Tests
 

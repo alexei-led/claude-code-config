@@ -97,12 +97,58 @@ it("submits form with valid data", async () => {
 ### 4. Mocking
 
 - **vi.fn()**: For simple function mocks
-- **vi.mock()**: For module mocks (must be at top level)
-- **vi.spyOn()**: For partial mocks on existing objects
+- **vi.mock()**: For module mocks (must be at top level, hoisted)
+- **vi.spyOn()**: For partial mocks (use sparingly—prefer full mocks)
+- **vi.mocked()**: For type-safe mock access
 - **Mock Service Worker**: Prefer msw for API mocking over vi.mock
-- **Type safety**: Cast mocks properly: `vi.mocked(fn)`
+- **Cleanup**: Always use `afterEach(() => { vi.restoreAllMocks() })`
 
-### 5. Coverage Gaps
+### 5. Mock Argument Matching (CRITICAL)
+
+**Choose matchers deliberately—overusing loose matching weakens tests:**
+
+| Matcher                     | Use When                                                   |
+| --------------------------- | ---------------------------------------------------------- |
+| Exact value                 | Business-critical values (IDs, keys, table names)          |
+| `expect.any(Type)`          | Type check without exact value (generated IDs, timestamps) |
+| `expect.objectContaining()` | Partial object matching                                    |
+| `expect.stringContaining()` | Partial string/SQL matching                                |
+
+**Decision tree:**
+
+1. Is it a business value from test fixture? → **Exact value** (mandatory!)
+2. Is it a complex object with some important fields? → `expect.objectContaining()`
+3. Is it a generated ID/timestamp? → `expect.any(String)` or `expect.any(Date)`
+4. Is it SQL or JSON pattern? → `expect.stringContaining()`
+
+**Examples:**
+
+```typescript
+// GOOD: Exact values for business-critical parameters
+expect(mockRepo.save).toHaveBeenCalledWith("order-123", "customer-456");
+
+// GOOD: Partial match with exact business values
+expect(mockRepo.save).toHaveBeenCalledWith(
+  expect.objectContaining({
+    email: "test@example.com", // exact
+    id: expect.any(String), // generated
+  }),
+);
+
+// BAD: No verification of mock calls
+mockService.process(); // Called but never verified!
+
+// BAD: Missing vi.mocked() loses type safety
+const mock = vi.fn(); // Should use vi.mocked(realFn)
+```
+
+### 6. Type-Safe Mocking
+
+- **vi.mocked()**: Always wrap for type inference
+- **MockedFunction**: Use for explicit typing
+- **Module mock factories**: Ensure return types match original
+
+### 7. Coverage Gaps
 
 - **Error paths**: Missing tests for rejection/throw cases
 - **Edge cases**: Empty arrays, null, undefined, boundary values
@@ -114,6 +160,10 @@ it("submits form with valid data", async () => {
 ### FINDINGS
 
 - `file:line` - Issue description. Concrete recommendation.
+
+### MOCK ISSUES
+
+- `file:line` - Mock issue. Fix recommendation.
 
 If clean in a focus area: "No issues in {focus area}."
 
@@ -129,5 +179,13 @@ If clean in a focus area: "No issues in {focus area}."
 - `tests/service.test.ts:78` - Missing async error test. Add test for when `fetch()` rejects
 - `tests/button.test.ts:23` - **Pointless test**: just checks prop renders. **DELETE**
 - `tests/modal.test.ts:45` - **Duplicate**: same scenario as line 67. **DELETE** one
+
+### MOCK ISSUES
+
+- `tests/api.test.ts:34` - Missing mock cleanup. Add `afterEach(() => { vi.restoreAllMocks() })`
+- `tests/service.test.ts:56` - Missing vi.mocked(). Use `vi.mocked(fetchUser)` for type safety
+- `tests/handler.test.ts:78` - Mock never verified. Add `expect(mockFn).toHaveBeenCalledWith(...)`
+- `tests/order.test.ts:90` - No exact values for business params. Use `.toHaveBeenCalledWith("order-123", "customer-456")`
+- `tests/user.test.ts:102` - Using vi.spyOn for isolation. Prefer full `vi.mock()` for unit tests
 
 No issues in mock verification.

@@ -121,17 +121,24 @@ pyproject.toml        # Project config (uv/poetry)
 - **pytest** for all testing
 - **Fixtures** for test setup
 - **Parametrize** for multiple test cases
-- **pytest-mock** for mocking
+- **pytest-mock** for mocking (mocker fixture)
 - Aim for meaningful tests, not coverage numbers
+
+**Mocking best practices:**
 
 ```python
 import pytest
-from unittest.mock import Mock
+from unittest.mock import Mock, create_autospec, AsyncMock
 
 class TestUserService:
     @pytest.fixture
-    def service(self) -> UserService:
-        return UserService(repository=Mock())
+    def mock_repo(self, mocker):
+        # Type-safe mock with spec
+        return mocker.Mock(spec=UserRepository)
+
+    @pytest.fixture
+    def service(self, mock_repo) -> UserService:
+        return UserService(repository=mock_repo)
 
     @pytest.mark.parametrize("email,should_raise", [
         ("valid@example.com", False),
@@ -145,10 +152,22 @@ class TestUserService:
         else:
             service.validate_email(email)  # Should not raise
 
-    def test_create_user_saves_to_repo(self, service):
+    def test_create_user_saves_to_repo(self, service, mock_repo):
         service.create_user(email="test@example.com")
-        service.repository.save.assert_called_once()
+
+        # GOOD: Exact values for business-critical parameters
+        mock_repo.save.assert_called_once()
+        call_args = mock_repo.save.call_args
+        assert call_args.kwargs["email"] == "test@example.com"
 ```
+
+**Mock argument matching (CRITICAL):**
+
+| Approach          | Use When                                          |
+| ----------------- | ------------------------------------------------- |
+| Exact value       | Business-critical values (IDs, table names, keys) |
+| `call_args`       | Checking specific args without full match         |
+| `create_autospec` | Type-safe mocks that validate signatures          |
 
 ## Implementation Patterns
 

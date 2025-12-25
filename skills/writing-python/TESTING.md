@@ -62,27 +62,143 @@ def test_get_user(user_service, mock_repo):
 
 ## Mocking
 
-```python
-from unittest.mock import Mock, patch, AsyncMock
+**Use `unittest.mock` + `pytest-mock` (mocker fixture) for all mocking.**
 
-def test_with_mock():
-    mock_client = Mock()
+```python
+from unittest.mock import Mock, patch, AsyncMock, create_autospec
+```
+
+### Mock Types
+
+| Type                   | Use When                                                     |
+| ---------------------- | ------------------------------------------------------------ |
+| `Mock()`               | Basic mock, no magic methods                                 |
+| `MagicMock()`          | Needs magic methods (`__len__`, `__iter__`, context manager) |
+| `AsyncMock()`          | Async functions (`async def`)                                |
+| `create_autospec(cls)` | Type-safe mock that validates signatures                     |
+
+### Argument Matching (CRITICAL)
+
+**Choose matchers deliberately—don't over-match or under-match:**
+
+| Approach                | Use When                                          |
+| ----------------------- | ------------------------------------------------- |
+| Exact value             | Business-critical values (IDs, table names, keys) |
+| `call_args` inspection  | Checking specific args without full match         |
+| Custom `__eq__` matcher | Partial object matching                           |
+
+```python
+from unittest.mock import Mock, call
+
+def test_with_exact_values():
+    mock_repo = Mock()
+    service = Service(repo=mock_repo)
+
+    service.process_order("order-123", "customer-456")
+
+    # GOOD: Exact values for business-critical parameters
+    mock_repo.save.assert_called_once_with("order-123", "customer-456")
+
+def test_with_partial_matching():
+    mock_repo = Mock()
+    service = Service(repo=mock_repo)
+
+    service.create_user(email="test@example.com")
+
+    # GOOD: Check specific arg without matching everything
+    call_args = mock_repo.save.call_args
+    assert call_args.kwargs["email"] == "test@example.com"
+    assert call_args.kwargs["id"] is not None  # generated, just check exists
+
+# Custom matcher for partial object matching
+class HasAttrs:
+    def __init__(self, **attrs):
+        self.attrs = attrs
+    def __eq__(self, other):
+        return all(getattr(other, k, None) == v for k, v in self.attrs.items())
+    def __repr__(self):
+        return f"HasAttrs({self.attrs})"
+
+def test_with_custom_matcher():
+    mock_repo = Mock()
+    service = Service(repo=mock_repo)
+
+    service.create_user(email="test@example.com", name="Test")
+
+    # GOOD: Match important fields, ignore generated ones
+    mock_repo.save.assert_called_once_with(HasAttrs(email="test@example.com"))
+```
+
+### Type-Safe Mocking with autospec
+
+**Use `create_autospec` or `spec=` to catch signature mismatches:**
+
+```python
+from unittest.mock import create_autospec
+
+def test_with_autospec():
+    # Validates call signatures at runtime
+    mock_repo = create_autospec(UserRepository)
+
+    mock_repo.get("123")  # OK
+    mock_repo.get()  # TypeError: missing required argument
+
+    # With pytest-mock
+    mock_repo = mocker.Mock(spec=UserRepository)
+```
+
+### Patching Best Practices
+
+**Patch where the object is looked up, not where it's defined:**
+
+```python
+# myapp/services.py
+from myapp.clients import api_client
+
+def process():
+    return api_client.fetch()
+
+# tests/test_services.py
+@patch("myapp.services.api_client")  # Patch where it's USED
+def test_process(mock_client):
+    mock_client.fetch.return_value = {"data": "test"}
+    result = process()
+    assert result == {"data": "test"}
+
+# With pytest-mock (preferred)
+def test_process(mocker):
+    mock_client = mocker.patch("myapp.services.api_client")
+    mock_client.fetch.return_value = {"data": "test"}
+    result = process()
+    assert result == {"data": "test"}
+```
+
+### Async Mocking
+
+```python
+from unittest.mock import AsyncMock
+import pytest
+
+@pytest.mark.asyncio
+async def test_async_service(mocker):
+    mock_client = AsyncMock()
     mock_client.fetch.return_value = {"status": "ok"}
 
     service = Service(client=mock_client)
-    result = service.process()
+    result = await service.process()
 
     assert result == "ok"
-    mock_client.fetch.assert_called_once()
-
-@patch("mypackage.services.external_api")
-def test_with_patch(mock_api):
-    mock_api.call.return_value = {"data": "test"}
-
-    result = process_data()
-
-    assert result == "test"
+    mock_client.fetch.assert_awaited_once()
 ```
+
+### Common Mistakes to Avoid
+
+- **Patching wrong target**: Patch where object is used, not defined
+- **Missing spec/autospec**: Use `spec=` or `create_autospec` for important boundaries
+- **Mock without assertions**: Always verify mocks were called correctly
+- **Over-mocking**: Mock boundaries, not internals
+- **Using Mock for async**: Use `AsyncMock` for async functions
+- **Not resetting mocks**: Use fresh mocks per test (mocker fixture handles this)
 
 ## Async Tests
 

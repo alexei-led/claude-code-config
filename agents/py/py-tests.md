@@ -79,12 +79,54 @@ pytest --asyncio-mode=auto
 
 ### 3. Mocking & Patching
 
-- **monkeypatch vs mock**: Prefer `pytest.monkeypatch` over `unittest.mock` when possible
+- **pytest-mock preferred**: Use `mocker` fixture over raw `unittest.mock` decorators
+- **Patch target**: Patch where object is **used**, not where it's **defined**
+- **spec/autospec**: Use `spec=` or `create_autospec` for important boundaries
+- **AsyncMock**: Using `Mock` for async functions (should be `AsyncMock`)
 - **Over-mocking**: Mocking too much, losing integration value
 - **Mock assertions**: Not verifying mocks were called correctly
-- **AsyncMock**: Using `Mock` for async functions (should be `AsyncMock`)
 
-### 4. Coverage Gaps
+### 4. Mock Argument Matching (CRITICAL)
+
+**Choose matchers deliberately—overusing loose matching weakens tests:**
+
+| Approach                | Use When                                          |
+| ----------------------- | ------------------------------------------------- |
+| Exact value             | Business-critical values (IDs, table names, keys) |
+| `call_args` inspection  | Checking specific args without full match         |
+| Custom `__eq__` matcher | Partial object matching                           |
+
+**Decision tree:**
+
+1. Is it a business value from test fixture? → **Exact value** (mandatory!)
+2. Is it a complex object with some important fields? → Custom matcher or `call_args`
+3. Is it a generated ID/timestamp? → Check exists, not exact value
+
+**Examples:**
+
+```python
+# GOOD: Exact values for business-critical parameters
+mock_repo.save.assert_called_once_with("order-123", "customer-456")
+
+# GOOD: Check specific args without matching everything
+call_args = mock_repo.save.call_args
+assert call_args.kwargs["email"] == "test@example.com"
+
+# BAD: No assertions on mock at all
+mock_repo.save()  # Called but never verified!
+
+# BAD: Missing spec allows wrong method calls
+mock_repo = Mock()  # Should be Mock(spec=Repository)
+mock_repo.nonexistent_method()  # Silently passes!
+```
+
+### 5. Type-Safe Mocking
+
+- **create_autospec**: Use for important boundaries to catch signature mismatches
+- **spec parameter**: Use `Mock(spec=ClassName)` or `mocker.Mock(spec=ClassName)`
+- **Protocol testing**: Test Protocol implementations with structural typing
+
+### 6. Coverage Gaps
 
 - **Error paths**: Only testing happy path, missing exception cases
 - **Edge cases**: Missing boundary tests (empty list, None, zero)
@@ -96,6 +138,10 @@ pytest --asyncio-mode=auto
 ### FINDINGS
 
 - `file:line` - Issue description. Concrete recommendation.
+
+### MOCK ISSUES
+
+- `file:line` - Mock issue. Fix recommendation.
 
 If clean in a focus area: "No issues in {focus area}."
 
@@ -112,5 +158,12 @@ If clean in a focus area: "No issues in {focus area}."
 - `tests/test_worker.py:90` - No concurrent access test. Add test with multiple threads accessing shared state
 - `tests/test_order.py:23` - **Pointless test**: just checks constructor sets field. **DELETE**
 - `tests/test_auth.py:45` - **Duplicate**: same scenario as line 67. **DELETE** one
+
+### MOCK ISSUES
+
+- `tests/test_service.py:34` - Mock without spec. Use `Mock(spec=Repository)` to catch invalid method calls
+- `tests/test_api.py:56` - Patching wrong target. Patch `myapp.service.api_client`, not `myapp.clients.api_client`
+- `tests/test_handler.py:78` - Mock never verified. Add `mock_repo.save.assert_called_once_with(...)`
+- `tests/test_order.py:90` - No exact values for business params. Use `assert_called_with("order-123", "customer-456")`
 
 No issues in test isolation.

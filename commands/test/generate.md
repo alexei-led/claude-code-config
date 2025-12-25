@@ -84,15 +84,54 @@ db.EXPECT().
 ### Python Projects
 
 - Use pytest fixtures
-- Use unittest.mock or pytest-mock
+- Use `pytest-mock` (mocker fixture) for mocking
+- Use `create_autospec` or `spec=` for type-safe mocks
 - Follow existing test patterns in `test_*.py` files
+
+**Mock argument matching (CRITICAL):**
+
+| Approach                | Use When                                          |
+| ----------------------- | ------------------------------------------------- |
+| Exact value             | Business-critical values (IDs, table names, keys) |
+| `call_args` inspection  | Checking specific args without full match         |
+| Custom `__eq__` matcher | Partial object matching                           |
+
+```python
+# GOOD: Exact values for business-critical parameters
+mock_repo.save.assert_called_once_with("order-123", "customer-456")
+
+# GOOD: Type-safe mock
+mock_repo = mocker.Mock(spec=Repository)
+```
 
 ### TypeScript Projects
 
 - Use Vitest with test.each for parameterized tests
 - Use Testing Library for React components
 - Use msw for API mocking
+- Use `vi.mocked()` for type-safe mocks
 - Follow existing test patterns in `*.test.ts` or `*.spec.ts` files
+
+**Mock argument matching (CRITICAL):**
+
+| Matcher                     | Use When                                          |
+| --------------------------- | ------------------------------------------------- |
+| Exact value                 | Business-critical values (IDs, keys, table names) |
+| `expect.any(Type)`          | Generated values (IDs, timestamps)                |
+| `expect.objectContaining()` | Partial object matching                           |
+
+```typescript
+// GOOD: Exact values for business-critical parameters
+expect(mockRepo.save).toHaveBeenCalledWith("order-123", "customer-456");
+
+// GOOD: Partial match with generated values
+expect(mockRepo.save).toHaveBeenCalledWith(
+  expect.objectContaining({
+    email: "test@example.com",
+    id: expect.any(String),
+  }),
+);
+```
 
 ## Step 4: Generate Tests
 
@@ -145,7 +184,19 @@ CRITICAL REQUIREMENTS:
 - NO pointless tests (trivial getters/constructors)
 - NO duplicate tests - each scenario tested exactly once
 - NO comments in tests unless logic is genuinely non-obvious
-- Use fixtures for setup, mock with pytest-mock
+- Use fixtures for setup
+
+MOCKING REQUIREMENTS (CRITICAL):
+- Use pytest-mock (mocker fixture) for all mocking
+- Use spec= or create_autospec for type-safe mocks
+- Use EXACT VALUES for business-critical parameters (IDs, table names, keys)
+- Use call_args inspection for partial matching
+- Patch where object is USED, not where it's defined
+- Use AsyncMock for async functions
+
+Example mock assertions:
+mock_repo.save.assert_called_once_with(\"order-123\", \"customer-456\")
+mock_repo = mocker.Mock(spec=Repository)
 
 Reference existing tests:
 {snippet from similar test file}"
@@ -166,7 +217,20 @@ CRITICAL REQUIREMENTS:
 - NO duplicate tests - each scenario tested exactly once
 - NO comments in tests unless logic is genuinely non-obvious
 - Use Testing Library for React (query by role)
-- Use msw for API mocking
+
+MOCKING REQUIREMENTS (CRITICAL):
+- Use vi.fn(), vi.mock(), vi.mocked() for mocking
+- Use msw for HTTP/API mocking
+- Use EXACT VALUES for business-critical parameters (IDs, keys, table names)
+- Use expect.objectContaining() for partial object matching
+- Use expect.any(Type) for generated values (IDs, timestamps)
+- Always cleanup with afterEach(() => { vi.restoreAllMocks() })
+
+Example mock assertions:
+expect(mockRepo.save).toHaveBeenCalledWith(\"order-123\", \"customer-456\")
+expect(mockRepo.save).toHaveBeenCalledWith(
+  expect.objectContaining({ email: \"test@example.com\", id: expect.any(String) })
+)
 
 Reference existing tests:
 {snippet from similar test file}"
