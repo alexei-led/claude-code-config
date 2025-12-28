@@ -35,10 +35,8 @@ flowchart LR
 
 ```mermaid
 flowchart TB
-    subgraph Commands
-        DC[/design:consult]
-        CC[/code:consult]
-        AP[/ai:panel]
+    subgraph Command
+        AC[/ai:consult]
     end
 
     subgraph Agents
@@ -54,9 +52,9 @@ flowchart TB
         Perp[Perplexity MCP]
     end
 
-    DC --> GC --> Gemini
-    CC --> CA --> Codex
-    AP --> APA
+    AC --> |gemini| GC --> Gemini
+    AC --> |codex| CA --> Codex
+    AC --> |panel| APA
     APA --> GC
     APA --> CA
     APA --> CR
@@ -116,23 +114,19 @@ flowchart LR
 /code:consult plan "feature"       # Implementation planning
 ```
 
-### Design & AI (`/design:*`, `/ai:*`)
+### AI Consultation (`/ai:consult`)
 
-| Command           | Description                | Example                                        |
-| ----------------- | -------------------------- | ---------------------------------------------- |
-| `/design:consult` | Gemini architecture advice | `/design:consult compare "Redis vs Memcached"` |
-| `/ai:panel`       | 4-perspective consultation | `/ai:panel "gRPC vs REST?"`                    |
+Unified command for all AI consultation needs.
 
-#### `/design:consult` Modes
+| Mode                     | Description                | Example                                     |
+| ------------------------ | -------------------------- | ------------------------------------------- |
+| `/ai:consult gemini`     | Gemini architecture advice | `/ai:consult gemini "Redis vs Memcached"`   |
+| `/ai:consult codex`      | Codex code review          | `/ai:consult codex "review auth flow"`      |
+| `/ai:consult panel`      | 4-perspective consultation | `/ai:consult panel "gRPC vs REST?"`         |
+| `/ai:consult brainstorm` | Gemini brainstorming       | `/ai:consult brainstorm "caching strategy"` |
+| `/ai:consult compare`    | Systematic comparison      | `/ai:consult compare "A vs B"`              |
 
-```bash
-/design:consult "question"              # Direct question
-/design:consult brainstorm "topic"      # Generate 5-10 alternatives
-/design:consult review "approach"       # Analyze trade-offs
-/design:consult compare "A vs B"        # Systematic comparison
-```
-
-#### `/ai:panel` Flow
+#### `/ai:consult panel` Flow
 
 ```mermaid
 flowchart TB
@@ -388,15 +382,15 @@ Rate limit fallback using GitHub Copilot API.
 flowchart LR
     A[Design] --> B[Panel] --> C[Implement] --> D[Review] --> E[Commit]
 
-    A -.- A1[/design:consult]
-    B -.- B1[/ai:panel]
+    A -.- A1[/ai:consult gemini]
+    B -.- B1[/ai:consult panel]
     D -.- D1[/code:review]
     E -.- E1[/code:commit]
 ```
 
 ```bash
-/design:consult brainstorm "caching strategy"
-/ai:panel "Redis vs Memcached"
+/ai:consult brainstorm "caching strategy"
+/ai:consult panel "Redis vs Memcached"
 # implement...
 /code:review deep external
 /code:commit

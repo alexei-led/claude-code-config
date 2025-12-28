@@ -15,11 +15,9 @@ Production-quality setup with specialized agents, AI consultation, and zero-tole
 # Multi-agent code review
 /code:review deep external
 
-# Architecture consultation
-/design:consult brainstorm "caching strategy"
-
-# Multi-perspective AI panel
-/ai:panel "gRPC vs REST for internal services?"
+# AI consultation (architecture, code review, panel)
+/ai:consult gemini "caching strategy"
+/ai:consult panel "gRPC vs REST for internal services?"
 ```
 
 ---
@@ -29,7 +27,7 @@ Production-quality setup with specialized agents, AI consultation, and zero-tole
 | Category            | Commands                                                               |
 | ------------------- | ---------------------------------------------------------------------- |
 | **Code Quality**    | `/code:fix` `/code:review` `/code:consult` `/code:docs` `/code:commit` |
-| **AI Consultation** | `/design:consult` `/ai:panel`                                          |
+| **AI Consultation** | `/ai:consult`                                                          |
 | **Testing**         | `/test:coverage` `/test:generate`                                      |
 | **Spec-Driven**     | `/spec:init` `/spec:work` `/spec:status`                               |
 | **Research**        | `/research` `/docs:lookup`                                             |
@@ -40,10 +38,8 @@ Production-quality setup with specialized agents, AI consultation, and zero-tole
 
 ```mermaid
 flowchart LR
-    subgraph Commands
-        DC[/design:consult]
-        CC[/code:consult]
-        AP[/ai:panel]
+    subgraph Command
+        AC[/ai:consult]
     end
 
     subgraph Agents
@@ -52,18 +48,18 @@ flowchart LR
         APA[ai-panel]
     end
 
-    DC --> GC
-    CC --> CA
-    AP --> APA
+    AC --> |gemini| GC
+    AC --> |codex| CA
+    AC --> |panel| APA
 
     APA --> |4 perspectives| Summary[Synthesized Summary]
 ```
 
-| Command           | Use For                                                   |
-| ----------------- | --------------------------------------------------------- |
-| `/design:consult` | Architecture, design trade-offs, brainstorming            |
-| `/code:consult`   | Code review, implementation advice                        |
-| `/ai:panel`       | Critical decisions (Codex + Gemini + Claude + Perplexity) |
+| Mode                 | Use For                                                   |
+| -------------------- | --------------------------------------------------------- |
+| `/ai:consult gemini` | Architecture, design trade-offs, brainstorming            |
+| `/ai:consult codex`  | Code review, security, implementation advice              |
+| `/ai:consult panel`  | Critical decisions (Codex + Gemini + Claude + Perplexity) |
 
 ---
 
