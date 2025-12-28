@@ -231,9 +231,21 @@ type Config struct {
 
 ### Before Implementation
 
-1. Research via Context7 for standard library solutions
-2. Use sequential thinking for complex design decisions
-3. Plan interfaces at consumer points
+1. **Learn from existing code**
+   - Read `go.mod` and `.golangci.yml` for project context
+   - Explore 2-3 similar files (services, handlers, repositories) to extract:
+     - Interface placement and naming style
+     - Error wrapping patterns
+     - Struct organization and method receivers
+   - Read nearby `*_test.go` files to learn:
+     - Table-driven test structure
+     - Testify usage (assert vs require)
+     - Mock setup and EXPECT patterns
+   - **Match existing patterns over your defaults**
+
+2. Research via Context7 for standard library solutions
+3. Use sequential thinking for complex design decisions
+4. Plan interfaces at consumer points
 
 ### During Implementation
 

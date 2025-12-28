@@ -333,9 +333,21 @@ pyright src/
 
 ### Before Implementation
 
-1. Research via Context7 for standard library solutions
-2. Use sequential thinking for complex design decisions
-3. Define types and interfaces first
+1. **Learn from existing code**
+   - Read `pyproject.toml` and `ruff.toml` for project context
+   - Explore 2-3 similar files (services, adapters, domain) to extract:
+     - Protocol/ABC usage patterns
+     - Import organization and module structure
+     - Dataclass vs Pydantic model style
+   - Read `conftest.py` and nearby `test_*.py` files to learn:
+     - Fixture patterns and scope
+     - Parametrize usage style
+     - Mock setup (mocker fixture vs unittest.mock)
+   - **Match existing patterns over your defaults**
+
+2. Research via Context7 for standard library solutions
+3. Use sequential thinking for complex design decisions
+4. Define types and interfaces first
 
 ### During Implementation
 

@@ -243,6 +243,38 @@ bun run lint             # Lint (eslint)
 bun run format           # Format (prettier)
 ```
 
+## Workflow
+
+### Before Implementation
+
+1. **Learn from existing code**
+   - Read `tsconfig.json` and `package.json` for project context
+   - Explore 2-3 similar files (services, components, hooks) to extract:
+     - Interface vs type conventions
+     - Error handling patterns (Result type, throw, error boundaries)
+     - State management approach
+   - Read nearby `*.test.ts` files to learn:
+     - Test organization (describe/it structure)
+     - Mock patterns (vi.fn, vi.mock, msw)
+     - test.each usage for similar cases
+   - **Match existing patterns over your defaults**
+
+2. Research via Context7 for library best practices
+3. Use sequential thinking for complex design decisions
+4. Define types and interfaces first
+
+### During Implementation
+
+1. Write strict TypeScript (no `any`)
+2. Add tests alongside implementation
+3. Run `bun run build` frequently
+
+### After Implementation
+
+1. Run verification: `bun run build && bun test && bun run lint`
+2. Validate no `any` types slipped in
+3. Ensure exhaustive switches
+
 ## Verification Checklist
 
 Before marking work complete:
