@@ -2,13 +2,14 @@
 # Gemini CLI wrapper with context-aware modes
 # Usage: ask.sh [MODE] "prompt"
 # Modes: prompt (default), brainstorm, review, compare
-# Designed to run as subagent - returns clean output only
 #
 # SANDBOX WORKAROUND: Gemini CLI writes to ~/.gemini/ which is blocked
 # by Claude Code's sandbox. We redirect HOME to /tmp/claude and copy
 # credentials on first run.
 
 set -euo pipefail
+
+TIMEOUT="${TIMEOUT:-60}"
 
 if ! command -v gemini &>/dev/null; then
 	echo "Error: gemini CLI not found" >&2
@@ -45,9 +46,18 @@ if [ -z "$PROMPT" ] && [ "$MODE" != "prompt" ]; then
 	MODE="prompt"
 fi
 
-# Run gemini with sandbox HOME and clean text output
+# Run gemini with timeout (stderr suppressed for clean output)
 run_gemini() {
-	HOME="$SANDBOX_HOME" gemini -o text "$@" 2>/dev/null
+	if timeout "$TIMEOUT" env HOME="$SANDBOX_HOME" gemini -o text "$@" 2>/dev/null; then
+		return 0
+	fi
+	local exit_code=$?
+	if [ $exit_code -eq 124 ]; then
+		echo "Error: Gemini CLI timed out after ${TIMEOUT}s" >&2
+	else
+		echo "Error: Gemini CLI failed (exit code $exit_code)" >&2
+	fi
+	return 1
 }
 
 case "$MODE" in

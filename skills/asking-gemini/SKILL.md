@@ -1,62 +1,15 @@
 ---
 name: asking-gemini
-description: |
-  Consults Gemini AI for architecture alternatives, design trade-offs, and brainstorming. Use when evaluating architectural approaches, comparing design options, or generating creative ideas. Not for implementation or documentation lookup.
-
-  <example>
-  user: "What are the trade-offs of microservices vs monolith?"
-  → Use this skill for architecture analysis
-  </example>
-
-  <example>
-  user: "Brainstorm solutions for rate limiting"
-  → Use this skill for creative alternatives
-  </example>
-allowed-tools: Bash
+description: Architecture advice via Gemini. Use for design trade-offs, brainstorming, comparing approaches.
+allowed-tools: Task
 ---
 
-# Design Consultation with Gemini CLI
+# Gemini Consultation
 
-Invoke Gemini CLI for architecture advice, design reviews, and brainstorming.
+Spawn the **gemini-consultant** agent for architecture and design questions.
 
-## Sandbox Compatibility
-
-The helper script handles sandbox restrictions automatically by redirecting Gemini's
-config directory to `/tmp/claude/.gemini`. Credentials are copied on first run.
-
-## Quick Usage
-
-```bash
-# Non-interactive prompt
-gemini -p "Your prompt here"
-
-# With helper script
-~/.claude/skills/asking-gemini/scripts/ask.sh brainstorm "How to handle auth?"
-~/.claude/skills/asking-gemini/scripts/ask.sh review "Current REST API design"
-~/.claude/skills/asking-gemini/scripts/ask.sh compare "gRPC vs REST for internal services"
+```
+Task(subagent_type="gemini-consultant", prompt="[mode]: <question>")
 ```
 
-## When to Use
-
-| Use Case               | Example                                        |
-| ---------------------- | ---------------------------------------------- |
-| Architecture decisions | "Trade-offs of microservices vs monolith"      |
-| Design alternatives    | "Different caching strategies for this system" |
-| Brainstorming          | "Creative solutions for rate limiting"         |
-| Comparing approaches   | "Redis vs Memcached for sessions"              |
-
-## Modes
-
-The helper script supports context-aware modes:
-
-| Mode         | Purpose                               |
-| ------------ | ------------------------------------- |
-| `prompt`     | Raw prompt (default)                  |
-| `brainstorm` | Generate 5-10 ideas with trade-offs   |
-| `review`     | Analyze design, identify alternatives |
-| `compare`    | Compare options systematically        |
-
-## References
-
-- [COMMANDS.md](COMMANDS.md) - Slash commands and CLI flags
-- [scripts/ask.sh](scripts/ask.sh) - Helper script
+**Modes:** prompt, brainstorm, review, compare

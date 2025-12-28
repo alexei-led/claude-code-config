@@ -83,11 +83,15 @@ Agent's own `model` setting (from metadata) is respected automatically.
 
 ### External Mode: Add Codex + Gemini
 
-If `external` in arguments, ALSO use the **asking-codex** and **asking-gemini** skills for additional review perspectives:
+If `external` in arguments, ALSO spawn these agents IN PARALLEL with local agents:
 
-**Codex** (via asking-codex skill): Delegate code review for a senior engineer perspective on security (OWASP), code quality, architecture, and testing gaps.
+```
+Task(subagent_type="codex-assistant", prompt="review: Review code from {git_command}")
+Task(subagent_type="gemini-consultant", prompt="review: Review architecture of {git_command}")
+```
 
-**Gemini** (via asking-gemini skill): Consult Gemini AI for architecture alternatives and design trade-offs on the code changes.
+**codex-assistant**: Code review for security (OWASP), quality, architecture, testing gaps.
+**gemini-consultant**: Architecture alternatives and design trade-offs.
 
 ---
 

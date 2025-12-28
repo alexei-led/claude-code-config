@@ -63,8 +63,8 @@ if echo "$PROMPT_LOWER" | grep -qE '\bresearch\b|search.*(web|online)|look\s*up.
 fi
 
 # asking-codex: Code review, bug detection, security analysis
-# Triggers: Review requests, bug finding, security audit
-if echo "$PROMPT_LOWER" | grep -qE 'review.*(code|this|my|pr|pull|change|implementation|file)|code\s*review|check.*(code|implementation|this).*(for|quality)|find.*(bug|issue|problem)|security.*(audit|review|check|scan)|vulnerabil|code.*(quality|smell)|potential.*(issue|bug|problem|vulnerabil)|what.?s\s*wrong\s*with.*(code|this|implementation)|audit.*(code|security)'; then
+# Triggers: Review requests, bug finding, security audit, quality concerns
+if echo "$PROMPT_LOWER" | grep -qE 'review.*(code|this|my|pr|pull|change|implementation|file)|code\s*review|check.*(code|implementation|this).*(for|quality)|find.*(bug|issue|problem)|security.*(audit|review|check|scan)|vulnerabil|code.*(quality|smell)|potential.*(issue|bug|problem|vulnerabil)|what.?s\s*wrong\s*with.*(code|this|implementation)|audit.*(code|security)|\bbug\b|\bissue\b.*code|\bvulnerability\b|\baudit\b'; then
 	skills+="asking-codex "
 fi
 
@@ -75,17 +75,14 @@ if echo "$PROMPT_LOWER" | grep -qE 'worktree|git\s*worktree|isolat.*(work|branch
 fi
 
 # asking-gemini: Architecture alternatives, design trade-offs, brainstorming
-# Triggers: Architecture decisions, design trade-offs, brainstorming needs
-if echo "$PROMPT_LOWER" | grep -qE '\barchitect|\bsystem\s*design|design\s*pattern|component.*(design|architect)|alternative.*(approach|solution|design|way|option|method)|which.*(approach|way|design|method|pattern).*(better|should|recommend|prefer)|how\s*should.*(design|architect|structure|approach|organize)|brainstorm.*(solution|idea|approach|option|way)|explore.*(option|possibilit|approach|alternative|idea)|evaluate.*(approach|design|option|trade|architectur)|design.*decision'; then
+# Triggers: Architecture decisions, design trade-offs, brainstorming, recommendations
+if echo "$PROMPT_LOWER" | grep -qE '\barchitect|\bsystem\s*design|design\s*pattern|component.*(design|architect)|alternative.*(approach|solution|design|way|option|method)|which.*(approach|way|design|method|pattern).*(better|should|recommend|prefer)|how\s*should.*(design|architect|structure|approach|organize)|brainstorm.*(solution|idea|approach|option|way)|explore.*(option|possibilit|approach|alternative|idea)|evaluate.*(approach|design|option|trade|architectur)|design.*decision|\bdecision\b|\boptions\b|\brecommend\b'; then
 	skills+="asking-gemini "
 fi
 
-# Output only if skills detected (minimal context footprint)
+# Output only if skills detected (silent when no match)
 if [[ -n "$skills" ]]; then
-	# Trim trailing space
 	skills="${skills% }"
 	echo "→ Consider skills: $skills"
-else
-	# Minimal prompt for Claude to check skills
-	echo "→ Check <available_skills> if relevant"
 fi
+# Silent exit when no skills detected - reduces context noise

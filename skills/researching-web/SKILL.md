@@ -1,17 +1,6 @@
 ---
 name: researching-web
-description: |
-  Searches the web via Perplexity AI for current information. Use when needing best practices, technology comparisons, or factual questions about tools. Not for library documentation (use looking-up-docs instead).
-
-  <example>
-  user: "What are Go error handling best practices in 2025?"
-  → Use this skill for current best practices
-  </example>
-
-  <example>
-  user: "Compare Redis vs Memcached for session storage"
-  → Use this skill for technology comparisons
-  </example>
+description: Web research via Perplexity. Use for best practices, technology comparisons, current information.
 allowed-tools: Read, Grep, Glob, mcp__perplexity-ask__perplexity_ask
 ---
 

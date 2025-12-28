@@ -2,15 +2,17 @@
 # Codex CLI wrapper with context-aware modes
 # Usage: ask.sh [MODE] "prompt" [--auto]
 # Modes: exec (default), review, plan, implement
-# Designed to run as subagent - returns clean output only
 #
 # SANDBOX NOTE: Codex CLI uses macOS SystemConfiguration APIs for network
 # proxy detection. These APIs are blocked by Claude Code's sandbox, causing
 # a Rust panic. This script must be run with sandbox disabled:
 #   dangerouslyDisableSandbox: true
-# The SKILL.md instructs Claude to do this automatically.
 
 set -euo pipefail
+
+# Codex is slow - 10 minutes recommended per Perplexity research
+TIMEOUT="${TIMEOUT:-600}"
+MAX_RETRIES="${MAX_RETRIES:-0}"
 
 if ! command -v codex &>/dev/null; then
 	echo "Error: codex CLI not found" >&2
@@ -44,17 +46,56 @@ if [ -z "$PROMPT" ] && [ "$MODE" != "exec" ]; then
 	MODE="exec"
 fi
 
-# Run codex with full access (already inside Claude's sandbox) and suppress progress
-run_codex() {
-	codex --sandbox danger-full-access "$@" 2>/dev/null
+# Run codex with timeout and clean output (suppress verbose logs)
+# Usage: run_codex_exec [options] "prompt"
+# Usage: run_codex_review [options]
+run_codex_exec() {
+	local tmpfile
+	tmpfile=$(mktemp)
+	trap 'rm -f "$tmpfile"' RETURN
+
+	if timeout "$TIMEOUT" codex exec -o "$tmpfile" "$@" >/dev/null 2>&1; then
+		cat "$tmpfile"
+		return 0
+	fi
+	local exit_code=$?
+	if [ $exit_code -eq 124 ]; then
+		echo "Error: Codex CLI timed out after ${TIMEOUT}s" >&2
+	else
+		echo "Error: Codex CLI failed (exit code $exit_code)" >&2
+	fi
+	return 1
+}
+
+run_codex_review() {
+	local tmpfile
+	tmpfile=$(mktemp)
+	trap 'rm -f "$tmpfile"' RETURN
+
+	if timeout "$TIMEOUT" codex review -o "$tmpfile" "$@" >/dev/null 2>&1; then
+		cat "$tmpfile"
+		return 0
+	fi
+	local exit_code=$?
+	if [ $exit_code -eq 124 ]; then
+		echo "Error: Codex CLI timed out after ${TIMEOUT}s" >&2
+	else
+		echo "Error: Codex CLI failed (exit code $exit_code)" >&2
+	fi
+	return 1
 }
 
 case "$MODE" in
 review)
-	run_codex review "$PROMPT"
+	# Review uncommitted changes with optional custom instructions
+	if [ -n "$PROMPT" ]; then
+		run_codex_review --uncommitted "$PROMPT"
+	else
+		run_codex_review --uncommitted
+	fi
 	;;
 plan)
-	run_codex exec "Create implementation plan: $PROMPT
+	run_codex_exec -s read-only "Create implementation plan: $PROMPT
 
 Break into:
 1. Required changes
@@ -63,7 +104,7 @@ Break into:
 4. Testing approach"
 	;;
 implement)
-	run_codex exec ${AUTO:+"$AUTO"} "Implement: $PROMPT
+	run_codex_exec -s workspace-write ${AUTO:+"$AUTO"} "Implement: $PROMPT
 
 Requirements:
 - Follow existing code patterns
@@ -72,9 +113,9 @@ Requirements:
 	;;
 exec | *)
 	if [ "$MODE" = "exec" ]; then
-		run_codex exec ${AUTO:+"$AUTO"} "$PROMPT"
+		run_codex_exec -s read-only ${AUTO:+"$AUTO"} "$PROMPT"
 	else
-		run_codex exec ${AUTO:+"$AUTO"} "$MODE $PROMPT"
+		run_codex_exec -s read-only ${AUTO:+"$AUTO"} "$MODE $PROMPT"
 	fi
 	;;
 esac
