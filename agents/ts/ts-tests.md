@@ -28,6 +28,16 @@ bun run tsc --noEmit 2>&1
 
 Include test failures and coverage gaps in findings. Type errors are blocking issues.
 
+## Learn Existing Test Patterns
+
+Before reviewing, scan existing tests to understand project conventions:
+
+- Read nearby `*.test.ts` files for structure
+- Check for shared test utilities in `tests/` or `__tests__/`
+- Note: describe grouping, mock patterns, test.each usage
+
+**Purpose:** Give contextual recommendations. Flag issues that deviate from BOTH project patterns AND best practices.
+
 ## Focus Areas (ONLY these)
 
 ### 0. Test Quality (Zero Tolerance for Waste)

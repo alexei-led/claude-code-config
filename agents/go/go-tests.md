@@ -34,6 +34,16 @@ go test -short -timeout=5m -coverprofile=/tmp/claude/coverage.out ./... 2>&1 && 
 
 Include test failures and coverage gaps in findings. Race conditions are blocking issues.
 
+## Learn Existing Test Patterns
+
+Before reviewing, scan existing tests to understand project conventions:
+
+- Read 2-3 nearby `*_test.go` files for structure
+- Check for test helpers in `testhelper/` or shared `_test.go` files
+- Note: testify usage (assert vs require), table-driven style, mock patterns
+
+**Purpose:** Give contextual recommendations. Flag issues that deviate from BOTH project patterns AND best practices.
+
 **If golangci-lint fails**, explore the tool to debug:
 
 ```bash

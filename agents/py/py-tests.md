@@ -29,6 +29,16 @@ pytest -m "not slow"
 pytest --asyncio-mode=auto
 ```
 
+## Learn Existing Test Patterns
+
+Before reviewing, scan existing tests to understand project conventions:
+
+- Read `conftest.py` for shared fixtures
+- Read 2-3 nearby `test_*.py` files for structure
+- Note: fixture scope, parametrize style, mock setup patterns
+
+**Purpose:** Give contextual recommendations. Flag issues that deviate from BOTH project patterns AND best practices.
+
 ## Python 3.14 Testing Considerations
 
 ### Async Testing
