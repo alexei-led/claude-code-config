@@ -23,6 +23,19 @@
       "mcp__perplexity-ask__perplexity_ask",
       "mcp__context7__resolve-library-id",
       "mcp__context7__get-library-docs",
+      "mcp__gemini__gemini",
+      "mcp__gemini__web-search",
+      "mcp__gemini__analyze-media",
+      "mcp__gemini__shell",
+      "mcp__gemini__brainstorm",
+      "mcp__gemini__fetch-chunk",
+      "mcp__gemini__ping",
+      "mcp__gemini__help",
+      "mcp__codex__codex",
+      "mcp__codex__review",
+      "mcp__codex__ping",
+      "mcp__codex__help",
+      "mcp__codex__listSessions",
       "Bash(sg:*)",
       "Bash(bat:*)",
       "Bash(fd:*)",
@@ -37,6 +50,25 @@
       "Bash(bash:*)",
       "Bash(rg:*)",
       "Bash(sd:*)",
+      "Bash(eza:*)",
+      "Bash(dust:*)",
+      "Bash(procs:*)",
+      "Bash(btm:*)",
+      "Bash(hyperfine:*)",
+      "Bash(tokei:*)",
+      "Bash(glow:*)",
+      "Bash(zoxide:*)",
+      "Bash(difft:*)",
+      "Bash(delta:*)",
+      "Bash(jq:*)",
+      "Bash(yq:*)",
+      "Bash(fzf:*)",
+      "Bash(tldr:*)",
+      "Bash(lazygit:*)",
+      "Bash(gopls:*)",
+      "Bash(pyright:*)",
+      "Bash(eslint:*)",
+      "Bash(prettier:*)",
       "Bash(bq:*)",
       "Bash(gcloud:*)",
       "Bash(aws:*)",
@@ -44,8 +76,6 @@
       "Bash(ruff:*)",
       "Bash(terraform:*)",
       "Bash(python3:*)",
-      "Bash(gemini:*)",
-      "Bash(codex:*)",
       "WebFetch",
       "WebSearch"
     ],
@@ -122,7 +152,9 @@
     "autoAllowBashIfSandboxed": true,
     "filesystem": {
       "write": {
-        "allowOnly": ["/Users/alexei/.gemini"]
+        "allowOnly": [
+          "/Users/alexei/.gemini"
+        ]
       }
     },
     "network": {
@@ -133,9 +165,7 @@
       "kubectl",
       "helm",
       "kustomize",
-      "docker",
-      "codex",
-      "gemini"
+      "docker"
     ]
   },
   "alwaysThinkingEnabled": true,

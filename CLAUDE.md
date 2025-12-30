@@ -78,6 +78,30 @@ When you're stuck or confused:
 
 My insights on better approaches are valued—please ask for them!
 
+## Prefer Modern CLI Tools
+
+Use fast, modern replacements over standard Unix tools:
+
+| Instead of | Use     | Why                                     |
+| ---------- | ------- | --------------------------------------- |
+| `grep`     | `rg`    | Faster, respects .gitignore, color      |
+| `find`     | `fd`    | Simpler syntax, ignores .git by default |
+| `cat`      | `bat`   | Syntax highlighting, line numbers       |
+| `ls`       | `eza`   | Icons, Git status, tree view            |
+| `sed`      | `sd`    | Intuitive regex, handles special chars  |
+| `diff`     | `delta` | Syntax-highlighted, side-by-side        |
+| `du`       | `dust`  | Visual tree, sorted by size             |
+| `ps`       | `procs` | Tree view, sortable, modern output      |
+| `top`      | `btm`   | Cross-platform, graphs, mouse support   |
+
+Additional productivity tools:
+
+- `jq`/`yq` for JSON/YAML processing
+- `fzf` for fuzzy finding
+- `hyperfine` for benchmarking
+- `tokei` for code statistics
+- `glow` for markdown rendering
+
 ## Performance & Security
 
 - No premature optimization—benchmark before claiming faster
