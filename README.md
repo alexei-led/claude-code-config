@@ -60,6 +60,11 @@ Add to `~/.claude.json` under `"mcpServers"`:
       "type": "stdio",
       "command": "uvx",
       "args": ["codex-as-mcp@latest"]
+    },
+    "playwright": {
+      "type": "stdio",
+      "command": "bunx",
+      "args": ["@playwright/mcp@latest", "--caps", "testing"]
     }
   }
 }
@@ -74,6 +79,7 @@ Add to `~/.claude.json` under `"mcpServers"`:
 | **perplexity-ask**      | `perplexity_ask`                                               | Web research                              |
 | **gemini**              | `gemini`, `brainstorm`, `web-search`, `analyze-media`, `shell` | Gemini AI consultation, web search, media |
 | **codex**               | `spawn_agent`, `spawn_agents_parallel`                         | OpenAI Codex subagents                    |
+| **playwright**          | `browser_*` (navigate, click, type, snapshot, verify)          | E2E testing, browser automation           |
 
 ### Required Permissions
 
@@ -96,7 +102,8 @@ Add to `~/.claude/settings.json` under `"permissions.allow"`:
       "mcp__gemini__ping",
       "mcp__gemini__help",
       "mcp__codex__spawn_agent",
-      "mcp__codex__spawn_agents_parallel"
+      "mcp__codex__spawn_agents_parallel",
+      "mcp__playwright__*"
     ]
   }
 }
@@ -117,13 +124,33 @@ Add to `~/.claude/settings.json` under `"permissions.allow"`:
 | `/code:deploy-check` | Validate K8s/CI configs                      |
 | `/test:coverage`     | Test coverage analysis (80% minimum)         |
 | `/test:generate`     | Generate tests following best practices      |
+| `/test:e2e`          | E2E testing with Playwright (run/record/gen) |
 | `/spec:init`         | Initialize spec-driven project               |
-| `/spec:work`         | Continue spec-driven development             |
-| `/spec:status`       | Quick progress check                         |
-| `/spec:sync`         | Sync feature_list.json from code/git         |
-| `/spec:gen`          | Generate app_spec.txt from markdown          |
-| `/research`          | Research topics via Perplexity AI            |
-| `/docs:lookup`       | Look up library documentation via Context7   |
+
+### Playwright Browser Setup
+
+The Playwright MCP uses bundled Chromium. Install browsers once:
+
+```bash
+# Install Chromium (recommended - bundled, works out of the box)
+npx playwright install chromium
+
+# Update browsers when Playwright version changes
+npx playwright install chromium
+```
+
+Browsers are cached in `~/Library/Caches/ms-playwright/` (macOS).
+
+**Note:** No need to install Playwright globally via Homebrew or bun. The MCP server uses npx/bunx which downloads the correct version automatically.
+
+---
+
+| `/spec:work` | Continue spec-driven development |
+| `/spec:status` | Quick progress check |
+| `/spec:sync` | Sync feature_list.json from code/git |
+| `/spec:gen` | Generate app_spec.txt from markdown |
+| `/research` | Research topics via Perplexity AI |
+| `/docs:lookup` | Look up library documentation via Context7 |
 
 ---
 
@@ -214,10 +241,11 @@ flowchart LR
 
 ### Utility Agents
 
-| Agent         | Model  | Focus                      |
-| ------------- | ------ | -------------------------- |
-| `docs-keeper` | sonnet | Documentation maintenance  |
-| `pdf-parser`  | haiku  | PDF parsing and extraction |
+| Agent               | Model  | Focus                        |
+| ------------------- | ------ | ---------------------------- |
+| `docs-keeper`       | sonnet | Documentation maintenance    |
+| `pdf-parser`        | haiku  | PDF parsing and extraction   |
+| `playwright-tester` | opus   | E2E testing, browser automat |
 
 ---
 
@@ -239,6 +267,7 @@ flowchart LR
 | `using-cloud-cli`        | GCP/AWS CLI, BigQuery                         |
 | `using-git-worktrees`    | Isolated git worktrees for parallel dev       |
 | `using-modern-cli`       | rg/fd/bat/eza/sd over grep/find/cat/ls/sed    |
+| `testing-e2e`            | Playwright, browser testing, UI automation    |
 
 ---
 

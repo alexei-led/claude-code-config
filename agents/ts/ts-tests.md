@@ -4,7 +4,7 @@ description: TypeScript testing specialist focused on Vitest, test.each patterns
 model: sonnet
 color: yellow
 tools: Read, Grep, Glob, LS, Bash
-skills: writing-typescript
+skills: writing-typescript, testing-e2e
 ---
 
 ## Role

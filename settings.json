@@ -33,6 +33,7 @@
       "mcp__gemini__help",
       "mcp__codex__spawn_agent",
       "mcp__codex__spawn_agents_parallel",
+      "mcp__playwright__*",
       "Bash(sg:*)",
       "Bash(bat:*)",
       "Bash(fd:*)",
@@ -73,6 +74,8 @@
       "Bash(ruff:*)",
       "Bash(terraform:*)",
       "Bash(python3:*)",
+      "Bash(npx playwright:*)",
+      "Bash(bunx playwright:*)",
       "WebFetch",
       "WebSearch"
     ],

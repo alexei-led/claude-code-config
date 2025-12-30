@@ -98,6 +98,12 @@ if echo "$PROMPT_LOWER" | grep -qE 'generate.*(shell|bash|command|script|pipe)|c
 	skills+="generating-shell "
 fi
 
+# testing-e2e: E2E testing with Playwright MCP
+# Triggers: E2E tests, Playwright, browser testing, UI automation, HTMX testing
+if echo "$PROMPT_LOWER" | grep -qE 'e2e\s*(test|testing)|end[\s-]?to[\s-]?end\s*(test|testing)|playwright|browser\s*(test|automation)|ui\s*(test|testing|automation)|visual\s*(test|regression)|accessibility\s*(test|check)|htmx\s*(test|testing)|test.*htmx|integration\s*test.*web|web\s*ui\s*test|selenium|cypress|puppeteer|headless\s*browser'; then
+	skills+="testing-e2e "
+fi
+
 # Output only if skills detected (silent when no match)
 if [[ -n "$skills" ]]; then
 	skills="${skills% }"
