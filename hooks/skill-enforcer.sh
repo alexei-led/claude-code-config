@@ -75,9 +75,27 @@ if echo "$PROMPT_LOWER" | grep -qE 'worktree|git\s*worktree|isolat.*(work|branch
 fi
 
 # asking-gemini: Architecture alternatives, design trade-offs, brainstorming
-# Triggers: Architecture decisions, design trade-offs, brainstorming, recommendations
-if echo "$PROMPT_LOWER" | grep -qE '\barchitect|\bsystem\s*design|design\s*pattern|component.*(design|architect)|alternative.*(approach|solution|design|way|option|method)|which.*(approach|way|design|method|pattern).*(better|should|recommend|prefer)|how\s*should.*(design|architect|structure|approach|organize)|brainstorm.*(solution|idea|approach|option|way)|explore.*(option|possibilit|approach|alternative|idea)|evaluate.*(approach|design|option|trade|architectur)|design.*decision|\bdecision\b|\boptions\b|\brecommend\b'; then
+# Triggers: Architecture decisions, design trade-offs, brainstorming, SCAMPER, design thinking
+if echo "$PROMPT_LOWER" | grep -qE '\barchitect|\bsystem\s*design|design\s*pattern|component.*(design|architect)|alternative.*(approach|solution|design|way|option|method)|which.*(approach|way|design|method|pattern).*(better|should|recommend|prefer)|how\s*should.*(design|architect|structure|approach|organize)|brainstorm.*(solution|idea|approach|option|way)|explore.*(option|possibilit|approach|alternative|idea)|evaluate.*(approach|design|option|trade|architectur)|design.*decision|\bdecision\b|\boptions\b|\brecommend\b|scamper|design[\s-]?thinking|divergent[\s-]?thinking|convergent[\s-]?thinking|lateral[\s-]?thinking|creative[\s-]?(problem|solution)|ideation|generate.*(idea|option|alternative)'; then
 	skills+="asking-gemini "
+fi
+
+# researching-web-gemini: Web research via Gemini with Google Search grounding
+# Triggers: Google search, real-time info, current events, technology updates
+if echo "$PROMPT_LOWER" | grep -qE 'google\s*(search|for)|search.*google|real[\s-]?time.*(info|data|search)|current.*(event|news|info|status)|live.*(data|info|update)|latest.*(news|update|info)|breaking.*(news|update)|today.?s.*(news|update)|search.*(current|latest|recent)|grounded.*(search|info)'; then
+	skills+="researching-web-gemini "
+fi
+
+# analyzing-media: Image/PDF analysis via Gemini multimodal
+# Triggers: PDF analysis, image analysis, screenshot analysis, diagram interpretation, OCR
+if echo "$PROMPT_LOWER" | grep -qE '\.pdf\b|pdf\s*(file|document|analysis|extract|read|parse|content)|analyze.*(image|screenshot|diagram|pdf|photo|picture)|extract.*(from|text|data|table).*(pdf|image|screenshot)|read.*(pdf|image|screenshot)|interpret.*(diagram|chart|graph|visual|image)|screenshot.*(analysis|interpret|read)|ocr\b|document.*(extract|analysis|scan)|image.*(analysis|interpret|understand)|flowchart|architecture\s*diagram|erd\b|er\s*diagram|visual.*(analysis|content)|multimodal'; then
+	skills+="analyzing-media "
+fi
+
+# generating-shell: Shell command generation via Gemini
+# Triggers: Shell commands, bash scripts, unix pipes, awk/sed/grep
+if echo "$PROMPT_LOWER" | grep -qE 'generate.*(shell|bash|command|script|pipe)|create.*(shell|bash|command|script)|write.*(shell|bash|script)|shell\s*(command|script|one[\s-]?liner)|bash\s*(command|script|one[\s-]?liner)|unix\s*(pipe|pipeline|command)|awk.*(command|script|pipe)|sed.*(command|script|pipe)|grep.*(command|pipe)|find.*(command|pipe)|complex.*(pipe|pipeline|command)|one[\s-]?liner|command[\s-]?line.*(for|to)|how\s*to.*(shell|bash|terminal|command[\s-]?line)|terminal\s*(command|script)'; then
+	skills+="generating-shell "
 fi
 
 # Output only if skills detected (silent when no match)
