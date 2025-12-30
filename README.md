@@ -58,8 +58,8 @@ Add to `~/.claude.json` under `"mcpServers"`:
     },
     "codex": {
       "type": "stdio",
-      "command": "bunx",
-      "args": ["codex-mcp-server"]
+      "command": "uvx",
+      "args": ["codex-as-mcp@latest"]
     }
   }
 }
@@ -73,7 +73,7 @@ Add to `~/.claude.json` under `"mcpServers"`:
 | **sequential-thinking** | `sequentialthinking`                                           | Multi-step reasoning                      |
 | **perplexity-ask**      | `perplexity_ask`                                               | Web research                              |
 | **gemini**              | `gemini`, `brainstorm`, `web-search`, `analyze-media`, `shell` | Gemini AI consultation, web search, media |
-| **codex**               | `codex`, `review`                                              | OpenAI Codex code review                  |
+| **codex**               | `spawn_agent`, `spawn_agents_parallel`                         | OpenAI Codex subagents                    |
 
 ### Required Permissions
 
@@ -95,11 +95,8 @@ Add to `~/.claude/settings.json` under `"permissions.allow"`:
       "mcp__gemini__fetch-chunk",
       "mcp__gemini__ping",
       "mcp__gemini__help",
-      "mcp__codex__codex",
-      "mcp__codex__review",
-      "mcp__codex__ping",
-      "mcp__codex__help",
-      "mcp__codex__listSessions"
+      "mcp__codex__spawn_agent",
+      "mcp__codex__spawn_agents_parallel"
     ]
   }
 }

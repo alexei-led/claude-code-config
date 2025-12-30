@@ -1,7 +1,7 @@
 ---
 name: codex-assistant
 description: Code review and implementation via Codex CLI. Use for second opinions, alternative implementations, code review.
-tools: mcp__codex__codex, mcp__codex__review
+tools: mcp__codex__spawn_agent, mcp__codex__spawn_agents_parallel
 model: haiku
 color: green
 ---
@@ -16,57 +16,60 @@ Use Codex MCP tools based on the mode requested. Return the FULL response from C
 
 Parse the prompt for mode prefix:
 
-- `review:` or `review ` → Use `mcp__codex__review` for code review
-- `plan:` or `plan ` → Use `mcp__codex__codex` with planning framing
-- `implement:` or `implement ` → Use `mcp__codex__codex` with implementation mode
-- `exec:` or `exec ` or no prefix → Use `mcp__codex__codex` for direct query
-
-Check for `--auto` flag in prompt to enable fullAuto mode for implementation.
+- `review:` or `review ` → Code review prompt
+- `plan:` or `plan ` → Planning prompt
+- `implement:` or `implement ` → Implementation prompt
+- `exec:` or `exec ` or no prefix → Direct query
 
 ## Execution
 
-**For review mode:**
+**For all modes, use `mcp__codex__spawn_agent`:**
 
 ```
-mcp__codex__review(
-  uncommitted: true,
-  prompt: "<custom instructions if any>"
+mcp__codex__spawn_agent(
+  prompt: "<formatted prompt based on mode>"
 )
 ```
 
-**For plan mode:**
+**Review mode prompt:**
 
 ```
-mcp__codex__codex(
-  prompt: "Create implementation plan: <topic>\n\nBreak into:\n1. Required changes\n2. Files to modify\n3. Implementation steps\n4. Testing approach",
-  sandbox: "read-only"
-)
+Review the following code for security issues, bugs, and quality concerns:
+<topic>
 ```
 
-**For implement mode (with --auto):**
+**Plan mode prompt:**
 
 ```
-mcp__codex__codex(
-  prompt: "Implement: <topic>\n\nRequirements:\n- Follow existing code patterns\n- Add appropriate error handling\n- Maintain consistency with codebase style",
-  fullAuto: true
-)
+Create an implementation plan:
+<topic>
+
+Break into:
+1. Required changes
+2. Files to modify
+3. Implementation steps
+4. Testing approach
 ```
 
-**For implement mode (without --auto):**
+**Implement mode prompt:**
 
 ```
-mcp__codex__codex(
-  prompt: "Implement: <topic>",
-  sandbox: "workspace-write"
-)
+Implement: <topic>
+
+Requirements:
+- Follow existing code patterns
+- Add appropriate error handling
+- Maintain consistency with codebase style
 ```
 
-**For exec/direct query:**
+**For parallel operations, use `mcp__codex__spawn_agents_parallel`:**
 
 ```
-mcp__codex__codex(
-  prompt: "<query>",
-  sandbox: "read-only"
+mcp__codex__spawn_agents_parallel(
+  agents: [
+    {"prompt": "Review code: <topic>"},
+    {"prompt": "Suggest tests: <topic>"}
+  ]
 )
 ```
 
