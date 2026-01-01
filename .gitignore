@@ -1,23 +1,27 @@
+# macOS
 .DS_Store
-__store.db
-ide/
-projects/
-shell-snapshots/
-statsig/
-todos/
-cache/
-plugins/
-powerline/
 
-# Runtime/session files (local only)
+# Claude Code runtime data
+cache/
 debug/
 file-history/
 history.jsonl
-session-env/
-
-# Local settings override (for machine-specific config)
-settings.local.json
-
-# plans
 plans/
+session-env/
+shell-snapshots/
 stats-cache.json
+statsig/
+telemetry/
+todos/
+__store.db
+
+# IDE and plugins
+ide/
+plugins/
+powerline/
+
+# Project-specific data
+projects/
+
+# Local settings (machine-specific)
+settings.local.json
