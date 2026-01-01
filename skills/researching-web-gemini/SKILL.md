@@ -8,8 +8,18 @@ allowed-tools: Task
 
 Spawn the **gemini-researcher** agent for real-time web searches with Google grounding.
 
+## Foreground (blocking)
+
 ```
 Task(subagent_type="gemini-researcher", prompt="<search query>")
 ```
+
+## Background (for context efficiency)
+
+```
+Task(subagent_type="gemini-researcher", prompt="<query>", run_in_background=true)
+```
+
+Use `TaskOutput(task_id="<id>")` to retrieve results.
 
 Use when you need current, up-to-date information that may not be in Claude's training data.

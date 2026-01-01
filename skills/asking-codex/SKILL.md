@@ -8,9 +8,19 @@ allowed-tools: Task
 
 Spawn the **codex-assistant** agent for code-focused questions.
 
+## Foreground (blocking)
+
 ```
 Task(subagent_type="codex-assistant", prompt="[mode]: <question>")
 ```
+
+## Background (for context efficiency)
+
+```
+Task(subagent_type="codex-assistant", prompt="[mode]: <question>", run_in_background=true)
+```
+
+Use `TaskOutput(task_id="<id>")` to retrieve results.
 
 **Modes:** exec (default), review, plan, implement (add --auto for file changes)
 

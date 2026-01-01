@@ -8,9 +8,19 @@ allowed-tools: Task
 
 Spawn the **gemini-consultant** agent for architecture and design questions.
 
+## Foreground (blocking)
+
 ```
 Task(subagent_type="gemini-consultant", prompt="[mode]: <question>")
 ```
+
+## Background (for context efficiency)
+
+```
+Task(subagent_type="gemini-consultant", prompt="[mode]: <question>", run_in_background=true)
+```
+
+Use `TaskOutput(task_id="<id>")` to retrieve results.
 
 **Modes:** prompt (default), brainstorm, review, compare
 

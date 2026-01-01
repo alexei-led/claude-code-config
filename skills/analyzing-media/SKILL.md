@@ -8,8 +8,18 @@ allowed-tools: Task
 
 Spawn the **gemini-media-analyst** agent for image and PDF analysis.
 
+## Foreground (blocking)
+
 ```
 Task(subagent_type="gemini-media-analyst", prompt="Analyze @<file-path>: <what to look for>")
 ```
+
+## Background (for context efficiency)
+
+```
+Task(subagent_type="gemini-media-analyst", prompt="Analyze @<file-path>: <task>", run_in_background=true)
+```
+
+Use `TaskOutput(task_id="<id>")` to retrieve results.
 
 Use for screenshots, architecture diagrams, PDFs, flowcharts, or any visual content analysis.

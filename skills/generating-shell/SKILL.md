@@ -8,8 +8,18 @@ allowed-tools: Task
 
 Spawn the **gemini-shell-helper** agent for shell command generation.
 
+## Foreground (blocking)
+
 ```
 Task(subagent_type="gemini-shell-helper", prompt="<describe the shell task>")
 ```
+
+## Background (for context efficiency)
+
+```
+Task(subagent_type="gemini-shell-helper", prompt="<task>", run_in_background=true)
+```
+
+Use `TaskOutput(task_id="<id>")` to retrieve results.
 
 Use for complex CLI pipelines, system administration tasks, or when you need help with command syntax.
