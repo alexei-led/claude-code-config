@@ -104,6 +104,19 @@ else
 fi
 
 echo ""
+echo "=== Claude Code Scripts ==="
+CE_SCRIPT="$HOME/.claude/scripts/ce"
+CE_LINK="$HOME/.local/bin/ce"
+if [ -x "$CE_SCRIPT" ]; then
+	mkdir -p "$HOME/.local/bin"
+	ln -sf "$CE_SCRIPT" "$CE_LINK" 2>/dev/null &&
+		echo -e "${GREEN}✓${NC} ce → $CE_LINK" ||
+		echo -e "${RED}✗${NC} Failed to link ce (try: ln -sf $CE_SCRIPT $CE_LINK)"
+else
+	echo -e "${YELLOW}→${NC} ce script not found at $CE_SCRIPT"
+fi
+
+echo ""
 echo "=== Verification ==="
 echo "Checking installed tools..."
 echo ""
@@ -129,6 +142,7 @@ tools=(
 	"gopls:gopls"
 	"pyright:pyright"
 	"typescript-language-server:ts-lsp"
+	"ce:ce"
 )
 
 missing=()

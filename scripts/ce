@@ -1,64 +1,360 @@
 #!/usr/bin/env python3
-"""Claude Code environment switcher.
+"""Claude Code environment switcher with interactive TUI.
 
 Usage:
-  ce           # show current + list available
-  ce max       # switch to default (Claude Max)
-  ce vertex|v  # switch to Vertex
-  ce copilot|cp # switch to Copilot
+  ce                    # TUI picker → switch + launch claude
+  ce -s                 # TUI picker → switch only (no launch)
+  ce z                  # Switch to z.ai + launch claude
+  ce -s z               # Switch to z.ai only
+  ce z --continue       # Switch + launch claude --continue
+  ce --continue         # TUI picker + launch claude --continue
 """
 
 import json
+import os
+import subprocess
 import sys
+import termios
+import tty
 from pathlib import Path
 
 SETTINGS = Path.home() / ".claude" / "settings.json"
 
-ALIASES = {"max": "default", "v": "vertex", "cp": "copilot"}
+ALIASES = {"max": "default", "v": "vertex", "cp": "copilot", "z": "zai", "ds": "deepseek"}
+
+# Provider descriptions: (display_name, short_description)
+PROVIDERS = {
+    "default": ("Claude Max", "Opus 4.5 / Sonnet 4"),
+    "vertex": ("Vertex AI", "Google Cloud, pay-per-use"),
+    "copilot": ("Copilot", "GitHub proxy"),
+    "zai": ("z.ai", "GLM-4.7, 200K ctx, 128K out"),
+    "deepseek": ("DeepSeek", "128K ctx, 64K out, no cache"),
+}
+
+# ANSI escape codes
+RESET = "\033[0m"
+BOLD = "\033[1m"
+DIM = "\033[2m"
+CYAN = "\033[36m"
+GREEN = "\033[32m"
+YELLOW = "\033[33m"
+WHITE = "\033[97m"
+BG_CYAN = "\033[46m"
+BG_BLACK = "\033[40m"
+HIDE_CURSOR = "\033[?25l"
+SHOW_CURSOR = "\033[?25h"
+CLEAR_LINE = "\033[2K"
+MOVE_UP = "\033[A"
+
+
+def get_keychain_secret(service: str) -> str | None:
+    """Load secret from macOS Keychain."""
+    try:
+        result = subprocess.run(
+            ["security", "find-generic-password", "-s", service, "-w"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        return result.stdout.strip()
+    except subprocess.CalledProcessError:
+        return None
+
+
+def check_copilot_proxy() -> bool:
+    """Check if copilot proxy is running."""
+    pid_file = Path(os.environ.get("TMPDIR", "/tmp")) / "copilot-proxy.pid"
+    if not pid_file.exists():
+        return False
+
+    try:
+        pid = int(pid_file.read_text().strip())
+        os.kill(pid, 0)  # Signal 0 checks if process exists
+        return True
+    except (ValueError, OSError, ProcessLookupError):
+        return False
+
+
+def ensure_deepseek_config(settings: dict) -> None:
+    """Ensure DeepSeek environment config exists in settings.
+
+    Limitations (Anthropic API compatibility):
+    - budget_tokens: IGNORED (thinking uses up to 64K automatically)
+    - cache_control: IGNORED (no prompt caching via Anthropic API)
+    - Context: 128K, Output: 64K max in thinking mode
+    """
+    if "env.deepseek" not in settings:
+        settings["env.deepseek"] = {
+            "ANTHROPIC_BASE_URL": "https://api.deepseek.com/anthropic",
+            "ANTHROPIC_DEFAULT_OPUS_MODEL": "deepseek-reasoner",
+            "ANTHROPIC_DEFAULT_SONNET_MODEL": "deepseek-chat",
+            "ANTHROPIC_DEFAULT_HAIKU_MODEL": "deepseek-chat",
+            "DISABLE_PROMPT_CACHING": "1",  # DeepSeek ignores cache_control
+            "_keychain": "deepseek-api",
+        }
+
+
+def ensure_zai_config(settings: dict) -> None:
+    """Ensure z.ai environment config exists in settings.
+
+    GLM-4.7 specs:
+    - Context: 200K tokens, Output: 128K tokens
+    - Thinking: enabled by default (no budget_tokens param)
+    - Caching: supported
+    - Pricing: ~$0.40/1M input tokens
+    """
+    if "env.zai" not in settings:
+        settings["env.zai"] = {
+            "ANTHROPIC_BASE_URL": "https://api.z.ai/api/anthropic",
+            "ANTHROPIC_DEFAULT_OPUS_MODEL": "glm-4.7",
+            "ANTHROPIC_DEFAULT_SONNET_MODEL": "glm-4.7",
+            "ANTHROPIC_DEFAULT_HAIKU_MODEL": "glm-4.5-flash",
+            "_keychain": "claude-zai",
+        }
+
+
+def get_key() -> str:
+    """Read a single keypress."""
+    fd = sys.stdin.fileno()
+    old_settings = termios.tcgetattr(fd)
+    try:
+        tty.setraw(fd)
+        ch = sys.stdin.read(1)
+        if ch == "\x1b":  # Escape sequence
+            ch2 = sys.stdin.read(1)
+            if ch2 == "[":
+                ch3 = sys.stdin.read(1)
+                if ch3 == "A":
+                    return "up"
+                elif ch3 == "B":
+                    return "down"
+            return "esc"
+        elif ch == "\r" or ch == "\n":
+            return "enter"
+        elif ch == "\t":
+            return "tab"
+        elif ch == "q":
+            return "esc"
+        elif ch == "j":
+            return "down"
+        elif ch == "k":
+            return "up"
+        return ch
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+
+
+def render_menu(envs: list[str], current: str, selected: int):
+    """Render the interactive menu."""
+    # Header
+    print(f"\n  {DIM}Claude Code Environment{RESET}\n")
+
+    # Menu items
+    for i, env in enumerate(envs):
+        is_active = env == current
+        is_selected = i == selected
+
+        # Get provider info
+        name, desc = PROVIDERS.get(env, (env, ""))
+
+        # Build the line
+        if is_selected:
+            prefix = f"  {CYAN}❯{RESET} "
+            name_style = f"{BOLD}{WHITE}"
+            desc_style = f"{CYAN}"
+        else:
+            prefix = "    "
+            name_style = DIM
+            desc_style = DIM
+
+        # Show active marker
+        active_marker = f" {GREEN}●{RESET}" if is_active else ""
+
+        # Alias hint
+        alias = next((a for a, e in ALIASES.items() if e == env), None)
+        alias_hint = f" {DIM}({alias}){RESET}" if alias else ""
+
+        # Description
+        desc_text = f"  {desc_style}{desc}{RESET}" if desc else ""
+
+        print(f"{CLEAR_LINE}{prefix}{name_style}{name}{RESET}{alias_hint}{active_marker}{desc_text}")
+
+    # Footer
+    print(f"\n  {DIM}↑↓ navigate • enter run • tab switch • esc/q cancel{RESET}\n")
+
+
+def clear_menu(num_lines: int):
+    """Clear the rendered menu."""
+    for _ in range(num_lines):
+        sys.stdout.write(f"{MOVE_UP}{CLEAR_LINE}")
+    sys.stdout.flush()
+
+
+def interactive_select(envs: list[str], current: str) -> tuple[str | None, bool]:
+    """Show interactive menu. Returns (env, launch) or (None, False) if cancelled."""
+    selected = envs.index(current) if current in envs else 0
+    num_lines = len(envs) + 5  # header + items + footer
+
+    print(HIDE_CURSOR, end="", flush=True)
+    try:
+        render_menu(envs, current, selected)
+
+        while True:
+            key = get_key()
+
+            if key == "esc":
+                clear_menu(num_lines)
+                return None, False
+            elif key == "enter":
+                clear_menu(num_lines)
+                return envs[selected], True  # switch + launch
+            elif key == "tab":
+                clear_menu(num_lines)
+                return envs[selected], False  # switch only
+            elif key == "up":
+                selected = (selected - 1) % len(envs)
+            elif key == "down":
+                selected = (selected + 1) % len(envs)
+
+            clear_menu(num_lines)
+            render_menu(envs, current, selected)
+    finally:
+        print(SHOW_CURSOR, end="", flush=True)
+
+
+def switch_env(settings: dict, current: str, target: str) -> tuple[str | None, str | None]:
+    """Switch to target environment. Returns (keychain_msg, secret) - secret for env export."""
+    keychain_msg = None
+    secret = None
+
+    # Save current env (clean API key first for security)
+    current_env = settings.get("env", {}).copy()
+    current_env.pop("ANTHROPIC_AUTH_TOKEN", None)  # Remove sensitive data
+    settings[f"env.{current}"] = current_env
+
+    # Load target env config (without secrets for storage)
+    target_config = settings.get(f"env.{target}", {}).copy()
+
+    # Store clean config in settings (NO secrets in file!)
+    settings["env"] = target_config
+    settings["_activeEnv"] = target
+    SETTINGS.write_text(json.dumps(settings, indent=2) + "\n")
+
+    # Load secret from keychain (for runtime env export only)
+    keychain_service = target_config.get("_keychain")
+    if keychain_service:
+        secret = get_keychain_secret(keychain_service)
+        if secret:
+            keychain_msg = f"  {DIM}(key from keychain: {keychain_service}){RESET}"
+        else:
+            keychain_msg = f"  {YELLOW}⚠ keychain not found: {keychain_service}{RESET}"
+
+    return keychain_msg, secret
+
+
+def show_help():
+    """Print help message."""
+    print(f"""
+{BOLD}ce{RESET} - Claude Code Environment Switcher
+
+{DIM}Usage:{RESET}
+  ce                    TUI picker (enter=run, tab=switch, esc=cancel)
+  ce <env>              Switch + launch claude (e.g., ce z)
+  ce <env> <args>       Switch + launch with args (e.g., ce z --continue)
+  ce <args>             TUI picker + launch with args (e.g., ce --continue)
+
+{DIM}Environments:{RESET}
+  default (max)         Claude Max (Opus/Sonnet models)
+  vertex (v)            Google Vertex AI
+  copilot (cp)          GitHub Copilot proxy
+  zai (z)               z.ai GLM-4.7 (all tiers)
+  deepseek (ds)         DeepSeek (reasoner for Opus, chat for Sonnet/Haiku)
+
+{DIM}Navigation:{RESET}
+  ↑/↓ or j/k            Move selection
+  Enter                 Switch + launch claude
+  Tab                   Switch only (no launch)
+  Esc or q              Cancel
+""")
 
 
 def main():
+    # Handle --help
+    if "--help" in sys.argv or "-h" in sys.argv:
+        show_help()
+        sys.exit(0)
+
     settings = json.loads(SETTINGS.read_text())
+
+    # Ensure provider configs exist
+    ensure_deepseek_config(settings)
+    ensure_zai_config(settings)
+    SETTINGS.write_text(json.dumps(settings, indent=2) + "\n")
     current = settings.get("_activeEnv", "default")
 
-    # Get all available environments (deduplicated)
+    # Get all available environments
     env_set = {"default"} | {k[4:] for k in settings if k.startswith("env.") and k != "env"}
     envs = sorted(env_set)
 
-    # No args = list mode
-    if len(sys.argv) < 2:
-        print(f"Environment: {current}\n")
-        print("Available:")
-        for env in envs:
-            marker = "→" if env == current else " "
-            aliases = [a for a, e in ALIASES.items() if e == env]
-            alias_str = f" ({', '.join(aliases)})" if aliases else ""
-            print(f"  {marker} {env}{alias_str}")
-        return
+    # Parse arguments: first arg is env (if valid alias/name), rest goes to claude
+    args = sys.argv[1:]
+    target = None
+    claude_args = []
+    launch_claude = False
 
-    target = ALIASES.get(sys.argv[1], sys.argv[1])
+    if args:
+        first = args[0]
+        candidate = ALIASES.get(first, first)
 
-    if target not in envs:
-        print(f"Unknown environment: {target}")
-        print(f"Available: {', '.join(envs)}")
+        if candidate in envs:
+            # First arg is a valid env
+            target = candidate
+            claude_args = args[1:]
+            launch_claude = True  # Direct mode always launches
+        else:
+            # First arg is not an env → TUI mode with all args passed to claude
+            claude_args = args
+            target, launch_claude = interactive_select(envs, current)
+            if target is None:
+                print(f"{DIM}Cancelled{RESET}")
+                sys.exit(0)
+            # If TUI returned launch=True, use claude_args; otherwise ignore them
+            if not launch_claude:
+                claude_args = []
+    else:
+        # No args → TUI mode
+        target, launch_claude = interactive_select(envs, current)
+        if target is None:
+            print(f"{DIM}Cancelled{RESET}")
+            sys.exit(0)
+
+    # Check copilot proxy if switching to copilot
+    if target == "copilot" and not check_copilot_proxy():
+        print(f"{YELLOW}⚠ Copilot proxy is not running!{RESET}")
+        print(f"{DIM}Start it with: ~/.claude/scripts/copilot-proxy.sh{RESET}")
         sys.exit(1)
 
+    # Switch if needed
+    secret = None
     if target == current:
-        print(f"Already on {target}")
-        return
+        print(f"{DIM}Already on {target}{RESET}")
+        # Still need to load secret for launch
+        keychain_service = settings.get("env", {}).get("_keychain")
+        if keychain_service:
+            secret = get_keychain_secret(keychain_service)
+    else:
+        keychain_msg, secret = switch_env(settings, current, target)
+        print(f"{GREEN}●{RESET} {current} {DIM}→{RESET} {BOLD}{target}{RESET}")
+        if keychain_msg:
+            print(keychain_msg)
 
-    # Save current env to env.{current}
-    settings[f"env.{current}"] = settings.get("env", {})
-
-    # Load target env
-    target_key = f"env.{target}"
-    settings["env"] = settings.get(target_key, {})
-
-    # Update active marker
-    settings["_activeEnv"] = target
-
-    SETTINGS.write_text(json.dumps(settings, indent=2) + "\n")
-    print(f"{current} → {target}")
+    # Launch claude if requested
+    if launch_claude:
+        # Export secret as env var (never written to file)
+        if secret:
+            os.environ["ANTHROPIC_AUTH_TOKEN"] = secret
+        print(f"\n{DIM}Launching claude...{RESET}\n")
+        os.execlp("claude", "claude", *claude_args)
 
 
 if __name__ == "__main__":

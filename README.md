@@ -282,9 +282,9 @@ Modern CLI replacements are pre-configured for better performance.
 
 ### Custom Scripts
 
-| Script | Purpose                         |
-| ------ | ------------------------------- |
-| `ce`   | Environment switcher (max/v/cp) |
+| Script | Purpose                                           |
+| ------ | ------------------------------------------------- |
+| `ce`   | Interactive env switcher with TUI + claude launch |
 
 | Task         | Modern      | Traditional | Why                                 |
 | ------------ | ----------- | ----------- | ----------------------------------- |
@@ -327,16 +327,99 @@ Modern CLI replacements are pre-configured for better performance.
 
 ## Environment Switching
 
-Switch between Claude Code API providers:
+Interactive TUI to switch between Claude Code API providers.
+
+### Installation
 
 ```bash
-ce           # show current environment
-ce max       # Claude Max (default subscription)
-ce v         # Vertex
-ce cp        # Copilot proxy
+~/.claude/scripts/install-tools.sh  # includes ce installation
+# Or manually:
+ln -sf ~/.claude/scripts/ce ~/.local/bin/ce
 ```
 
-Aliases: `max`=default, `v`=vertex, `cp`=copilot
+### Usage
+
+```bash
+ce                    # TUI picker (↑↓ navigate, Enter=run, Tab=switch, Esc=cancel)
+ce z                  # Switch to z.ai + launch claude
+ce z --continue       # Switch + launch claude --continue
+ce --continue         # TUI picker + launch with --continue
+ce --help             # Show help
+```
+
+### Providers
+
+| Env      | Alias | Context | Output | Caching | Pricing |
+| -------- | ----- | ------- | ------ | ------- | ------- |
+| default  | max   | 200K    | 128K   | ✅      | $20/mo  |
+| vertex   | v     | 200K    | 128K   | ✅      | Pay/use |
+| copilot  | cp    | -       | -      | -       | Free    |
+| zai      | z     | 200K    | 128K   | ✅      | $0.40/M |
+| deepseek | ds    | 128K    | 64K    | ❌      | $0.28/M |
+
+#### Model Tier Mappings
+
+| Tier       | Anthropic       | DeepSeek               | z.ai          |
+| ---------- | --------------- | ---------------------- | ------------- |
+| **Opus**   | claude-opus-4   | deepseek-reasoner (R1) | glm-4.7       |
+| **Sonnet** | claude-sonnet-4 | deepseek-chat (V3)     | glm-4.7       |
+| **Haiku**  | claude-haiku    | deepseek-chat (V3)     | glm-4.5-flash |
+
+#### Limitations (Anthropic API compatibility)
+
+| Feature         | DeepSeek                      | z.ai               |
+| --------------- | ----------------------------- | ------------------ |
+| `budget_tokens` | ❌ Ignored                    | ❌ Not supported   |
+| `cache_control` | ❌ Ignored (caching disabled) | ✅ Supported       |
+| Thinking mode   | ✅ Auto (64K max)             | ✅ Auto (128K max) |
+
+**Security**: API keys are never written to settings.json. They're loaded from macOS Keychain at runtime and exported as `ANTHROPIC_AUTH_TOKEN` env var when launching claude.
+
+#### Valid Environment Variables
+
+Only these Claude Code env vars are used in provider configs:
+
+| Variable                         | Purpose                       |
+| -------------------------------- | ----------------------------- |
+| `ANTHROPIC_BASE_URL`             | API endpoint URL              |
+| `ANTHROPIC_DEFAULT_OPUS_MODEL`   | Model for opus tier           |
+| `ANTHROPIC_DEFAULT_SONNET_MODEL` | Model for sonnet tier         |
+| `ANTHROPIC_DEFAULT_HAIKU_MODEL`  | Model for haiku tier          |
+| `DISABLE_PROMPT_CACHING`         | Set to `1` to disable caching |
+
+**Note**: `API_TIMEOUT_MS`, `MAX_THINKING_TOKENS`, `DISABLE_TELEMETRY` are NOT valid Claude Code variables.
+
+### Keychain Support
+
+Secrets load from macOS Keychain automatically. Config with `_keychain` field:
+
+```json
+"env.zai": {
+  "ANTHROPIC_BASE_URL": "https://api.z.ai/api/anthropic",
+  "ANTHROPIC_DEFAULT_OPUS_MODEL": "glm-4.7",
+  "ANTHROPIC_DEFAULT_SONNET_MODEL": "glm-4.7",
+  "ANTHROPIC_DEFAULT_HAIKU_MODEL": "glm-4.5-flash",
+  "_keychain": "claude-zai"
+},
+"env.deepseek": {
+  "ANTHROPIC_BASE_URL": "https://api.deepseek.com/anthropic",
+  "ANTHROPIC_DEFAULT_OPUS_MODEL": "deepseek-reasoner",
+  "ANTHROPIC_DEFAULT_SONNET_MODEL": "deepseek-chat",
+  "ANTHROPIC_DEFAULT_HAIKU_MODEL": "deepseek-chat",
+  "DISABLE_PROMPT_CACHING": "1",
+  "_keychain": "deepseek-api"
+}
+```
+
+Store secret:
+
+```bash
+# z.ai
+security add-generic-password -s "claude-zai" -a "api" -w "your-key"
+
+# DeepSeek
+security add-generic-password -s "deepseek-api" -a "$USER" -w "your-deepseek-key"
+```
 
 ---
 

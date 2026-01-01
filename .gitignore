@@ -1,27 +1,66 @@
-# macOS
-.DS_Store
+# =============================================================================
+# Claude Code Runtime & Cache
+# =============================================================================
 
-# Claude Code runtime data
+# Database and cache
+__store.db
 cache/
-debug/
-file-history/
+stats-cache.json
+
+# Session data
 history.jsonl
-plans/
 session-env/
 shell-snapshots/
-stats-cache.json
+plans/
+todos/
+file-history/
+
+# Debug and telemetry
+debug/
 statsig/
 telemetry/
-todos/
-__store.db
 
-# IDE and plugins
+# =============================================================================
+# Local Configuration (machine-specific)
+# =============================================================================
+
+settings.local.json
+
+# =============================================================================
+# IDE & Plugins (installed separately)
+# =============================================================================
+
 ide/
 plugins/
 powerline/
 
+# =============================================================================
 # Project-specific data
+# =============================================================================
+
 projects/
 
-# Local settings (machine-specific)
-settings.local.json
+# =============================================================================
+# Scripts runtime
+# =============================================================================
+
+scripts/__pycache__/
+
+# =============================================================================
+# OS Generated
+# =============================================================================
+
+.DS_Store
+*.swp
+*.swo
+*~
+
+# =============================================================================
+# Secrets (should NEVER be committed)
+# =============================================================================
+
+*.key
+*.pem
+.env
+.env.*
+credentials.json
