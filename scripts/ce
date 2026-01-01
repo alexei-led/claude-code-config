@@ -131,8 +131,8 @@ def get_key() -> str:
             return "esc"
         elif ch == "\r" or ch == "\n":
             return "enter"
-        elif ch == "\t":
-            return "tab"
+        elif ch == " ":
+            return "space"
         elif ch == "q":
             return "esc"
         elif ch == "j":
@@ -144,15 +144,19 @@ def get_key() -> str:
         termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
 
 
-def render_menu(envs: list[str], current: str, selected: int):
+def render_menu(envs: list[str], current: str, selected: int, chosen: int | None):
     """Render the interactive menu."""
     # Header
-    print(f"\n  {DIM}Claude Code Environment{RESET}\n")
+    print()
+    print(f"  {BOLD}{CYAN}ce{RESET} {DIM}— Claude Environment Switcher{RESET}")
+    print(f"  {DIM}Switch between Claude Code API providers{RESET}")
+    print()
 
     # Menu items
     for i, env in enumerate(envs):
         is_active = env == current
         is_selected = i == selected
+        is_chosen = i == chosen
 
         # Get provider info
         name, desc = PROVIDERS.get(env, (env, ""))
@@ -161,14 +165,18 @@ def render_menu(envs: list[str], current: str, selected: int):
         if is_selected:
             prefix = f"  {CYAN}❯{RESET} "
             name_style = f"{BOLD}{WHITE}"
-            desc_style = f"{CYAN}"
+            desc_style = CYAN
         else:
             prefix = "    "
             name_style = DIM
             desc_style = DIM
 
-        # Show active marker
-        active_marker = f" {GREEN}●{RESET}" if is_active else ""
+        # Markers: chosen (✓), active (●)
+        markers = ""
+        if is_chosen:
+            markers += f" {GREEN}✓{RESET}"
+        if is_active:
+            markers += f" {GREEN}●{RESET}"
 
         # Alias hint
         alias = next((a for a, e in ALIASES.items() if e == env), None)
@@ -177,10 +185,12 @@ def render_menu(envs: list[str], current: str, selected: int):
         # Description
         desc_text = f"  {desc_style}{desc}{RESET}" if desc else ""
 
-        print(f"{CLEAR_LINE}{prefix}{name_style}{name}{RESET}{alias_hint}{active_marker}{desc_text}")
+        print(f"{CLEAR_LINE}{prefix}{name_style}{name}{RESET}{alias_hint}{markers}{desc_text}")
 
-    # Footer
-    print(f"\n  {DIM}↑↓ navigate • enter run • tab switch • esc/q cancel{RESET}\n")
+    # Footer with key mappings
+    print()
+    print(f"  {DIM}↑↓{RESET} move  {DIM}space{RESET} select  {DIM}enter{RESET} run claude  {DIM}esc{RESET} exit")
+    print()
 
 
 def clear_menu(num_lines: int):
@@ -190,14 +200,19 @@ def clear_menu(num_lines: int):
     sys.stdout.flush()
 
 
-def interactive_select(envs: list[str], current: str) -> tuple[str | None, bool]:
-    """Show interactive menu. Returns (env, launch) or (None, False) if cancelled."""
+def interactive_select(envs: list[str], current: str, settings: dict) -> tuple[str | None, bool]:
+    """Show interactive menu. Returns (env, launch) or (None, False) if cancelled.
+
+    Space immediately switches env (saves to settings).
+    Enter launches claude with current active env.
+    """
     selected = envs.index(current) if current in envs else 0
-    num_lines = len(envs) + 5  # header + items + footer
+    active = current  # Track active env (updated by Space)
+    num_lines = len(envs) + 7  # blank + header + desc + blank + items + blank + footer + blank
 
     print(HIDE_CURSOR, end="", flush=True)
     try:
-        render_menu(envs, current, selected)
+        render_menu(envs, active, selected, None)
 
         while True:
             key = get_key()
@@ -207,17 +222,20 @@ def interactive_select(envs: list[str], current: str) -> tuple[str | None, bool]
                 return None, False
             elif key == "enter":
                 clear_menu(num_lines)
-                return envs[selected], True  # switch + launch
-            elif key == "tab":
-                clear_menu(num_lines)
-                return envs[selected], False  # switch only
+                return active, True  # launch with current active env
+            elif key == "space":
+                # Switch to selected env immediately
+                new_env = envs[selected]
+                if new_env != active:
+                    switch_env(settings, active, new_env)
+                    active = new_env
             elif key == "up":
                 selected = (selected - 1) % len(envs)
             elif key == "down":
                 selected = (selected + 1) % len(envs)
 
             clear_menu(num_lines)
-            render_menu(envs, current, selected)
+            render_menu(envs, active, selected, None)
     finally:
         print(SHOW_CURSOR, end="", flush=True)
 
@@ -255,11 +273,11 @@ def switch_env(settings: dict, current: str, target: str) -> tuple[str | None, s
 def show_help():
     """Print help message."""
     print(f"""
-{BOLD}ce{RESET} - Claude Code Environment Switcher
+{BOLD}{CYAN}ce{RESET} {DIM}— Claude Environment Switcher{RESET}
 
 {DIM}Usage:{RESET}
-  ce                    TUI picker (enter=run, tab=switch, esc=cancel)
-  ce <env>              Switch + launch claude (e.g., ce z)
+  ce                    Interactive TUI picker
+  ce <env>              Switch + launch (e.g., ce z)
   ce <env> <args>       Switch + launch with args (e.g., ce z --continue)
   ce <args>             TUI picker + launch with args (e.g., ce --continue)
 
@@ -270,11 +288,11 @@ def show_help():
   zai (z)               z.ai GLM-4.7 (all tiers)
   deepseek (ds)         DeepSeek (reasoner for Opus, chat for Sonnet/Haiku)
 
-{DIM}Navigation:{RESET}
-  ↑/↓ or j/k            Move selection
-  Enter                 Switch + launch claude
-  Tab                   Switch only (no launch)
-  Esc or q              Cancel
+{DIM}Keys:{RESET}
+  ↑↓ / jk               Move cursor
+  Space                 Select provider (saves to settings)
+  Enter                 Run claude with selected provider
+  Esc / q               Exit
 """)
 
 
@@ -314,18 +332,16 @@ def main():
         else:
             # First arg is not an env → TUI mode with all args passed to claude
             claude_args = args
-            target, launch_claude = interactive_select(envs, current)
+            target, launch_claude = interactive_select(envs, current, settings)
             if target is None:
-                print(f"{DIM}Cancelled{RESET}")
                 sys.exit(0)
             # If TUI returned launch=True, use claude_args; otherwise ignore them
             if not launch_claude:
                 claude_args = []
     else:
         # No args → TUI mode
-        target, launch_claude = interactive_select(envs, current)
+        target, launch_claude = interactive_select(envs, current, settings)
         if target is None:
-            print(f"{DIM}Cancelled{RESET}")
             sys.exit(0)
 
     # Check copilot proxy if switching to copilot
@@ -334,19 +350,28 @@ def main():
         print(f"{DIM}Start it with: ~/.claude/scripts/copilot-proxy.sh{RESET}")
         sys.exit(1)
 
-    # Switch if needed
+    # Reload settings (TUI may have modified via Space)
+    settings = json.loads(SETTINGS.read_text())
+    current_active = settings.get("_activeEnv", "default")
+
+    # Switch if needed (only for direct CLI mode, TUI already switched via Space)
     secret = None
-    if target == current:
-        print(f"{DIM}Already on {target}{RESET}")
-        # Still need to load secret for launch
-        keychain_service = settings.get("env", {}).get("_keychain")
-        if keychain_service:
-            secret = get_keychain_secret(keychain_service)
+    if target == current_active:
+        # Already on target (either no switch needed, or TUI already switched)
+        pass
     else:
-        keychain_msg, secret = switch_env(settings, current, target)
-        print(f"{GREEN}●{RESET} {current} {DIM}→{RESET} {BOLD}{target}{RESET}")
+        # Direct CLI mode: need to switch
+        keychain_msg, secret = switch_env(settings, current_active, target)
+        print(f"{GREEN}●{RESET} {current_active} {DIM}→{RESET} {BOLD}{target}{RESET}")
         if keychain_msg:
             print(keychain_msg)
+
+    # Load secret for launch (if not already loaded from switch)
+    if secret is None:
+        target_config = settings.get(f"env.{target}", settings.get("env", {}))
+        keychain_service = target_config.get("_keychain")
+        if keychain_service:
+            secret = get_keychain_secret(keychain_service)
 
     # Launch claude if requested
     if launch_claude:

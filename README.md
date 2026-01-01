@@ -340,12 +340,21 @@ ln -sf ~/.claude/scripts/ce ~/.local/bin/ce
 ### Usage
 
 ```bash
-ce                    # TUI picker (↑↓ navigate, Enter=run, Tab=switch, Esc=cancel)
+ce                    # TUI picker (↑↓ navigate, Space=select, Enter=confirm, Esc=cancel)
 ce z                  # Switch to z.ai + launch claude
 ce z --continue       # Switch + launch claude --continue
 ce --continue         # TUI picker + launch with --continue
 ce --help             # Show help
 ```
+
+### Keys
+
+| Key     | Action                            |
+| ------- | --------------------------------- |
+| ↑↓ / jk | Move cursor                       |
+| Space   | Select provider (saves to config) |
+| Enter   | Run claude with selected provider |
+| Esc / q | Exit                              |
 
 ### Providers
 
