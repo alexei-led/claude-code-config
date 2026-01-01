@@ -1,0 +1,65 @@
+#!/usr/bin/env python3
+"""Claude Code environment switcher.
+
+Usage:
+  ce           # show current + list available
+  ce max       # switch to default (Claude Max)
+  ce vertex|v  # switch to Vertex
+  ce copilot|cp # switch to Copilot
+"""
+
+import json
+import sys
+from pathlib import Path
+
+SETTINGS = Path.home() / ".claude" / "settings.json"
+
+ALIASES = {"max": "default", "v": "vertex", "cp": "copilot"}
+
+
+def main():
+    settings = json.loads(SETTINGS.read_text())
+    current = settings.get("_activeEnv", "default")
+
+    # Get all available environments (deduplicated)
+    env_set = {"default"} | {k[4:] for k in settings if k.startswith("env.") and k != "env"}
+    envs = sorted(env_set)
+
+    # No args = list mode
+    if len(sys.argv) < 2:
+        print(f"Environment: {current}\n")
+        print("Available:")
+        for env in envs:
+            marker = "→" if env == current else " "
+            aliases = [a for a, e in ALIASES.items() if e == env]
+            alias_str = f" ({', '.join(aliases)})" if aliases else ""
+            print(f"  {marker} {env}{alias_str}")
+        return
+
+    target = ALIASES.get(sys.argv[1], sys.argv[1])
+
+    if target not in envs:
+        print(f"Unknown environment: {target}")
+        print(f"Available: {', '.join(envs)}")
+        sys.exit(1)
+
+    if target == current:
+        print(f"Already on {target}")
+        return
+
+    # Save current env to env.{current}
+    settings[f"env.{current}"] = settings.get("env", {})
+
+    # Load target env
+    target_key = f"env.{target}"
+    settings["env"] = settings.get(target_key, {})
+
+    # Update active marker
+    settings["_activeEnv"] = target
+
+    SETTINGS.write_text(json.dumps(settings, indent=2) + "\n")
+    print(f"{current} → {target}")
+
+
+if __name__ == "__main__":
+    main()

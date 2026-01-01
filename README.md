@@ -280,6 +280,12 @@ Modern CLI replacements are pre-configured for better performance.
 ~/.claude/scripts/install-tools.sh
 ```
 
+### Custom Scripts
+
+| Script | Purpose                         |
+| ------ | ------------------------------- |
+| `ce`   | Environment switcher (max/v/cp) |
+
 | Task         | Modern      | Traditional | Why                                 |
 | ------------ | ----------- | ----------- | ----------------------------------- |
 | Search text  | `rg`        | grep        | 10-100x faster, respects .gitignore |
@@ -319,6 +325,21 @@ Modern CLI replacements are pre-configured for better performance.
 
 ---
 
+## Environment Switching
+
+Switch between Claude Code API providers:
+
+```bash
+ce           # show current environment
+ce max       # Claude Max (default subscription)
+ce v         # Vertex
+ce cp        # Copilot proxy
+```
+
+Aliases: `max`=default, `v`=vertex, `cp`=copilot
+
+---
+
 ## Copilot Proxy (Rate Limit Fallback)
 
 ```bash
@@ -326,8 +347,6 @@ Modern CLI replacements are pre-configured for better performance.
 ~/.claude/scripts/copilot-proxy.sh --status  # Check
 ~/.claude/scripts/copilot-proxy.sh --stop    # Stop
 ```
-
-Switch configs: edit `settings.json`, swap `env` ↔ `env.copilot`/`env.vertex`.
 
 ---
 
