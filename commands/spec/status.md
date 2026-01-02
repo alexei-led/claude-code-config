@@ -3,32 +3,27 @@ allowed-tools: Task
 description: Quick progress check for spec-driven development
 ---
 
-# Spec-Driven Development Status
+# Spec Status
 
-Spawn an **Explore** agent (subagent_type: Explore) with this prompt:
+Quick snapshot of spec-driven development progress.
+
+Spawn **Explore** agent (Task with subagent_type: Explore) to gather and report:
 
 ```
-Gather spec-driven development project status:
+Spec-driven development status check:
 
-1. Run feature progress commands:
-   - `jq length feature_list.json`
-   - `jq '[.[] | select(.passes == true)] | length' feature_list.json`
-   - `jq '[.[] | select(.passes == false)] | length' feature_list.json`
+1. Read `claude-progress.txt` first - last session summary, what's next
+2. Query `feature_list.json`:
+   - Total: `jq length feature_list.json`
+   - Passing: `jq '[.[] | select(.passes == true)] | length' feature_list.json`
+   - Failing: `jq '[.[] | select(.passes == false)] | length' feature_list.json`
+3. Run `git log --oneline -5` for recent commits
 
-2. Run: `git log --oneline -5`
-
-3. Read: `claude-progress.txt`
-
-4. Calculate: passing/total percentage, estimate remaining sessions
-
-Return concise status:
-
-SPEC STATUS
-===========
-Features: X/Y passing (Z%)
-Recent commits: [list]
-Last session: [summary]
-Estimated remaining: ~N sessions
+Return concise report:
+- Progress: X/Y passing (Z%)
+- Last session: [from claude-progress.txt]
+- Next recommended: [from claude-progress.txt or highest priority failing feature]
+- Estimated remaining: ~N sessions at current pace
 ```
 
-Display the agent's status report to the user.
+Display the agent's report.
