@@ -57,7 +57,11 @@ If regressions found: mark feature `"passes": false`, fix before proceeding.
 3. Spawn appropriate engineer agent (go-engineer, python-engineer, typescript-engineer):
    - Provide: feature description, steps, and ultrathink conclusions
    - Request: detailed implementation steps, testing strategy
-4. Present plan summary to user
+4. **Clarify ambiguities**: Use AskUserQuestion for any unclear requirements:
+   - Implementation choices (library, pattern, approach)
+   - UI/UX decisions not specified in app_spec.txt
+   - Edge cases and error handling preferences
+5. Present plan summary to user
 
 **STOP**: Use AskUserQuestion for approval before implementation.
 
