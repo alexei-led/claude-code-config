@@ -67,6 +67,18 @@
   },
   "disabledMcpjsonServers": [],
   "hooks": {
+    "SessionStart": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/session-start.sh",
+            "timeout": 3
+          }
+        ]
+      }
+    ],
     "UserPromptSubmit": [
       {
         "matcher": ".*",
@@ -128,7 +140,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "bunx -y @owloops/claude-powerline --style=powerline",
+    "command": "bunx -y @owloops/claude-powerline",
     "padding": 0
   },
   "enabledPlugins": {
