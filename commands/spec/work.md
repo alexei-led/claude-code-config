@@ -1,5 +1,5 @@
 ---
-allowed-tools: Task, SlashCommand, AskUserQuestion, TodoWrite
+allowed-tools: Task, SlashCommand, AskUserQuestion, TodoWrite, Bash(git checkout:*), Bash(git branch:*), mcp__sequential-thinking__sequentialthinking
 description: Continue spec-driven development session
 ---
 
@@ -10,6 +10,7 @@ Continue spec-driven development. This is a fresh context window.
 ## Guardrails
 
 - **Progress-first**: Always start with `claude-progress.txt`
+- **Branch-per-feature**: Work in `feature/<name>` branch, not main
 - **User-approval**: Explicit approval before implementation and commits
 - **Passes-only**: Only modify `"passes"` field in `feature_list.json`
 - **Fix-first**: Repair regressions before implementing new features
@@ -49,10 +50,14 @@ If regressions found: mark feature `"passes": false`, fix before proceeding.
 ## Phase 2: Planning
 
 1. Select highest-priority failing feature from `feature_list.json`
-2. Spawn appropriate engineer agent (go-engineer, python-engineer, typescript-engineer):
-   - Provide: feature description and steps from `feature_list.json`
-   - Request: architecture overview, implementation steps, testing strategy, risks
-3. Present plan summary to user
+2. **Ultrathink**: Use `mcp__sequential-thinking__sequentialthinking` to reason through:
+   - Architecture decisions and trade-offs
+   - Implementation approach and risks
+   - How this feature integrates with existing code
+3. Spawn appropriate engineer agent (go-engineer, python-engineer, typescript-engineer):
+   - Provide: feature description, steps, and ultrathink conclusions
+   - Request: detailed implementation steps, testing strategy
+4. Present plan summary to user
 
 **STOP**: Use AskUserQuestion for approval before implementation.
 
@@ -60,10 +65,11 @@ If regressions found: mark feature `"passes": false`, fix before proceeding.
 
 ## Phase 3: Implementation
 
-1. Create TodoWrite from approved plan
-2. Implement step-by-step (language skills will guide patterns)
-3. Verify with `/test:e2e` - browser automation with screenshots
-4. Update `feature_list.json`: only `"passes": false` → `true` after verification
+1. **Create feature branch**: `git checkout -b feature/<feature-name>`
+2. Create TodoWrite from approved plan
+3. Implement step-by-step (language skills will guide patterns)
+4. Verify with `/test:e2e` - browser automation with screenshots
+5. Update `feature_list.json`: only `"passes": false` → `true` after verification
 
 ---
 
