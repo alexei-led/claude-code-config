@@ -8,12 +8,18 @@ allowed-tools: Task, Read, Grep, Glob, mcp__perplexity-ask__perplexity_ask
 
 Two modes: **quick** (MCP direct) or **deep** (Task-based with context).
 
-## When to Use
+## When to Use This Skill (Perplexity)
 
-- Best practices and recommendations
-- Current information (releases, news)
-- Comparisons between technologies
-- Factual questions about tools/libraries
+| Use Perplexity For                 | Use Gemini For                 |
+| ---------------------------------- | ------------------------------ |
+| Technology comparisons (X vs Y)    | Current events, breaking news  |
+| Best practices, industry standards | Real-time data (<24 hours old) |
+| OWASP, security guidelines         | Live pricing, availability     |
+| Documentation references           | Recent releases, changelogs    |
+| Stable technical content           | Rapidly changing information   |
+
+**Default to Perplexity** for most technical research.
+**Use Gemini** when recency is critical (today's news, live data).
 
 ## Quick Mode (Simple Queries)
 

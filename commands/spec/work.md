@@ -1,11 +1,20 @@
 ---
-allowed-tools: Task, SlashCommand, AskUserQuestion, TodoWrite, Bash(git checkout:*), Bash(git branch:*), mcp__sequential-thinking__sequentialthinking
+allowed-tools: Task, SlashCommand, AskUserQuestion, TodoWrite, Bash(git checkout:*), Bash(git branch:*), Bash(git status:*), mcp__sequential-thinking__sequentialthinking
 description: Continue spec-driven development session
 ---
 
 # Spec Work
 
 Continue spec-driven development. This is a fresh context window.
+
+## Context Recovery (if session was interrupted)
+
+Check for interrupted work FIRST:
+
+1. `git status` - any uncommitted changes?
+2. Read `claude-progress.txt` - what was "next"?
+3. If mid-implementation: continue from that phase
+4. If changes uncommitted: review and commit or discard
 
 ## Guardrails
 
@@ -72,8 +81,22 @@ If regressions found: mark feature `"passes": false`, fix before proceeding.
 1. **Create feature branch**: `git checkout -b feature/<feature-name>`
 2. Create TodoWrite from approved plan
 3. Implement step-by-step (language skills will guide patterns)
-4. Verify with `/test:e2e` - browser automation with screenshots
-5. Update `feature_list.json`: only `"passes": false` → `true` after verification
+
+---
+
+## Phase 3.5: Verification
+
+Before marking feature complete, verify ALL:
+
+1. **Build**: `make build` or equivalent compiles clean
+2. **Test**: `make test` - ALL tests pass
+3. **Lint**: `make lint` - ZERO issues
+4. **Functionality**: `/test:e2e` or manual verification
+5. **Regression check**: Quick test 1-2 previously passing features still work
+
+Only after ALL pass: Update `feature_list.json` with `"passes": true`
+
+If regression found: mark affected feature `"passes": false`, fix before proceeding.
 
 ---
 

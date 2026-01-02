@@ -275,9 +275,9 @@ bun run format           # Format (prettier)
 2. Validate no `any` types slipped in
 3. Ensure exhaustive switches
 
-## Verification Checklist
+## Verification Checklist (MANDATORY)
 
-Before marking work complete:
+**NEVER declare work complete until ALL checks pass:**
 
 - [ ] `bun run build` passes (no type errors)
 - [ ] `bun test` passes

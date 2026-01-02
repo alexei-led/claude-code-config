@@ -361,9 +361,9 @@ pyright src/
 2. Validate type hints: `mypy src/` or `pyright src/`
 3. Document public APIs with docstrings
 
-## Verification Checklist
+## Verification Checklist (MANDATORY)
 
-Before marking work complete:
+**NEVER declare work complete until ALL checks pass:**
 
 - [ ] `ruff check .` passes
 - [ ] `ruff format --check .` passes

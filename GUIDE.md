@@ -66,17 +66,20 @@ flowchart TB
 ```mermaid
 flowchart LR
     subgraph Events
+        SS[SessionStart]
         UPS[UserPromptSubmit]
         PTU[PreToolUse]
         POTU[PostToolUse]
     end
 
     subgraph Hooks
+        SSS[session-start]
         SE[skill-enforcer]
         FP[file-protector]
         SL[smart-lint]
     end
 
+    SS --> SSS
     UPS --> SE
     PTU --> FP
     POTU --> SL
@@ -84,18 +87,82 @@ flowchart LR
 
 ---
 
+## Master-Clone Pattern
+
+**Key insight from Anthropic research**: Don't create highly specialized "expert" subagents. They're brittle and often underperform.
+
+### The Pattern
+
+Instead of creating custom specialists, **clone the main agent with a focused prompt**:
+
+```
+Main Agent (full capabilities)
+    ├── Clone + "Review this Go code for security issues"
+    ├── Clone + "Implement this feature following existing patterns"
+    └── Clone + "Research best practices for X"
+```
+
+### Why It Works
+
+1. **Same capabilities** - Clones inherit all tools, skills, and context
+2. **Focused attention** - Narrow prompt = focused output
+3. **No brittleness** - No custom logic that can break
+4. **Parallel execution** - Multiple clones work simultaneously
+
+### Implementation
+
+Your engineer agents (`go-engineer`, `python-engineer`, `typescript-engineer`) follow this pattern:
+
+```yaml
+model: opus # Same powerful model
+tools: [Read, Edit, Write, Bash, ...] # Full tool access
+skills: [writing-go, looking-up-docs, ...] # Skill inheritance
+---
+You are an Expert Go Engineer... # Focused prompt
+```
+
+They're not "lesser" agents - they're the **main agent with focused instructions**.
+
+### When to Use Subagents
+
+| Scenario               | Approach                         |
+| ---------------------- | -------------------------------- |
+| Deep code analysis     | Clone with analysis prompt       |
+| Parallel exploration   | Multiple clones, different areas |
+| Feature implementation | Engineer agent (focused clone)   |
+| Research task          | Researcher agent (focused clone) |
+| Simple lookup          | Direct MCP tool call (no agent)  |
+
+### Anti-Patterns to Avoid
+
+1. **Over-specialized agents** - Agent that only does one narrow thing
+2. **Custom tool restrictions** - Limiting tools "for safety" often backfires
+3. **Chained agents** - Agent A calls Agent B calls Agent C (fragile)
+4. **Stateful agents** - Agents that need to remember across invocations
+
+---
+
+## Skill vs Agent vs Command
+
+| Component   | When to Use                  | Context Impact            |
+| ----------- | ---------------------------- | ------------------------- |
+| **Skill**   | Inject knowledge/patterns    | Loaded on-demand, minimal |
+| **Agent**   | Parallel work, deep analysis | Separate context window   |
+| **Command** | User-invoked workflows       | Orchestrates agents/tools |
+
+---
+
 ## Commands
 
 ### Code Quality (`/code:*`)
 
-| Command              | Description                        | Example                            |
-| -------------------- | ---------------------------------- | ---------------------------------- |
-| `/code:fix`          | Zero-tolerance quality enforcement | `/code:fix`                        |
-| `/code:review`       | Multi-agent code review            | `/code:review deep external`       |
-| `/code:consult`      | Codex consultation                 | `/code:consult review "auth flow"` |
-| `/code:docs`         | Documentation updates              | `/code:docs`                       |
-| `/code:deploy-check` | K8s/CI validation                  | `/code:deploy-check`               |
-| `/code:commit`       | Smart commit grouping              | `/code:commit`                     |
+| Command              | Description                        | Example                      |
+| -------------------- | ---------------------------------- | ---------------------------- |
+| `/code:fix`          | Zero-tolerance quality enforcement | `/code:fix`                  |
+| `/code:review`       | Multi-agent code review            | `/code:review deep external` |
+| `/code:docs`         | Documentation updates              | `/code:docs`                 |
+| `/code:deploy-check` | K8s/CI validation                  | `/code:deploy-check`         |
+| `/code:commit`       | Smart commit grouping              | `/code:commit`               |
 
 #### `/code:review` Modes
 
@@ -104,14 +171,6 @@ flowchart LR
 /code:review deep            # 6-12 specialized sub-agents
 /code:review external        # Engineers + Codex + Gemini
 /code:review deep external   # All sub-agents + external AI
-```
-
-#### `/code:consult` Modes
-
-```bash
-/code:consult "question"           # General consultation
-/code:consult review "topic"       # Code review mode
-/code:consult plan "feature"       # Implementation planning
 ```
 
 ### AI Consultation (`/ai:consult`)
@@ -323,10 +382,23 @@ sequenceDiagram
 
 | Hook                | Event            | Purpose                   |
 | ------------------- | ---------------- | ------------------------- |
+| `session-start.sh`  | SessionStart     | Project context on start  |
 | `skill-enforcer.sh` | UserPromptSubmit | Suggests relevant skills  |
 | `file-protector.sh` | PreToolUse       | Protects sensitive files  |
 | `smart-lint.sh`     | PostToolUse      | Auto-lints modified files |
 | `notify.sh`         | Notification     | Desktop notifications     |
+
+### Configuration
+
+Hooks read from `~/.claude/hook-config.json` for easy customization:
+
+```json
+{
+  "fileProtector": { "protectedPatterns": [...] },
+  "smartLint": { "excludePatterns": [...] },
+  "performanceMonitor": { "contextWarningThreshold": 0.10 }
+}
+```
 
 ### smart-lint.sh
 

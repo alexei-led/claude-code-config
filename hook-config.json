@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Configuration for Claude Code hooks - externalized patterns for easy customization",
+  "fileProtector": {
+    "protectedPatterns": [
+      "\\.env$",
+      "\\.env\\.",
+      "/\\.env$",
+      "secrets/",
+      "secret[s]?\\.",
+      "\\.key$",
+      "\\.pem$",
+      "\\.p12$",
+      "\\.pfx$",
+      "\\.ssh/",
+      "id_rsa",
+      "id_ed25519",
+      "credentials",
+      "password",
+      "\\.secret$",
+      "api[_-]?key",
+      "auth[_-]?token"
+    ],
+    "lockFilePatterns": [
+      "package-lock\\.json$",
+      "yarn\\.lock$",
+      "pnpm-lock\\.yaml$",
+      "go\\.sum$",
+      "Cargo\\.lock$",
+      "poetry\\.lock$",
+      "Gemfile\\.lock$",
+      "composer\\.lock$"
+    ]
+  },
+  "smartLint": {
+    "excludePatterns": [
+      "node_modules/",
+      "vendor/",
+      "venv/",
+      ".venv/",
+      "env/",
+      "virtualenv/",
+      "dist/",
+      "build/",
+      "target/",
+      ".tox/",
+      ".eggs/",
+      "__pycache__/",
+      ".pytest_cache/",
+      ".mypy_cache/",
+      ".cargo/",
+      ".next/",
+      ".nuxt/",
+      "coverage/"
+    ]
+  },
+  "performanceMonitor": {
+    "contextWarningThreshold": 0.10,
+    "largeFileThreshold": 1000,
+    "maxCommandsWarning": 10,
+    "metricsRetentionDays": 30
+  },
+  "skillEnforcer": {
+    "minPromptLength": 10,
+    "skipPatterns": [
+      "^(yes|no|ok|sure|thanks|done|continue|proceed)$"
+    ]
+  }
+}

@@ -284,9 +284,9 @@ func (h *Handler) UpdateItem(w http.ResponseWriter, r *http.Request) {
 2. Validate Go idioms and error handling
 3. Document architectural decisions if significant
 
-## Verification Checklist
+## Verification Checklist (MANDATORY)
 
-Before marking work complete:
+**NEVER declare work complete until ALL checks pass:**
 
 - [ ] `go build ./...` passes
 - [ ] `go test -race ./...` passes

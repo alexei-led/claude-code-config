@@ -8,6 +8,19 @@ allowed-tools: Task
 
 Spawn the **gemini-researcher** agent for real-time web searches with Google grounding.
 
+## When to Use This Skill (Gemini)
+
+| Use Gemini For                 | Use Perplexity For                 |
+| ------------------------------ | ---------------------------------- |
+| Current events, breaking news  | Technology comparisons (X vs Y)    |
+| Real-time data (<24 hours old) | Best practices, industry standards |
+| Live pricing, availability     | OWASP, security guidelines         |
+| Recent releases, changelogs    | Documentation references           |
+| Rapidly changing information   | Stable technical content           |
+
+**Use Gemini** when recency is critical (today's news, live data).
+**Default to Perplexity** for most technical research.
+
 ## Foreground (blocking)
 
 ```

@@ -3,6 +3,47 @@
 Build production-quality code together. Create maintainable, efficient solutions and catch issues early.
 My guidance helps when you're stuck—ask for it.
 
+## Spec-Driven Development
+
+When working in spec-driven projects (detected by `feature_list.json`):
+
+### Session Start (automatic via SessionStart hook)
+
+- Git branch and last commit shown
+- Feature progress displayed (X/Y passing, Z%)
+- Recent progress notes highlighted
+- Uncommitted changes warned
+
+### One Feature Per Session
+
+Focus on ONE failing feature. Complete it fully before starting another.
+Use `jq '[.[] | select(.passes==false)][0]' feature_list.json` to find next.
+
+### Feature Completion Protocol
+
+NEVER mark `"passes": true` until ALL pass:
+
+1. **Build**: `make build` or equivalent - compiles clean
+2. **Test**: `make test` - ALL tests pass
+3. **Lint**: `make lint` - ZERO issues
+4. **Verify**: Manual or E2E verification of functionality
+
+### Session End
+
+Update `claude-progress.txt` with:
+
+- Features completed (X/Y → A/B)
+- What to work on next
+- Any blockers or decisions needed
+
+### Context Recovery
+
+If session was interrupted:
+
+1. Check `git status` for uncommitted changes
+2. Read "What to work on next" from progress file
+3. Continue from last phase
+
 ## Automated Checks are Mandatory
 
 All hook issues are BLOCKING—everything must be GREEN. Fix ALL issues before continuing.
