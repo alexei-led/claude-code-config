@@ -61,9 +61,12 @@
       "Bash(npx playwright:*)",
       "Bash(bunx playwright:*)",
       "WebFetch",
-      "WebSearch"
+      "WebSearch",
+      "mcp__morphllm__warpgrep_codebase_search"
     ],
-    "ask": []
+    "ask": [
+      "mcp__morphllm__edit_file"
+    ]
   },
   "disabledMcpjsonServers": [],
   "hooks": {
@@ -93,7 +96,7 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "Write|Edit|MultiEdit",
+        "matcher": "Write|Edit|MultiEdit|mcp__morphllm__edit_file",
         "hooks": [
           {
             "type": "command",
@@ -105,7 +108,7 @@
     ],
     "PostToolUse": [
       {
-        "matcher": "Write|Edit|MultiEdit",
+        "matcher": "Write|Edit|MultiEdit|mcp__morphllm__edit_file",
         "hooks": [
           {
             "type": "command",

@@ -105,6 +105,18 @@ if echo "$PROMPT_LOWER" | grep -qE 'e2e\s*(test|testing)|end[\s-]?to[\s-]?end\s*
 	skills+="testing-e2e "
 fi
 
+# searching-code: Intelligent codebase search via WarpGrep
+# Triggers: Understanding code flow, tracing, cross-file exploration, large repos
+if echo "$PROMPT_LOWER" | grep -qE 'how\s*does.*work|trace.*(flow|data|request|call)|understand.*(codebase|code|flow|architecture)|find\s*all.*(implementation|usage|call|reference)|cross[\s-]?file|multi[\s-]?hop|where.*implemented|explore.*(codebase|code)|large\s*repo|warpgrep|intelligent\s*search|reason.*about.*code'; then
+	skills+="searching-code "
+fi
+
+# refactoring-fast: Fast batch refactoring via MorphLLM edit_file
+# Triggers: Batch edits, large files, multi-location changes, fast apply
+if echo "$PROMPT_LOWER" | grep -qE 'refactor.*(across|multiple|batch|all)|batch.*(edit|rename|update|change)|rename.*(across|everywhere|all)|update.*(pattern|import).*everywhere|large\s*file|500\+?\s*lines|fast\s*apply|morphllm|edit_file|multi[\s-]?location|structural\s*refactor|5\+?\s*edits'; then
+	skills+="refactoring-fast "
+fi
+
 # Output only if skills detected (silent when no match)
 if [[ -n "$skills" ]]; then
 	skills="${skills% }"

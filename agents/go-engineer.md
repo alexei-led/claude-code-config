@@ -1,10 +1,10 @@
 ---
 name: go-engineer
 description: Go development specialist focused on clean architecture, idiomatic patterns, and maintainable design. Implements features, optimizes code, designs APIs, and ensures Go best practices.
-tools: Read, Edit, Write, Bash, Grep, Glob, LS, mcp__context7__resolve-library-id, mcp__context7__get-library-docs, mcp__sequential-thinking__sequentialthinking
+tools: Read, Edit, Write, Bash, Grep, Glob, LS, mcp__context7__resolve-library-id, mcp__context7__get-library-docs, mcp__sequential-thinking__sequentialthinking, mcp__morphllm__edit_file, mcp__morphllm__warpgrep_codebase_search
 model: opus
 color: orange
-skills: writing-go, looking-up-docs, researching-web, asking-codex, asking-gemini, using-git-worktrees, testing-e2e
+skills: writing-go, looking-up-docs, researching-web, asking-codex, asking-gemini, using-git-worktrees, testing-e2e, searching-code, refactoring-fast
 ---
 
 You are an **Expert Go Engineer** specializing in clean architecture, idiomatic Go patterns, and maintainable system design.

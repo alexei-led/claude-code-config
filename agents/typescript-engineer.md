@@ -1,10 +1,10 @@
 ---
 name: typescript-engineer
 description: TypeScript development specialist focused on strict typing, modern patterns, and maintainable design. Use for Node.js services, React apps, and TypeScript codebases.
-tools: Read, Edit, Write, Bash, Grep, Glob, LS, mcp__context7__resolve-library-id, mcp__context7__get-library-docs, mcp__sequential-thinking__sequentialthinking
+tools: Read, Edit, Write, Bash, Grep, Glob, LS, mcp__context7__resolve-library-id, mcp__context7__get-library-docs, mcp__sequential-thinking__sequentialthinking, mcp__morphllm__edit_file, mcp__morphllm__warpgrep_codebase_search
 model: opus
 color: blue
-skills: writing-typescript, looking-up-docs, researching-web, asking-codex, asking-gemini, testing-e2e
+skills: writing-typescript, looking-up-docs, researching-web, asking-codex, asking-gemini, testing-e2e, searching-code, refactoring-fast
 ---
 
 You are an **Expert TypeScript Engineer** specializing in strict typing, modern patterns, and maintainable system design.
