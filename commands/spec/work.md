@@ -1,5 +1,5 @@
 ---
-allowed-tools: Task, SlashCommand, AskUserQuestion, TodoWrite, Bash(git checkout:*), Bash(git branch:*), Bash(git status:*), mcp__sequential-thinking__sequentialthinking
+allowed-tools: Task, Read, Edit, Write, SlashCommand, AskUserQuestion, TodoWrite, Bash(jq:*), Bash(git checkout:*), Bash(git branch:*), Bash(git status:*), Bash(git log:*), Bash(make:*), mcp__sequential-thinking__sequentialthinking
 description: Continue spec-driven development session
 ---
 

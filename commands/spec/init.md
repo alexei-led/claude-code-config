@@ -1,5 +1,5 @@
 ---
-allowed-tools: Task, Read, Bash(git:*), Bash(mkdir:*), Bash(ls:*), LS, Glob, Write
+allowed-tools: Task, Read, Edit, Write, TodoWrite, AskUserQuestion, Bash(jq:*), Bash(git:*), Bash(mkdir:*), Bash(ls:*), LS, Glob
 description: Initialize spec-driven project with feature_list.json
 ---
 

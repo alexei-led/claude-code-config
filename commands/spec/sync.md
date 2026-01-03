@@ -1,5 +1,5 @@
 ---
-allowed-tools: Task, Edit, Write, TodoWrite
+allowed-tools: Task, Read, Edit, Write, TodoWrite, SlashCommand, Bash(jq:*), Bash(git log:*), Bash(git status:*)
 description: Sync feature_list.json and progress from code state and git history
 ---
 
