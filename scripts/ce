@@ -221,8 +221,13 @@ def interactive_select(envs: list[str], current: str, settings: dict) -> tuple[s
                 clear_menu(num_lines)
                 return None, False
             elif key == "enter":
+                # Switch to selected env (like space) + launch
+                new_env = envs[selected]
+                if new_env != active:
+                    switch_env(settings, active, new_env)
+                    active = new_env
                 clear_menu(num_lines)
-                return active, True  # launch with current active env
+                return active, True
             elif key == "space":
                 # Switch to selected env immediately
                 new_env = envs[selected]
