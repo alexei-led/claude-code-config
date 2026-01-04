@@ -1,5 +1,5 @@
 ---
-allowed-tools: Task, Read, Edit, Write, TodoWrite, SlashCommand, Bash(jq:*), Bash(git log:*), Bash(git status:*)
+allowed-tools: Task, TaskOutput, Read, Edit, Write, AskUserQuestion, Bash(jq:*), Bash(git status:*), Bash(git log:*)
 description: Sync feature_list.json and progress from code state and git history
 ---
 
@@ -10,65 +10,88 @@ Reconcile tracking files with actual code state after interrupted sessions.
 ## Guardrails
 
 - **Conservative**: When in doubt, leave as `"passes": false`
-- **Evidence-based**: Commit messages are hints, not proof - verify with code/tests
+- **Evidence-based**: Verify with code/tests, not just commit messages
 - **Passes-only**: Only modify `"passes"` field in `feature_list.json`
-- **Never**: Remove, reorder, edit descriptions, or add features
 
 ---
 
-## Phase 1: Gather Evidence
+## Phase 1: Discovery (Background)
 
-Spawn **Explore** agent (Task with subagent_type: Explore, thoroughness: very thorough):
+**Spawn `spec-discover` agent in background:**
 
 ```
-Analyze spec-driven project for discrepancies between tracking and reality:
-
-1. Read `claude-progress.txt` first - what was claimed done last session
-2. Read `feature_list.json` - current tracked state
-3. Git analysis:
-   - `git log --oneline -30`
-   - `git log --since="3 days ago" --oneline`
-   - Look for commits mentioning features, fixes, implementations
-4. Count features:
-   - Total: `jq length feature_list.json`
-   - Passing: `jq '[.[] | select(.passes == true)] | length' feature_list.json`
-5. Identify main source directories and key implementation files
-
-Return:
-- Discrepancies: features marked false that evidence suggests are done
-- Evidence type for each: commit message, code exists, tests pass
-- Current progress: X/Y passing (Z%)
-- What claude-progress.txt says was last worked on
+Task(
+  subagent_type="spec-discover",
+  run_in_background=true,
+  prompt="Full discovery for sync - include discrepancies between claimed progress and feature_list.json state"
+)
 ```
 
----
+## Phase 2: Identify Discrepancies
 
-## Phase 2: Verify and Update
+**Collect discovery results:**
 
-For each suspected completion:
+```
+TaskOutput(task_id=<discovery_agent_id>)
+```
 
-1. Create TodoWrite to track verification progress
-2. Read feature's `steps` from `feature_list.json`
-3. Check implementation: search code, check tests exist
-4. For UI features: use `/test:e2e` with screenshots
-5. Only mark `"passes": true` with clear evidence
+From the discovery:
+
+1. Parse features marked `passes: false` that progress file claims are done
+2. Parse features with implementation evidence (commits, code) but marked false
+
+## Phase 3: Parallel Verification
+
+**For each suspected completion, spawn `spec-verifier` agent in parallel:**
+
+```
+Task(
+  subagent_type="spec-verifier",
+  run_in_background=true,
+  prompt="Verify feature: <feature description>\nSteps: <steps array>"
+)
+```
+
+Spawn ALL verification agents in a single message for parallel execution.
+
+## Phase 4: Collect & Update
+
+**Collect all verification results:**
+
+```
+TaskOutput(task_id=<verifier_1_id>)
+TaskOutput(task_id=<verifier_2_id>)
+...
+```
+
+For each verified feature:
+
+- If verdict is YES: Update `feature_list.json` with `"passes": true`
+- If verdict is NO: Leave unchanged, note what's missing
+
+## Phase 5: Report
 
 Update `claude-progress.txt`:
 
 - Session type: "Sync Recovery"
-- Features verified complete
+- Features verified complete (list)
 - Discrepancies found
-- Current progress
-- Next recommended work
-
----
-
-## Phase 3: Report
-
-Present sync summary:
-
-- Changes made (N features updated)
-- Evidence for each verification
-- Features left unchanged (with reasons)
 - Current progress: X/Y passing (Z%)
-- Recommended next steps
+
+Present sync summary to user:
+
+```
+## Sync Complete
+
+**Updated**: N features marked as passing
+**Unchanged**: M features (insufficient evidence)
+**Progress**: X/Y → A/B passing
+
+### Changes Made
+- Feature 1: verified, marked passing
+- Feature 2: verified, marked passing
+
+### Still Failing (need work)
+- Feature 3: missing tests
+- Feature 4: partial implementation
+```
