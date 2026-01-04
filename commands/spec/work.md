@@ -1,5 +1,5 @@
 ---
-allowed-tools: Task, TaskOutput, Read, Edit, Write, Skill, AskUserQuestion, TodoWrite, Bash(jq:*), Bash(git checkout:*), Bash(git branch:*), Bash(git status:*), Bash(git log:*), Bash(make:*)
+allowed-tools: Task, TaskOutput, Read, Edit, Write, Skill, AskUserQuestion, TodoWrite, Bash(jq:*), Bash(git checkout:*), Bash(git branch:*), Bash(git status:*), Bash(git log:*), Bash(make:*), Bash(git push:*), Bash(gh pr:*)
 description: Continue spec-driven development session
 ---
 
@@ -155,26 +155,98 @@ If verdict is NO:
 
 ---
 
-## Phase 6: Commit & Close
+## Phase 5.5: Review/Fix Loop
+
+**Run multi-agent code review:**
+
+```
+Skill(skill="code:review", args="deep")
+```
+
+**If CRITICAL or IMPORTANT issues found:**
+
+```
+Skill(skill="code:fix")
+```
+
+**Re-verify** with `spec-verifier` after fixes.
+
+**Loop until:**
+
+- Zero CRITICAL issues
+- Build/test/lint all pass
+- spec-verifier returns YES
+
+---
+
+## Phase 6: Commit & PR
 
 **STOP**: Use `AskUserQuestion` before committing.
 
-1. Run `/code:commit` for logical commits
+**Step 1: Commit changes**
 
-2. Update `claude-progress.txt`:
-   - What accomplished
-   - Feature completed
-   - Next recommended work
-   - Current progress (X/Y passing)
+```
+Skill(skill="code:commit")
+```
 
-3. Present session summary:
+**Step 2: Sync with remote master**
+
+```bash
+git fetch origin master
+git log --oneline HEAD..origin/master  # Check what changed
+```
+
+**Decision logic:**
+
+- If only minor changes (badges, docs, CI config): **rebase**
+  ```bash
+  git rebase origin/master
+  ```
+- If significant changes or conflicts likely: **merge**
+  ```bash
+  git merge origin/master -m "Merge master into feature/<name>"
+  ```
+- If conflicts occur: resolve, then re-run verification
+
+**Step 3: Push and create PR**
+
+```bash
+git push -u origin feature/<feature-name>
+```
+
+```bash
+gh pr create --title "feat: <feature description>" --body "$(cat <<'EOF'
+## Summary
+<1-3 bullet points from implementation>
+
+## Verification
+- [x] Build passes
+- [x] Tests pass
+- [x] Lint clean
+- [x] Feature verified against spec
+
+## Feature Steps
+<steps from feature_list.json>
+EOF
+)"
+```
+
+**Step 4: Update progress**
+
+Update `claude-progress.txt`:
+
+- Feature completed with PR link
+- Progress: X/Y → A/B passing
+- Next feature recommendation
+
+**Step 5: Present summary**
 
 ```
 ## Session Complete
 
 **Feature**: <name> - DONE
+**PR**: <pr_url>
 **Progress**: X/Y → A/B passing (Z%)
-**Committed**: <commit hash>
 
-**Next Session**: <recommendation>
+**Next Session**: <next failing feature>
 ```
