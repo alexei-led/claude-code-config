@@ -1,5 +1,5 @@
 ---
-allowed-tools: Task, Bash, Read, Grep, Glob, LS
+allowed-tools: Task, Bash, Read, Edit, Write, Grep, Glob, LS
 description: Test coverage analysis via quality-guardian - 80% minimum enforced
 ---
 
@@ -49,7 +49,7 @@ Review the agent's analysis, then proceed to Step 2.
 
 ## Step 2: Spawn Coverage Agents
 
-If gaps found, spawn appropriate agent by language.
+If gaps found, spawn appropriate agent by language to get test proposals.
 
 **CRITICAL: Zero tolerance for test waste when generating coverage tests**
 
@@ -62,7 +62,7 @@ If gaps found, spawn appropriate agent by language.
 
 ```
 Task with go-engineer agent:
-"Generate tests for these uncovered Go functions:
+"Propose tests for these uncovered Go functions:
 {list with file:line references}
 
 CRITICAL REQUIREMENTS:
@@ -78,7 +78,7 @@ CRITICAL REQUIREMENTS:
 
 ```
 Task with python-engineer agent:
-"Generate tests for these uncovered Python functions:
+"Propose tests for these uncovered Python functions:
 {list with file:line references}
 
 CRITICAL REQUIREMENTS:
@@ -94,7 +94,7 @@ CRITICAL REQUIREMENTS:
 
 ```
 Task with typescript-engineer agent:
-"Generate tests for these uncovered TypeScript functions:
+"Propose tests for these uncovered TypeScript functions:
 {list with file:line references}
 
 CRITICAL REQUIREMENTS:
@@ -107,7 +107,14 @@ CRITICAL REQUIREMENTS:
 - Use Testing Library for React (query by role)"
 ```
 
-## Step 3: Report
+## Step 3: Apply Proposals
+
+- Engineer returns structured test proposals (no files written)
+- Review proposals for quality and completeness
+- Apply using Edit/Write tools (user sees approval prompts)
+- User can modify proposals before applying
+
+## Step 4: Report
 
 ```
 COVERAGE REPORT

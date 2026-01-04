@@ -115,13 +115,20 @@ Your engineer agents (`go-engineer`, `python-engineer`, `typescript-engineer`) f
 
 ```yaml
 model: opus # Same powerful model
-tools: [Read, Edit, Write, Bash, ...] # Full tool access
+tools: [Read, Bash, Grep, Glob, ...] # Analysis tools (NO Edit/Write)
 skills: [writing-go, looking-up-docs, ...] # Skill inheritance
 ---
 You are an Expert Go Engineer... # Focused prompt
+
+## Output Mode: Propose Only
+Return structured proposals for main context to apply.
 ```
 
-They're not "lesser" agents - they're the **main agent with focused instructions**.
+They analyze and propose changes but **do not apply edits directly**. This ensures:
+
+- User approval for each edit
+- No autonomous changes bypassing the approval loop
+- Clean separation: subagents explore, main context implements
 
 ### When to Use Subagents
 

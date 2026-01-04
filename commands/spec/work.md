@@ -110,7 +110,7 @@ Task(
 
 2. **Create TodoWrite** from approved plan
 
-3. **Spawn appropriate engineer agent:**
+3. **Get implementation proposals from engineer agent:**
    - Go: `go-engineer`
    - Python: `python-engineer`
    - TypeScript: `typescript-engineer`
@@ -119,16 +119,29 @@ Task(
 Task(
   subagent_type="<language>-engineer",
   prompt="""
-Implement this feature:
+Propose implementation for this feature:
 
 Plan: <approved plan>
 Style Guide: <from Phase 1>
 Reference Files: <from plan>
 
-Follow the plan exactly. Run verification after each step.
+Follow the plan exactly. Return structured proposals.
 """
 )
 ```
+
+4. **Apply proposals in main context:**
+   - Engineer returns structured proposals (no edits made)
+   - Present each proposal to user for review
+   - Apply using Edit/Write tools (user sees approval prompts)
+   - User can approve, modify, or reject each change
+
+**Why this workflow?**
+
+- Engineer agents propose, main context applies
+- User reviews each edit before it's applied
+- User can modify proposals before applying
+- Full visibility and control over changes
 
 ---
 

@@ -1,5 +1,5 @@
 ---
-allowed-tools: Task, Bash, Read, Grep, Glob, LS, AskUserQuestion, mcp__perplexity-ask__perplexity_ask
+allowed-tools: Task, Bash, Read, Edit, Write, Grep, Glob, LS, AskUserQuestion, mcp__perplexity-ask__perplexity_ask
 description: Generate tests following Go/Python/TypeScript best practices - zero tolerance for waste
 ---
 
@@ -135,13 +135,13 @@ expect(mockRepo.save).toHaveBeenCalledWith(
 
 ## Step 4: Generate Tests
 
-Spawn appropriate agent:
+Spawn appropriate agent to get test proposals:
 
 ### Go Tests
 
 ```
 Task with go-engineer agent:
-"Generate tests for:
+"Propose tests for:
 {file path and function signatures}
 
 CRITICAL REQUIREMENTS:
@@ -174,7 +174,7 @@ Reference existing tests:
 
 ```
 Task with python-engineer agent:
-"Generate pytest tests for:
+"Propose pytest tests for:
 {file path and function signatures}
 
 CRITICAL REQUIREMENTS:
@@ -206,7 +206,7 @@ Reference existing tests:
 
 ```
 Task with typescript-engineer agent:
-"Generate Vitest tests for:
+"Propose Vitest tests for:
 {file path and function signatures}
 
 CRITICAL REQUIREMENTS:
@@ -236,7 +236,14 @@ Reference existing tests:
 {snippet from similar test file}"
 ```
 
-## Step 5: Verify Generated Tests
+## Step 5: Apply Proposals
+
+- Engineer returns structured test proposals (no files written)
+- Review proposals for quality and completeness
+- Apply using Edit/Write tools (user sees approval prompts)
+- User can modify proposals before applying
+
+## Step 6: Verify Generated Tests
 
 ```bash
 # Go
