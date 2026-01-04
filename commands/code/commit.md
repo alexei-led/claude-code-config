@@ -1,5 +1,5 @@
 ---
-allowed-tools: Task, Bash(git add:*), Bash(git status:*), Bash(git commit:*), Bash(git diff:*)
+allowed-tools: Task, TaskOutput, Bash(git add:*), Bash(git commit:*), Bash(git status:*)
 description: Group changes logically and create bundled commits with concise messages
 ---
 
@@ -7,56 +7,89 @@ description: Group changes logically and create bundled commits with concise mes
 
 Group changed files logically and create focused, atomic commits.
 
-## Step 1: Analyze Changes with Sub-Agent
+**Main context = orchestration only. All analysis in background agents.**
 
-Spawn an **Explore** agent (subagent_type: Explore) to analyze and group changes:
+---
+
+## Phase 1: Parallel Background Analysis
+
+**Spawn TWO background agents in a single message:**
 
 ```
-Analyze git changes and propose commit groupings:
+Task(
+  subagent_type="general-purpose",
+  run_in_background=true,
+  model="haiku",
+  description="Git changes analysis",
+  prompt="""
+Analyze changes and propose groupings. Output ONLY JSON, no explanation.
 
-1. Run `git status` to see all changed files
-2. Run `git diff --stat HEAD` for change overview
-3. Run `git log --oneline -5` for recent commit style reference
-4. Read key changed files to understand the nature of changes
+Run:
+- git status --porcelain
+- git diff --name-status HEAD
 
-Group files by logical relationship:
-| Group Type   | Files to Bundle                         |
-| Feature      | Implementation + related config + tests |
-| Refactor     | All files touched by the refactor       |
-| Fix          | Bug fix + test that verifies it         |
-| Docs         | Documentation changes only              |
-| Config/Infra | Build, CI, deployment changes           |
+Group by: feature (impl+tests), fix (bug+test), refactor, docs, config/infra
 
-For each group, draft a commit message:
-- Present tense: "Add", "Fix", "Update", "Remove"
-- Scope prefix when relevant: `auth:`, `api:`, `docs:`
-- Focus on WHY, not just WHAT
-- Match style of recent commits
+Output format (ONLY this, nothing else):
+{"groups":[{"files":["path1","path2"],"type":"feature|fix|refactor|docs|config"}],"empty":false}
 
-Return structured proposal:
-GROUP 1: [type]
-Files: [list]
-Message: "<scope>: <action> <what>"
+If no changes: {"empty":true}
+"""
+)
 
-GROUP 2: [type]
-...
+Task(
+  subagent_type="general-purpose",
+  run_in_background=true,
+  model="haiku",
+  description="Commit style guide",
+  prompt="""
+Get recent commit style. Output ONLY JSON, no explanation.
 
-If only one logical change exists, propose a single commit.
+Run: git log --oneline -8
+
+Analyze style: prefix pattern, tense, length, scope format.
+
+Output format (ONLY this, nothing else):
+{"style":"<one-line description>","examples":["msg1","msg2"]}
+"""
+)
 ```
 
-## Step 2: Review and Execute
+## Phase 2: Collect & Merge
 
-Review the agent's grouping proposal, then for each group:
+```
+TaskOutput(task_id=<changes_agent_id>, block=true)
+TaskOutput(task_id=<style_agent_id>, block=true)
+```
+
+**If empty=true:** "Nothing to commit" → stop.
+
+**Merge results internally** - draft commit messages matching the style for each group.
+
+## Phase 3: Execute Commits
+
+For each group:
 
 ```bash
-git add <files in group>
-git commit -m "<proposed message>"
+git add <files>
+git commit -m "$(cat <<'EOF'
+<message matching style>
+EOF
+)"
 ```
 
-Verify after committing:
+## Phase 4: Summary
 
 ```bash
 git status
 ```
 
-**Execute commit workflow now.**
+Present (3-5 lines max):
+
+- Commits created: N
+- Each: `<hash short> <message>`
+- Remaining uncommitted (if any)
+
+---
+
+**Execute now.**
