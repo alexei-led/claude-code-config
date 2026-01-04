@@ -380,9 +380,12 @@ def main():
 
     # Launch claude if requested
     if launch_claude:
-        # Export secret as env var (never written to file)
+        # Export auth token as env var (never written to file)
         if secret:
             os.environ["ANTHROPIC_AUTH_TOKEN"] = secret
+        elif target == "copilot":
+            # Copilot proxy doesn't need real auth - use dummy token
+            os.environ["ANTHROPIC_AUTH_TOKEN"] = "dummy"
         print(f"\n{DIM}Launching claude...{RESET}\n")
         os.execlp("claude", "claude", *claude_args)
 
