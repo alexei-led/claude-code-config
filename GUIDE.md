@@ -31,36 +31,6 @@ flowchart LR
     Summary --> User
 ```
 
-### AI Consultation Architecture
-
-```mermaid
-flowchart TB
-    subgraph Command
-        AC[/ai:consult]
-    end
-
-    subgraph Agents
-        GC[gemini-consultant]
-        CA[codex-assistant]
-        CR[claude-reviewer]
-        APA[ai-panel]
-    end
-
-    subgraph External
-        Gemini[Gemini CLI]
-        Codex[Codex CLI]
-        Perp[Perplexity MCP]
-    end
-
-    AC --> |gemini| GC --> Gemini
-    AC --> |codex| CA --> Codex
-    AC --> |panel| APA
-    APA --> GC
-    APA --> CA
-    APA --> CR
-    APA --> Perp
-```
-
 ### Hook System
 
 ```mermaid
@@ -163,58 +133,27 @@ They analyze and propose changes but **do not apply edits directly**. This ensur
 
 ### Code Quality (`/code:*`)
 
-| Command              | Description                        | Example                      |
-| -------------------- | ---------------------------------- | ---------------------------- |
-| `/code:fix`          | Zero-tolerance quality enforcement | `/code:fix`                  |
-| `/code:review`       | Multi-agent code review            | `/code:review deep external` |
-| `/code:docs`         | Documentation updates              | `/code:docs`                 |
-| `/code:deploy-check` | K8s/CI validation                  | `/code:deploy-check`         |
-| `/code:commit`       | Smart commit grouping              | `/code:commit`               |
+| Command              | Description                        | Example              |
+| -------------------- | ---------------------------------- | -------------------- |
+| `/code:fix`          | Zero-tolerance quality enforcement | `/code:fix`          |
+| `/code:review`       | Multi-agent code review            | `/code:review deep`  |
+| `/code:docs`         | Documentation updates              | `/code:docs`         |
+| `/code:deploy-check` | K8s/CI validation                  | `/code:deploy-check` |
+| `/code:commit`       | Smart commit grouping              | `/code:commit`       |
 
 #### `/code:review` Modes
 
 ```bash
 /code:review                 # Language engineers only
 /code:review deep            # 6-12 specialized sub-agents
-/code:review external        # Engineers + Codex + Gemini
-/code:review deep external   # All sub-agents + external AI
-```
-
-### AI Consultation (`/ai:consult`)
-
-Unified command for all AI consultation needs.
-
-| Mode                     | Description                | Example                                     |
-| ------------------------ | -------------------------- | ------------------------------------------- |
-| `/ai:consult gemini`     | Gemini architecture advice | `/ai:consult gemini "Redis vs Memcached"`   |
-| `/ai:consult codex`      | Codex code review          | `/ai:consult codex "review auth flow"`      |
-| `/ai:consult panel`      | 4-perspective consultation | `/ai:consult panel "gRPC vs REST?"`         |
-| `/ai:consult brainstorm` | Gemini brainstorming       | `/ai:consult brainstorm "caching strategy"` |
-| `/ai:consult compare`    | Systematic comparison      | `/ai:consult compare "A vs B"`              |
-
-#### `/ai:consult panel` Flow
-
-```mermaid
-flowchart TB
-    Panel[ai-panel agent] --> |parallel| C1[codex-assistant]
-    Panel --> |parallel| C2[gemini-consultant]
-    Panel --> |parallel| C3[claude-reviewer]
-    Panel --> |parallel| C4[Perplexity MCP]
-
-    C1 --> Synth[Synthesize]
-    C2 --> Synth
-    C3 --> Synth
-    C4 --> Synth
-
-    Synth --> Output[Panel Summary]
 ```
 
 ### Testing (`/test:*`)
 
-| Command          | Description                             |
-| ---------------- | --------------------------------------- |
-| `/test:coverage` | 80% minimum coverage enforcement        |
-| `/test:generate` | Generate tests following best practices |
+| Command         | Description                 |
+| --------------- | --------------------------- |
+| `/test:e2e`     | E2E testing with Playwright |
+| `/test:improve` | Improve test quality        |
 
 ### Spec-Driven (`/spec:*`)
 
@@ -265,13 +204,6 @@ flowchart TB
         PS[py-simplify]
     end
 
-    subgraph AI[AI Consultation]
-        GC[gemini-consultant]
-        CA[codex-assistant]
-        CR[claude-reviewer]
-        AP[ai-panel]
-    end
-
     GE -.-> GoSpec
     PE -.-> PySpec
 ```
@@ -315,22 +247,15 @@ flowchart TB
 | `ts-tests` | Vitest, React Testing Library |
 | `ts-docs`  | JSDoc, TSDoc, comments        |
 
-### Infrastructure & Docs
+### Infrastructure & Utility
 
-| Agent            | Model  | Focus                                |
-| ---------------- | ------ | ------------------------------------ |
-| `infra-engineer` | opus   | K8s, Terraform, Helm, GitHub Actions |
-| `docs-keeper`    | opus   | Documentation maintenance            |
-| `pdf-parser`     | sonnet | PDF extraction and analysis          |
-
-### AI Consultation Agents
-
-| Agent               | Model  | Purpose                     |
-| ------------------- | ------ | --------------------------- |
-| `gemini-consultant` | haiku  | Architecture via Gemini CLI |
-| `codex-assistant`   | haiku  | Code review via Codex CLI   |
-| `claude-reviewer`   | sonnet | Fresh Claude perspective    |
-| `ai-panel`          | sonnet | Orchestrates 4 perspectives |
+| Agent                   | Model  | Focus                                |
+| ----------------------- | ------ | ------------------------------------ |
+| `infra-engineer`        | opus   | K8s, Terraform, Helm, GitHub Actions |
+| `docs-keeper`           | sonnet | Documentation maintenance            |
+| `pdf-parser`            | haiku  | PDF extraction and analysis          |
+| `playwright-tester`     | opus   | E2E browser testing                  |
+| `perplexity-researcher` | haiku  | Web research                         |
 
 ---
 
@@ -348,18 +273,20 @@ flowchart LR
 
 ### Available Skills
 
-| Skill                 | Triggers When                    |
-| --------------------- | -------------------------------- |
-| `asking-gemini`       | Architecture, design, trade-offs |
-| `asking-codex`        | Code review, implementation help |
-| `looking-up-docs`     | Library documentation needed     |
-| `researching-web`     | Current info, best practices     |
-| `writing-go`          | Go development                   |
-| `writing-python`      | Python development               |
-| `writing-typescript`  | TypeScript development           |
-| `managing-infra`      | K8s, Terraform, CI/CD            |
-| `using-cloud-cli`     | GCP, AWS CLI operations          |
-| `using-git-worktrees` | Parallel development             |
+| Skill                 | Triggers When           |
+| --------------------- | ----------------------- |
+| `writing-go`          | Go development          |
+| `writing-python`      | Python development      |
+| `writing-typescript`  | TypeScript development  |
+| `looking-up-docs`     | Library documentation   |
+| `researching-web`     | Web research            |
+| `searching-code`      | Codebase exploration    |
+| `refactoring-fast`    | Batch refactoring       |
+| `managing-infra`      | K8s, Terraform, CI/CD   |
+| `using-cloud-cli`     | GCP, AWS CLI operations |
+| `using-git-worktrees` | Parallel development    |
+| `using-modern-cli`    | Modern CLI tools        |
+| `testing-e2e`         | Playwright testing      |
 
 ---
 
@@ -434,13 +361,6 @@ Rate limit fallback using GitHub Copilot API.
 ~/.claude/scripts/copilot-proxy.sh --stop    # Stop
 ```
 
-### CLI Wrappers
-
-| Script         | Location                              |
-| -------------- | ------------------------------------- |
-| Gemini wrapper | `skills/asking-gemini/scripts/ask.sh` |
-| Codex wrapper  | `skills/asking-codex/scripts/ask.sh`  |
-
 ---
 
 ## MCP Integration
@@ -450,6 +370,7 @@ Rate limit fallback using GitHub Copilot API.
 | `sequential-thinking` | Multi-step reasoning  |
 | `context7`            | Library documentation |
 | `perplexity-ask`      | Web research          |
+| `playwright`          | E2E browser testing   |
 
 ---
 
@@ -459,19 +380,15 @@ Rate limit fallback using GitHub Copilot API.
 
 ```mermaid
 flowchart LR
-    A[Design] --> B[Panel] --> C[Implement] --> D[Review] --> E[Commit]
+    A[Design] --> B[Implement] --> C[Review] --> D[Commit]
 
-    A -.- A1[/ai:consult gemini]
-    B -.- B1[/ai:consult panel]
-    D -.- D1[/code:review]
-    E -.- E1[/code:commit]
+    C -.- C1[/code:review]
+    D -.- D1[/code:commit]
 ```
 
 ```bash
-/ai:consult brainstorm "caching strategy"
-/ai:consult panel "Redis vs Memcached"
 # implement...
-/code:review deep external
+/code:review deep
 /code:commit
 ```
 
