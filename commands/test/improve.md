@@ -1,5 +1,5 @@
 ---
-allowed-tools: Task, Bash, Read, Edit, Write, Grep, Glob, LS, AskUserQuestion
+allowed-tools: Task, Bash, Read, Grep, Glob, LS, AskUserQuestion
 description: Review, refactor, and improve tests - eliminate waste, combine to tabular, align style
 ---
 
