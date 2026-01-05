@@ -46,8 +46,27 @@ resolve-library-id: "kubernetes"
 get-library-docs: context7CompatibleLibraryID="/kubernetes/kubernetes", topic="deployment"
 ```
 
-## Tips
+## Tips for Better Results
 
-- Use `topic` parameter to narrow results to specific features
-- Try `mode="info"` for architectural questions
-- Paginate with `page=2`, `page=3` if initial results insufficient
+**Be specific with queries:**
+
+- BAD: `topic="hooks"` → returns everything hook-related
+- GOOD: `topic="useEffect cleanup function"` → precise results
+
+**Filter strategies:**
+
+- Use `topic` with function/method names: `topic="json.Unmarshal"`
+- Include version when relevant: `libraryName="react 18"`
+- Combine with feature context: `topic="middleware error handling"`
+
+**When results are too broad:**
+
+1. Narrow the `topic` parameter
+2. Try `mode="code"` to focus on examples
+3. Paginate: `page=2`, `page=3` for additional results
+4. Re-resolve library ID with more specific name
+
+**Quality check:**
+
+- Verify code examples match your library version
+- Cross-reference with official docs if uncertain

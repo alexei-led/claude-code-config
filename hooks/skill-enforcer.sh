@@ -58,51 +58,14 @@ fi
 
 # researching-web: Web research via Perplexity AI (best practices, comparisons, standards)
 # Triggers: Research language, comparisons, best practices, industry standards
-# Note: For current events/news, use researching-web-gemini instead
 if echo "$PROMPT_LOWER" | grep -qE '\bresearch\b|search.*(web|online)|look\s*up.*online|find\s*out.*(about|if|whether)|compare.*(tool|lib|framework|approach|option|technolog)|(\w+)\s+vs\s+(\w+)|pros\s*(and|&)\s*cons|trade[\s-]?off|which.*(better|should|recommend)|latest.*(version|release|update)|current.*(version|best)|what.?s\s*new\s*in|best\s*practice|up[\s-]?to[\s-]?date|2024|2025|2026|industry\s*standard|owasp|recommended\s*(practice|approach|pattern)|perplexity'; then
 	skills+="researching-web "
-fi
-
-# asking-codex: Code review, bug detection, security analysis
-# Triggers: Review requests, bug finding, security audit, quality concerns
-if echo "$PROMPT_LOWER" | grep -qE 'review.*(code|this|my|pr|pull|change|implementation|file)|code\s*review|check.*(code|implementation|this).*(for|quality)|find.*(bug|issue|problem)|security.*(audit|review|check|scan)|vulnerabil|code.*(quality|smell)|potential.*(issue|bug|problem|vulnerabil)|what.?s\s*wrong\s*with.*(code|this|implementation)|audit.*(code|security)|\bbug\b|\bissue\b.*code|\bvulnerability\b|\baudit\b'; then
-	skills+="asking-codex "
 fi
 
 # using-git-worktrees: Isolated git worktree management
 # Triggers: Explicit worktree or isolation intent for feature work
 if echo "$PROMPT_LOWER" | grep -qE 'worktree|git\s*worktree|isolat.*(work|branch|develop|implement|environment)|separate.*(workspace|environment|branch)|parallel.*(branch|work|develop)|work.*(multiple|parallel).*branch|clean.*(workspace|environment|slate)|fresh.*(workspace|environment|branch)|feature.*isolation'; then
 	skills+="using-git-worktrees "
-fi
-
-# asking-gemini: Architecture alternatives, design trade-offs, brainstorming
-# Triggers: Architecture decisions, design trade-offs, brainstorming, SCAMPER, design thinking
-if echo "$PROMPT_LOWER" | grep -qE '\barchitect|\bsystem\s*design|design\s*pattern|component.*(design|architect)|alternative.*(approach|solution|design|way|option|method)|which.*(approach|way|design|method|pattern).*(better|should|recommend|prefer)|how\s*should.*(design|architect|structure|approach|organize)|brainstorm.*(solution|idea|approach|option|way)|explore.*(option|possibilit|approach|alternative|idea)|evaluate.*(approach|design|option|trade|architectur)|design.*decision|\bdecision\b|\boptions\b|\brecommend\b|scamper|design[\s-]?thinking|divergent[\s-]?thinking|convergent[\s-]?thinking|lateral[\s-]?thinking|creative[\s-]?(problem|solution)|ideation|generate.*(idea|option|alternative)'; then
-	skills+="asking-gemini "
-fi
-
-# researching-web-gemini: Web research via Gemini with Google Search grounding
-# Triggers: Google search, real-time info, current events, technology updates
-if echo "$PROMPT_LOWER" | grep -qE 'google\s*(search|for)|search.*google|real[\s-]?time.*(info|data|search)|current.*(event|news|info|status)|live.*(data|info|update)|latest.*(news|update|info)|breaking.*(news|update)|today.?s.*(news|update)|search.*(current|latest|recent)|grounded.*(search|info)'; then
-	skills+="researching-web-gemini "
-fi
-
-# analyzing-media: Image/PDF analysis via Gemini multimodal
-# Triggers: PDF analysis, image analysis, screenshot analysis, diagram interpretation, OCR
-if echo "$PROMPT_LOWER" | grep -qE '\.pdf\b|pdf\s*(file|document|analysis|extract|read|parse|content)|analyze.*(image|screenshot|diagram|pdf|photo|picture)|extract.*(from|text|data|table).*(pdf|image|screenshot)|read.*(pdf|image|screenshot)|interpret.*(diagram|chart|graph|visual|image)|screenshot.*(analysis|interpret|read)|ocr\b|document.*(extract|analysis|scan)|image.*(analysis|interpret|understand)|flowchart|architecture\s*diagram|erd\b|er\s*diagram|visual.*(analysis|content)|multimodal'; then
-	skills+="analyzing-media "
-fi
-
-# generating-shell: Shell command generation via Gemini
-# Triggers: Shell commands, bash scripts, unix pipes, awk/sed/grep
-if echo "$PROMPT_LOWER" | grep -qE 'generate.*(shell|bash|command|script|pipe)|create.*(shell|bash|command|script)|write.*(shell|bash|script)|shell\s*(command|script|one[\s-]?liner)|bash\s*(command|script|one[\s-]?liner)|unix\s*(pipe|pipeline|command)|awk.*(command|script|pipe)|sed.*(command|script|pipe)|grep.*(command|pipe)|find.*(command|pipe)|complex.*(pipe|pipeline|command)|one[\s-]?liner|command[\s-]?line.*(for|to)|how\s*to.*(shell|bash|terminal|command[\s-]?line)|terminal\s*(command|script)'; then
-	skills+="generating-shell "
-fi
-
-# testing-e2e: E2E testing with Playwright MCP
-# Triggers: E2E tests, Playwright, browser testing, UI automation, HTMX testing
-if echo "$PROMPT_LOWER" | grep -qE 'e2e\s*(test|testing)|end[\s-]?to[\s-]?end\s*(test|testing)|playwright|browser\s*(test|automation)|ui\s*(test|testing|automation)|visual\s*(test|regression)|accessibility\s*(test|check)|htmx\s*(test|testing)|test.*htmx|integration\s*test.*web|web\s*ui\s*test|selenium|cypress|puppeteer|headless\s*browser'; then
-	skills+="testing-e2e "
 fi
 
 # searching-code: Intelligent codebase search via WarpGrep

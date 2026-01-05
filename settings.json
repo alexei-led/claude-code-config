@@ -65,10 +65,17 @@
       "mcp__morphllm__warpgrep_codebase_search"
     ],
     "ask": [
+      "Edit",
+      "Write",
+      "MultiEdit",
       "mcp__morphllm__edit_file"
     ]
   },
-  "disabledMcpjsonServers": [],
+  "disabledMcpjsonServers": [
+    "playwright",
+    "codex",
+    "gemini"
+  ],
   "hooks": {
     "SessionStart": [
       {

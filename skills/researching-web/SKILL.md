@@ -1,25 +1,20 @@
 ---
 name: researching-web
-description: Web research via Perplexity AI. Use when user asks to research topics, compare technologies (X vs Y), find best practices, lookup industry standards, or get current information. Triggers on "research", "compare", "vs", "best practice", "pros and cons", "which is better".
-allowed-tools: Task, Read, Grep, Glob, mcp__perplexity-ask__perplexity_ask
+description: Web research via Perplexity AI. Use for technical comparisons (X vs Y), best practices, industry standards, documentation. Triggers on "research", "compare", "vs", "best practice", "which is better", "pros and cons".
+allowed-tools: Task, Read, Grep, Glob, WebFetch, mcp__perplexity-ask__perplexity_ask
 ---
 
 # Web Research with Perplexity
 
 Two modes: **quick** (MCP direct) or **deep** (Task-based with context).
 
-## When to Use This Skill (Perplexity)
+## Best For
 
-| Use Perplexity For                 | Use Gemini For                 |
-| ---------------------------------- | ------------------------------ |
-| Technology comparisons (X vs Y)    | Current events, breaking news  |
-| Best practices, industry standards | Real-time data (<24 hours old) |
-| OWASP, security guidelines         | Live pricing, availability     |
-| Documentation references           | Recent releases, changelogs    |
-| Stable technical content           | Rapidly changing information   |
-
-**Default to Perplexity** for most technical research.
-**Use Gemini** when recency is critical (today's news, live data).
+- Technology comparisons (X vs Y)
+- Best practices, industry standards
+- OWASP, security guidelines
+- Documentation references
+- Stable technical content
 
 ## Quick Mode (Simple Queries)
 
@@ -78,6 +73,26 @@ TaskOutput(task_id="<agent_id>", block=true)
 - Ask comparisons: "Pros and cons of gRPC vs REST for microservices"
 - Include year: "Claude Code context optimization 2025"
 
+## Reference Following (Deep Research)
+
+After Perplexity returns results with citations:
+
+1. **Review all cited URLs** in the response
+2. **WebFetch top 2-3 most relevant sources** for deeper context
+3. **Synthesize comprehensive answer** combining all sources
+
+```
+# After Perplexity response with citations
+WebFetch(url="<cited-url-1>", prompt="Extract key details about <topic>")
+WebFetch(url="<cited-url-2>", prompt="Extract implementation examples")
+```
+
+Use reference following when:
+
+- Initial answer is high-level and needs specifics
+- User asks "tell me more" or "dig deeper"
+- Implementing something that needs detailed guidance
+
 ## Output Structure
 
 ```markdown
@@ -95,5 +110,5 @@ TaskOutput(task_id="<agent_id>", block=true)
 
 ## Sources
 
-- [Source](url)
+- [Source](url) - [what was learned]
 ```
