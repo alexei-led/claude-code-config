@@ -17,6 +17,8 @@
       "mcp__gemini__help",
       "mcp__codex__spawn_agent",
       "mcp__codex__spawn_agents_parallel",
+      "mcp__morphllm__warpgrep_codebase_search",
+      "mcp__morphllm__codebase_search",
       "mcp__playwright__*",
       "Bash(sg:*)",
       "Bash(bat:*)",
@@ -61,21 +63,11 @@
       "Bash(npx playwright:*)",
       "Bash(bunx playwright:*)",
       "WebFetch",
-      "WebSearch",
-      "mcp__morphllm__warpgrep_codebase_search"
+      "WebSearch"
     ],
-    "ask": [
-      "Edit",
-      "Write",
-      "MultiEdit",
-      "mcp__morphllm__edit_file"
-    ]
+    "ask": ["mcp__morphllm__edit_file"]
   },
-  "disabledMcpjsonServers": [
-    "playwright",
-    "codex",
-    "gemini"
-  ],
+  "disabledMcpjsonServers": ["playwright", "codex", "gemini"],
   "hooks": {
     "SessionStart": [
       {
@@ -164,17 +156,10 @@
       "allowAllUnixSockets": true,
       "allowLocalBinding": true
     },
-    "excludedCommands": [
-      "kubectl",
-      "helm",
-      "kustomize",
-      "docker"
-    ],
+    "excludedCommands": ["kubectl", "helm", "kustomize", "docker"],
     "filesystem": {
       "write": {
-        "allowOnly": [
-          "/Users/alexei/.gemini"
-        ]
+        "allowOnly": ["/Users/alexei/.gemini"]
       }
     }
   },
