@@ -1,7 +1,7 @@
 ---
 name: asking-codex
 description: Code review, security audits, bug detection, alternative implementations, second opinions via OpenAI Codex. Use when user asks for code review, security analysis, implementation advice, bug detection, code patterns, or wants a second opinion on code. Supports uncommitted changes review. Do not use for architecture design or web searches.
-allowed-tools: Task
+allowed-tools: Task, mcp__codex__spawn_agent, mcp__codex__spawn_agents_parallel
 ---
 
 # Codex Consultation

@@ -1,7 +1,7 @@
 ---
 name: asking-gemini
 description: Architecture advice, design trade-offs, brainstorming, comparing approaches via Gemini. Use when user asks about architecture decisions, system design, design patterns, trade-offs analysis, brainstorming ideas, comparing options, or creative problem-solving. Supports SCAMPER, design thinking, divergent/convergent thinking methodologies. Do not use for web searches or shell commands.
-allowed-tools: Task
+allowed-tools: Task, mcp__gemini__gemini, mcp__gemini__brainstorm
 ---
 
 # Gemini Consultation

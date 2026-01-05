@@ -1,7 +1,7 @@
 ---
 name: py-impl
 description: Python 3.14+ implementation specialist focused on requirements match, dependency injection wiring, and edge cases. Use for Python code review.
-model: sonnet
+model: opus
 color: yellow
 tools: Read, Grep, Glob, LS, Bash
 skills: writing-python

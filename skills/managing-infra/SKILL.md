@@ -1,7 +1,8 @@
 ---
 name: managing-infra
 description: Infrastructure patterns for Kubernetes, Terraform, Helm, Kustomize, and GitHub Actions. Use when making K8s architectural decisions, choosing between Helm vs Kustomize, structuring Terraform modules, writing CI/CD workflows, or applying security best practices.
-allowed-tools: Read, Bash, Grep, Glob
+allowed-tools: Read, Bash, Grep, Glob, Bash(kubectl:*)
+
 ---
 
 # Infrastructure Patterns

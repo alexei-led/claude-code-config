@@ -1,7 +1,7 @@
 ---
 name: spec-planner
 description: Creates implementation plans for spec features. Learns codebase style, uses deep thinking, outputs actionable plan.
-model: sonnet
+model: opus
 color: green
 tools: Read, Grep, Glob, LS, Bash(jq:*), Bash(git log:*), mcp__sequential-thinking__sequentialthinking
 ---

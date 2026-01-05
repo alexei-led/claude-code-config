@@ -1,7 +1,7 @@
 ---
 name: go-impl
 description: Go 1.25+ implementation specialist focused on requirements, DI wiring, private interfaces, and testability. Use for Go code review.
-model: sonnet
+model: opus
 color: orange
 tools: Read, Grep, Glob, LS, Bash, LSP
 skills: writing-go

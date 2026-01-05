@@ -1,5 +1,5 @@
 ---
-allowed-tools: Task, TaskOutput, Read, Edit, Write, Skill, AskUserQuestion, TodoWrite, Bash(jq:*), Bash(git checkout:*), Bash(git branch:*), Bash(git status:*), Bash(git log:*), Bash(make:*), Bash(git push:*), Bash(gh pr:*)
+allowed-tools: Task, TaskOutput, Read, Edit, Write, Skill, AskUserQuestion, TodoWrite, Bash(jq:*), Bash(git checkout:*), Bash(git branch:*), Bash(git status:*), Bash(git log:*), Bash(make:*), Bash(git push:*), Bash(gh pr:*), Bash(jq:*)
 description: Continue spec-driven development session
 ---
 

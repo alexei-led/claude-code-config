@@ -1,5 +1,5 @@
 ---
-allowed-tools: Task
+allowed-tools: Task, Read, Bash(jq:*)
 description: Quick progress check for spec-driven development
 ---
 

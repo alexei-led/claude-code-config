@@ -1,7 +1,7 @@
 ---
 name: python-engineer
 description: Python development specialist focused on clean architecture, type safety, and maintainable design. Analyzes code, proposes implementations, and ensures Python best practices.
-tools: Read, Bash, Grep, Glob, LS, mcp__context7__resolve-library-id, mcp__context7__get-library-docs, mcp__sequential-thinking__sequentialthinking, mcp__morphllm__warpgrep_codebase_search
+tools: Read, Bash, Grep, Glob, LS, mcp__context7__resolve-library-id, mcp__context7__get-library-docs, mcp__sequential-thinking__sequentialthinking, mcp__morphllm__warpgrep_codebase_search, mcp__morphllm__codebase_search
 model: opus
 color: yellow
 skills: writing-python, looking-up-docs, researching-web, asking-codex, asking-gemini, using-git-worktrees, searching-code
