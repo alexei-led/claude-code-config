@@ -16,21 +16,22 @@ Production-quality setup with specialized agents and zero-tolerance quality enfo
 
 ## Commands
 
-| Command              | Description                        |
-| -------------------- | ---------------------------------- |
-| `/code:fix`          | Fix ALL issues via parallel agents |
-| `/code:review`       | Multi-agent code review            |
-| `/code:docs`         | Update documentation               |
-| `/code:commit`       | Create bundled commits             |
-| `/code:deploy-check` | Validate K8s/CI configs            |
-| `/test:e2e`          | E2E testing with Playwright        |
-| `/test:improve`      | Improve test quality               |
-| `/spec:init`         | Initialize spec-driven project     |
-| `/spec:work`         | Continue spec-driven development   |
-| `/spec:status`       | Quick progress check               |
-| `/spec:sync`         | Sync feature_list from code        |
-| `/research`          | Web research via Perplexity        |
-| `/docs:lookup`       | Library docs via Context7          |
+| Command              | Description                           |
+| -------------------- | ------------------------------------- |
+| `/code:fix`          | Fix ALL issues via parallel agents    |
+| `/code:review`       | Multi-agent code review               |
+| `/code:docs`         | Update documentation                  |
+| `/code:commit`       | Create bundled commits                |
+| `/code:deploy-check` | Validate K8s/CI configs               |
+| `/test:e2e`          | E2E testing with Playwright           |
+| `/test:improve`      | Improve test quality                  |
+| `/spec:init`         | Initialize spec-driven project        |
+| `/spec:work`         | Continue spec-driven development      |
+| `/spec:status`       | Quick progress check                  |
+| `/spec:sync`         | Sync feature_list from code           |
+| `/research`          | Web research via Perplexity           |
+| `/docs:lookup`       | Library docs via Context7             |
+| `/learn`             | Extract session learnings → CLAUDE.md |
 
 ---
 

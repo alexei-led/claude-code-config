@@ -167,10 +167,11 @@ They analyze and propose changes but **do not apply edits directly**. This ensur
 
 ### Other Commands
 
-| Command        | Description                 |
-| -------------- | --------------------------- |
-| `/docs:lookup` | Library docs via Context7   |
-| `/research`    | Web research via Perplexity |
+| Command        | Description                           |
+| -------------- | ------------------------------------- |
+| `/docs:lookup` | Library docs via Context7             |
+| `/research`    | Web research via Perplexity           |
+| `/learn`       | Extract session learnings → CLAUDE.md |
 
 ---
 
