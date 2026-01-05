@@ -4,6 +4,13 @@
 
 set -euo pipefail
 
+# Cleanup old files (background, silent, non-blocking)
+(
+	find ~/.claude/todos -type f -mtime +7 -delete 2>/dev/null
+	find ~/.claude/debug -type f -mtime +30 -delete 2>/dev/null
+	find ~/.claude/plans -type f -name "*.md" -mtime +30 -exec gzip {} \; 2>/dev/null
+) &
+
 # Colors
 BLUE='\033[0;34m'
 GREEN='\033[0;32m'

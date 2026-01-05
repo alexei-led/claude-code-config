@@ -91,6 +91,13 @@ _Leverage subagents aggressively_ for better results:
 
 Say: "I'll spawn agents to tackle different aspects of this problem" whenever a task has multiple independent parts.
 
+### Subagent Resumption
+
+Long-running agents return an `agentId`. Resume with Task tool's `resume` parameter.
+Useful for: interrupted searches, multi-step implementations, continuing complex analysis.
+
+Example: "Resume agent a3c6662 to continue the investigation"
+
 ### Reality Checkpoints
 
 **Stop and validate** at these moments:
