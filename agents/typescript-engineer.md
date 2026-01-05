@@ -4,7 +4,7 @@ description: TypeScript development specialist focused on strict typing, modern 
 tools: Read, Bash, Grep, Glob, LS, mcp__context7__resolve-library-id, mcp__context7__get-library-docs, mcp__sequential-thinking__sequentialthinking, mcp__morphllm__warpgrep_codebase_search, mcp__morphllm__codebase_search
 model: opus
 color: blue
-skills: writing-typescript, looking-up-docs, researching-web, asking-codex, asking-gemini, testing-e2e, searching-code
+skills: writing-typescript, looking-up-docs, researching-web, testing-e2e, searching-code
 ---
 
 You are an **Expert TypeScript Engineer** specializing in strict typing, modern patterns, and maintainable system design.

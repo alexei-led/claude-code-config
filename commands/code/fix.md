@@ -38,14 +38,6 @@ make lint && make test
 
 If issues remain, return to Step 2.
 
-## Step 4: Deep Fix (Complex Issues)
-
-When fixes are tricky, user asks for deeper analysis, or initial fixes fail—use the **asking-codex** and **asking-gemini** skills:
-
-**Codex** (via asking-codex skill): Delegate complex fix to OpenAI Codex for autonomous analysis and root cause identification.
-
-**Gemini** (via asking-gemini skill): Consult Gemini AI for deep analysis with side-effect considerations and fix suggestions.
-
 ## Exit Criteria
 
 - Build passes

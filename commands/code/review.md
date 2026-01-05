@@ -1,7 +1,7 @@
 ---
 allowed-tools: Task, AskUserQuestion, Bash
 description: Multi-agent code review for security, quality, and architecture
-argument-hint: [deep] [external]
+argument-hint: [deep]
 ---
 
 # Multi-Agent Code Review
@@ -9,16 +9,11 @@ argument-hint: [deep] [external]
 **Parse `$ARGUMENTS`:**
 
 - `deep` → 6-12 specialized Claude sub-agents (language-specific reviewers)
-- `external` → Add external AI reviewers (Codex + Gemini). **Only if explicitly requested.**
 
-**IMPORTANT:** Without `external` flag, run ONLY Claude agents. Never run Codex or Gemini unless `external` is in arguments.
-
-| Arguments     | Claude Agents                                                       | External (Codex + Gemini) |
-| ------------- | ------------------------------------------------------------------- | ------------------------- |
-| (none)        | go-engineer, python-engineer                                        | ❌ No                     |
-| deep          | go-qa, go-idioms, go-tests, go-impl, go-docs, go-simplify (+ py-\*) | ❌ No                     |
-| external      | go-engineer, python-engineer                                        | ✅ Yes                    |
-| deep external | All 6-12 specialized sub-agents                                     | ✅ Yes                    |
+| Arguments | Claude Agents                                                       |
+| --------- | ------------------------------------------------------------------- |
+| (none)    | go-engineer, python-engineer                                        |
+| deep      | go-qa, go-idioms, go-tests, go-impl, go-docs, go-simplify (+ py-\*) |
 
 ---
 
@@ -83,22 +78,6 @@ Task(subagent_type="{agent}", prompt="Review code from: {git_command}. Output: f
 
 Agent's own `model` setting (from metadata) is respected automatically.
 
-### External Mode: Add Codex + Gemini (ONLY if `external` in arguments)
-
-**Skip this section entirely if `external` is NOT in `$ARGUMENTS`.**
-
-If `external` IS present, spawn these agents IN PARALLEL with Claude agents:
-
-```
-Task(subagent_type="codex-assistant", prompt="review: Review code from {git_command}")
-Task(subagent_type="gemini-consultant", prompt="review: Review architecture of {git_command}")
-```
-
-**codex-assistant**: Code review for security (OWASP), quality, architecture, testing gaps.
-**gemini-consultant**: Architecture alternatives and design trade-offs.
-
-**Remember:** `deep` alone = Claude agents only. `deep external` = Claude + Codex + Gemini.
-
 ---
 
 ## Step 3: Aggregate & Present
@@ -106,7 +85,7 @@ Task(subagent_type="gemini-consultant", prompt="review: Review architecture of {
 ```markdown
 ## Code Review Summary
 
-**Mode**: {default|deep} {+external}
+**Mode**: {default|deep}
 **Scope**: {description}
 **Agents**: {count} reviewers
 
@@ -143,9 +122,7 @@ Task(subagent_type="gemini-consultant", prompt="review: Review architecture of {
 
 ```
 /code:review                    # Claude only: go-engineer, python-engineer
-/code:review deep               # Claude only: 6-12 specialized sub-agents (NO external)
-/code:review external           # Claude engineers + Codex + Gemini
-/code:review deep external      # All Claude sub-agents + Codex + Gemini
+/code:review deep               # Claude only: 6-12 specialized sub-agents
 ```
 
 **Execute this workflow now.**

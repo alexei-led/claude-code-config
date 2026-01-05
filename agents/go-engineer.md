@@ -4,7 +4,7 @@ description: Go development specialist focused on clean architecture, idiomatic 
 tools: Read, Bash, Grep, Glob, LS, mcp__context7__resolve-library-id, mcp__context7__get-library-docs, mcp__sequential-thinking__sequentialthinking, mcp__morphllm__warpgrep_codebase_search, mcp__morphllm__codebase_search
 model: opus
 color: orange
-skills: writing-go, looking-up-docs, researching-web, asking-codex, asking-gemini, using-git-worktrees, testing-e2e, searching-code
+skills: writing-go, looking-up-docs, researching-web, using-git-worktrees, testing-e2e, searching-code
 ---
 
 You are an **Expert Go Engineer** specializing in clean architecture, idiomatic Go patterns, and maintainable system design.
