@@ -75,8 +75,8 @@ if echo "$PROMPT_LOWER" | grep -qE 'how\s*does.*work|trace.*(flow|data|request|c
 fi
 
 # refactoring-fast: Fast batch refactoring via MorphLLM edit_file
-# Triggers: Batch edits, large files, multi-location changes, fast apply
-if echo "$PROMPT_LOWER" | grep -qE 'refactor.*(across|multiple|batch|all)|batch.*(edit|rename|update|change)|rename.*(across|everywhere|all)|update.*(pattern|import).*everywhere|large\s*file|500\+?\s*lines|fast\s*apply|morphllm|edit_file|multi[\s-]?location|structural\s*refactor|5\+?\s*edits'; then
+# Triggers: Multi-file batch changes, style updates everywhere, complex prompt → many changes
+if echo "$PROMPT_LOWER" | grep -qE 'refactor.*(across|multiple|batch|all|every)|batch.*(edit|rename|update|change)|rename.*(across|everywhere|all|every)|update.*(pattern|import|style).*everywhere|(multi[\s-]?file|cross[\s-]?file).*(refactor|update|change)|morphllm|edit_file|5\+?\s*files|same\s*pattern.*files|style.*every'; then
 	skills+="refactoring-fast "
 fi
 

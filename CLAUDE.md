@@ -67,6 +67,20 @@ For complex architectural decisions or challenging problems, use **"ultrathink"*
 **Sequential** - Multi-step reasoning for complex debugging, architecture analysis, 3+ components
 See @MCP_Sequential.md for detailed guide
 
+**MorphLLM Tools** - Use for scale and complex prompts:
+
+| Scenario                        | Use                        | Why                                 |
+| ------------------------------- | -------------------------- | ----------------------------------- |
+| Single file, clear edit         | Built-in Edit/MultiEdit    | Clear diff, easy to review/tune     |
+| Multi-file batch refactoring    | `edit_file`                | Massive scale, 10,500+ tokens/sec   |
+| Style/pattern update everywhere | `edit_file`                | Complex prompt → consistent changes |
+| Understanding codebase flow     | `warpgrep_codebase_search` | Reasons about code, not just regex  |
+| "How does X work?"              | `warpgrep_codebase_search` | Multi-hop exploration               |
+| Known file, specific pattern    | Built-in Grep              | Fast, precise                       |
+
+**warpgrep**: Natural language queries like "How does auth flow from login to DB?"
+**edit_file**: Use `// ... existing code ...` placeholders, always include `instruction`
+
 ### Use Multiple Agents
 
 _Leverage subagents aggressively_ for better results:

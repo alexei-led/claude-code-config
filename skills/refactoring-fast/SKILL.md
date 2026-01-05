@@ -10,13 +10,13 @@ MorphLLM edit_file provides semantic code merging at 10,500+ tokens/sec with 98%
 
 ## When to Use edit_file
 
-| Use edit_file          | Use Built-in Edit/MultiEdit |
-| ---------------------- | --------------------------- |
-| 5+ edits in same file  | Single typo/fix             |
-| Files >500 lines       | 2-3 targeted replacements   |
-| Structural refactoring | Simple rename (replace_all) |
-| Batch pattern updates  | Need immediate inline diff  |
-| Speed-critical changes | Small files (<200 lines)    |
+| Use edit_file                   | Use Built-in Edit/MultiEdit      |
+| ------------------------------- | -------------------------------- |
+| Multi-file batch refactoring    | Single file, clear edit          |
+| Style/pattern update everywhere | 2-3 targeted replacements        |
+| Complex prompt → many changes   | Need clear diff to review/tune   |
+| Structural refactoring at scale | Simple rename (replace_all)      |
+| 5+ files need same pattern      | Straightforward single-file work |
 
 ## Key Features
 
