@@ -1,5 +1,12 @@
 {
-  "env": {},
+  "env": {
+    "ANTHROPIC_BASE_URL": "http://localhost:4141",
+    "ANTHROPIC_MODEL": "claude-opus-4.5",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-4.5",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-haiku-4.5",
+    "DISABLE_NON_ESSENTIAL_MODEL_CALLS": "1",
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
+  },
   "includeCoAuthoredBy": false,
   "permissions": {
     "allow": [
@@ -65,9 +72,15 @@
       "WebFetch",
       "WebSearch"
     ],
-    "ask": ["mcp__morphllm__edit_file"]
+    "ask": [
+      "mcp__morphllm__edit_file"
+    ]
   },
-  "disabledMcpjsonServers": ["playwright", "codex", "gemini"],
+  "disabledMcpjsonServers": [
+    "playwright",
+    "codex",
+    "gemini"
+  ],
   "hooks": {
     "SessionStart": [
       {
@@ -156,10 +169,17 @@
       "allowAllUnixSockets": true,
       "allowLocalBinding": true
     },
-    "excludedCommands": ["kubectl", "helm", "kustomize", "docker"],
+    "excludedCommands": [
+      "kubectl",
+      "helm",
+      "kustomize",
+      "docker"
+    ],
     "filesystem": {
       "write": {
-        "allowOnly": ["/Users/alexei/.gemini"]
+        "allowOnly": [
+          "/Users/alexei/.gemini"
+        ]
       }
     }
   },
@@ -185,7 +205,7 @@
     "ANTHROPIC_BASE_URL": "https://api.z.ai/api/anthropic",
     "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
   },
-  "_activeEnv": "default",
+  "_activeEnv": "copilot",
   "env.deepseek": {
     "ANTHROPIC_BASE_URL": "https://api.deepseek.com/anthropic",
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "deepseek-reasoner",
