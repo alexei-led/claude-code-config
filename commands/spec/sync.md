@@ -7,11 +7,13 @@ description: Sync feature_list.json and progress from code state and git history
 
 Reconcile tracking files with actual code state after interrupted sessions.
 
+Claude 4.5 excels at discovering state from the filesystem. This command leverages that capability—reading code, tests, and git history to determine true feature status rather than relying on potentially stale progress notes.
+
 ## Guardrails
 
-- **Conservative**: When in doubt, leave as `"passes": false`
+- **Conservative**: When evidence is ambiguous, leave as `"passes": false`
 - **Evidence-based**: Verify with code/tests, not just commit messages
-- **Passes-only**: Only modify `"passes"` field in `feature_list.json`
+- **Passes-only**: Preserve feature descriptions exactly. Only modify `"passes"` field.
 
 ---
 

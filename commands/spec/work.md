@@ -1,5 +1,5 @@
 ---
-allowed-tools: Task, TaskOutput, Read, Skill, AskUserQuestion, TodoWrite, Bash(jq:*), Bash(git checkout:*), Bash(git branch:*), Bash(git status:*), Bash(git log:*), Bash(make:*), Bash(git push:*), Bash(gh pr:*), Bash(jq:*)
+allowed-tools: Task, TaskOutput, Read, Skill, AskUserQuestion, TodoWrite, Bash(jq:*), Bash(git checkout:*), Bash(git branch:*), Bash(git status:*), Bash(git log:*), Bash(make:*), Bash(git push:*), Bash(gh pr:*), Bash(./init.sh:*)
 description: Continue spec-driven development session
 ---
 
@@ -13,8 +13,12 @@ Continue spec-driven development. Main context = orchestration only.
 - **Progress-first**: Always start with discovery
 - **Branch-per-feature**: Work in `feature/<name>` branch
 - **User-approval**: Explicit approval before implementation
-- **Passes-only**: Only modify `"passes"` field in `feature_list.json`
+- **Passes-only**: Preserve feature descriptions exactly. Only modify `"passes"` field.
 - **Clean-exit**: End with committed code and updated progress
+
+## Context Management
+
+If approaching context limits, commit current work and update claude-progress.txt before context refresh. Claude discovers state from filesystem—clean progress files enable clean resumption.
 
 ---
 
@@ -37,6 +41,20 @@ Task(
   prompt="Learn codebase patterns only (skip planning). Return style guide section."
 )
 ```
+
+---
+
+## Phase 1.5: Verify Current State
+
+**Before new work, verify existing implementation works:**
+
+```bash
+make build && make test && make lint
+```
+
+If failures exist, fix them before starting the next feature. A broken baseline leads to compounding issues.
+
+---
 
 ## Phase 2: Collect & Present
 
@@ -70,17 +88,7 @@ Ready to plan implementation?
 ```
 Task(
   subagent_type="spec-planner",
-  prompt="""
-Create implementation plan for:
-
-Feature: <description>
-Steps: <steps from feature_list.json>
-
-App Context: <from discovery>
-Style Guide: <from style learning>
-
-Return full implementation plan.
-"""
+  prompt="Create implementation plan for feature: <description>. Steps: <steps>. App context: <from discovery>. Style guide: <from style learning>. Return actionable plan with file changes."
 )
 ```
 
@@ -110,7 +118,10 @@ Task(
 
 2. **Create TodoWrite** from approved plan
 
-3. **Get implementation proposals from engineer agent:**
+3. **Implementation scope guardrail:**
+   Implement exactly what the feature steps require. No additional abstractions, no future-proofing, no "while we're here" changes. The right amount of complexity is the minimum needed for this feature.
+
+4. **Get implementation proposals from engineer agent:**
    - Go: `go-engineer`
    - Python: `python-engineer`
    - TypeScript: `typescript-engineer`
@@ -118,19 +129,11 @@ Task(
 ```
 Task(
   subagent_type="<language>-engineer",
-  prompt="""
-Propose implementation for this feature:
-
-Plan: <approved plan>
-Style Guide: <from Phase 1>
-Reference Files: <from plan>
-
-Follow the plan exactly. Return structured proposals.
-"""
+  prompt="Propose implementation for feature: <description>. Plan: <approved plan>. Style guide: <from Phase 1>. Implement exactly what the feature requires—no additional abstractions. Return structured proposals."
 )
 ```
 
-4. **Apply proposals in main context:**
+5. **Apply proposals in main context:**
    - Engineer returns structured proposals (no edits made)
    - Present each proposal to user for review
    - Apply using Edit/Write tools (user sees approval prompts)
@@ -154,6 +157,12 @@ Task(
   subagent_type="spec-verifier",
   prompt="Verify feature: <description>\nSteps: <steps>"
 )
+```
+
+**For UI features, add Playwright verification:**
+
+```
+Skill(skill="test:e2e", args="verify <feature description>")
 ```
 
 If verdict is YES:

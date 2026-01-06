@@ -1,5 +1,5 @@
 ---
-allowed-tools: Read, Write, Glob, Bash(jq:*)
+allowed-tools: Read, Write, Glob, Bash(jq:*), AskUserQuestion
 description: Generate app_spec.txt from markdown documents
 ---
 
@@ -11,10 +11,10 @@ Transform the provided markdown document(s) into a structured `app_spec.txt` spe
 
 $ARGUMENTS
 
-Read the file(s) above and analyze to extract:
+Read the file(s) above and extract:
 
 1. **Core concept** - What is being built and why
-2. **Features** - All mentioned functionality, explicit or implied
+2. **Features** - All mentioned functionality, explicit and implied
 3. **Technical hints** - Any mentioned technologies, constraints, or preferences
 4. **User workflows** - How users will interact with the system
 5. **Data entities** - What needs to be stored and managed
@@ -109,15 +109,46 @@ Generate `app_spec.txt` in the current directory using this XML structure:
     <design_polish>{Visual quality}</design_polish>
   </success_criteria>
 </project_specification>
+```
 
-Guidelines
+## Guidelines
 
-- Expand terse mentions into complete feature sets (e.g., "user accounts" → login, logout, registration, password reset, profile)
-- Infer standard features any app of this type needs (validation, error handling, loading states)
-- Don't invent features contradicting the source
-- Design proper schemas - use JSON columns only for truly dynamic data
-- Order implementation from foundation to polish
+**Expand terse mentions into complete feature sets:**
+
+- "user accounts" → login, logout, registration, password reset, profile management
+- "notifications" → in-app, email, preferences, mark as read
+- "search" → basic search, filters, sorting, pagination
+
+**Infer standard features any app of this type needs:**
+
+- Form validation and error states
+- Loading states and skeleton screens
+- Empty states and zero-data scenarios
+- Responsive design breakpoints
+
+**Preserve source intent:**
+
+- Expand implied features, add inferred standard features
+- Use source document as authority for explicit requirements
+
+**Design proper schemas:**
+
+- Use JSON columns only for truly dynamic/schemaless data
+- Prefer normalized tables with proper relationships
+
+**Order implementation:**
+
+- Foundation (auth, database) → core features → polish → edge cases
+
+## Validation
+
+Before writing, verify:
+
+- All source document features are represented
+- Implied features are expanded logically
+- Tech stack is consistent throughout
+- Implementation steps are ordered by dependency
+
+**STOP**: Use `AskUserQuestion` - "Review generated spec? [Write to file / Show preview / Adjust]"
 
 Write the complete specification to app_spec.txt in the project root.
-
-```

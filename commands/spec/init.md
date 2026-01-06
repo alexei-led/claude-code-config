@@ -1,5 +1,5 @@
 ---
-allowed-tools: Task, TaskOutput, Read, Write, AskUserQuestion, Bash(jq:*), Bash(git:*), Bash(mkdir:*), Bash(make:*), Bash(jq:*)
+allowed-tools: Task, TaskOutput, Read, Write, AskUserQuestion, Bash(jq:*), Bash(git:*), Bash(mkdir:*), Bash(make:*), Bash(chmod:*)
 description: Initialize spec-driven project with feature_list.json
 ---
 
@@ -17,27 +17,12 @@ Initialize a new spec-driven development project. Session 1 of many.
 
 ## Phase 1: Project Discovery
 
-**Spawn `Explore` agent to analyze current state:**
+**Spawn `Explore` agent:**
 
 ```
 Task(
   subagent_type="Explore",
-  prompt="""
-Explore the current directory:
-
-1. Run `pwd` and `ls -la`
-2. Check if `app_spec.txt` exists - summarize if yes
-3. Check if `feature_list.json` exists - report state if yes
-4. Check git status
-5. Check for Makefile
-6. Identify project structure (src/, pkg/, etc.)
-7. Detect language/framework (go.mod, package.json, pyproject.toml)
-
-Return structured summary:
-- What exists already?
-- What needs to be created?
-- Is this fresh start or continuation?
-"""
+  prompt="Project discovery: pwd, ls -la, app_spec.txt existence, feature_list.json state, git status, Makefile check, detect language/framework (go.mod, package.json, pyproject.toml). Return structured summary: what exists, what needs creation, fresh start or continuation."
 )
 ```
 
@@ -61,36 +46,12 @@ Then create `app_spec.txt` using the gathered information.
 
 ## Phase 3: Feature List Generation
 
-**Spawn agent to generate comprehensive feature list:**
+**Spawn agent for comprehensive feature generation:**
 
 ```
 Task(
   subagent_type="Explore",
-  prompt="""
-Based on app_spec.txt, generate a comprehensive feature_list.json.
-
-Read app_spec.txt first, then create features covering:
-- Every feature mentioned (explicit and implied)
-- Happy path AND failure path for each flow
-- API endpoints: valid, invalid, auth failure cases
-- Form inputs: required fields, validation, edge values
-- State transitions
-- Error handling
-- Security boundaries
-
-Format for each feature:
-{
-  "category": "core|edge-case|error|integration|security|performance|style",
-  "description": "What this test verifies",
-  "steps": ["Step 1", "Step 2", "Step 3"],
-  "passes": false
-}
-
-Aim for thorough coverage (typically 100-300 features).
-Order by dependency: foundational features first.
-
-Return the complete JSON array.
-"""
+  prompt="Read app_spec.txt. Generate feature_list.json covering: every explicit and implied feature, happy paths AND failure paths, API endpoints (valid/invalid/auth failure), form validation (required fields, edge values), state transitions, error handling, security boundaries. Format: {category, description, steps[], passes: false}. Categories: core|edge-case|error|integration|security|performance|style. Target 100-300 features. Order by dependency: foundational first. Return complete JSON array."
 )
 ```
 
@@ -104,7 +65,34 @@ Return the complete JSON array.
 
 1. **Write `feature_list.json`** with generated features
 
-2. **Create Makefile** (if not exists):
+2. **Create `init.sh`** (environment setup script):
+
+```bash
+#!/bin/bash
+# init.sh - Run at session start to verify state
+set -e
+
+echo "=== Spec-Driven Session Start ==="
+
+# Verify build
+make build 2>/dev/null && echo "✓ Build passes" || echo "✗ Build needs attention"
+
+# Verify tests
+make test 2>/dev/null && echo "✓ Tests pass" || echo "✗ Tests need attention"
+
+# Show next feature
+echo ""
+echo "Next feature to implement:"
+jq '[.[] | select(.passes==false)][0] | .description' feature_list.json
+
+# Show progress
+total=$(jq 'length' feature_list.json)
+passing=$(jq '[.[] | select(.passes==true)] | length' feature_list.json)
+echo ""
+echo "Progress: $passing/$total features passing"
+```
+
+3. **Create Makefile** (if not exists):
 
 ```makefile
 .PHONY: init test build lint clean run help
@@ -120,15 +108,16 @@ clean:         ## Clean build artifacts
 run:           ## Start application
 ```
 
-3. **Initialize git** (if not a repo):
+4. **Initialize git** (if not a repo):
 
 ```bash
 git init
-git add feature_list.json Makefile app_spec.txt
+chmod +x init.sh
+git add feature_list.json Makefile app_spec.txt init.sh
 git commit -m "Initial setup: spec-driven development scaffold"
 ```
 
-4. **Create `claude-progress.txt`**:
+5. **Create `claude-progress.txt`**:
 
 ```
 # Progress Tracker
@@ -138,11 +127,12 @@ git commit -m "Initial setup: spec-driven development scaffold"
 **Completed:**
 - Created app_spec.txt
 - Generated feature_list.json with N features
-- Set up Makefile
+- Set up Makefile and init.sh
 
 **Progress:** 0/N features (0%)
 
 **Next Session:**
+- Run `./init.sh` to verify state
 - Start with first core feature
 - Run /spec:work to continue
 ```
@@ -162,6 +152,7 @@ Present to user:
 - app_spec.txt
 - feature_list.json
 - Makefile
+- init.sh
 - claude-progress.txt
 
 **Next Step**: Run `/spec:work` to start implementing features
@@ -173,10 +164,8 @@ Present to user:
 
 **Features are immutable after init.**
 
-Future sessions can ONLY:
+Removing or editing feature descriptions causes drift between spec and implementation, leading to untested functionality and broken contracts.
 
-- Mark `"passes": false` → `"passes": true`
-- Never remove, reorder, or edit descriptions
-- Never add new features (request new init if needed)
+Preserve all feature descriptions exactly. Only modify the `"passes"` field: `false` → `true`
 
-This ensures no functionality is missed.
+Request new init if additional features are needed.
