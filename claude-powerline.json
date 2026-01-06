@@ -25,6 +25,14 @@
           "context": {
             "enabled": true
           },
+          "block": {
+            "enabled": true,
+            "type": "both"
+          },
+          "today": {
+            "enabled": true,
+            "type": "cost"
+          },
           "session": {
             "enabled": true
           }
@@ -52,14 +60,28 @@
     "type": "cost",
     "costSource": "calculated"
   },
+  "block": {
+    "type": "both"
+  },
+  "today": {
+    "type": "cost"
+  },
   "budget": {
     "session": {
-      "amount": 10.0,
+      "amount": 15.0,
+      "warningThreshold": 80
+    },
+    "block": {
+      "amount": 20.0,
+      "warningThreshold": 75
+    },
+    "today": {
+      "amount": 25.0,
       "warningThreshold": 80
     }
   },
   "modelContextLimits": {
-    "sonnet": 200000,
+    "sonnet": 1000000,
     "opus": 200000,
     "haiku": 200000,
     "default": 200000
