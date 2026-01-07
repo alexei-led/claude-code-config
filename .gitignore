@@ -5,6 +5,7 @@
 # Database and cache
 __store.db
 cache/
+image-cache/
 stats-cache.json
 
 # Session data
