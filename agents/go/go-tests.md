@@ -1,10 +1,10 @@
 ---
 name: go-tests
 description: Go testing specialist focused on idiomatic table-driven tests, testify assert/require, mockery EXPECT patterns, and test design quality. Identifies pointless/duplicate tests and recommends implementation refactoring when complex setup signals design problems.
+tools: ["Read", "Grep", "Glob", "LS", "Bash", "LSP"]
 model: sonnet
 color: orange
-tools: Read, Grep, Glob, LS, Bash, LSP
-skills: writing-go
+skills: ["writing-go"]
 ---
 
 ## Role

@@ -1,9 +1,26 @@
 ---
 name: spec-verifier
 description: Verifies feature implementation against spec steps. Runs tests, checks code, returns pass/fail status.
+tools:
+  [
+    "Read",
+    "Grep",
+    "Glob",
+    "LS",
+    "Bash(jq:*)",
+    "Bash(make:*)",
+    "Bash(go build:*)",
+    "Bash(go test:*)",
+    "Bash(go vet:*)",
+    "Bash(golangci-lint:*)",
+    "Bash(bun:*)",
+    "Bash(npm:*)",
+    "Bash(uv:*)",
+    "Bash(pytest:*)",
+    "Bash(ruff:*)",
+  ]
 model: sonnet
 color: green
-tools: Read, Grep, Glob, LS, Bash(jq:*), Bash(make:*), Bash(go build:*), Bash(go test:*), Bash(go vet:*), Bash(golangci-lint:*), Bash(bun:*), Bash(npm:*), Bash(uv:*), Bash(pytest:*), Bash(ruff:*)
 ---
 
 You are a **Spec Verification Agent** that checks if a feature is correctly implemented.

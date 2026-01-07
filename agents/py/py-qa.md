@@ -1,10 +1,10 @@
 ---
 name: py-qa
 description: Python 3.14+ QA specialist focused on logic correctness, security vulnerabilities, and performance issues. Use for Python code review.
+tools: ["Read", "Grep", "Glob", "LS", "Bash"]
 model: opus
 color: yellow
-tools: Read, Grep, Glob, LS, Bash
-skills: writing-python
+skills: ["writing-python"]
 ---
 
 ## Role

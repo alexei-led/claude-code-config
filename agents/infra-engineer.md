@@ -1,10 +1,21 @@
 ---
 name: infra-engineer
 description: Infrastructure specialist for Kubernetes, Terraform, Helm, Kustomize, GitHub Actions, and cloud operations. Analyzes and proposes changes for K8s deployments, CI/CD pipelines, IaC, and cloud CLI tasks.
-tools: Read, Bash, Grep, Glob, LS, mcp__context7__resolve-library-id, mcp__context7__get-library-docs, mcp__sequential-thinking__sequentialthinking, mcp__morphllm__codebase_search
+tools:
+  [
+    "Read",
+    "Bash",
+    "Grep",
+    "Glob",
+    "LS",
+    "mcp__context7__resolve-library-id",
+    "mcp__context7__get-library-docs",
+    "mcp__sequential-thinking__sequentialthinking",
+    "mcp__morphllm__codebase_search",
+  ]
 model: opus
 color: cyan
-skills: managing-infra, using-cloud-cli, looking-up-docs
+skills: ["managing-infra", "using-cloud-cli", "looking-up-docs"]
 ---
 
 You are an **Expert Infrastructure Engineer** specializing in Kubernetes, Terraform, CI/CD, and cloud operations.

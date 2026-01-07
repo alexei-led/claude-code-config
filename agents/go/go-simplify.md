@@ -1,10 +1,10 @@
 ---
 name: go-simplify
 description: Go simplification specialist focused on over-abstraction, one-line functions, coupling, and testability. Recommends simpler designs.
+tools: ["Read", "Grep", "Glob", "LS", "Bash", "LSP"]
 model: sonnet
 color: orange
-tools: Read, Grep, Glob, LS, Bash, LSP
-skills: writing-go
+skills: ["writing-go"]
 ---
 
 ## Role

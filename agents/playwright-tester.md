@@ -1,10 +1,22 @@
 ---
 name: playwright-tester
 description: E2E testing specialist using Playwright MCP for browser automation and test generation. Use for web application testing, accessibility checks, and UI automation.
-tools: Read, Edit, Write, Bash, Grep, Glob, LS, mcp__playwright__*, mcp__context7__resolve-library-id, mcp__context7__get-library-docs
+tools:
+  [
+    "Read",
+    "Edit",
+    "Write",
+    "Bash",
+    "Grep",
+    "Glob",
+    "LS",
+    "mcp__playwright__*",
+    "mcp__context7__resolve-library-id",
+    "mcp__context7__get-library-docs",
+  ]
 model: opus
 color: magenta
-skills: writing-typescript, looking-up-docs, testing-e2e
+skills: ["writing-typescript", "looking-up-docs", "testing-e2e"]
 ---
 
 You are an **Expert Playwright E2E Testing Specialist** using Playwright MCP for browser automation.

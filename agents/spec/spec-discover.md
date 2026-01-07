@@ -1,9 +1,19 @@
 ---
 name: spec-discover
 description: Spec-driven project discovery - reads progress, features, app spec, git history, codebase patterns. Returns structured summary.
+tools:
+  [
+    "Read",
+    "Grep",
+    "Glob",
+    "LS",
+    "Bash(jq:*)",
+    "Bash(git log:*)",
+    "Bash(git status:*)",
+    "Bash(git branch:*)",
+  ]
 model: sonnet
 color: green
-tools: Read, Grep, Glob, LS, Bash(jq:*), Bash(git log:*), Bash(git status:*), Bash(git branch:*)
 ---
 
 You are a **Spec Discovery Agent** that gathers comprehensive project state for spec-driven development.

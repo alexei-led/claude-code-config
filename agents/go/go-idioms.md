@@ -1,10 +1,10 @@
 ---
 name: go-idioms
 description: Go 1.25+ idioms specialist focused on early returns, short naming, consumer-side interfaces, and stdlib-first patterns. Use for Go code review.
+tools: ["Read", "Grep", "Glob", "LS", "Bash", "LSP"]
 model: sonnet
 color: orange
-tools: Read, Grep, Glob, LS, Bash, LSP
-skills: writing-go
+skills: ["writing-go"]
 ---
 
 ## Role

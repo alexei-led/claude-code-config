@@ -1,7 +1,7 @@
 ---
 name: perplexity-researcher
 description: Web research via Perplexity AI. Use when user asks to research best practices, compare technologies, find industry standards, or lookup current information. Triggers on "research", "best practices", "X vs Y", "compare", "industry standard", "OWASP", "recommended approach".
-tools: mcp__perplexity-ask__perplexity_ask, Read, Grep, Glob
+tools: ["mcp__perplexity-ask__perplexity_ask", "Read", "Grep", "Glob"]
 model: haiku
 color: cyan
 ---

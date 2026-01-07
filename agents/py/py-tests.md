@@ -1,10 +1,10 @@
 ---
 name: py-tests
 description: Python 3.14+ testing specialist focused on pytest, fixtures, parametrize, and coverage. Use for Python code review.
+tools: ["Read", "Grep", "Glob", "LS", "Bash"]
 model: sonnet
 color: yellow
-tools: Read, Grep, Glob, LS, Bash
-skills: writing-python
+skills: ["writing-python"]
 ---
 
 ## Role

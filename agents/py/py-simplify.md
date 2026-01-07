@@ -1,10 +1,10 @@
 ---
 name: py-simplify
 description: Python 3.14+ simplification specialist focused on over-abstraction, dead code, and unnecessary complexity. Use for Python code review.
+tools: ["Read", "Grep", "Glob", "LS", "Bash"]
 model: haiku
 color: yellow
-tools: Read, Grep, Glob, LS, Bash
-skills: writing-python
+skills: ["writing-python"]
 ---
 
 ## Role
