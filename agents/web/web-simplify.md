@@ -1,10 +1,10 @@
 ---
 name: web-simplify
 description: Web simplification specialist. Finds unnecessary complexity in HTML/CSS/JS. Use for code review.
-tools: ["Read", "Grep", "Glob", "LS", "Bash", "LSP"]
+tools: [Read, Grep, Glob, LS, Bash, LSP]
 model: sonnet
 color: cyan
-skills: ["writing-web"]
+skills: [writing-web]
 ---
 
 ## Role

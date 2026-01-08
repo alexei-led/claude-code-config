@@ -1,10 +1,10 @@
 ---
 name: web-qa
 description: Web QA specialist for security, performance, and accessibility basics. Use for HTML/CSS/JS/HTMX review.
-tools: ["Read", "Grep", "Glob", "LS", "Bash", "LSP"]
+tools: [Read, Grep, Glob, LS, Bash, LSP]
 model: sonnet
 color: cyan
-skills: ["writing-web"]
+skills: [writing-web]
 ---
 
 ## Role

@@ -1,10 +1,10 @@
 ---
 name: web-tests
 description: Web testing specialist for E2E tests with Playwright. Use for test code review.
-tools: ["Read", "Grep", "Glob", "LS", "Bash", "LSP"]
+tools: [Read, Grep, Glob, LS, Bash, LSP]
 model: sonnet
 color: cyan
-skills: ["writing-web", "testing-e2e"]
+skills: [writing-web, testing-e2e]
 ---
 
 ## Role

@@ -1,10 +1,10 @@
 ---
 name: web-docs
 description: Web documentation specialist for comments and ARIA labels. Use for HTML/CSS/JS review.
-tools: ["Read", "Grep", "Glob", "LS", "Bash", "LSP"]
+tools: [Read, Grep, Glob, LS, Bash, LSP]
 model: haiku
 color: cyan
-skills: ["writing-web"]
+skills: [writing-web]
 ---
 
 ## Role

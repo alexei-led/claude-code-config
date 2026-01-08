@@ -1,10 +1,10 @@
 ---
 name: web-impl
 description: Web implementation specialist for requirements and responsive design. Use for HTML/CSS/JS/HTMX review.
-tools: ["Read", "Grep", "Glob", "LS", "Bash", "LSP"]
+tools: [Read, Grep, Glob, LS, Bash, LSP]
 model: sonnet
 color: cyan
-skills: ["writing-web"]
+skills: [writing-web]
 ---
 
 ## Role
