@@ -13,6 +13,20 @@ description: Generate app_spec.txt from markdown documents
 
 Transform the provided markdown document(s) into a structured `app_spec.txt` specification.
 
+## Documentation Hierarchy
+
+| Document            | Focus      | This command produces             |
+| ------------------- | ---------- | --------------------------------- |
+| `/docs/*.md`        | WHY        | Input source (high-level context) |
+| `app_spec.txt`      | WHY + WHAT | **Output** (requirements)         |
+| `feature_list.json` | HOW        | Next step (/spec:init)            |
+
+**Key principle:** `app_spec.txt` focuses on WHY and WHAT, not HOW:
+
+- WHY: Business purpose, user needs, problem being solved
+- WHAT: Requirements, success criteria, boundaries
+- NOT HOW: Implementation details go in `feature_list.json`
+
 **Use TodoWrite** to track these 6 phases:
 
 1. Read input documents

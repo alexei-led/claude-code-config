@@ -7,6 +7,19 @@ My guidance helps when you're stuck—ask for it.
 
 When working in spec-driven projects (detected by `feature_list.json`):
 
+### Documentation Hierarchy
+
+Spec-driven projects maintain layered documentation:
+
+| Document              | Focus      | Contains                                      |
+| --------------------- | ---------- | --------------------------------------------- |
+| `/docs/*.md`          | WHY        | Research, architecture, guidelines, decisions |
+| `app_spec.txt`        | WHY + WHAT | Technical/functional requirements             |
+| `feature_list.json`   | HOW        | Implementation tasks (references app_spec)    |
+| `claude-progress.txt` | STATE      | Current session progress                      |
+
+**Key principle:** Read top-down for context. `app_spec.txt` captures requirements (WHY/WHAT), while `feature_list.json` details implementation (HOW).
+
 ### Session Start (automatic via SessionStart hook)
 
 - Git branch and last commit shown

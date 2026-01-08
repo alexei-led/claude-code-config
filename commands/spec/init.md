@@ -19,13 +19,25 @@ description: Initialize spec-driven project with feature_list.json
 
 Initialize a new spec-driven development project. Session 1 of many.
 
-**Use TodoWrite** to track these 5 phases:
+## Documentation Hierarchy
+
+Spec-driven projects maintain layered documentation:
+
+| Document              | Focus                  | Contains                                      |
+| --------------------- | ---------------------- | --------------------------------------------- |
+| `/docs/*.md`          | WHY (business context) | Research, architecture, guidelines, decisions |
+| `app_spec.txt`        | WHY + WHAT             | Technical/functional requirements             |
+| `feature_list.json`   | HOW                    | Implementation tasks (references app_spec)    |
+| `claude-progress.txt` | STATE                  | Current session progress                      |
+
+**Use TodoWrite** to track these 6 phases:
 
 1. Project discovery
-2. App specification
-3. Feature list generation
-4. Project setup
-5. Summary
+2. High-level documentation (docs/)
+3. App specification
+4. Feature list generation
+5. Project setup
+6. Summary
 
 ## Guardrails
 
@@ -64,7 +76,53 @@ TaskOutput(task_id=<spec_id>, block=true)
 
 ---
 
-## Phase 2: App Specification
+## Phase 2: High-Level Documentation
+
+**If `/docs/` exists:** Read existing documents for context.
+
+**If no `/docs/` directory:**
+
+Use `AskUserQuestion` to gather high-level context:
+
+| Header | Question                                              | Options                            |
+| ------ | ----------------------------------------------------- | ---------------------------------- |
+| Docs   | Do you have architecture/design documents to include? | Yes (will provide), None yet, Skip |
+
+If user provides documents or context:
+
+1. Create `docs/` directory
+2. Create relevant files (architecture.md, guidelines.md, decisions.md)
+3. Capture business context, constraints, and design decisions
+
+**docs/architecture.md template:**
+
+```markdown
+# Architecture
+
+## Overview
+
+<System purpose and high-level design>
+
+## Components
+
+<Major components and their responsibilities>
+
+## Constraints
+
+<Technical and business constraints>
+```
+
+---
+
+## Phase 3: App Specification
+
+`app_spec.txt` captures **WHY and WHAT**, not HOW:
+
+- Purpose and goals (WHY this exists)
+- Requirements and success criteria (WHAT it must do)
+- Constraints and boundaries (WHAT limits apply)
+
+Implementation details (HOW) belong in `feature_list.json`.
 
 **If `app_spec.txt` doesn't exist:**
 
@@ -82,7 +140,7 @@ Then create `app_spec.txt` using the gathered information.
 
 ---
 
-## Phase 3: Feature List Generation
+## Phase 4: Feature List Generation
 
 **Spawn agent for comprehensive feature generation:**
 
@@ -112,7 +170,7 @@ Task(
 
 ---
 
-## Phase 4: Project Setup
+## Phase 5: Project Setup
 
 1. **Write `feature_list.json`** with generated features
 
@@ -176,7 +234,7 @@ git commit -m "Initial setup: spec-driven development scaffold"
 
 ---
 
-## Phase 5: Summary
+## Phase 6: Summary
 
 Present to user:
 

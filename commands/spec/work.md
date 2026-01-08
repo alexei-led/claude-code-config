@@ -23,6 +23,17 @@ description: Continue spec-driven development session
 
 Continue spec-driven development. Main context = orchestration only.
 
+## Documentation Hierarchy
+
+| Document              | Focus      | Use                                      |
+| --------------------- | ---------- | ---------------------------------------- |
+| `/docs/*.md`          | WHY        | Business context, architecture decisions |
+| `app_spec.txt`        | WHY + WHAT | Requirements, success criteria           |
+| `feature_list.json`   | HOW        | Implementation steps to follow           |
+| `claude-progress.txt` | STATE      | Current session state                    |
+
+Agents read top-down (docs → spec → features) for full context.
+
 ## Guardrails
 
 - **Agent-first**: All exploration/analysis in subagents

@@ -13,6 +13,7 @@ Comprehensive reference for commands, agents, skills, hooks, and scripts.
 - [Hooks](#hooks)
 - [Scripts](#scripts)
 - [MCP Integration](#mcp-integration)
+- [Spec-Driven Development](#spec-driven-development)
 - [Workflows](#workflows)
 
 ---
@@ -407,6 +408,126 @@ Rate limit fallback using GitHub Copilot API.
 | `perplexity-ask`      | Web research              |
 | `playwright`          | E2E browser testing       |
 | `morphllm`            | Fast editing, code search |
+
+---
+
+## Spec-Driven Development
+
+A structured approach for building features from specifications with full traceability.
+
+### Documentation Hierarchy
+
+```mermaid
+flowchart TB
+    subgraph WHY[WHY - Business Context]
+        DOCS["/docs/*.md<br/>Research, Architecture, Guidelines"]
+    end
+
+    subgraph WHAT[WHY + WHAT - Requirements]
+        SPEC["app_spec.txt<br/>Technical/Functional Requirements"]
+    end
+
+    subgraph HOW[HOW - Implementation]
+        FEAT["feature_list.json<br/>Implementation Tasks"]
+    end
+
+    subgraph STATE[STATE - Progress]
+        PROG["claude-progress.txt<br/>Session State"]
+    end
+
+    DOCS --> SPEC
+    SPEC --> FEAT
+    FEAT --> PROG
+```
+
+| Document              | Focus      | Contains                                      |
+| --------------------- | ---------- | --------------------------------------------- |
+| `/docs/*.md`          | WHY        | Research, architecture, guidelines, decisions |
+| `app_spec.txt`        | WHY + WHAT | Technical/functional requirements             |
+| `feature_list.json`   | HOW        | Implementation tasks (references app_spec)    |
+| `claude-progress.txt` | STATE      | Current session progress                      |
+
+**Key principle:** Read top-down for context. Requirements (WHY/WHAT) go in `app_spec.txt`, implementation details (HOW) go in `feature_list.json`.
+
+### Workflow
+
+```mermaid
+flowchart LR
+    subgraph Init["/spec:init"]
+        I1[Discovery] --> I2[Docs Setup]
+        I2 --> I3[App Spec]
+        I3 --> I4[Feature List]
+    end
+
+    subgraph Work["/spec:work"]
+        W1[Discover] --> W2[Plan]
+        W2 --> W3[Implement]
+        W3 --> W4[Verify]
+        W4 --> W5[Commit]
+    end
+
+    Init --> Work
+    Work --> |next feature| Work
+```
+
+### Commands
+
+| Command        | Purpose                                                      |
+| -------------- | ------------------------------------------------------------ |
+| `/spec:init`   | Initialize project with docs, spec, and feature list         |
+| `/spec:gen`    | Generate `app_spec.txt` from markdown documents              |
+| `/spec:work`   | Main development loop (discover → plan → implement → verify) |
+| `/spec:status` | Quick progress check                                         |
+| `/spec:sync`   | Reconcile tracking files with actual code state              |
+
+### Agents
+
+| Agent           | Role                                                   |
+| --------------- | ------------------------------------------------------ |
+| `spec-discover` | Reads all docs top-down, returns structured summary    |
+| `spec-planner`  | Creates implementation plan from architectural context |
+| `spec-verifier` | Verifies feature against spec steps                    |
+
+### Typical Session
+
+```bash
+# Session 1: Initialize
+/spec:init
+# → Creates docs/, app_spec.txt, feature_list.json
+
+# Session 2+: Implement features
+/spec:work
+# → Discovery → Planning → Implementation → Verification → Commit
+
+# Check progress anytime
+/spec:status
+
+# After interrupted session
+/spec:sync
+```
+
+### Feature List Format
+
+```json
+[
+  {
+    "category": "core",
+    "description": "User can log in with email and password",
+    "steps": [
+      "Create login form with email/password fields",
+      "Validate credentials against database",
+      "Return JWT token on success"
+    ],
+    "passes": false
+  }
+]
+```
+
+**Rules:**
+
+- Feature descriptions are immutable after init
+- Only modify `"passes"` field: `false` → `true`
+- Never mark passing until build/test/lint all pass
 
 ---
 
