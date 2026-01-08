@@ -1,5 +1,10 @@
 ---
-allowed-tools: Task, AskUserQuestion, mcp__context7__resolve-library-id, mcp__context7__get-library-docs
+context: fork
+allowed-tools:
+  - Task
+  - AskUserQuestion
+  - mcp__context7__resolve-library-id
+  - mcp__context7__query-docs
 description: Update all documentation based on recent changes using docs-keeper agent
 ---
 

@@ -1,5 +1,10 @@
 ---
-allowed-tools: Read, Write, Glob, Bash(jq:*), AskUserQuestion
+allowed-tools:
+  - Read
+  - Write
+  - Glob
+  - Bash(jq:*)
+  - AskUserQuestion
 description: Generate app_spec.txt from markdown documents
 ---
 

@@ -1,5 +1,13 @@
 ---
-allowed-tools: Task, Bash, Read, Grep, Glob, LS, AskUserQuestion, mcp__playwright__*
+allowed-tools:
+  - Task
+  - Bash
+  - Read
+  - Grep
+  - Glob
+  - LS
+  - AskUserQuestion
+  - mcp__playwright__*
 description: E2E testing with Playwright MCP - browser automation, test generation, and execution
 argument-hint: [run|record|generate]
 ---

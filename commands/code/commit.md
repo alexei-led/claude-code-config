@@ -1,5 +1,11 @@
 ---
-allowed-tools: Task, TaskOutput, Bash(git add:*), Bash(git commit:*), Bash(git status:*)
+context: fork
+allowed-tools:
+  - Task
+  - TaskOutput
+  - Bash(git add:*)
+  - Bash(git commit:*)
+  - Bash(git status:*)
 description: Group changes logically and create bundled commits with concise messages
 ---
 

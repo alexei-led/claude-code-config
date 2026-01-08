@@ -1,5 +1,11 @@
 ---
-allowed-tools: Read, Edit, Write, Grep, Glob, AskUserQuestion
+allowed-tools:
+  - Read
+  - Edit
+  - Write
+  - Grep
+  - Glob
+  - AskUserQuestion
 description: Extract strategic learnings from session and update project CLAUDE.md
 argument-hint: [topic]
 ---

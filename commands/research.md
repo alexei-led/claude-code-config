@@ -1,5 +1,7 @@
 ---
-allowed-tools: mcp__perplexity-ask__perplexity_ask, Read
+allowed-tools:
+  - mcp__perplexity-ask__perplexity_ask
+  - Read
 description: Research topics via Perplexity AI
 argument-hint: <query>
 ---

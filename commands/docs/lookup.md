@@ -1,5 +1,8 @@
 ---
-allowed-tools: mcp__context7__resolve-library-id, mcp__context7__get-library-docs, Read
+allowed-tools:
+  - mcp__context7__resolve-library-id
+  - mcp__context7__query-docs
+  - Read
 description: Look up library documentation via Context7
 argument-hint: <library> [topic]
 ---

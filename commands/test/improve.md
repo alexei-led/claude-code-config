@@ -1,5 +1,13 @@
 ---
-allowed-tools: Task, Bash, Read, Grep, Glob, LS, AskUserQuestion
+context: fork
+allowed-tools:
+  - Task
+  - Bash
+  - Read
+  - Grep
+  - Glob
+  - LS
+  - AskUserQuestion
 description: Review, refactor, and improve tests - eliminate waste, combine to tabular, align style
 ---
 

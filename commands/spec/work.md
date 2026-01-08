@@ -1,5 +1,21 @@
 ---
-allowed-tools: Task, TaskOutput, Read, Skill, AskUserQuestion, TodoWrite, Bash(jq:*), Bash(git checkout:*), Bash(git branch:*), Bash(git status:*), Bash(git log:*), Bash(make:*), Bash(git push:*), Bash(gh pr:*), Bash(./init.sh:*)
+context: fork
+allowed-tools:
+  - Task
+  - TaskOutput
+  - Read
+  - Skill
+  - AskUserQuestion
+  - TodoWrite
+  - Bash(jq:*)
+  - Bash(git checkout:*)
+  - Bash(git branch:*)
+  - Bash(git status:*)
+  - Bash(git log:*)
+  - Bash(make:*)
+  - Bash(git push:*)
+  - Bash(gh pr:*)
+  - Bash(./init.sh:*)
 description: Continue spec-driven development session
 ---
 

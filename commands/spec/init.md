@@ -1,5 +1,15 @@
 ---
-allowed-tools: Task, TaskOutput, Read, Write, AskUserQuestion, Bash(jq:*), Bash(git:*), Bash(mkdir:*), Bash(make:*), Bash(chmod:*)
+allowed-tools:
+  - Task
+  - TaskOutput
+  - Read
+  - Write
+  - AskUserQuestion
+  - Bash(jq:*)
+  - Bash(git:*)
+  - Bash(mkdir:*)
+  - Bash(make:*)
+  - Bash(chmod:*)
 description: Initialize spec-driven project with feature_list.json
 ---
 

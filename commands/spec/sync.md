@@ -1,5 +1,12 @@
 ---
-allowed-tools: Task, TaskOutput, Read, AskUserQuestion, Bash(jq:*), Bash(git status:*), Bash(git log:*)
+allowed-tools:
+  - Task
+  - TaskOutput
+  - Read
+  - AskUserQuestion
+  - Bash(jq:*)
+  - Bash(git status:*)
+  - Bash(git log:*)
 description: Sync feature_list.json and progress from code state and git history
 ---
 

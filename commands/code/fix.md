@@ -1,5 +1,8 @@
 ---
-allowed-tools: Task, Bash
+context: fork
+allowed-tools:
+  - Task
+  - Bash
 description: Fix ALL issues via parallel agents - zero tolerance quality enforcement
 ---
 

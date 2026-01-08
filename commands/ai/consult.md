@@ -1,5 +1,7 @@
 ---
-allowed-tools: Task
+context: fork
+allowed-tools:
+  - Task
 description: Get independent code/design review from fresh Claude perspective
 argument-hint: <question or file to review>
 ---

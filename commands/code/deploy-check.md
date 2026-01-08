@@ -1,6 +1,12 @@
 ---
-allowed-tools: Task, Bash, Grep, Glob, mcp__perplexity-ask__perplexity_ask
-description: Validate K8s/CI configs via deployment-specialist agent
+context: fork
+allowed-tools:
+  - Task
+  - Bash
+  - Grep
+  - Glob
+  - mcp__perplexity-ask__perplexity_ask
+description: Validate K8s/CI configs via infra-engineer agent
 ---
 
 # Deployment Validation
@@ -18,10 +24,10 @@ Use Glob to find infrastructure files (quick scan, no deep reads):
 
 ## Step 2: Spawn Validation Agent
 
-Based on detected file types, spawn **quality-guardian** agent with validation prompt:
+Based on detected file types, spawn **infra-engineer** agent with validation prompt:
 
 ```
-Task with quality-guardian agent:
+Task(subagent_type="infra-engineer", prompt="
 "Validate {detected_types} infrastructure in this repository.
 
 Run these validations:

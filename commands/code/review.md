@@ -1,5 +1,9 @@
 ---
-allowed-tools: Task, AskUserQuestion, Bash
+context: fork
+allowed-tools:
+  - Task
+  - AskUserQuestion
+  - Bash
 description: Multi-agent code review for security, quality, and architecture
 argument-hint: [deep]
 ---
