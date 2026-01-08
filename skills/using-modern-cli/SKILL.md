@@ -8,7 +8,8 @@ description: >-
   writing bash scripts, optimizing command chains, working with file searches,
   or replacing grep/find/cat in workflows. These tools are faster, respect
   .gitignore, and have better output formatting.
-allowed-tools: Bash
+allowed-tools:
+  - Bash
 ---
 
 # Modern CLI Tools

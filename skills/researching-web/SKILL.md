@@ -1,7 +1,13 @@
 ---
 name: researching-web
 description: Web research via Perplexity AI. Use for technical comparisons (X vs Y), best practices, industry standards, documentation. Triggers on "research", "compare", "vs", "best practice", "which is better", "pros and cons".
-allowed-tools: Task, Read, Grep, Glob, WebFetch, mcp__perplexity-ask__perplexity_ask
+allowed-tools:
+  - Task
+  - Read
+  - Grep
+  - Glob
+  - WebFetch
+  - mcp__perplexity-ask__perplexity_ask
 ---
 
 # Web Research with Perplexity

@@ -1,7 +1,12 @@
 ---
 name: writing-typescript
 description: Idiomatic TypeScript development. Use when writing TypeScript code, Node.js services, React apps, or discussing TS patterns. Emphasizes strict typing, composition, and modern tooling (bun/vite).
-allowed-tools: Read, Bash, Grep, Glob
+agent: typescript-engineer
+allowed-tools:
+  - Read
+  - Bash
+  - Grep
+  - Glob
 ---
 
 # TypeScript Development (5.x)

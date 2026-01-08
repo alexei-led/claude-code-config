@@ -1,7 +1,12 @@
 ---
 name: looking-up-docs
 description: Library documentation via Context7. Use for API references, code examples, framework docs.
-allowed-tools: Read, Grep, Glob, mcp__context7__resolve-library-id, mcp__context7__get-library-docs
+allowed-tools:
+  - Read
+  - Grep
+  - Glob
+  - mcp__context7__resolve-library-id
+  - mcp__context7__query-docs
 ---
 
 # Documentation Lookup with Context7

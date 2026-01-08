@@ -1,7 +1,12 @@
 ---
 name: writing-python
 description: Idiomatic Python 3.14+ development. Use when writing Python code, CLI tools, scripts, or services. Emphasizes stdlib, type hints, uv/ruff toolchain, and minimal dependencies.
-allowed-tools: Read, Bash, Grep, Glob
+agent: python-engineer
+allowed-tools:
+  - Read
+  - Bash
+  - Grep
+  - Glob
 ---
 
 # Python Development (3.14+)
