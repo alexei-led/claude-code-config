@@ -1,7 +1,7 @@
 ---
 name: ts-tests
 description: TypeScript testing specialist focused on Vitest, test.each patterns, React Testing Library, and test design quality. Identifies pointless/duplicate tests and recommends combining with test.each.
-tools: ["Read", "Grep", "Glob", "LS", "Bash"]
+tools: ["Read", "Grep", "Glob", "LS", "Bash", "LSP"]
 model: sonnet
 color: blue
 skills: ["writing-typescript", "testing-e2e"]
@@ -25,6 +25,12 @@ bun test --coverage 2>&1
 # Type check tests
 bun run tsc --noEmit 2>&1
 ```
+
+**Use LSP for code navigation** (understand test coverage):
+
+- `findReferences` - check which functions have tests
+- `goToDefinition` - trace mock implementations to interfaces
+- `incomingCalls` - find all test functions calling a helper
 
 Include test failures and coverage gaps in findings. Type errors are blocking issues.
 
