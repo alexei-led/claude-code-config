@@ -1,8 +1,11 @@
 ---
+context: fork
 allowed-tools:
   - Task
   - TaskOutput
+  - TodoWrite
   - Read
+  - Write
   - AskUserQuestion
   - Bash(jq:*)
   - Bash(git status:*)
@@ -14,7 +17,15 @@ description: Sync feature_list.json and progress from code state and git history
 
 Reconcile tracking files with actual code state after interrupted sessions.
 
-Claude 4.5 excels at discovering state from the filesystem. This command leverages that capability—reading code, tests, and git history to determine true feature status rather than relying on potentially stale progress notes.
+**Use TodoWrite** to track these 5 phases:
+
+1. Discovery
+2. Identify discrepancies
+3. Parallel verification
+4. Collect & update
+5. Report
+
+Claude excels at discovering state from the filesystem. This command leverages that capability—reading code, tests, and git history to determine true feature status rather than relying on potentially stale progress notes.
 
 ## Guardrails
 
@@ -32,22 +43,27 @@ Claude 4.5 excels at discovering state from the filesystem. This command leverag
 Task(
   subagent_type="spec-discover",
   run_in_background=true,
+  description="Sync discovery",
   prompt="Full discovery for sync - include discrepancies between claimed progress and feature_list.json state"
 )
 ```
+
+---
 
 ## Phase 2: Identify Discrepancies
 
 **Collect discovery results:**
 
 ```
-TaskOutput(task_id=<discovery_agent_id>)
+TaskOutput(task_id=<discovery_agent_id>, block=true)
 ```
 
 From the discovery:
 
 1. Parse features marked `passes: false` that progress file claims are done
 2. Parse features with implementation evidence (commits, code) but marked false
+
+---
 
 ## Phase 3: Parallel Verification
 
@@ -57,19 +73,24 @@ From the discovery:
 Task(
   subagent_type="spec-verifier",
   run_in_background=true,
+  description="Verify feature N",
   prompt="Verify feature: <feature description>\nSteps: <steps array>"
 )
 ```
 
-Spawn ALL verification agents in a single message for parallel execution.
+**Spawn ALL verification agents in a single message** for parallel execution.
+
+**Save agent IDs** for potential resumption if session is interrupted.
+
+---
 
 ## Phase 4: Collect & Update
 
 **Collect all verification results:**
 
 ```
-TaskOutput(task_id=<verifier_1_id>)
-TaskOutput(task_id=<verifier_2_id>)
+TaskOutput(task_id=<verifier_1_id>, block=true)
+TaskOutput(task_id=<verifier_2_id>, block=true)
 ...
 ```
 
@@ -77,6 +98,8 @@ For each verified feature:
 
 - If verdict is YES: Update `feature_list.json` with `"passes": true`
 - If verdict is NO: Leave unchanged, note what's missing
+
+---
 
 ## Phase 5: Report
 
@@ -95,6 +118,7 @@ Present sync summary to user:
 **Updated**: N features marked as passing
 **Unchanged**: M features (insufficient evidence)
 **Progress**: X/Y → A/B passing
+**Agent IDs**: [list for resumption if needed]
 
 ### Changes Made
 - Feature 1: verified, marked passing

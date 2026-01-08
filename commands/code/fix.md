@@ -2,57 +2,143 @@
 context: fork
 allowed-tools:
   - Task
-  - Bash
+  - TaskOutput
+  - TodoWrite
+  - Bash(make:*)
+  - Bash(go:*)
+  - Bash(golangci-lint:*)
+  - Bash(pytest:*)
+  - Bash(ruff:*)
+  - Bash(npm:*)
+  - Bash(bun:*)
 description: Fix ALL issues via parallel agents - zero tolerance quality enforcement
 ---
 
 # Fix All Issues
 
-Execute until clean. This is a FIXING task, not reporting.
+Execute until clean. Parallel analysis, sequential fixes.
 
-## Step 1: Run Validation
+**Use TodoWrite** to track: validation → analysis → fixes → verification.
+
+---
+
+## Phase 1: Run Validation
 
 ```bash
 make lint 2>&1 | head -100
 make test 2>&1 | head -100
 ```
 
-No Makefile? Detect language:
+No Makefile? Detect language and run:
 
-- **Go**: `golangci-lint run ./... && go test -race ./...`
-- **Python**: `ruff check . && pytest`
+- **Go**: `golangci-lint run ./... 2>&1 | head -100 && go test -race ./... 2>&1 | head -100`
+- **Python**: `ruff check . 2>&1 | head -100 && pytest 2>&1 | head -100`
+- **TypeScript**: `bun lint 2>&1 | head -100 && bun test 2>&1 | head -100`
 
-## Step 2: Spawn Language Agent
+**If all pass**: Report "All checks pass" → stop.
 
-Spawn appropriate language-specific agent:
+---
+
+## Phase 2: Parallel Analysis (Read-Only)
+
+**Spawn ALL relevant language agents IN ONE MESSAGE for parallel execution:**
+
+Based on detected languages with issues, spawn analysis agents:
 
 ```
-Task with {go|python}-engineer agent:
-"Fix these {language} issues:
-{list with file:line}
-Verify with: {appropriate lint/test command}"
+Task(
+  subagent_type="go-qa",
+  run_in_background=true,
+  description="Go issue analysis",
+  prompt="Analyze these Go issues. DO NOT FIX - analysis only.
+  Issues:
+  {lint/test output}
+
+  Return structured analysis:
+  - Root cause for each issue
+  - Suggested fix approach
+  - File:line references
+  - Priority (critical/important/minor)"
+)
+
+Task(
+  subagent_type="py-qa",
+  run_in_background=true,
+  description="Python issue analysis",
+  prompt="Analyze these Python issues. DO NOT FIX - analysis only.
+  Issues:
+  {lint/test output}
+
+  Return structured analysis:
+  - Root cause for each issue
+  - Suggested fix approach
+  - File:line references
+  - Priority (critical/important/minor)"
+)
 ```
 
-## Step 3: Verify & Repeat
+---
+
+## Phase 3: Collect Analysis Results
+
+```
+TaskOutput(task_id=<go_qa_id>, block=true)
+TaskOutput(task_id=<py_qa_id>, block=true)
+```
+
+Merge and prioritize issues:
+
+1. Critical (blocking): Fix first
+2. Important (quality): Fix second
+3. Minor (style): Fix if time permits
+
+---
+
+## Phase 4: Sequential Fixes
+
+**Fix issues ONE AT A TIME to avoid conflicts:**
+
+For each issue (prioritized order):
+
+1. Read the file
+2. Apply fix using Edit tool
+3. Verify fix didn't break anything: `make lint && make test` or equivalent
+
+**If fix causes new issues**: Revert and try alternative approach.
+
+---
+
+## Phase 5: Final Verification
 
 ```bash
 make lint && make test
 ```
 
-If issues remain, return to Step 2.
+**Loop back to Phase 2** if issues remain.
+
+---
 
 ## Exit Criteria
 
 - Build passes
 - All tests pass
-- No BLOCKING issues
+- Zero lint errors
+
+## Output
 
 ```
 FIX COMPLETE
 ============
-Fixed: X issues
-Remaining: Y non-blocking
-Status: CLEAN / NEEDS ATTENTION
+Analysis: {N} issues identified by {M} agents
+Fixed: {X} issues
+Remaining: {Y} non-blocking (if any)
+Status: CLEAN | NEEDS ATTENTION
+
+Changes:
+- file1.go:42 - Fixed null pointer check
+- file2.py:15 - Added missing type hint
 ```
+
+---
 
 **Execute validation now.**

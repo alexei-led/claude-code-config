@@ -1,7 +1,9 @@
 ---
+context: fork
 allowed-tools:
   - Task
   - TaskOutput
+  - TodoWrite
   - Read
   - Write
   - AskUserQuestion
@@ -17,6 +19,14 @@ description: Initialize spec-driven project with feature_list.json
 
 Initialize a new spec-driven development project. Session 1 of many.
 
+**Use TodoWrite** to track these 5 phases:
+
+1. Project discovery
+2. App specification
+3. Feature list generation
+4. Project setup
+5. Summary
+
 ## Guardrails
 
 - **Agent-first exploration**: Use agents for codebase analysis
@@ -25,15 +35,31 @@ Initialize a new spec-driven development project. Session 1 of many.
 
 ---
 
-## Phase 1: Project Discovery
+## Phase 1: Project Discovery (Parallel)
 
-**Spawn `Explore` agent:**
+**Spawn exploration agents in a single message:**
 
 ```
 Task(
   subagent_type="Explore",
-  prompt="Project discovery: pwd, ls -la, app_spec.txt existence, feature_list.json state, git status, Makefile check, detect language/framework (go.mod, package.json, pyproject.toml). Return structured summary: what exists, what needs creation, fresh start or continuation."
+  run_in_background=true,
+  description="Project structure scan",
+  prompt="Project discovery: pwd, ls -la, detect language/framework (go.mod, package.json, pyproject.toml, Cargo.toml). Check for existing Makefile. Return: what exists, tech stack detected."
 )
+
+Task(
+  subagent_type="Explore",
+  run_in_background=true,
+  description="Spec files check",
+  prompt="Check spec-driven files: app_spec.txt existence, feature_list.json state, claude-progress.txt. Git status. Return: fresh start or continuation, what needs creation."
+)
+```
+
+**Collect results:**
+
+```
+TaskOutput(task_id=<structure_id>, block=true)
+TaskOutput(task_id=<spec_id>, block=true)
 ```
 
 ---
@@ -44,9 +70,11 @@ Task(
 
 Use `AskUserQuestion` to gather:
 
-- What is being built? (purpose, target users)
-- Tech stack preference? (Go/Python/TypeScript, framework)
-- Key features? (list main functionality)
+| Header  | Question                            | Options                                                                     |
+| ------- | ----------------------------------- | --------------------------------------------------------------------------- |
+| Purpose | What are you building?              | (free text via "Other")                                                     |
+| Stack   | Which tech stack?                   | Go + stdlib, Python + FastAPI, TypeScript + React, TypeScript + Node, Other |
+| Scope   | How complex is the initial version? | MVP (10-30 features), Standard (30-100 features), Comprehensive (100+)      |
 
 Then create `app_spec.txt` using the gathered information.
 
@@ -61,7 +89,20 @@ Then create `app_spec.txt` using the gathered information.
 ```
 Task(
   subagent_type="Explore",
-  prompt="Read app_spec.txt. Generate feature_list.json covering: every explicit and implied feature, happy paths AND failure paths, API endpoints (valid/invalid/auth failure), form validation (required fields, edge values), state transitions, error handling, security boundaries. Format: {category, description, steps[], passes: false}. Categories: core|edge-case|error|integration|security|performance|style. Target 100-300 features. Order by dependency: foundational first. Return complete JSON array."
+  description="Feature generation",
+  prompt="Read app_spec.txt. Generate feature_list.json covering:
+  - Every explicit and implied feature
+  - Happy paths AND failure paths
+  - API endpoints (valid/invalid/auth failure)
+  - Form validation (required fields, edge values)
+  - State transitions, error handling
+  - Security boundaries
+
+  Format: {category, description, steps[], passes: false}
+  Categories: core|edge-case|error|integration|security|performance|style
+  Target scope: [from user selection]
+  Order by dependency: foundational first.
+  Return complete JSON array."
 )
 ```
 
@@ -102,21 +143,7 @@ echo ""
 echo "Progress: $passing/$total features passing"
 ```
 
-3. **Create Makefile** (if not exists):
-
-```makefile
-.PHONY: init test build lint clean run help
-
-help:          ## Show this help
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
-
-init:          ## Install dependencies
-test:          ## Run tests
-build:         ## Build project
-lint:          ## Run linters
-clean:         ## Clean build artifacts
-run:           ## Start application
-```
+3. **Create Makefile** (if not exists) - language-appropriate targets
 
 4. **Initialize git** (if not a repo):
 

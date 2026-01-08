@@ -2,7 +2,12 @@
 context: fork
 allowed-tools:
   - Task
-  - Bash
+  - TaskOutput
+  - TodoWrite
+  - Bash(go test:*)
+  - Bash(pytest:*)
+  - Bash(bun test:*)
+  - Bash(npm test:*)
   - Read
   - Grep
   - Glob
@@ -15,7 +20,18 @@ description: Review, refactor, and improve tests - eliminate waste, combine to t
 
 Improve test quality: review existing, refactor structure, fill coverage gaps.
 
-## Step 1: Choose Mode
+**Use TodoWrite** to track these 6 phases:
+
+1. Choose mode
+2. Explore test structure
+3. Run coverage analysis
+4. Review with language agent
+5. Apply improvements
+6. Verify & report
+
+---
+
+## Phase 1: Choose Mode
 
 Use AskUserQuestion:
 
@@ -23,29 +39,30 @@ Use AskUserQuestion:
 | ------ | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Mode   | What should I focus on? | 1. **Review existing** - Analyze current tests, identify issues 2. **Refactor tests** - Combine to tabular, remove duplicates, align style 3. **Fill coverage gaps** - Generate tests for uncovered code 4. **Full improvement** - All of the above |
 
-## Step 2: Background Exploration
+---
 
-Run exploration in background to keep main context clean:
+## Phase 2: Background Exploration (Parallel)
+
+**Spawn BOTH agents in a single message:**
 
 ```
 Task(
   subagent_type="Explore",
-  prompt="Explore test structure in this codebase:
-  1. Find test files: fd -e go -e py -e ts . | rg '(_test\.go|test_.*\.py|\.test\.ts)'
-  2. Identify test frameworks (testify, pytest, vitest)
-  3. Find existing patterns: table-driven, parametrize, test.each usage
+  run_in_background=true,
+  description="Test structure scan",
+  prompt="Explore test structure:
+  1. Find test files: Glob for *_test.go, test_*.py, *.test.ts, *.spec.ts
+  2. Identify frameworks (testify, pytest, vitest, jest)
+  3. Find patterns: table-driven, parametrize, test.each usage
   4. Locate test helpers and fixtures
   5. Check mock patterns (mockery, pytest-mock, vi.mock)
-  Return: language, framework, patterns found, helper locations",
-  run_in_background=true
+  Return: language, framework, patterns found, helper locations"
 )
-```
 
-## Step 3: Run Coverage Analysis (Background)
-
-```
 Task(
   subagent_type="Explore",
+  run_in_background=true,
+  description="Coverage analysis",
   prompt="Run coverage and identify gaps:
 
   Go: go test -coverprofile=/tmp/claude/cov.out ./... && go tool cover -func=/tmp/claude/cov.out
@@ -59,20 +76,35 @@ Task(
   - CLI entrypoints (main.go, cmd/, __main__.py)
   - Type definitions only files
 
-  Return: overall %, packages below 70%, uncovered business logic functions",
-  run_in_background=true
+  Return: overall %, packages below 70%, uncovered business logic functions"
 )
 ```
 
-## Step 4: Spawn Language-Specific Test Agent
+**Save agent IDs** for potential resumption if session is interrupted.
 
-Wait for exploration results, then spawn appropriate agent:
+---
+
+## Phase 3: Collect Exploration Results
+
+```
+TaskOutput(task_id=<structure_agent_id>, block=true)
+TaskOutput(task_id=<coverage_agent_id>, block=true)
+```
+
+Merge findings to inform next phase.
+
+---
+
+## Phase 4: Spawn Language-Specific Test Agent
+
+Based on detected language, spawn ONE appropriate agent:
 
 ### Go Tests
 
 ```
 Task(
   subagent_type="go-tests",
+  description="Go test review",
   prompt="Review Go tests for quality issues.
 
   FOCUS ON:
@@ -91,6 +123,7 @@ Task(
 ```
 Task(
   subagent_type="py-tests",
+  description="Python test review",
   prompt="Review Python tests for quality issues.
 
   FOCUS ON:
@@ -109,6 +142,7 @@ Task(
 ```
 Task(
   subagent_type="ts-tests",
+  description="TypeScript test review",
   prompt="Review TypeScript tests for quality issues.
 
   FOCUS ON:
@@ -122,15 +156,19 @@ Task(
 )
 ```
 
-## Step 5: Apply Improvements
+---
+
+## Phase 5: Apply Improvements
 
 Based on agent findings, apply changes:
 
 ### Combining Tests Pattern
 
-**Go**: Table-driven → `t.Run()`
-**Python**: `@pytest.mark.parametrize` with `pytest.param(..., id="")`
-**TypeScript**: `test.each([{input, expected, desc}])`
+| Language   | Pattern                                          |
+| ---------- | ------------------------------------------------ |
+| Go         | Table-driven with `t.Run(tc.name, ...)`          |
+| Python     | `@pytest.mark.parametrize` with `pytest.param()` |
+| TypeScript | `test.each([{input, expected, desc}])`           |
 
 ### Extracting Helpers
 
@@ -148,18 +186,17 @@ Standardize on one pattern per project:
 - Python: `mocker.Mock(spec=Class)`
 - TypeScript: `vi.mocked()` for type safety
 
-## Step 6: Verify & Report
+---
+
+## Phase 6: Verify & Report
 
 ```bash
 # Verify all tests pass
 go test -v ./...
+# or
 pytest -v
+# or
 bun test
-
-# Check improved coverage
-go tool cover -func=/tmp/claude/cov.out | tail -1
-pytest --cov=. --cov-report=term | tail -5
-bun test --coverage
 ```
 
 ## Output
@@ -168,6 +205,7 @@ bun test --coverage
 TEST IMPROVEMENT COMPLETE
 =========================
 Mode: [selected mode]
+Agent IDs: [list for resumption if needed]
 
 Review:
 - Issues found: X
@@ -185,5 +223,7 @@ Coverage:
 Files modified:
 - [list]
 ```
+
+---
 
 **Execute test improvement now.**

@@ -1,5 +1,6 @@
 ---
 allowed-tools:
+  - TodoWrite
   - Read
   - Edit
   - Write
@@ -14,11 +15,24 @@ argument-hint: [topic]
 
 Extract concise, actionable instructions from session. Optimize for future Claude context efficiency.
 
-## Target File
+**Use TodoWrite** to track these 6 phases:
+
+1. Find target file
+2. Extract learnings
+3. Distill to instructions
+4. Deduplicate & merge
+5. Present & confirm
+6. Apply changes
+
+---
+
+## Phase 1: Target File
 
 Find in order: `.claude/CLAUDE.md` → `CLAUDE.md` → ask user which to create.
 
-## Phase 1: Extract Learnings
+---
+
+## Phase 2: Extract Learnings
 
 Analyze conversation for:
 
@@ -32,7 +46,9 @@ Analyze conversation for:
 
 **If `$ARGUMENTS` provided**: Extract ONLY learnings related to that topic.
 
-## Phase 2: Distill to Minimum Viable Instructions
+---
+
+## Phase 3: Distill to Minimum Viable Instructions
 
 **Goal**: Maximum signal, minimum tokens. Frame positively.
 
@@ -49,7 +65,9 @@ Analyze conversation for:
 
 **One instruction per line. Max 80 chars when possible.**
 
-## Phase 3: Deduplicate & Merge
+---
+
+## Phase 4: Deduplicate & Merge
 
 Before adding to CLAUDE.md:
 
@@ -85,7 +103,9 @@ When new instruction overlaps with existing:
 
 **Prefer updating existing instructions over adding new lines.**
 
-## Phase 4: Size Check
+---
+
+## Phase 5: Size Check & Present
 
 **CLAUDE.md budget**: ~200 lines / ~8KB max recommended.
 
@@ -94,12 +114,6 @@ If file exceeds budget:
 1. Identify stale instructions for removal
 2. Propose consolidations of related items
 3. Suggest trimming verbose sections
-
-```bash
-wc -l CLAUDE.md  # check lines
-```
-
-## Phase 5: Present & Confirm
 
 Show proposed changes:
 
@@ -124,6 +138,8 @@ Lines: total Y/200
 | ------ | ---------------------- | ------------------------------------------ |
 | Action | Apply these learnings? | Append all / Review each / Edit first / No |
 
+---
+
 ## Phase 6: Apply
 
 1. **Update existing** - Edit lines that were merged
@@ -140,6 +156,8 @@ Lines: total Y/200
 | Workflows  | Build, test, deploy commands     |
 | Gotchas    | Edge cases, quirks, known issues |
 
+---
+
 ## Output
 
 ```
@@ -153,18 +171,6 @@ Updated:
 
 Added:
 + instruction
-```
-
-## Example Session
-
-**Session learning**: "wrap errors with context using %w"
-
-**Existing in CLAUDE.md**: "- Use error wrapping"
-
-**Result**: Update existing line:
-
-```
-~ Use error wrapping → Wrap errors: `fmt.Errorf("op: %w", err)`
 ```
 
 ---
