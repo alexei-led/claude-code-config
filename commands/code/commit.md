@@ -3,6 +3,7 @@ context: fork
 allowed-tools:
   - Task
   - TaskOutput
+  - TodoWrite
   - Bash(git add:*)
   - Bash(git commit:*)
   - Bash(git status:*)
@@ -13,11 +14,18 @@ description: Group changes logically and create bundled commits with concise mes
 
 Group changed files logically and create focused, atomic commits.
 
+**Use TodoWrite** to track these 4 phases:
+
+1. Spawn analysis agents
+2. Collect groupings and style
+3. Execute commits
+4. Present summary
+
 **Main context = orchestration only. All analysis in background agents.**
 
 ---
 
-## Phase 1: Parallel Background Analysis
+## Phase 1: Spawn Analysis Agents
 
 **Spawn TWO background agents in a single message:**
 

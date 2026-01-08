@@ -20,11 +20,16 @@ argument-hint: [run|record|generate|verify <feature>]
 
 Execute E2E testing workflows using Playwright MCP.
 
-**Use TodoWrite** to track workflow phases.
+**Use TodoWrite** to track these 4 phases:
+
+1. Determine action (parse args or ask)
+2. Execute action (run/record/generate/verify)
+3. Verify results
+4. Present output
 
 ---
 
-## Parse Arguments
+## Phase 1: Parse Arguments
 
 **$ARGUMENTS:**
 
@@ -36,7 +41,7 @@ Execute E2E testing workflows using Playwright MCP.
 
 ---
 
-## Step 1: Determine Action
+### Determine Action
 
 If no argument provided, use AskUserQuestion:
 
@@ -46,7 +51,7 @@ If no argument provided, use AskUserQuestion:
 
 ---
 
-## Step 2: Execute Action
+## Phase 2: Execute Action
 
 ### Run Tests
 
@@ -117,7 +122,7 @@ Task(
 
 ---
 
-## Step 3: Verify Results
+## Phase 3: Verify Results
 
 ```bash
 npx playwright test --headed
@@ -127,7 +132,7 @@ If tests fail, review output and fix issues.
 
 ---
 
-## Output
+## Phase 4: Output
 
 ```
 E2E TESTING

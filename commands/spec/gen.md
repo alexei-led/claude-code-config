@@ -5,6 +5,7 @@ allowed-tools:
   - Glob
   - Bash(jq:*)
   - AskUserQuestion
+  - TodoWrite
 description: Generate app_spec.txt from markdown documents
 ---
 
@@ -12,7 +13,18 @@ description: Generate app_spec.txt from markdown documents
 
 Transform the provided markdown document(s) into a structured `app_spec.txt` specification.
 
-## Input Files
+**Use TodoWrite** to track these 6 phases:
+
+1. Read input documents
+2. Extract features and entities
+3. Generate specification structure
+4. Validate completeness
+5. User confirmation
+6. Write to file
+
+---
+
+## Phase 1: Read Input Documents
 
 $ARGUMENTS
 
@@ -24,7 +36,7 @@ Read the file(s) above and extract:
 4. **User workflows** - How users will interact with the system
 5. **Data entities** - What needs to be stored and managed
 
-## Output
+## Phase 2-3: Extract Features and Generate Structure
 
 Generate `app_spec.txt` in the current directory using this XML structure:
 
@@ -145,7 +157,7 @@ Generate `app_spec.txt` in the current directory using this XML structure:
 
 - Foundation (auth, database) → core features → polish → edge cases
 
-## Validation
+## Phase 4: Validate Completeness
 
 Before writing, verify:
 
@@ -154,6 +166,10 @@ Before writing, verify:
 - Tech stack is consistent throughout
 - Implementation steps are ordered by dependency
 
+## Phase 5: User Confirmation
+
 **STOP**: Use `AskUserQuestion` - "Review generated spec? [Write to file / Show preview / Adjust]"
+
+## Phase 6: Write to File
 
 Write the complete specification to app_spec.txt in the project root.

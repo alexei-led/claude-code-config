@@ -2,6 +2,7 @@
 context: fork
 allowed-tools:
   - Task
+  - TodoWrite
   - AskUserQuestion
   - mcp__context7__resolve-library-id
   - mcp__context7__query-docs
@@ -12,7 +13,17 @@ description: Update all documentation based on recent changes using docs-keeper 
 
 Update project documentation to reflect current code state.
 
-## Step 1: Ask What to Document
+**Use TodoWrite** to track these 5 phases:
+
+1. Determine documentation scope
+2. Analyze recent changes
+3. Spawn docs-keeper agent
+4. Update documentation
+5. Verify and report
+
+---
+
+## Phase 1: Determine Scope
 
 Use AskUserQuestion:
 
@@ -20,7 +31,7 @@ Use AskUserQuestion:
 | --------- | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Doc scope | What documentation should I update? | 1. **Auto-detect** - Scan for outdated docs based on recent changes 2. **README** - Update project README 3. **API docs** - Update API/function documentation 4. **All** - Comprehensive documentation refresh |
 
-## Step 2: Spawn docs-keeper Agent
+## Phase 2-4: Spawn docs-keeper Agent
 
 Spawn **docs-keeper** agent with documentation prompt:
 
@@ -59,7 +70,7 @@ Updated:
 Verified: All links valid, examples compile"
 ```
 
-## Step 3: Research Best Practices (If Needed)
+## Phase 4: Research Best Practices (If Needed)
 
 Use Context7 for documentation patterns:
 
@@ -67,7 +78,7 @@ Use Context7 for documentation patterns:
 mcp__context7__query-docs for GoDoc, Sphinx, or framework-specific docs
 ```
 
-## Step 4: Present Summary
+## Phase 5: Present Summary
 
 Report what was updated and verified.
 

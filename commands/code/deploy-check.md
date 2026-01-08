@@ -3,6 +3,7 @@ context: fork
 allowed-tools:
   - Task
   - TaskOutput
+  - TodoWrite
   - Bash(kubectl:*)
   - Bash(helm:*)
   - Bash(terraform:*)
@@ -18,6 +19,16 @@ argument-hint: [--background]
 # Deployment Validation
 
 Validate Kubernetes, Terraform, Helm, GitHub Actions, and Docker configs.
+
+**Use TodoWrite** to track these 5 phases:
+
+1. Detect infrastructure files
+2. Spawn validation agent
+3. Collect results
+4. Research best practices (if needed)
+5. Present summary
+
+---
 
 **Parse $ARGUMENTS:**
 

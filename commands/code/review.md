@@ -2,6 +2,7 @@
 context: fork
 allowed-tools:
   - Task
+  - TodoWrite
   - AskUserQuestion
   - Bash
 description: Multi-agent code review for security, quality, and architecture
@@ -9,6 +10,15 @@ argument-hint: [deep]
 ---
 
 # Multi-Agent Code Review
+
+**Use TodoWrite** to track these 4 phases:
+
+1. Detect languages and scope
+2. Spawn review agents
+3. Collect agent results
+4. Aggregate and present findings
+
+---
 
 **Parse `$ARGUMENTS`:**
 

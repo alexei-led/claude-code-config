@@ -18,7 +18,13 @@ description: Fix ALL issues via parallel agents - zero tolerance quality enforce
 
 Execute until clean. Parallel analysis, sequential fixes.
 
-**Use TodoWrite** to track: validation → analysis → fixes → verification.
+**Use TodoWrite** to track these 5 phases:
+
+1. Run validation
+2. Parallel analysis (spawn agents)
+3. Collect analysis results
+4. Sequential fixes
+5. Final verification
 
 ---
 

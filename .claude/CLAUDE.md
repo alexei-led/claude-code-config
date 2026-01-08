@@ -32,7 +32,9 @@ Project-specific guidance for developing commands, agents, skills, and hooks.
 
 ### Multi-Phase Design
 
-- 3+ phases → add TodoWrite for progress tracking
+- 3+ phases → add TodoWrite with explicit numbered list
+- Format: `**Use TodoWrite** to track these N phases:` + numbered list
+- Section headers: `## Phase N:` for consistency
 - Parallel spawns for analysis (read-only); sequential for application (writes)
 - Include fallback logic ("if empty", "if no changes")
 
