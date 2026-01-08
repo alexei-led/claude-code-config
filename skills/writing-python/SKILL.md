@@ -1,6 +1,7 @@
 ---
 name: writing-python
 description: Idiomatic Python 3.14+ development. Use when writing Python code, CLI tools, scripts, or services. Emphasizes stdlib, type hints, uv/ruff toolchain, and minimal dependencies.
+context: fork
 agent: python-engineer
 allowed-tools:
   - Read

@@ -1,6 +1,7 @@
 ---
 name: writing-typescript
 description: Idiomatic TypeScript development. Use when writing TypeScript code, Node.js services, React apps, or discussing TS patterns. Emphasizes strict typing, composition, and modern tooling (bun/vite).
+context: fork
 agent: typescript-engineer
 allowed-tools:
   - Read

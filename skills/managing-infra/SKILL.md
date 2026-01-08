@@ -1,6 +1,7 @@
 ---
 name: managing-infra
 description: Infrastructure patterns for Kubernetes, Terraform, Helm, Kustomize, and GitHub Actions. Use when making K8s architectural decisions, choosing between Helm vs Kustomize, structuring Terraform modules, writing CI/CD workflows, or applying security best practices.
+context: fork
 agent: infra-engineer
 allowed-tools:
   - Read

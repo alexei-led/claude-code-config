@@ -88,6 +88,18 @@ Each skill in `~/.claude/skills/` should include:
 - Numbered workflow steps
 - Error scenarios with fallbacks
 
+### Skill Tool Restrictions
+
+| Scenario                         | `allowed-tools` approach                 |
+| -------------------------------- | ---------------------------------------- |
+| Spawns agents (`agent:` or Task) | Must add `context: fork`                 |
+| Specific CLI tool family         | `Bash(kubectl:*)`, `Bash(make:*)`        |
+| General CLI recommendations      | Just `Bash` (allows pipelines)           |
+| MCP tool family                  | `mcp__playwright__*`, `mcp__context7__*` |
+
+**When NOT to restrict:** Skills recommending tools (like `using-modern-cli`)
+rather than enforcing them—keep `Bash` to allow pipelines like `rg | fzf`.
+
 ### Reference Skills (Best Examples)
 
 | Skill            | Pattern                                         |

@@ -1,6 +1,7 @@
 ---
 name: writing-go
 description: Idiomatic Go 1.25+ development. Use when writing Go code, designing APIs, discussing Go patterns, or reviewing Go implementations. Emphasizes stdlib, concrete types, simple error handling, and minimal dependencies.
+context: fork
 agent: go-engineer
 allowed-tools:
   - Read
