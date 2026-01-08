@@ -9,7 +9,7 @@ tools:
     "Glob",
     "LS",
     "mcp__context7__resolve-library-id",
-    "mcp__context7__get-library-docs",
+    "mcp__context7__query-docs",
     "mcp__sequential-thinking__sequentialthinking",
     "mcp__morphllm__warpgrep_codebase_search",
     "mcp__morphllm__codebase_search",
@@ -90,7 +90,7 @@ For MODIFY actions, include enough context (function signatures, surrounding cod
 
 ### Context7 Research
 
-Use `mcp__context7__resolve-library-id` and `mcp__context7__get-library-docs` for:
+Use `mcp__context7__resolve-library-id` and `mcp__context7__query-docs` for:
 
 - TypeScript/JavaScript library documentation
 - React, Node.js best practices

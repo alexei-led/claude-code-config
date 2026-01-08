@@ -9,7 +9,7 @@ tools:
     "Glob",
     "LS",
     "mcp__context7__resolve-library-id",
-    "mcp__context7__get-library-docs",
+    "mcp__context7__query-docs",
     "mcp__sequential-thinking__sequentialthinking",
     "mcp__morphllm__codebase_search",
   ]

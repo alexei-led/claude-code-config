@@ -64,7 +64,7 @@ Verified: All links valid, examples compile"
 Use Context7 for documentation patterns:
 
 ```
-mcp__context7__get-library-docs for GoDoc, Sphinx, or framework-specific docs
+mcp__context7__query-docs for GoDoc, Sphinx, or framework-specific docs
 ```
 
 ## Step 4: Present Summary

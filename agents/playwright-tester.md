@@ -12,7 +12,7 @@ tools:
     "LS",
     "mcp__playwright__*",
     "mcp__context7__resolve-library-id",
-    "mcp__context7__get-library-docs",
+    "mcp__context7__query-docs",
   ]
 model: opus
 color: magenta

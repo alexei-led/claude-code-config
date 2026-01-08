@@ -9,7 +9,7 @@ tools:
     "Glob",
     "LS",
     "mcp__context7__resolve-library-id",
-    "mcp__context7__get-library-docs",
+    "mcp__context7__query-docs",
   ]
 model: sonnet
 color: blue
@@ -143,7 +143,7 @@ pdfinfo -v
 
 ### Context7 Documentation
 
-Use `mcp__context7__resolve-library-id` and `mcp__context7__get-library-docs` for:
+Use `mcp__context7__resolve-library-id` and `mcp__context7__query-docs` for:
 
 - pdfplumber documentation and examples
 - pypdf API reference

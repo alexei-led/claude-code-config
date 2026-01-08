@@ -22,7 +22,7 @@ Context7 provides up-to-date, version-specific documentation and code examples d
 ## Workflow
 
 1. **Resolve library ID**: `mcp__context7__resolve-library-id` with `libraryName`
-2. **Get documentation**: `mcp__context7__get-library-docs` with `context7CompatibleLibraryID` and `topic`
+2. **Get documentation**: `mcp__context7__query-docs` with `context7CompatibleLibraryID` and `topic`
 
 ## Modes
 
