@@ -40,6 +40,7 @@ No Makefile? Detect language and run:
 - **Go**: `golangci-lint run ./... 2>&1 | head -100 && go test -race ./... 2>&1 | head -100`
 - **Python**: `ruff check . 2>&1 | head -100 && pytest 2>&1 | head -100`
 - **TypeScript**: `bun lint 2>&1 | head -100 && bun test 2>&1 | head -100`
+- **Web (HTML/CSS/JS)**: `bunx html-validate "**/*.html" 2>&1 | head -50 && bunx stylelint "**/*.css" 2>&1 | head -50 && bunx eslint "**/*.js" 2>&1 | head -50`
 
 **If all pass**: Report "All checks pass" → stop.
 
@@ -81,6 +82,21 @@ Task(
   - File:line references
   - Priority (critical/important/minor)"
 )
+
+Task(
+  subagent_type="web-qa",
+  run_in_background=true,
+  description="Web frontend issue analysis",
+  prompt="Analyze these web frontend issues. DO NOT FIX - analysis only.
+  Issues:
+  {lint/test output}
+
+  Return structured analysis:
+  - Root cause for each issue
+  - Suggested fix approach
+  - File:line references
+  - Priority (critical/important/minor)"
+)
 ```
 
 ---
@@ -90,6 +106,7 @@ Task(
 ```
 TaskOutput(task_id=<go_qa_id>, block=true)
 TaskOutput(task_id=<py_qa_id>, block=true)
+TaskOutput(task_id=<web_qa_id>, block=true)
 ```
 
 Merge and prioritize issues:

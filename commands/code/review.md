@@ -24,10 +24,10 @@ argument-hint: [deep]
 
 - `deep` → 6-12 specialized Claude sub-agents (language-specific reviewers)
 
-| Arguments | Claude Agents                                                       |
-| --------- | ------------------------------------------------------------------- |
-| (none)    | go-engineer, python-engineer                                        |
-| deep      | go-qa, go-idioms, go-tests, go-impl, go-docs, go-simplify (+ py-\*) |
+| Arguments | Claude Agents                                                                      |
+| --------- | ---------------------------------------------------------------------------------- |
+| (none)    | go-engineer, python-engineer, typescript-engineer, web-engineer                    |
+| deep      | go-qa, go-idioms, go-tests, go-impl, go-docs, go-simplify (+ py-\*, ts-\*, web-\*) |
 
 ---
 
@@ -36,7 +36,7 @@ argument-hint: [deep]
 Detect languages in changes:
 
 ```bash
-git diff --name-only HEAD | grep -E '\.(go|py|ts|tsx)$' | head -20
+git diff --name-only HEAD | grep -E '\.(go|py|ts|tsx|html|css|js)$' | head -20
 ```
 
 Then use AskUserQuestion:
@@ -57,6 +57,8 @@ For each detected language, spawn ONE Task:
 
 - Go files → `Task(subagent_type="go-engineer", ...)`
 - Python files → `Task(subagent_type="python-engineer", ...)`
+- TypeScript files → `Task(subagent_type="typescript-engineer", ...)`
+- Web files (HTML/CSS/JS) → `Task(subagent_type="web-engineer", ...)`
 
 ### Deep Mode: Specialized Sub-Agents
 
@@ -83,6 +85,17 @@ Invoke agents by their `subagent_type` (models defined in agent metadata):
 | py-idioms     | Patterns, typing             |
 | py-docs       | Docstrings, documentation    |
 | py-simplify   | Over-abstraction, dead code  |
+
+**Web agents** (if HTML/CSS/JS files detected):
+
+| subagent_type | Focus                           |
+| ------------- | ------------------------------- |
+| web-qa        | Security, performance, a11y     |
+| web-tests     | E2E/Playwright test quality     |
+| web-impl      | Requirements, responsiveness    |
+| web-idioms    | Semantic HTML, CSS, JS patterns |
+| web-docs      | Comments, ARIA labels           |
+| web-simplify  | CSS bloat, unnecessary JS       |
 
 Spawn each agent using its subagent_type directly:
 
