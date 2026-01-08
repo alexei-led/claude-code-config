@@ -478,7 +478,9 @@ flowchart LR
 | `/spec:gen`    | Generate `app_spec.txt` from markdown documents              |
 | `/spec:work`   | Main development loop (discover → plan → implement → verify) |
 | `/spec:status` | Quick progress check                                         |
-| `/spec:sync`   | Reconcile tracking files with actual code state              |
+| `/spec:sync`   | Reconcile tracking files with actual code state (top-down)   |
+| `/spec:align`  | Align spec with code implementation (bottom-up)              |
+| `/spec:audit`  | Audit spec documents for abstraction level violations        |
 
 ### Agents
 
@@ -487,6 +489,8 @@ flowchart LR
 | `spec-discover` | Reads all docs top-down, returns structured summary    |
 | `spec-planner`  | Creates implementation plan from architectural context |
 | `spec-verifier` | Verifies feature against spec steps                    |
+| `spec-aligner`  | Discovers code features, proposes spec updates         |
+| `spec-auditor`  | Classifies content by abstraction level (WHY/WHAT/HOW) |
 
 ### Typical Session
 
@@ -504,6 +508,26 @@ flowchart LR
 
 # After interrupted session
 /spec:sync
+```
+
+### Recovery Workflow (after ad-hoc development)
+
+```bash
+# 1. Discover code not in spec
+/spec:align
+# → Adds missing features, marks orphans as deprecated
+
+# 2. Check abstraction levels
+/spec:audit
+# → Reports WHY/WHAT/HOW misplacements
+
+# 3. Manual fixes based on audit report
+
+# 4. Verify implementation status
+/spec:sync
+
+# 5. Resume normal development
+/spec:work
 ```
 
 ### Feature List Format
