@@ -3,17 +3,17 @@ name: web-engineer
 description: Web frontend specialist for vanilla HTML, CSS, JavaScript, and HTMX. Simple, standards-compliant web development.
 tools:
   [
-    Read,
-    Bash,
-    Grep,
-    Glob,
-    LS,
-    mcp__context7__resolve-library-id,
-    mcp__context7__query-docs,
+    "Read",
+    "Bash",
+    "Grep",
+    "Glob",
+    "LS",
+    "mcp__context7__resolve-library-id",
+    "mcp__context7__query-docs",
   ]
 model: sonnet
 color: cyan
-skills: [writing-web]
+skills: ["writing-web"]
 ---
 
 ## Role

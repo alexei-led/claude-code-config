@@ -11,6 +11,7 @@ allowed-tools:
   - Bash(ruff:*)
   - Bash(npm:*)
   - Bash(bun:*)
+  - Bash(bunx:*)
 description: Fix ALL issues via parallel agents - zero tolerance quality enforcement
 ---
 
