@@ -165,6 +165,18 @@ They analyze and propose changes but **do not apply edits directly**. This ensur
 | `/spec:status` | Check implementation progress    |
 | `/spec:sync`   | Sync feature list from code      |
 
+### Agent Management (`/agent:*`)
+
+| Command         | Description                       | Example                 |
+| --------------- | --------------------------------- | ----------------------- |
+| `/agent:resume` | Resume a previously spawned agent | `/agent:resume a3c6662` |
+
+### AI Assistance (`/ai:*`)
+
+| Command       | Description                               | Example               |
+| ------------- | ----------------------------------------- | --------------------- |
+| `/ai:consult` | Independent review from fresh perspective | `/ai:consult auth.go` |
+
 ### Other Commands
 
 | Command        | Description                           |
@@ -205,8 +217,18 @@ flowchart TB
         PS[py-simplify]
     end
 
+    subgraph TSSpec[TypeScript Specialists]
+        TQ[ts-qa]
+        TT[ts-tests]
+        TI[ts-impl]
+        TID[ts-idioms]
+        TD[ts-docs]
+        TS[ts-simplify]
+    end
+
     GE -.-> GoSpec
     PE -.-> PySpec
+    TE -.-> TSSpec
 ```
 
 ### Language Engineers
@@ -243,10 +265,22 @@ flowchart TB
 
 **TypeScript Specialists:**
 
-| Agent      | Focus                         |
-| ---------- | ----------------------------- |
-| `ts-tests` | Vitest, React Testing Library |
-| `ts-docs`  | JSDoc, TSDoc, comments        |
+| Agent         | Focus                                |
+| ------------- | ------------------------------------ |
+| `ts-qa`       | Logic, security (OWASP), performance |
+| `ts-tests`    | Vitest, React Testing Library        |
+| `ts-impl`     | Requirements, DI, edge cases         |
+| `ts-idioms`   | Strict types, modern patterns        |
+| `ts-docs`     | JSDoc, TSDoc, comments               |
+| `ts-simplify` | Over-abstraction, dead code          |
+
+### Spec-Driven Agents
+
+| Agent           | Focus                                |
+| --------------- | ------------------------------------ |
+| `spec-discover` | Project discovery, progress tracking |
+| `spec-planner`  | Implementation planning from specs   |
+| `spec-verifier` | Feature verification against specs   |
 
 ### Infrastructure & Utility
 
@@ -282,7 +316,7 @@ flowchart LR
 | `looking-up-docs`     | Library documentation   |
 | `researching-web`     | Web research            |
 | `searching-code`      | Codebase exploration    |
-| `refactoring-fast`    | Batch refactoring       |
+| `refactoring-code`    | Batch refactoring       |
 | `managing-infra`      | K8s, Terraform, CI/CD   |
 | `using-cloud-cli`     | GCP, AWS CLI operations |
 | `using-git-worktrees` | Parallel development    |
@@ -366,12 +400,13 @@ Rate limit fallback using GitHub Copilot API.
 
 ## MCP Integration
 
-| Server                | Purpose               |
-| --------------------- | --------------------- |
-| `sequential-thinking` | Multi-step reasoning  |
-| `context7`            | Library documentation |
-| `perplexity-ask`      | Web research          |
-| `playwright`          | E2E browser testing   |
+| Server                | Purpose                   |
+| --------------------- | ------------------------- |
+| `sequential-thinking` | Multi-step reasoning      |
+| `context7`            | Library documentation     |
+| `perplexity-ask`      | Web research              |
+| `playwright`          | E2E browser testing       |
+| `morphllm`            | Fast editing, code search |
 
 ---
 

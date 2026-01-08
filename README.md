@@ -26,9 +26,12 @@ Production-quality setup with specialized agents and zero-tolerance quality enfo
 | `/test:e2e`          | E2E testing with Playwright           |
 | `/test:improve`      | Improve test quality                  |
 | `/spec:init`         | Initialize spec-driven project        |
+| `/spec:gen`          | Generate app_spec from markdown       |
 | `/spec:work`         | Continue spec-driven development      |
 | `/spec:status`       | Quick progress check                  |
 | `/spec:sync`         | Sync feature_list from code           |
+| `/agent:resume`      | Resume a previously spawned agent     |
+| `/ai:consult`        | Independent review from fresh Claude  |
 | `/research`          | Web research via Perplexity           |
 | `/docs:lookup`       | Library docs via Context7             |
 | `/learn`             | Extract session learnings → CLAUDE.md |
@@ -48,14 +51,22 @@ Production-quality setup with specialized agents and zero-tolerance quality enfo
 
 ### Specialists (deep reviews)
 
-| Go            | Python        | TypeScript |
-| ------------- | ------------- | ---------- |
-| `go-qa`       | `py-qa`       | `ts-tests` |
-| `go-tests`    | `py-tests`    | `ts-docs`  |
-| `go-impl`     | `py-impl`     | -          |
-| `go-idioms`   | `py-idioms`   | -          |
-| `go-docs`     | `py-docs`     | -          |
-| `go-simplify` | `py-simplify` | -          |
+| Go            | Python        | TypeScript    |
+| ------------- | ------------- | ------------- |
+| `go-qa`       | `py-qa`       | `ts-qa`       |
+| `go-tests`    | `py-tests`    | `ts-tests`    |
+| `go-impl`     | `py-impl`     | `ts-impl`     |
+| `go-idioms`   | `py-idioms`   | `ts-idioms`   |
+| `go-docs`     | `py-docs`     | `ts-docs`     |
+| `go-simplify` | `py-simplify` | `ts-simplify` |
+
+### Spec-Driven
+
+| Agent           | Focus                       |
+| --------------- | --------------------------- |
+| `spec-discover` | Project discovery, progress |
+| `spec-planner`  | Implementation planning     |
+| `spec-verifier` | Feature verification        |
 
 ### Utility
 
@@ -78,7 +89,7 @@ Production-quality setup with specialized agents and zero-tolerance quality enfo
 | `looking-up-docs`     | Library documentation |
 | `researching-web`     | Web research          |
 | `searching-code`      | Codebase exploration  |
-| `refactoring-fast`    | Batch refactoring     |
+| `refactoring-code`    | Batch refactoring     |
 | `managing-infra`      | K8s, Terraform, CI/CD |
 | `using-cloud-cli`     | GCP/AWS CLI           |
 | `using-git-worktrees` | Parallel development  |
@@ -88,12 +99,13 @@ Production-quality setup with specialized agents and zero-tolerance quality enfo
 
 ## MCP Servers
 
-| Server                | Purpose              |
-| --------------------- | -------------------- |
-| `context7`            | Library docs         |
-| `sequential-thinking` | Multi-step reasoning |
-| `perplexity-ask`      | Web research         |
-| `playwright`          | E2E browser testing  |
+| Server                | Purpose                   |
+| --------------------- | ------------------------- |
+| `context7`            | Library docs              |
+| `sequential-thinking` | Multi-step reasoning      |
+| `perplexity-ask`      | Web research              |
+| `playwright`          | E2E browser testing       |
+| `morphllm`            | Fast editing, code search |
 
 ---
 
