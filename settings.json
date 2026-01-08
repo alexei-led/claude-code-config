@@ -6,7 +6,7 @@
       "mcp__sequential-thinking__sequentialthinking",
       "mcp__perplexity-ask__perplexity_ask",
       "mcp__context7__resolve-library-id",
-      "mcp__context7__get-library-docs",
+      "mcp__context7__query-docs",
       "mcp__gemini__gemini",
       "mcp__gemini__web-search",
       "mcp__gemini__analyze-media",
@@ -153,7 +153,9 @@
   },
   "enabledPlugins": {
     "gopls-lsp@claude-plugins-official": true,
-    "pyright-lsp@claude-plugins-official": true
+    "pyright-lsp@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": true
   },
   "sandbox": {
     "enabled": true,
