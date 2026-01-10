@@ -74,10 +74,52 @@ if echo "$PROMPT_LOWER" | grep -qE 'how\s*does.*work|trace.*(flow|data|request|c
 	skills+="searching-code "
 fi
 
-# refactoring-fast: Fast batch refactoring via MorphLLM edit_file
+# refactoring-code: Fast batch refactoring via MorphLLM edit_file
 # Triggers: Multi-file batch changes, style updates everywhere, complex prompt → many changes
 if echo "$PROMPT_LOWER" | grep -qE 'refactor.*(across|multiple|batch|all|every)|batch.*(edit|rename|update|change)|rename.*(across|everywhere|all|every)|update.*(pattern|import|style).*everywhere|(multi[\s-]?file|cross[\s-]?file).*(refactor|update|change)|morphllm|edit_file|5\+?\s*files|same\s*pattern.*files|style.*every'; then
-	skills+="refactoring-fast "
+	skills+="refactoring-code "
+fi
+
+# reviewing-code: Multi-agent code review for security, quality, architecture
+# Triggers: review, code review, check code, review changes, feedback on code
+if echo "$PROMPT_LOWER" | grep -qE '\breview\b.*\b(code|changes|this|my|the)\b|\bcode\s*review\b|\bcheck\s*(this|my|the)?\s*code\b|\bdeep\s*(code\s*)?review\b|\bfeedback\s*(on)?\s*(my|the|this)?\s*code\b|review\s*(my|the|these)?\s*(changes|implementation|pr)\b|critique\s*(my|the|this)?\s*code'; then
+	skills+="reviewing-code "
+fi
+
+# committing-code: Smart git commits with logical grouping
+# Triggers: commit, save changes, create commit, bundle commits
+if echo "$PROMPT_LOWER" | grep -qE '\bcommit\b|\bsave\s*(my|the)?\s*changes\b|\bcreate\s*(a\s*)?commit\b|\bbundle\s*commits?\b|\bgit\s*commit\b|\bcommit\s*(my|the|these)?\s*(changes|work|code)\b|\bsave\s*(my)?\s*work\b'; then
+	skills+="committing-code "
+fi
+
+# fixing-code: Fix issues via parallel agents with zero tolerance
+# Triggers: fix, fix issues, fix errors, fix bugs, fix lint, fix tests
+if echo "$PROMPT_LOWER" | grep -qE '\bfix\s*(all|the|my|these|this|any)?\s*(issue|error|bug|problem|warning|lint|test|failure|type\s*error|build|compilation)s?\b|\bfix\s*(it|this|them|everything)\b|\bresolve\s*(the|all|these)?\s*(issue|error|bug)s?\b|\baddress\s*(the|all)?\s*(issue|error|warning)s?\b|make\s*(it|the|tests?|build)\s*(pass|work|green)\b'; then
+	skills+="fixing-code "
+fi
+
+# documenting-code: Update documentation based on changes
+# Triggers: update docs, document, add documentation, update readme, write docs
+if echo "$PROMPT_LOWER" | grep -qE '\bupdate\s*(the|my)?\s*(docs|documentation|readme)\b|\bdocument\s*(this|the|my|these)?\s*(code|changes|function|api)?\b|\badd\s*(some|more)?\s*documentation\b|\bwrite\s*(the|some)?\s*docs\b|\bimprove\s*(the)?\s*documentation\b|\bdocstring|\bjsdoc\b|\bgodoc\b'; then
+	skills+="documenting-code "
+fi
+
+# checking-deploy: Validate K8s, Terraform, Helm, GitHub Actions, Docker configs
+# Triggers: deploy check, validate deployment, check k8s, validate infrastructure
+if echo "$PROMPT_LOWER" | grep -qE '\bdeploy\s*check\b|\bcheck\s*(my|the)?\s*deploy(ment)?\b|\bvalidate\s*(my|the)?\s*(deployment|infrastructure|infra|k8s|kubernetes|helm|terraform|config)s?\b|\bcheck\s*(my|the)?\s*(k8s|kubernetes|helm|terraform|workflow|action)\s*(config|manifest|file)s?\b|\bverify\s*(the)?\s*infrastructure\b|\binfra\s*check\b'; then
+	skills+="checking-deploy "
+fi
+
+# testing-e2e: E2E testing with Playwright MCP
+# Triggers: e2e test, playwright, browser testing, UI automation
+if echo "$PROMPT_LOWER" | grep -qE '\be2e\s*(test|testing)?\b|\bplaywright\b|\bbrowser\s*(test|testing|automation)\b|\bui\s*(test|testing|automation)\b|\bend[\s-]?to[\s-]?end\s*(test|testing)?\b|\bvisual\s*(test|testing|regression)\b|\baccessibility\s*(test|testing|check)\b|\ba11y\s*(test|check)\b'; then
+	skills+="testing-e2e "
+fi
+
+# writing-web: Simple web development with HTML, CSS, JS, HTMX
+# Triggers: HTML, CSS, JS, web template, stylesheet, HTMX
+if echo "$PROMPT_LOWER" | grep -qE '\bhtml\s*(template|file|page|component)?\b|\bcss\s*(style|file|class)?\b|\bstylesheet\b|\bhtmx\b|\bweb\s*(template|page|component|form)\b|\bhtml\s*and\s*css\b|\bvanilla\s*js\b|\bdom\s*manipulat|\.html\b|\.css\b'; then
+	skills+="writing-web "
 fi
 
 # Output only if skills detected (silent when no match)
