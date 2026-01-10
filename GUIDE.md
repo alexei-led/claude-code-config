@@ -132,30 +132,6 @@ They analyze and propose changes but **do not apply edits directly**. This ensur
 
 ## Commands
 
-### Code Quality (`/code:*`)
-
-| Command              | Description                        | Example              |
-| -------------------- | ---------------------------------- | -------------------- |
-| `/code:fix`          | Zero-tolerance quality enforcement | `/code:fix`          |
-| `/code:review`       | Multi-agent code review            | `/code:review deep`  |
-| `/code:docs`         | Documentation updates              | `/code:docs`         |
-| `/code:deploy-check` | K8s/CI validation                  | `/code:deploy-check` |
-| `/code:commit`       | Smart commit grouping              | `/code:commit`       |
-
-#### `/code:review` Modes
-
-```bash
-/code:review                 # Language engineers only
-/code:review deep            # 6-12 specialized sub-agents
-```
-
-### Testing (`/test:*`)
-
-| Command         | Description                 |
-| --------------- | --------------------------- |
-| `/test:e2e`     | E2E testing with Playwright |
-| `/test:improve` | Improve test quality        |
-
 ### Spec-Driven (`/spec:*`)
 
 | Command        | Description                      |
@@ -165,26 +141,23 @@ They analyze and propose changes but **do not apply edits directly**. This ensur
 | `/spec:work`   | Continue spec-driven work        |
 | `/spec:status` | Check implementation progress    |
 | `/spec:sync`   | Sync feature list from code      |
+| `/spec:align`  | Align spec with code (bottom-up) |
+| `/spec:audit`  | Audit spec abstraction levels    |
 
-### Agent Management (`/agent:*`)
+### Testing (`/test:*`)
 
-| Command         | Description                       | Example                 |
-| --------------- | --------------------------------- | ----------------------- |
-| `/agent:resume` | Resume a previously spawned agent | `/agent:resume a3c6662` |
-
-### AI Assistance (`/ai:*`)
-
-| Command       | Description                               | Example               |
-| ------------- | ----------------------------------------- | --------------------- |
-| `/ai:consult` | Independent review from fresh perspective | `/ai:consult auth.go` |
+| Command         | Description                 |
+| --------------- | --------------------------- |
+| `/test:e2e`     | E2E testing with Playwright |
+| `/test:improve` | Improve test quality        |
 
 ### Other Commands
 
-| Command        | Description                           |
-| -------------- | ------------------------------------- |
-| `/docs:lookup` | Library docs via Context7             |
-| `/research`    | Web research via Perplexity           |
-| `/learn`       | Extract session learnings → CLAUDE.md |
+| Command         | Description                       |
+| --------------- | --------------------------------- |
+| `/agent:resume` | Resume a previously spawned agent |
+| `/ai:consult`   | Independent review from Claude    |
+| `/learn`        | Extract session learnings         |
 
 ---
 
@@ -297,32 +270,56 @@ flowchart TB
 
 ## Skills
 
-Skills provide domain knowledge and trigger conditions.
+Skills provide domain knowledge and can be invoked via natural language or `/skill-name`.
 
 ```mermaid
 flowchart LR
-    Prompt[User Prompt] --> Enforcer[skill-enforcer hook]
-    Enforcer --> |keywords| Skill[Skill Activated]
-    Skill --> Agent[Spawn Agent]
-    Agent --> Result[Summary]
+    Prompt[User Prompt] --> Match{Keyword Match}
+    Match --> |user-invocable| Manual["/skill-name"]
+    Match --> |auto-activated| Auto[Skill Loaded]
+    Manual --> Skill[Skill Activated]
+    Auto --> Skill
+    Skill --> Result[Summary]
 ```
 
-### Available Skills
+### User-Invocable Skills
 
-| Skill                 | Triggers When           |
-| --------------------- | ----------------------- |
-| `writing-go`          | Go development          |
-| `writing-python`      | Python development      |
-| `writing-typescript`  | TypeScript development  |
-| `looking-up-docs`     | Library documentation   |
-| `researching-web`     | Web research            |
-| `searching-code`      | Codebase exploration    |
-| `refactoring-code`    | Batch refactoring       |
-| `managing-infra`      | K8s, Terraform, CI/CD   |
-| `using-cloud-cli`     | GCP, AWS CLI operations |
-| `using-git-worktrees` | Parallel development    |
-| `using-modern-cli`    | Modern CLI tools        |
-| `testing-e2e`         | Playwright testing      |
+Visible in `/` menu, invoke via natural language or `/skill-name`:
+
+| Skill                 | Triggers On                             |
+| --------------------- | --------------------------------------- |
+| `fixing-code`         | "fix", "fix issues", "fix errors"       |
+| `reviewing-code`      | "review", "review code", "check this"   |
+| `committing-code`     | "commit", "save changes", "git commit"  |
+| `documenting-code`    | "update docs", "document", "write docs" |
+| `checking-deploy`     | "deploy check", "validate k8s"          |
+| `looking-up-docs`     | Library documentation via Context7      |
+| `researching-web`     | "research", "compare X vs Y"            |
+| `using-git-worktrees` | Parallel development with worktrees     |
+
+#### `reviewing-code` Modes
+
+```bash
+review code              # Language engineers only
+review code deep         # 6-12 specialized sub-agents
+```
+
+### Auto-Activated Skills
+
+Hidden from `/` menu, triggered automatically on relevant prompts:
+
+| Skill                | Triggers When              |
+| -------------------- | -------------------------- |
+| `writing-go`         | Go code development        |
+| `writing-python`     | Python code development    |
+| `writing-typescript` | TypeScript code            |
+| `writing-web`        | HTML/CSS/JS/HTMX           |
+| `managing-infra`     | K8s, Terraform, CI/CD      |
+| `using-cloud-cli`    | GCP, AWS CLI commands      |
+| `using-modern-cli`   | rg, fd, bat, sd, eza, dust |
+| `refactoring-code`   | Batch refactoring          |
+| `searching-code`     | Codebase exploration       |
+| `testing-e2e`        | Playwright testing         |
 
 ---
 
@@ -563,26 +560,26 @@ flowchart LR
 flowchart LR
     A[Design] --> B[Implement] --> C[Review] --> D[Commit]
 
-    C -.- C1[/code:review]
-    D -.- D1[/code:commit]
+    C -.- C1[review code]
+    D -.- D1[commit changes]
 ```
 
 ```bash
 # implement...
-/code:review deep
-/code:commit
+review code deep    # or /reviewing-code deep
+commit changes      # or /committing-code
 ```
 
 ### Quick Quality
 
 ```bash
-/code:fix  # Zero tolerance
+fix issues          # or /fixing-code
 ```
 
 ### Pre-deployment
 
 ```bash
-/code:deploy-check
+deploy check        # or /checking-deploy
 ```
 
 ---

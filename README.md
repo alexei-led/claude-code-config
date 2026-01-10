@@ -7,34 +7,47 @@ Production-quality setup with specialized agents and zero-tolerance quality enfo
 ## Quick Start
 
 ```bash
-/code:fix           # Fix all lint/test issues
-/code:review deep   # Multi-agent code review
-/research "topic"   # Web research via Perplexity
+fix issues          # or /fixing-code
+review code         # or /reviewing-code
+commit changes      # or /committing-code
+research "topic"    # or /researching-web
 ```
+
+---
+
+## Skills (User-Invocable)
+
+Invoke via natural language or `/skill-name`:
+
+| Skill                 | Triggers On                             |
+| --------------------- | --------------------------------------- |
+| `fixing-code`         | "fix", "fix issues", "fix errors"       |
+| `reviewing-code`      | "review", "review code", "check this"   |
+| `committing-code`     | "commit", "save changes", "git commit"  |
+| `documenting-code`    | "update docs", "document", "write docs" |
+| `checking-deploy`     | "deploy check", "validate k8s"          |
+| `looking-up-docs`     | Library documentation via Context7      |
+| `researching-web`     | "research", "compare X vs Y"            |
+| `using-git-worktrees` | Parallel development with worktrees     |
 
 ---
 
 ## Commands
 
-| Command              | Description                           |
-| -------------------- | ------------------------------------- |
-| `/code:fix`          | Fix ALL issues via parallel agents    |
-| `/code:review`       | Multi-agent code review               |
-| `/code:docs`         | Update documentation                  |
-| `/code:commit`       | Create bundled commits                |
-| `/code:deploy-check` | Validate K8s/CI configs               |
-| `/test:e2e`          | E2E testing with Playwright           |
-| `/test:improve`      | Improve test quality                  |
-| `/spec:init`         | Initialize spec-driven project        |
-| `/spec:gen`          | Generate app_spec from markdown       |
-| `/spec:work`         | Continue spec-driven development      |
-| `/spec:status`       | Quick progress check                  |
-| `/spec:sync`         | Sync feature_list from code           |
-| `/agent:resume`      | Resume a previously spawned agent     |
-| `/ai:consult`        | Independent review from fresh Claude  |
-| `/research`          | Web research via Perplexity           |
-| `/docs:lookup`       | Library docs via Context7             |
-| `/learn`             | Extract session learnings → CLAUDE.md |
+| Command         | Description                       |
+| --------------- | --------------------------------- |
+| `/spec:init`    | Initialize spec-driven project    |
+| `/spec:gen`     | Generate app_spec from markdown   |
+| `/spec:work`    | Continue spec-driven development  |
+| `/spec:status`  | Quick progress check              |
+| `/spec:sync`    | Sync feature_list from code       |
+| `/spec:align`   | Align spec with code (bottom-up)  |
+| `/spec:audit`   | Audit spec abstraction levels     |
+| `/test:e2e`     | E2E testing with Playwright       |
+| `/test:improve` | Improve test quality              |
+| `/agent:resume` | Resume a previously spawned agent |
+| `/ai:consult`   | Independent review from Claude    |
+| `/learn`        | Extract learnings → CLAUDE.md     |
 
 ---
 
@@ -79,21 +92,22 @@ Production-quality setup with specialized agents and zero-tolerance quality enfo
 
 ---
 
-## Skills (Auto-Triggered)
+## Skills (Auto-Activated)
 
-| Skill                 | Triggers On           |
-| --------------------- | --------------------- |
-| `writing-go`          | Go files              |
-| `writing-python`      | Python files          |
-| `writing-typescript`  | TypeScript files      |
-| `looking-up-docs`     | Library documentation |
-| `researching-web`     | Web research          |
-| `searching-code`      | Codebase exploration  |
-| `refactoring-code`    | Batch refactoring     |
-| `managing-infra`      | K8s, Terraform, CI/CD |
-| `using-cloud-cli`     | GCP/AWS CLI           |
-| `using-git-worktrees` | Parallel development  |
-| `testing-e2e`         | Playwright testing    |
+Hidden from `/` menu, triggered automatically:
+
+| Skill                | Triggers On                |
+| -------------------- | -------------------------- |
+| `writing-go`         | Go code development        |
+| `writing-python`     | Python code development    |
+| `writing-typescript` | TypeScript code            |
+| `writing-web`        | HTML/CSS/JS/HTMX           |
+| `managing-infra`     | K8s, Terraform, CI/CD      |
+| `using-cloud-cli`    | GCP/AWS CLI commands       |
+| `using-modern-cli`   | rg, fd, bat, sd, eza, dust |
+| `refactoring-code`   | Batch refactoring          |
+| `searching-code`     | Codebase exploration       |
+| `testing-e2e`        | Playwright testing         |
 
 ---
 
