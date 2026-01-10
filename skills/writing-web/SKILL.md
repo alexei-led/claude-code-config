@@ -1,6 +1,7 @@
 ---
 name: writing-web
 description: Simple web development with HTML, CSS, JS, and HTMX. Use when writing or reviewing web templates, stylesheets, or scripts.
+user-invocable: false
 context: fork
 agent: web-engineer
 allowed-tools:
