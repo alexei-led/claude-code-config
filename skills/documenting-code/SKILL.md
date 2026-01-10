@@ -1,4 +1,7 @@
 ---
+name: documenting-code
+description: Update project documentation based on recent changes. Use when user says "update docs", "document", "add documentation", "update readme", "write docs", or wants to improve documentation.
+user-invocable: true
 context: fork
 allowed-tools:
   - Task
@@ -6,7 +9,6 @@ allowed-tools:
   - AskUserQuestion
   - mcp__context7__resolve-library-id
   - mcp__context7__query-docs
-description: Update all documentation based on recent changes using docs-keeper agent
 ---
 
 # Documentation Update

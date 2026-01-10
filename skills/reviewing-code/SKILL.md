@@ -1,11 +1,13 @@
 ---
+name: reviewing-code
+description: Multi-agent code review for security, quality, and architecture. Use when user says "review", "review code", "check code", "code review", "review my changes", "review this", or wants feedback on their code.
+user-invocable: true
 context: fork
 allowed-tools:
   - Task
   - TodoWrite
   - AskUserQuestion
   - Bash
-description: Multi-agent code review for security, quality, and architecture
 argument-hint: [deep]
 ---
 
@@ -148,8 +150,8 @@ Agent's own `model` setting (from metadata) is respected automatically.
 ## Examples
 
 ```
-/code:review                    # Claude only: go-engineer, python-engineer
-/code:review deep               # Claude only: 6-12 specialized sub-agents
+/reviewing-code                 # Claude only: go-engineer, python-engineer
+/reviewing-code deep            # Claude only: 6-12 specialized sub-agents
 ```
 
 **Execute this workflow now.**

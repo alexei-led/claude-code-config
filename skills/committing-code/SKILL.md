@@ -1,4 +1,7 @@
 ---
+name: committing-code
+description: Smart git commits with logical grouping. Use when user says "commit", "commit changes", "save changes", "create commit", "bundle commits", "git commit", or wants to commit their work.
+user-invocable: true
 context: fork
 allowed-tools:
   - Task
@@ -7,7 +10,6 @@ allowed-tools:
   - Bash(git add:*)
   - Bash(git commit:*)
   - Bash(git status:*)
-description: Group changes logically and create bundled commits with concise messages
 ---
 
 # Smart Commit

@@ -1,4 +1,7 @@
 ---
+name: fixing-code
+description: Fix ALL issues via parallel agents with zero tolerance quality enforcement. Use when user says "fix", "fix issues", "fix errors", "fix all", "fix bugs", "fix lint", "fix tests", or wants to resolve code problems.
+user-invocable: true
 context: fork
 allowed-tools:
   - Task
@@ -12,7 +15,6 @@ allowed-tools:
   - Bash(npm:*)
   - Bash(bun:*)
   - Bash(bunx:*)
-description: Fix ALL issues via parallel agents - zero tolerance quality enforcement
 ---
 
 # Fix All Issues

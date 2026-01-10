@@ -1,4 +1,7 @@
 ---
+name: checking-deploy
+description: Validate Kubernetes, Terraform, Helm, GitHub Actions, and Docker configs. Use when user says "deploy check", "validate deployment", "check k8s", "validate infrastructure", "check configs", or wants to verify infrastructure.
+user-invocable: true
 context: fork
 allowed-tools:
   - Task
@@ -12,7 +15,6 @@ allowed-tools:
   - Grep
   - Glob
   - mcp__perplexity-ask__perplexity_ask
-description: Validate K8s/CI configs via infra-engineer agent
 argument-hint: [--background]
 ---
 
