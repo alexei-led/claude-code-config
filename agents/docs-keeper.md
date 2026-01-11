@@ -13,7 +13,7 @@ tools:
     "mcp__context7__resolve-library-id",
     "mcp__context7__query-docs",
   ]
-model: opus
+model: sonnet
 color: purple
 skills: ["looking-up-docs"]
 ---

@@ -1,6 +1,7 @@
 ---
 name: looking-up-docs
 description: Library documentation via Context7. Use for API references, code examples, framework docs.
+model: haiku
 allowed-tools:
   - Read
   - Grep

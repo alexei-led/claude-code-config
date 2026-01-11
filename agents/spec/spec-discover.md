@@ -12,7 +12,7 @@ tools:
     "Bash(git status:*)",
     "Bash(git branch:*)",
   ]
-model: sonnet
+model: haiku
 color: green
 ---
 

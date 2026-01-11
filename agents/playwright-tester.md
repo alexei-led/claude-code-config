@@ -14,7 +14,7 @@ tools:
     "mcp__context7__resolve-library-id",
     "mcp__context7__query-docs",
   ]
-model: opus
+model: sonnet
 color: magenta
 skills: ["writing-typescript", "looking-up-docs", "testing-e2e"]
 ---

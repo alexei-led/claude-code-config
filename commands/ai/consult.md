@@ -1,5 +1,6 @@
 ---
 context: fork
+model: sonnet
 allowed-tools:
   - Task
 description: Get independent code/design review from fresh Claude perspective

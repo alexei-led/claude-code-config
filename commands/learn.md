@@ -1,4 +1,5 @@
 ---
+model: sonnet
 allowed-tools:
   - TodoWrite
   - Read

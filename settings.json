@@ -1,10 +1,11 @@
 {
   "env": {
-    "CLAUDE_CODE_USE_VERTEX": "1",
-    "CLOUD_ML_REGION": "global",
-    "ANTHROPIC_VERTEX_PROJECT_ID": "alexei-playground-457008",
-    "ANTHROPIC_MODEL": "claude-opus-4-5@20251101",
-    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-haiku-4-5@20251001"
+    "ANTHROPIC_BASE_URL": "http://localhost:4141",
+    "ANTHROPIC_MODEL": "claude-opus-4.5",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-4.5",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-haiku-4.5",
+    "DISABLE_NON_ESSENTIAL_MODEL_CALLS": "1",
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
   },
   "includeCoAuthoredBy": false,
   "permissions": {
@@ -160,9 +161,8 @@
   "enabledPlugins": {
     "gopls-lsp@claude-plugins-official": true,
     "pyright-lsp@claude-plugins-official": true,
-    "typescript-lsp@claude-plugins-official": true,
     "frontend-design@claude-plugins-official": true,
-    "github@claude-plugins-official": true
+    "atlassian@claude-plugins-official": false
   },
   "sandbox": {
     "enabled": true,
@@ -207,7 +207,7 @@
     "ANTHROPIC_BASE_URL": "https://api.z.ai/api/anthropic",
     "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
   },
-  "_activeEnv": "vertex",
+  "_activeEnv": "copilot",
   "env.deepseek": {
     "ANTHROPIC_BASE_URL": "https://api.deepseek.com/anthropic",
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "deepseek-reasoner",

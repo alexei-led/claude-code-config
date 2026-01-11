@@ -160,6 +160,30 @@ My insights on better approaches are valued—please ask for them!
 - Use crypto/rand for randomness
 - Prepared statements for SQL (never concatenate!)
 
+## Usage Optimization
+
+Agents, skills, and commands have explicit model settings to reduce 5-hour usage.
+
+### Model Selection
+
+| Model  | Use For                                              |
+| ------ | ---------------------------------------------------- |
+| Opus   | Architecture, security analysis, complex debugging   |
+| Sonnet | Implementation, testing, documentation, coordination |
+| Haiku  | Discovery, CLI help, lookups, progress, simple tasks |
+
+### Token Efficiency
+
+- Request concise output: "5 lines max", "JSON only", "bullet points"
+- Use summaries instead of full file dumps
+- Fork heavy analysis (`context: fork`) to avoid main context pollution
+- Batch related edits in single tool calls
+
+### Optimized Components
+
+**Haiku**: spec-discover, \*-docs agents, looking-up-docs, using-\*-cli skills, agent/resume, spec/status
+**Sonnet**: docs-keeper, playwright-tester, spec-\* agents, research/deploy/e2e skills, most commands
+
 ## Working Together
 
 - This is always a feature branch—no backwards compatibility needed

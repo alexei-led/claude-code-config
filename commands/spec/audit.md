@@ -1,5 +1,6 @@
 ---
 context: fork
+model: haiku
 allowed-tools:
   - Task
   - Read

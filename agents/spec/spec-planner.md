@@ -11,7 +11,7 @@ tools:
     "Bash(git log:*)",
     "mcp__sequential-thinking__sequentialthinking",
   ]
-model: opus
+model: sonnet
 color: green
 ---
 

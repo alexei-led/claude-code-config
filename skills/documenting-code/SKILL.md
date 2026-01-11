@@ -3,6 +3,7 @@ name: documenting-code
 description: Update project documentation based on recent changes. Use when user says "update docs", "document", "add documentation", "update readme", "write docs", or wants to improve documentation.
 user-invocable: true
 context: fork
+model: sonnet
 allowed-tools:
   - Task
   - TodoWrite

@@ -1,4 +1,5 @@
 ---
+model: haiku
 allowed-tools:
   - Task
   - TaskOutput

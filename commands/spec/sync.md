@@ -1,5 +1,6 @@
 ---
 context: fork
+model: sonnet
 allowed-tools:
   - Task
   - TaskOutput
