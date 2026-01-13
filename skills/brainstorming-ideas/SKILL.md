@@ -2,8 +2,7 @@
 name: brainstorming-ideas
 description: Turn ideas into designs through collaborative dialogue. Use when user wants to brainstorm, design features, explore approaches, or think through implementation before coding.
 user-invocable: true
-context: fork
-model: sonnet
+model: opus
 allowed-tools:
   - AskUserQuestion
   - Task
@@ -22,47 +21,49 @@ argument-hint: [<topic>]
 
 Transform vague ideas into fully-formed designs through structured collaborative dialogue.
 
-**Use TodoWrite** to track these 5 phases:
+**Use TodoWrite** to track these 7 phases:
 
-1. Gather context and understand the idea
+1. Understand the idea (dialogue first, no agents)
 2. Explore requirements (Starbursting questions)
-3. Research similar solutions (optional)
-4. Present approaches with recommendation
-5. Validate design incrementally and document
+3. Checkpoint - offer exploration/research options
+4. Research similar solutions (if requested)
+5. Present approaches with recommendation
+6. Validate design incrementally
+7. Document and next steps
 
 ---
 
 ## Core Principles
 
+- **Dialogue first** - Ask the user before spawning any agents
 - **One question at a time** - Never batch multiple questions
 - **Multiple choice preferred** - Easier to answer than open-ended
+- **"Other" always available** - Free text input for custom responses
 - **YAGNI ruthlessly** - Challenge every feature's necessity
 - **Incremental validation** - Present design in 200-300 word sections
-- **Research when helpful** - Don't research obvious patterns
+- **Agents on request** - Only explore/research when user chooses it
 
 ---
 
-## Phase 1: Gather Context
+## Phase 1: Understand the Idea
 
-### 1a. Explore Codebase (Background)
+Start with dialogue, not agents. Ask the user directly.
 
-Spawn Explore agent to understand project state:
-
-```
-Task(
-  subagent_type="Explore",
-  prompt="Quick scan: project structure, tech stack, recent changes, existing patterns",
-  run_in_background=true
-)
-```
-
-### 1b. Initial Question
+### 1a. Initial Question
 
 Use AskUserQuestion:
 
 | Header    | Question                           | Options                                                                                                                                                                                       |
 | --------- | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Idea type | What would you like to brainstorm? | 1. **New feature** - Add new functionality 2. **Modification** - Change existing behavior 3. **Integration** - Connect with external system 4. **Exploration** - Not sure yet, let's discover |
+
+### 1b. Follow-up (based on response)
+
+Ask clarifying questions using AskUserQuestion. Keep it conversational:
+
+- "Can you describe this in a sentence or two?" (free text via "Other")
+- "What triggered this idea?" with context-appropriate options
+- "Is there an existing feature this builds on?"
 
 ---
 
@@ -89,15 +90,41 @@ Ask questions **one at a time** using AskUserQuestion. Adapt based on idea type.
 
 ---
 
-## Phase 3: Research Similar Solutions (Optional)
+## Phase 3: Checkpoint - Gather More Context?
 
-Trigger research when:
+After understanding requirements, **ask before spawning any agents**:
 
-- User says "research", "how do others", "best practice"
-- Idea is novel or complex
-- Multiple valid approaches exist
+| Header    | Question               | Options                                                                                                                                                                                                       |
+| --------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Next step | How should we proceed? | 1. **Explore codebase** - Check existing patterns and tech stack 2. **Research solutions** - Look up how others solve this 3. **Both** - Explore then research 4. **Skip to approaches** - I know what I want |
 
-### 3a. Perplexity Query
+### If user chooses "Explore codebase":
+
+```
+Task(
+  subagent_type="Explore",
+  prompt="Quick scan: project structure, tech stack, patterns relevant to [user's idea]",
+  run_in_background=false
+)
+```
+
+Then summarize findings and ask: "Based on this, should we also research external solutions?"
+
+### If user chooses "Research solutions":
+
+Proceed to Phase 4.
+
+### If user chooses "Skip to approaches":
+
+Jump directly to Phase 5 (Present Approaches).
+
+---
+
+## Phase 4: Research Similar Solutions (If Requested)
+
+Only run when user explicitly chose research in Phase 3.
+
+### 4a. Perplexity Query
 
 ```
 mcp__perplexity-ask__perplexity_ask({
@@ -108,7 +135,7 @@ mcp__perplexity-ask__perplexity_ask({
 })
 ```
 
-### 3b. Follow Citations
+### 4b. Follow Citations
 
 After Perplexity response, WebFetch top 2-3 relevant sources:
 
@@ -116,7 +143,7 @@ After Perplexity response, WebFetch top 2-3 relevant sources:
 WebFetch(url="<citation-url>", prompt="Extract implementation details, code patterns, and lessons learned for [feature]")
 ```
 
-### 3c. Synthesize Findings
+### 4c. Synthesize Findings
 
 Present research summary before asking approach preference:
 
@@ -133,7 +160,7 @@ Present research summary before asking approach preference:
 
 ---
 
-## Phase 4: Present Approaches
+## Phase 5: Present Approaches
 
 Use AskUserQuestion with 2-4 options:
 
@@ -151,7 +178,7 @@ For each option, briefly cover:
 
 ---
 
-## Phase 5: Validate Design Incrementally
+## Phase 6: Validate Design Incrementally
 
 Present design in sections (~200-300 words each). After each section, use AskUserQuestion:
 
@@ -177,9 +204,9 @@ At each section, actively challenge:
 
 ---
 
-## Phase 6: Document and Next Steps
+## Phase 7: Document and Next Steps
 
-### 6a. Write Design Document
+### 7a. Write Design Document
 
 ```
 Write(
@@ -188,13 +215,13 @@ Write(
 )
 ```
 
-### 6b. Commit Design
+### 7b. Commit Design
 
 ```bash
 git add docs/plans/*.md && git commit -m "docs: add [feature] design document"
 ```
 
-### 6c. Implementation Handoff
+### 7c. Implementation Handoff
 
 Use AskUserQuestion:
 
