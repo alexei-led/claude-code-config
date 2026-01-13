@@ -4,107 +4,59 @@ description: Smart git commits with logical grouping. Use when user says "commit
 user-invocable: true
 context: fork
 allowed-tools:
-  - Task
-  - TaskOutput
-  - TodoWrite
-  - Bash(git add:*)
-  - Bash(git commit:*)
   - Bash(git status:*)
+  - Bash(git diff:*)
+  - Bash(git log:*)
+  - Bash(git show:*)
+  - Bash(git branch:*)
 ---
 
 # Smart Commit
 
-Group changed files logically and create focused, atomic commits.
+Group changed files logically into focused, atomic commits.
 
-**Use TodoWrite** to track these 4 phases:
+**No agents. Inline analysis for speed.**
 
-1. Spawn analysis agents
-2. Collect groupings and style
-3. Execute commits
-4. Present summary
+## Step 1: Gather State
 
-**Main context = orchestration only. All analysis in background agents.**
-
----
-
-## Phase 1: Spawn Analysis Agents
-
-**Spawn TWO background agents in a single message:**
-
-```
-Task(
-  subagent_type="general-purpose",
-  run_in_background=true,
-  model="haiku",
-  description="Git changes analysis",
-  prompt="""
-Analyze changes and propose groupings. Output ONLY JSON, no explanation.
-
-Run:
-- git status --porcelain
-- git diff --name-status HEAD
-
-Group by: feature (impl+tests), fix (bug+test), refactor, docs, config/infra
-
-Output format (ONLY this, nothing else):
-{"groups":[{"files":["path1","path2"],"type":"feature|fix|refactor|docs|config"}],"empty":false}
-
-If no changes: {"empty":true}
-"""
-)
-
-Task(
-  subagent_type="general-purpose",
-  run_in_background=true,
-  model="haiku",
-  description="Commit style guide",
-  prompt="""
-Get recent commit style. Output ONLY JSON, no explanation.
-
-Run: git log --oneline -8
-
-Analyze style: prefix pattern, tense, length, scope format.
-
-Output format (ONLY this, nothing else):
-{"style":"<one-line description>","examples":["msg1","msg2"]}
-"""
-)
-```
-
-## Phase 2: Collect & Merge
-
-```
-TaskOutput(task_id=<changes_agent_id>, block=true)
-TaskOutput(task_id=<style_agent_id>, block=true)
-```
-
-**If empty=true:** "Nothing to commit" → stop.
-
-**Merge results internally** - draft commit messages matching the style for each group.
-
-## Phase 3: Execute Commits
-
-For each group:
+Run in parallel:
 
 ```bash
-git add <files>
-git commit -m "$(cat <<'EOF'
-<message matching style>
-EOF
-)"
+git status --porcelain
+git diff --name-status HEAD
+git log --oneline -8
 ```
 
-## Phase 4: Summary
+**If no changes:** Say "Nothing to commit" → stop.
 
-```bash
-git status
+## Step 2: Analyze & Present
+
+Group files by: feature (impl+tests), fix (bug+test), refactor, docs, config
+
+Match commit style from recent history.
+
+**Present proposed commits:**
+
+```
+Proposed commits:
+
+1. feat: add user validation
+   - src/validate.ts
+   - src/validate_test.ts
+
+2. docs: update README
+   - README.md
 ```
 
-Present (3-5 lines max):
+## Step 3: Execute
 
-- Commits created: N
-- Each: `<hash short> <message>`
-- Remaining uncommitted (if any)
+For each group, run git add + commit.
+
+User will be prompted to approve each write operation (git add/commit not pre-allowed).
+
+## Step 4: Summary
+
+Show `git status` and list commits created.
 
 ---
 
