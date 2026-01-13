@@ -19,16 +19,17 @@ research "topic"    # or /researching-web
 
 Invoke via natural language or `/skill-name`:
 
-| Skill                 | Triggers On                             |
-| --------------------- | --------------------------------------- |
-| `fixing-code`         | "fix", "fix issues", "fix errors"       |
-| `reviewing-code`      | "review", "review code", "check this"   |
-| `committing-code`     | "commit", "save changes", "git commit"  |
-| `documenting-code`    | "update docs", "document", "write docs" |
-| `checking-deploy`     | "deploy check", "validate k8s"          |
-| `looking-up-docs`     | Library documentation via Context7      |
-| `researching-web`     | "research", "compare X vs Y"            |
-| `using-git-worktrees` | Parallel development with worktrees     |
+| Skill                 | Triggers On                                     |
+| --------------------- | ----------------------------------------------- |
+| `brainstorming-ideas` | "brainstorm", "design feature", "think through" |
+| `fixing-code`         | "fix", "fix issues", "fix errors"               |
+| `reviewing-code`      | "review", "review code", "check this"           |
+| `committing-code`     | "commit", "save changes", "git commit"          |
+| `documenting-code`    | "update docs", "document", "write docs"         |
+| `checking-deploy`     | "deploy check", "validate k8s"                  |
+| `looking-up-docs`     | Library documentation via Context7              |
+| `researching-web`     | "research", "compare X vs Y"                    |
+| `using-git-worktrees` | Parallel development with worktrees             |
 
 ---
 
