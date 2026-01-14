@@ -2,7 +2,6 @@
 name: refactoring-code
 description: Batch refactoring via MorphLLM edit_file. Use for "refactor across files", "batch rename", "update pattern everywhere", large files (500+ lines), or 5+ edits in same file.
 user-invocable: false
-model: sonnet
 allowed-tools:
   - mcp__morphllm__edit_file
   - mcp__morphllm__warpgrep_codebase_search

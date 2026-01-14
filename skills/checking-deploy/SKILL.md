@@ -3,7 +3,6 @@ name: checking-deploy
 description: Validate Kubernetes, Terraform, Helm, GitHub Actions, and Docker configs. Use when user says "deploy check", "validate deployment", "check k8s", "validate infrastructure", "check configs", or wants to verify infrastructure.
 user-invocable: true
 context: fork
-model: sonnet
 allowed-tools:
   - Task
   - TaskOutput

@@ -9,7 +9,6 @@ description: >-
   or replacing grep/find/cat in workflows. These tools are faster, respect
   .gitignore, and have better output formatting.
 user-invocable: false
-model: haiku
 allowed-tools:
   - Bash
 ---
