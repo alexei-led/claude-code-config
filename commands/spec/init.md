@@ -1,266 +1,187 @@
 ---
 context: fork
+argument-hint: [path/to/spec.md]
 allowed-tools:
   - Task
   - TaskOutput
+  - Skill
   - TodoWrite
   - Read
   - Write
   - AskUserQuestion
-  - Bash(jq:*)
+  - Glob
+  - Bash(rg:*)
+  - Bash(fd:*)
   - Bash(git:*)
   - Bash(mkdir:*)
-  - Bash(make:*)
-  - Bash(chmod:*)
-description: Initialize spec-driven project with feature_list.json
+  - Bash(date:*)
+  - Bash(echo:*)
+description: Initialize or extend spec-driven project
 ---
 
 # Spec Init
 
-Initialize a new spec-driven development project. Session 1 of many.
+Initialize new project or add requirements to existing one.
 
-## Documentation Hierarchy
-
-Spec-driven projects maintain layered documentation:
-
-| Document              | Focus                  | Contains                                      |
-| --------------------- | ---------------------- | --------------------------------------------- |
-| `/docs/*.md`          | WHY (business context) | Research, architecture, guidelines, decisions |
-| `app_spec.txt`        | WHY + WHAT             | Technical/functional requirements             |
-| `feature_list.json`   | HOW                    | Implementation tasks (references app_spec)    |
-| `claude-progress.txt` | STATE                  | Current session progress                      |
-
-**Use TodoWrite** to track these 6 phases:
-
-1. Project discovery
-2. High-level documentation (docs/)
-3. App specification
-4. Feature list generation
-5. Project setup
-6. Summary
-
-## Guardrails
-
-- **Agent-first exploration**: Use agents for codebase analysis
-- **User approval**: Confirm spec and feature list before creating
-- **Quality over speed**: Thorough feature coverage is critical
-
----
-
-## Phase 1: Project Discovery (Parallel)
-
-**Spawn exploration agents in a single message:**
+## Usage
 
 ```
-Task(
-  subagent_type="Explore",
-  run_in_background=true,
-  description="Project structure scan",
-  prompt="Project discovery: pwd, ls -la, detect language/framework (go.mod, package.json, pyproject.toml, Cargo.toml). Check for existing Makefile. Return: what exists, tech stack detected."
-)
-
-Task(
-  subagent_type="Explore",
-  run_in_background=true,
-  description="Spec files check",
-  prompt="Check spec-driven files: app_spec.txt existence, feature_list.json state, claude-progress.txt. Git status. Return: fresh start or continuation, what needs creation."
-)
-```
-
-**Collect results:**
-
-```
-TaskOutput(task_id=<structure_id>, block=true)
-TaskOutput(task_id=<spec_id>, block=true)
+/spec:init                      # new project with brainstorming
+/spec:init docs/spec.md         # generate reqs from existing docs
 ```
 
 ---
 
-## Phase 2: High-Level Documentation
-
-**If `/docs/` exists:** Read existing documents for context.
-
-**If no `/docs/` directory:**
-
-Use `AskUserQuestion` to gather high-level context:
-
-| Header | Question                                              | Options                            |
-| ------ | ----------------------------------------------------- | ---------------------------------- |
-| Docs   | Do you have architecture/design documents to include? | Yes (will provide), None yet, Skip |
-
-If user provides documents or context:
-
-1. Create `docs/` directory
-2. Create relevant files (architecture.md, guidelines.md, decisions.md)
-3. Capture business context, constraints, and design decisions
-
-**docs/architecture.md template:**
-
-```markdown
-# Architecture
-
-## Overview
-
-<System purpose and high-level design>
-
-## Components
-
-<Major components and their responsibilities>
-
-## Constraints
-
-<Technical and business constraints>
-```
-
----
-
-## Phase 3: App Specification
-
-`app_spec.txt` captures **WHY and WHAT**, not HOW:
-
-- Purpose and goals (WHY this exists)
-- Requirements and success criteria (WHAT it must do)
-- Constraints and boundaries (WHAT limits apply)
-
-Implementation details (HOW) belong in `feature_list.json`.
-
-**If `app_spec.txt` doesn't exist:**
-
-Use `AskUserQuestion` to gather:
-
-| Header  | Question                            | Options                                                                     |
-| ------- | ----------------------------------- | --------------------------------------------------------------------------- |
-| Purpose | What are you building?              | (free text via "Other")                                                     |
-| Stack   | Which tech stack?                   | Go + stdlib, Python + FastAPI, TypeScript + React, TypeScript + Node, Other |
-| Scope   | How complex is the initial version? | MVP (10-30 features), Standard (30-100 features), Comprehensive (100+)      |
-
-Then create `app_spec.txt` using the gathered information.
-
-**If `app_spec.txt` exists:** Read it for context.
-
----
-
-## Phase 4: Feature List Generation
-
-**Spawn agent for comprehensive feature generation:**
-
-```
-Task(
-  subagent_type="Explore",
-  description="Feature generation",
-  prompt="Read app_spec.txt. Generate feature_list.json covering:
-  - Every explicit and implied feature
-  - Happy paths AND failure paths
-  - API endpoints (valid/invalid/auth failure)
-  - Form validation (required fields, edge values)
-  - State transitions, error handling
-  - Security boundaries
-
-  Format: {category, description, steps[], passes: false}
-  Categories: core|edge-case|error|integration|security|performance|style
-  Target scope: [from user selection]
-  Order by dependency: foundational first.
-  Return complete JSON array."
-)
-```
-
-**Present to user**: Summary of coverage (N features across M categories).
-
-**STOP**: Use `AskUserQuestion` - "Review feature list? [Proceed / Show full list / Add more]"
-
----
-
-## Phase 5: Project Setup
-
-1. **Write `feature_list.json`** with generated features
-
-2. **Create `init.sh`** (environment setup script):
+## Step 1: Check Existing
 
 ```bash
-#!/bin/bash
-# init.sh - Run at session start to verify state
-set -e
-
-echo "=== Spec-Driven Session Start ==="
-
-# Verify build
-make build 2>/dev/null && echo "✓ Build passes" || echo "✗ Build needs attention"
-
-# Verify tests
-make test 2>/dev/null && echo "✓ Tests pass" || echo "✗ Tests need attention"
-
-# Show next feature
-echo ""
-echo "Next feature to implement:"
-jq '[.[] | select(.passes==false)][0] | .description' feature_list.json
-
-# Show progress
-total=$(jq 'length' feature_list.json)
-passing=$(jq '[.[] | select(.passes==true)] | length' feature_list.json)
-echo ""
-echo "Progress: $passing/$total features passing"
+ls .spec/ 2>/dev/null && echo "SPEC_EXISTS"
 ```
 
-3. **Create Makefile** (if not exists) - language-appropriate targets
+---
 
-4. **Initialize git** (if not a repo):
+## Mode: New Project (no .spec/)
+
+### Step 2: Brainstorm
+
+Use brainstorming skill:
+
+```
+Skill(skill="brainstorming-ideas", args="What are we building? Let's explore requirements.")
+```
+
+Discover:
+
+- What problem are we solving?
+- Who are the users?
+- Core capabilities needed?
+- Tech stack?
+
+Group findings into requirement topics (auth, data, ui, api, etc.).
+
+### Step 3: Confirm
+
+`AskUserQuestion` - "Does this capture the project? [Yes / Adjust / Start over]"
+
+### Step 4: Create Structure
 
 ```bash
-git init
-chmod +x init.sh
-git add feature_list.json Makefile app_spec.txt init.sh
-git commit -m "Initial setup: spec-driven development scaffold"
+mkdir -p .spec/reqs .spec/tasks
+echo "# Progress" > .spec/PROGRESS.md
+echo "$(date +%H:%M) INIT project" >> .spec/PROGRESS.md
 ```
 
-5. **Create `claude-progress.txt`**:
+**Create REQ-\*.md files** for each requirement topic:
+
+```yaml
+---
+id: REQ-{topic}
+version: 1
+priority: normal
+---
+# {Title}
+
+{Description}
+
+{Success criteria}
+```
+
+**Create initial TASK-\*.md files**:
+
+```yaml
+---
+id: TASK-{name}
+status: todo
+priority: normal
+implements: REQ-{topic}
+---
+# {Title}
+
+{ Implementation steps }
+```
+
+### Step 5: Summary
 
 ```
-# Progress Tracker
+## Ready
 
-## Session 1 - Init
+.spec/
+├── PROGRESS.md
+├── reqs/       ({N} requirements)
+└── tasks/      ({M} tasks)
 
-**Completed:**
-- Created app_spec.txt
-- Generated feature_list.json with N features
-- Set up Makefile and init.sh
-
-**Progress:** 0/N features (0%)
-
-**Next Session:**
-- Run `./init.sh` to verify state
-- Start with first core feature
-- Run /spec:work to continue
+Next: `/spec:work`
 ```
 
 ---
 
-## Phase 6: Summary
+## Mode: Add Requirements (.spec/ exists + file argument)
 
-Present to user:
+If SPEC_EXISTS and file path provided:
+
+### Step 2: Read Input
+
+Read provided document(s). Extract:
+
+- Core concept
+- Features (explicit and implied)
+- Constraints
+- Data entities
+
+### Step 3: Generate Requirements
+
+Organize by topic. For each:
+
+```yaml
+---
+id: REQ-{topic}-{name}
+version: 1
+priority: normal
+---
+# {Title}
+
+{Description from source}
+
+{Success criteria}
+```
+
+### Step 4: Confirm
+
+`AskUserQuestion` - "Generated {N} requirements. Proceed? [Write / Preview / Adjust]"
+
+### Step 5: Write
+
+```bash
+mkdir -p .spec/reqs
+echo "$(date +%H:%M) GEN {N} requirements" >> .spec/PROGRESS.md
+```
+
+Write each REQ-\*.md file.
 
 ```
-## Init Complete
+## Added
 
-**Project**: <name>
-**Features**: N total (M categories)
-**Files Created**:
-- app_spec.txt
-- feature_list.json
-- Makefile
-- init.sh
-- claude-progress.txt
-
-**Next Step**: Run `/spec:work` to start implementing features
+{N} requirements created from {source}.
+Next: `/spec:new task {name}` or `/spec:work`
 ```
 
 ---
 
-## CRITICAL INSTRUCTION
+## Mode: Already Initialized (no file argument)
 
-**Features are immutable after init.**
+If SPEC_EXISTS and no file:
 
-Removing or editing feature descriptions causes drift between spec and implementation, leading to untested functionality and broken contracts.
+```
+## Already Initialized
 
-Preserve all feature descriptions exactly. Only modify the `"passes"` field: `false` → `true`
+.spec/ exists with {N} tasks, {M} requirements.
 
-Request new init if additional features are needed.
+Use:
+- `/spec:work` - continue development
+- `/spec:status` - see progress
+- `/spec:init docs/spec.md` - add requirements from docs
+```
+
+---
+
+**Execute now.**

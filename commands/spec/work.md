@@ -1,301 +1,250 @@
 ---
 context: fork
+argument-hint: [TASK-xxx]
 allowed-tools:
   - Task
   - TaskOutput
   - Read
+  - Edit
+  - Write
   - Skill
   - AskUserQuestion
   - TodoWrite
-  - Bash(jq:*)
+  - Bash(rg:*)
+  - Bash(fd:*)
+  - Bash(wc:*)
+  - Bash(head:*)
+  - Bash(tail:*)
+  - Bash(date:*)
+  - Bash(basename:*)
   - Bash(git checkout:*)
   - Bash(git branch:*)
   - Bash(git status:*)
-  - Bash(git log:*)
-  - Bash(make:*)
   - Bash(git push:*)
+  - Bash(make:*)
   - Bash(gh pr:*)
-  - Bash(./init.sh:*)
-description: Continue spec-driven development session
+description: Main workflow - select, plan, implement, verify, done
 ---
 
 # Spec Work
 
-Continue spec-driven development. Main context = orchestration only.
+Full development workflow. One task per session.
 
-## Documentation Hierarchy
+## Usage
 
-| Document              | Focus      | Use                                      |
-| --------------------- | ---------- | ---------------------------------------- |
-| `/docs/*.md`          | WHY        | Business context, architecture decisions |
-| `app_spec.txt`        | WHY + WHAT | Requirements, success criteria           |
-| `feature_list.json`   | HOW        | Implementation steps to follow           |
-| `claude-progress.txt` | STATE      | Current session state                    |
-
-Agents read top-down (docs → spec → features) for full context.
-
-## Guardrails
-
-- **Agent-first**: All exploration/analysis in subagents
-- **Progress-first**: Always start with discovery
-- **Branch-per-feature**: Work in `feature/<name>` branch
-- **User-approval**: Explicit approval before implementation
-- **Passes-only**: Preserve feature descriptions exactly. Only modify `"passes"` field.
-- **Clean-exit**: End with committed code and updated progress
-
-## Context Management
-
-If approaching context limits, commit current work and update claude-progress.txt before context refresh. Claude discovers state from filesystem—clean progress files enable clean resumption.
+```
+/spec:work                      # auto-select next task by priority
+/spec:work TASK-xxx             # work on specific task
+```
 
 ---
 
-## Phase 1: Discovery (Parallel Background)
+## Step 0: Check State
 
-**Spawn BOTH agents in a single message for parallel execution:**
+```bash
+ls .spec/tasks 2>/dev/null || echo "NO_SPEC"
+```
+
+**If NO_SPEC**: "Run `/spec:init` first." Stop.
+
+**Check for interrupted session:**
+
+```bash
+cat .spec/PROGRESS.md 2>/dev/null | tail -5
+branch=$(git branch --show-current 2>/dev/null)
+```
+
+**If PROGRESS.md shows interrupted task** (SELECT without DONE) **and on task branch**: Resume from last step.
+
+---
+
+## Step 1: Select Task
+
+**If TASK-xxx argument provided**: Use that task.
+
+**Otherwise, find by priority:**
+
+```bash
+total=$(fd -e md . .spec/tasks/ | wc -l | tr -d ' ')
+done_count=$(rg -l '^status: done' .spec/tasks/ 2>/dev/null | wc -l | tr -d ' ')
+
+# Priority: critical → normal → low → any
+next=$(rg -l '^priority: critical' .spec/tasks/ 2>/dev/null | xargs rg -l '^status: todo' 2>/dev/null | head -1)
+[ -z "$next" ] && next=$(rg -l '^priority: normal' .spec/tasks/ 2>/dev/null | xargs rg -l '^status: todo' 2>/dev/null | head -1)
+[ -z "$next" ] && next=$(rg -l '^status: todo' .spec/tasks/ 2>/dev/null | head -1)
+```
+
+**If no todo tasks**: "All tasks complete! 🎉" Stop.
+
+**Load task content:**
+
+Read the task file. Extract `implements:` link.
+
+**Load linked requirement** (if any):
+
+```bash
+req_id=$(rg '^implements:' "$next" -o | cut -d' ' -f2)
+[ -n "$req_id" ] && fd "$req_id.md" .spec/reqs/
+```
+
+Read requirement file if found.
+
+**Log:**
+
+```bash
+task_id=$(basename "$next" .md)
+echo "$(date +%H:%M) SELECT $task_id" >> .spec/PROGRESS.md
+```
+
+**Present:**
 
 ```
-Task(
-  subagent_type="spec-discover",
-  run_in_background=true,
-  description="Discovery scan",
-  prompt="Full project discovery - return structured summary"
-)
+## Session
 
+**Progress**: {done_count}/{total}
+**Task**: {task_id}
+**Priority**: {priority}
+**Implements**: {req_id or "none"}
+
+---
+
+{task content}
+
+---
+
+### Linked Requirement
+{requirement content or "none"}
+```
+
+**STOP**: `AskUserQuestion` - "Work on this? [Yes / Different task]"
+
+---
+
+## Step 2: Plan
+
+**Spawn spec-planner:**
+
+```
 Task(
   subagent_type="spec-planner",
-  run_in_background=true,
-  description="Style learning",
-  prompt="Learn codebase patterns only (skip planning). Return style guide section."
+  prompt="Create implementation plan.
+  Task: {task content}
+  Requirement: {requirement content}
+  Learn codebase style, return actionable plan."
 )
+```
+
+**Log:**
+
+```bash
+echo "$(date +%H:%M) PLAN $task_id" >> .spec/PROGRESS.md
+```
+
+**Persist plan:** Append plan summary to task file under `## Plan` section.
+
+**Present plan. STOP**: `AskUserQuestion` - "Approve? [Yes / Modify]"
+
+---
+
+## Step 3: Implement
+
+**Create branch:**
+
+```bash
+git checkout -b "task/$task_id" 2>/dev/null || git checkout "task/$task_id"
+echo "$(date +%H:%M) BRANCH task/$task_id" >> .spec/PROGRESS.md
+```
+
+**TodoWrite** from plan steps.
+
+**Spawn engineer agent:**
+
+```
+Task(
+  subagent_type="{go|python|typescript}-engineer",
+  prompt="Implement: {task description}
+  Plan: {plan}
+  Return proposals only."
+)
+```
+
+**Apply proposals** with user approval.
+
+**Log:**
+
+```bash
+echo "$(date +%H:%M) IMPL $task_id" >> .spec/PROGRESS.md
 ```
 
 ---
 
-## Phase 1.5: Verify Current State
-
-**Before new work, verify existing implementation works:**
+## Step 4: Verify (Max 3 Attempts)
 
 ```bash
 make build && make test && make lint
 ```
 
-If failures exist, fix them before starting the next feature. A broken baseline leads to compounding issues.
+**If pass**: Continue to Step 5.
 
----
-
-## Phase 2: Collect & Present
-
-**Collect results:**
-
-```
-TaskOutput(task_id=<discover_id>)
-TaskOutput(task_id=<planner_id>)
-```
-
-**Present to user** (10 lines max):
-
-```
-## Session Start
-
-**Project**: <name>
-**Progress**: X/Y passing (Z%)
-**Next Feature**: <description>
-
-Ready to plan implementation?
-```
-
-**STOP**: Use `AskUserQuestion` - "Proceed with planning for this feature?"
-
----
-
-## Phase 3: Planning
-
-**Spawn `spec-planner` agent with feature context:**
-
-```
-Task(
-  subagent_type="spec-planner",
-  prompt="Create implementation plan for feature: <description>. Steps: <steps>. App context: <from discovery>. Style guide: <from style learning>. Return actionable plan with file changes."
-)
-```
-
-**Spawn language-appropriate reviewer in parallel** (based on detected language):
-
-- Go: `go-idioms`
-- Python: `py-idioms`
-- TypeScript: `ts-docs`
-
-```
-Task(
-  subagent_type="<language>-idioms",
-  run_in_background=true,
-  prompt="Review this plan for idiomatic code: <plan summary>"
-)
-```
-
-**Present plan summary to user** (bullet points only).
-
-**STOP**: Use `AskUserQuestion` - "Approve this plan? [Yes / Modify / Different approach]"
-
----
-
-## Phase 4: Implementation
-
-1. **Create feature branch**: `git checkout -b feature/<feature-name>`
-
-2. **Create TodoWrite** from approved plan
-
-3. **Implementation scope guardrail:**
-   Implement exactly what the feature steps require. No additional abstractions, no future-proofing, no "while we're here" changes. The right amount of complexity is the minimum needed for this feature.
-
-4. **Get implementation proposals from engineer agent:**
-   - Go: `go-engineer`
-   - Python: `python-engineer`
-   - TypeScript: `typescript-engineer`
-
-```
-Task(
-  subagent_type="<language>-engineer",
-  prompt="Propose implementation for feature: <description>. Plan: <approved plan>. Style guide: <from Phase 1>. Implement exactly what the feature requires—no additional abstractions. Return structured proposals."
-)
-```
-
-5. **Apply proposals in main context:**
-   - Engineer returns structured proposals (no edits made)
-   - Present each proposal to user for review
-   - Apply using Edit/Write tools (user sees approval prompts)
-   - User can approve, modify, or reject each change
-
-**Why this workflow?**
-
-- Engineer agents propose, main context applies
-- User reviews each edit before it's applied
-- User can modify proposals before applying
-- Full visibility and control over changes
-
----
-
-## Phase 5: Verification
-
-**Spawn `spec-verifier` agent:**
-
-```
-Task(
-  subagent_type="spec-verifier",
-  prompt="Verify feature: <description>\nSteps: <steps>"
-)
-```
-
-**For UI features, add Playwright verification:**
-
-```
-Skill(skill="test:e2e", args="verify <feature description>")
-```
-
-If verdict is YES:
-
-- Update `feature_list.json` with `"passes": true`
-- Proceed to commit
-
-If verdict is NO:
-
-- Present missing items to user
-- Fix issues before proceeding
-
----
-
-## Phase 5.5: Review/Fix Loop
-
-**Run multi-agent code review:**
-
-```
-Skill(skill="code:review", args="deep")
-```
-
-**If CRITICAL or IMPORTANT issues found:**
-
-```
-Skill(skill="code:fix")
-```
-
-**Re-verify** with `spec-verifier` after fixes.
-
-**Loop until:**
-
-- Zero CRITICAL issues
-- Build/test/lint all pass
-- spec-verifier returns YES
-
----
-
-## Phase 6: Commit & PR
-
-**STOP**: Use `AskUserQuestion` before committing.
-
-**Step 1: Commit changes**
-
-```
-Skill(skill="code:commit")
-```
-
-**Step 2: Sync with remote master**
+**If fail (attempt < 3)**:
 
 ```bash
-git fetch origin master
-git log --oneline HEAD..origin/master  # Check what changed
+echo "$(date +%H:%M) VERIFY fail $task_id attempt N" >> .spec/PROGRESS.md
 ```
 
-**Decision logic:**
+Fix issues and re-verify.
 
-- If only minor changes (badges, docs, CI config): **rebase**
-  ```bash
-  git rebase origin/master
-  ```
-- If significant changes or conflicts likely: **merge**
-  ```bash
-  git merge origin/master -m "Merge master into feature/<name>"
-  ```
-- If conflicts occur: resolve, then re-run verification
-
-**Step 3: Push and create PR**
+**If fail (attempt = 3)**:
 
 ```bash
-git push -u origin feature/<feature-name>
+echo "$(date +%H:%M) VERIFY blocked $task_id" >> .spec/PROGRESS.md
 ```
+
+**STOP**: `AskUserQuestion` - "Verify failed 3x. [Help fix / Skip verify / Stop]"
+
+---
+
+## Step 5: Complete
+
+**Mark done:**
+
+```
+Edit: status: todo → status: done
+```
+
+**Log:**
 
 ```bash
-gh pr create --title "feat: <feature description>" --body "$(cat <<'EOF'
-## Summary
-<1-3 bullet points from implementation>
-
-## Verification
-- [x] Build passes
-- [x] Tests pass
-- [x] Lint clean
-- [x] Feature verified against spec
-
-## Feature Steps
-<steps from feature_list.json>
-EOF
-)"
+echo "$(date +%H:%M) DONE $task_id" >> .spec/PROGRESS.md
 ```
 
-**Step 4: Update progress**
-
-Update `claude-progress.txt`:
-
-- Feature completed with PR link
-- Progress: X/Y → A/B passing
-- Next feature recommendation
-
-**Step 5: Present summary**
+**Commit:**
 
 ```
-## Session Complete
+Skill(skill="committing-code")
+```
 
-**Feature**: <name> - DONE
-**PR**: <pr_url>
-**Progress**: X/Y → A/B passing (Z%)
+**Push + PR:**
 
-**Next Session**: <next failing feature>
+```bash
+git push -u origin "task/$task_id"
+gh pr create --title "task: {description}" --body "Implements $task_id"
+```
+
+**Cleanup PROGRESS.md** - keep last 5 entries:
+
+```bash
+tail -5 .spec/PROGRESS.md > /tmp/progress.tmp && mv /tmp/progress.tmp .spec/PROGRESS.md
+```
+
+**Summary:**
+
+```
+## Done
+
+**Task**: {task_id}
+**PR**: {url}
+**Progress**: {done_count}/{total} → {new}
+
+Next: `/spec:work`
 ```
