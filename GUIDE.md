@@ -1,20 +1,6 @@
 # Claude Code Complete Guide
 
-Comprehensive reference for commands, agents, skills, hooks, and scripts.
-
----
-
-## Table of Contents
-
-- [Architecture Overview](#architecture-overview)
-- [Commands](#commands)
-- [Agents](#agents)
-- [Skills](#skills)
-- [Hooks](#hooks)
-- [Scripts](#scripts)
-- [MCP Integration](#mcp-integration)
-- [Spec-Driven Development](#spec-driven-development)
-- [Workflows](#workflows)
+Comprehensive reference for commands, agents, skills, hooks.
 
 ---
 
@@ -25,136 +11,51 @@ Comprehensive reference for commands, agents, skills, hooks, and scripts.
 ```mermaid
 flowchart LR
     User[User] --> Command[/command]
-    Command --> Skill{Skill<br/>WHEN}
-    Skill --> Agent[Agent<br/>HOW]
+    Command --> Skill{Skill}
+    Skill --> Agent[Agent]
     Agent --> Tool[Tool/CLI]
     Tool --> Summary[Summary]
     Summary --> User
 ```
 
-### Hook System
-
-```mermaid
-flowchart LR
-    subgraph Events
-        SS[SessionStart]
-        UPS[UserPromptSubmit]
-        PTU[PreToolUse]
-        POTU[PostToolUse]
-    end
-
-    subgraph Hooks
-        SSS[session-start]
-        SE[skill-enforcer]
-        FP[file-protector]
-        SL[smart-lint]
-    end
-
-    SS --> SSS
-    UPS --> SE
-    PTU --> FP
-    POTU --> SL
-```
-
----
-
-## Master-Clone Pattern
-
-**Key insight from Anthropic research**: Don't create highly specialized "expert" subagents. They're brittle and often underperform.
-
-### The Pattern
-
-Instead of creating custom specialists, **clone the main agent with a focused prompt**:
-
-```
-Main Agent (full capabilities)
-    ├── Clone + "Review this Go code for security issues"
-    ├── Clone + "Implement this feature following existing patterns"
-    └── Clone + "Research best practices for X"
-```
-
-### Why It Works
-
-1. **Same capabilities** - Clones inherit all tools, skills, and context
-2. **Focused attention** - Narrow prompt = focused output
-3. **No brittleness** - No custom logic that can break
-4. **Parallel execution** - Multiple clones work simultaneously
-
-### Implementation
-
-Your engineer agents (`go-engineer`, `python-engineer`, `typescript-engineer`) follow this pattern:
-
-```yaml
-model: opus # Same powerful model
-tools: [Read, Bash, Grep, Glob, ...] # Analysis tools (NO Edit/Write)
-skills: [writing-go, looking-up-docs, ...] # Skill inheritance
----
-You are an Expert Go Engineer... # Focused prompt
-
-## Output Mode: Propose Only
-Return structured proposals for main context to apply.
-```
-
-They analyze and propose changes but **do not apply edits directly**. This ensures:
-
-- User approval for each edit
-- No autonomous changes bypassing the approval loop
-- Clean separation: subagents explore, main context implements
-
-### When to Use Subagents
-
-| Scenario               | Approach                         |
-| ---------------------- | -------------------------------- |
-| Deep code analysis     | Clone with analysis prompt       |
-| Parallel exploration   | Multiple clones, different areas |
-| Feature implementation | Engineer agent (focused clone)   |
-| Research task          | Researcher agent (focused clone) |
-| Simple lookup          | Direct MCP tool call (no agent)  |
-
-### Anti-Patterns to Avoid
-
-1. **Over-specialized agents** - Agent that only does one narrow thing
-2. **Custom tool restrictions** - Limiting tools "for safety" often backfires
-3. **Chained agents** - Agent A calls Agent B calls Agent C (fragile)
-4. **Stateful agents** - Agents that need to remember across invocations
-
----
-
-## Skill vs Agent vs Command
-
-| Component   | When to Use                  | Context Impact            |
-| ----------- | ---------------------------- | ------------------------- |
-| **Skill**   | Inject knowledge/patterns    | Loaded on-demand, minimal |
-| **Agent**   | Parallel work, deep analysis | Separate context window   |
-| **Command** | User-invoked workflows       | Orchestrates agents/tools |
-
 ---
 
 ## Commands
 
-### Spec-Driven (`/spec:*`)
+### Spec-Driven (`/spec:*`) - 5 Commands
 
-| Command        | Description                      |
-| -------------- | -------------------------------- |
-| `/spec:init`   | Initialize feature specification |
-| `/spec:gen`    | Generate from specification      |
-| `/spec:work`   | Continue spec-driven work        |
-| `/spec:status` | Check implementation progress    |
-| `/spec:sync`   | Sync feature list from code      |
-| `/spec:align`  | Align spec with code (bottom-up) |
-| `/spec:audit`  | Audit spec abstraction levels    |
+| Command        | Verb   | Purpose                                  |
+| -------------- | ------ | ---------------------------------------- |
+| `/spec:init`   | START  | Initialize project or add reqs from docs |
+| `/spec:work`   | DO     | Main workflow - select, plan, implement  |
+| `/spec:status` | SEE    | Progress overview with optional flags    |
+| `/spec:new`    | CREATE | Create new task or requirement           |
+| `/spec:done`   | FINISH | Mark complete with optional discovery    |
 
-### Testing (`/test:*`)
+#### Status Flags
 
-| Command         | Description                 |
-| --------------- | --------------------------- |
-| `/test:e2e`     | E2E testing with Playwright |
-| `/test:improve` | Improve test quality        |
+```bash
+/spec:status                    # overview
+/spec:status TASK-xxx           # show specific task + linked req
+/spec:status --list             # all tasks
+/spec:status --todo             # pending only
+/spec:status --check            # quality audit
+```
+
+#### Done Flags
+
+```bash
+/spec:done TASK-xxx             # mark specific task
+/spec:done --discover           # find potentially done tasks
+/spec:done --verify TASK-xxx    # run tests before marking
+```
 
 ### Other Commands
 
 | Command         | Description                       |
 | --------------- | --------------------------------- |
+| `/test:e2e`     | E2E testing with Playwright       |
+| `/test:improve` | Improve test quality              |
 | `/agent:resume` | Resume a previously spawned agent |
 | `/ai:consult`   | Independent review from Claude    |
 | `/learn`        | Extract session learnings         |
@@ -162,48 +63,6 @@ They analyze and propose changes but **do not apply edits directly**. This ensur
 ---
 
 ## Agents
-
-### Agent Hierarchy
-
-```mermaid
-flowchart TB
-    subgraph Engineers[Language Engineers - opus]
-        GE[go-engineer]
-        PE[python-engineer]
-        TE[typescript-engineer]
-    end
-
-    subgraph GoSpec[Go Specialists]
-        GQ[go-qa]
-        GT[go-tests]
-        GI[go-impl]
-        GID[go-idioms]
-        GD[go-docs]
-        GS[go-simplify]
-    end
-
-    subgraph PySpec[Python Specialists]
-        PQ[py-qa]
-        PT[py-tests]
-        PI[py-impl]
-        PID[py-idioms]
-        PD[py-docs]
-        PS[py-simplify]
-    end
-
-    subgraph TSSpec[TypeScript Specialists]
-        TQ[ts-qa]
-        TT[ts-tests]
-        TI[ts-impl]
-        TID[ts-idioms]
-        TD[ts-docs]
-        TS[ts-simplify]
-    end
-
-    GE -.-> GoSpec
-    PE -.-> PySpec
-    TE -.-> TSSpec
-```
 
 ### Language Engineers
 
@@ -215,46 +74,16 @@ flowchart TB
 
 ### Language Specialists (Deep Review)
 
-**Go Specialists:**
+**Go**: `go-qa`, `go-tests`, `go-impl`, `go-idioms`, `go-docs`, `go-simplify`
+**Python**: `py-qa`, `py-tests`, `py-impl`, `py-idioms`, `py-docs`, `py-simplify`
+**TypeScript**: `ts-qa`, `ts-tests`, `ts-impl`, `ts-idioms`, `ts-docs`, `ts-simplify`
+**Web**: `web-qa`, `web-tests`, `web-impl`, `web-idioms`, `web-docs`, `web-simplify`
 
-| Agent         | Focus                                |
-| ------------- | ------------------------------------ |
-| `go-qa`       | Logic, security (OWASP), performance |
-| `go-tests`    | Test quality, table-driven tests     |
-| `go-impl`     | Requirements, DI, edge cases         |
-| `go-idioms`   | Patterns, error handling, stdlib     |
-| `go-docs`     | Documentation, comments              |
-| `go-simplify` | Over-abstraction, dead code          |
+### Spec-Driven Agent
 
-**Python Specialists:**
-
-| Agent         | Focus                        |
-| ------------- | ---------------------------- |
-| `py-qa`       | Logic, security, performance |
-| `py-tests`    | pytest, fixtures, coverage   |
-| `py-impl`     | Requirements, DI, edge cases |
-| `py-idioms`   | PEP8, type hints, Protocols  |
-| `py-docs`     | Docstrings, README           |
-| `py-simplify` | Over-abstraction, dead code  |
-
-**TypeScript Specialists:**
-
-| Agent         | Focus                                |
-| ------------- | ------------------------------------ |
-| `ts-qa`       | Logic, security (OWASP), performance |
-| `ts-tests`    | Vitest, React Testing Library        |
-| `ts-impl`     | Requirements, DI, edge cases         |
-| `ts-idioms`   | Strict types, modern patterns        |
-| `ts-docs`     | JSDoc, TSDoc, comments               |
-| `ts-simplify` | Over-abstraction, dead code          |
-
-### Spec-Driven Agents
-
-| Agent           | Focus                                |
-| --------------- | ------------------------------------ |
-| `spec-discover` | Project discovery, progress tracking |
-| `spec-planner`  | Implementation planning from specs   |
-| `spec-verifier` | Feature verification against specs   |
+| Agent          | Model  | Focus                        |
+| -------------- | ------ | ---------------------------- |
+| `spec-planner` | sonnet | Creates implementation plans |
 
 ### Infrastructure & Utility
 
@@ -262,7 +91,6 @@ flowchart TB
 | ----------------------- | ------ | ------------------------------------ |
 | `infra-engineer`        | opus   | K8s, Terraform, Helm, GitHub Actions |
 | `docs-keeper`           | sonnet | Documentation maintenance            |
-| `pdf-parser`            | haiku  | PDF extraction and analysis          |
 | `playwright-tester`     | opus   | E2E browser testing                  |
 | `perplexity-researcher` | haiku  | Web research                         |
 
@@ -270,83 +98,34 @@ flowchart TB
 
 ## Skills
 
-Skills provide domain knowledge and can be invoked via natural language or `/skill-name`.
+### User-Invocable
 
-```mermaid
-flowchart LR
-    Prompt[User Prompt] --> Match{Keyword Match}
-    Match --> |user-invocable| Manual["/skill-name"]
-    Match --> |auto-activated| Auto[Skill Loaded]
-    Manual --> Skill[Skill Activated]
-    Auto --> Skill
-    Skill --> Result[Summary]
-```
+| Skill                 | Triggers On                        |
+| --------------------- | ---------------------------------- |
+| `brainstorming-ideas` | "brainstorm", "design", "explore"  |
+| `fixing-code`         | "fix", "fix issues", "fix errors"  |
+| `reviewing-code`      | "review", "review code"            |
+| `committing-code`     | "commit", "save changes"           |
+| `documenting-code`    | "update docs", "document"          |
+| `checking-deploy`     | "deploy check", "validate k8s"     |
+| `looking-up-docs`     | Library documentation via Context7 |
+| `researching-web`     | "research", "compare X vs Y"       |
 
-### User-Invocable Skills
+### Auto-Activated
 
-Visible in `/` menu, invoke via natural language or `/skill-name`:
-
-| Skill                 | Triggers On                                     |
-| --------------------- | ----------------------------------------------- |
-| `brainstorming-ideas` | "brainstorm", "design feature", "think through" |
-| `fixing-code`         | "fix", "fix issues", "fix errors"               |
-| `reviewing-code`      | "review", "review code", "check this"           |
-| `committing-code`     | "commit", "save changes", "git commit"          |
-| `documenting-code`    | "update docs", "document", "write docs"         |
-| `checking-deploy`     | "deploy check", "validate k8s"                  |
-| `looking-up-docs`     | Library documentation via Context7              |
-| `researching-web`     | "research", "compare X vs Y"                    |
-| `using-git-worktrees` | Parallel development with worktrees             |
-
-#### `reviewing-code` Modes
-
-```bash
-review code              # Language engineers only
-review code deep         # 6-12 specialized sub-agents
-```
-
-### Auto-Activated Skills
-
-Hidden from `/` menu, triggered automatically on relevant prompts:
-
-| Skill                | Triggers When              |
-| -------------------- | -------------------------- |
-| `writing-go`         | Go code development        |
-| `writing-python`     | Python code development    |
-| `writing-typescript` | TypeScript code            |
-| `writing-web`        | HTML/CSS/JS/HTMX           |
-| `managing-infra`     | K8s, Terraform, CI/CD      |
-| `using-cloud-cli`    | GCP, AWS CLI commands      |
-| `using-modern-cli`   | rg, fd, bat, sd, eza, dust |
-| `refactoring-code`   | Batch refactoring          |
-| `searching-code`     | Codebase exploration       |
-| `testing-e2e`        | Playwright testing         |
+| Skill                | Triggers When         |
+| -------------------- | --------------------- |
+| `writing-go`         | Go code development   |
+| `writing-python`     | Python code           |
+| `writing-typescript` | TypeScript code       |
+| `writing-web`        | HTML/CSS/JS/HTMX      |
+| `managing-infra`     | K8s, Terraform, CI/CD |
+| `refactoring-code`   | Batch refactoring     |
+| `searching-code`     | Codebase exploration  |
 
 ---
 
 ## Hooks
-
-### Hook Flow
-
-```mermaid
-sequenceDiagram
-    participant U as User
-    participant C as Claude
-    participant H as Hooks
-    participant T as Tools
-
-    U->>C: Prompt
-    C->>H: UserPromptSubmit
-    H-->>C: skill suggestions
-    C->>T: Tool call
-    H->>H: PreToolUse check
-    T->>T: Execute
-    T->>H: PostToolUse
-    H-->>C: lint results
-    C->>U: Response
-```
-
-### Active Hooks
 
 | Hook                | Event            | Purpose                   |
 | ------------------- | ---------------- | ------------------------- |
@@ -354,234 +133,57 @@ sequenceDiagram
 | `skill-enforcer.sh` | UserPromptSubmit | Suggests relevant skills  |
 | `file-protector.sh` | PreToolUse       | Protects sensitive files  |
 | `smart-lint.sh`     | PostToolUse      | Auto-lints modified files |
-| `notify.sh`         | Notification     | Desktop notifications     |
-
-### Configuration
-
-Hooks read from `~/.claude/hook-config.json` for easy customization:
-
-```json
-{
-  "fileProtector": { "protectedPatterns": [...] },
-  "smartLint": { "excludePatterns": [...] },
-  "performanceMonitor": { "contextWarningThreshold": 0.10 }
-}
-```
-
-### smart-lint.sh
-
-Auto-detects and lints:
-
-| Language      | Tools                |
-| ------------- | -------------------- |
-| Go            | golangci-lint, gofmt |
-| TypeScript/JS | prettier, eslint     |
-| Python        | ruff, black, mypy    |
-| YAML          | yamllint             |
-| Shell         | shellcheck           |
-| K8s           | kubeval, actionlint  |
-
----
-
-## Scripts
-
-### copilot-proxy.sh
-
-Rate limit fallback using GitHub Copilot API.
-
-```bash
-~/.claude/scripts/copilot-proxy.sh           # Start
-~/.claude/scripts/copilot-proxy.sh --status  # Check
-~/.claude/scripts/copilot-proxy.sh --stop    # Stop
-```
-
----
-
-## MCP Integration
-
-| Server                | Purpose                   |
-| --------------------- | ------------------------- |
-| `sequential-thinking` | Multi-step reasoning      |
-| `context7`            | Library documentation     |
-| `perplexity-ask`      | Web research              |
-| `playwright`          | E2E browser testing       |
-| `morphllm`            | Fast editing, code search |
 
 ---
 
 ## Spec-Driven Development
 
-A structured approach for building features from specifications with full traceability.
+### Structure
 
-### Documentation Hierarchy
-
-```mermaid
-flowchart TB
-    subgraph WHY[WHY - Business Context]
-        DOCS["/docs/*.md<br/>Research, Architecture, Guidelines"]
-    end
-
-    subgraph WHAT[WHY + WHAT - Requirements]
-        SPEC["app_spec.txt<br/>Technical/Functional Requirements"]
-    end
-
-    subgraph HOW[HOW - Implementation]
-        FEAT["feature_list.json<br/>Implementation Tasks"]
-    end
-
-    subgraph STATE[STATE - Progress]
-        PROG["claude-progress.txt<br/>Session State"]
-    end
-
-    DOCS --> SPEC
-    SPEC --> FEAT
-    FEAT --> PROG
+```
+.spec/
+├── PROGRESS.md     # Session state (auto-managed, last 5 entries)
+├── tasks/          # TASK-*.md (HOW - implementation)
+└── reqs/           # REQ-*.md (WHAT - requirements)
 ```
 
-| Document              | Focus      | Contains                                      |
-| --------------------- | ---------- | --------------------------------------------- |
-| `/docs/*.md`          | WHY        | Research, architecture, guidelines, decisions |
-| `app_spec.txt`        | WHY + WHAT | Technical/functional requirements             |
-| `feature_list.json`   | HOW        | Implementation tasks (references app_spec)    |
-| `claude-progress.txt` | STATE      | Current session progress                      |
+**Task Status:** `todo` or `done` (delete if obsolete)
 
-**Key principle:** Read top-down for context. Requirements (WHY/WHAT) go in `app_spec.txt`, implementation details (HOW) go in `feature_list.json`.
+### Abstraction Levels
+
+| Location       | Level | Should Contain   | Should NOT Contain |
+| -------------- | ----- | ---------------- | ------------------ |
+| `.spec/reqs/`  | WHAT  | Success criteria | File paths, code   |
+| `.spec/tasks/` | HOW   | Implementation   | Business rationale |
 
 ### Workflow
 
 ```mermaid
 flowchart LR
-    subgraph Init["/spec:init"]
-        I1[Discovery] --> I2[Docs Setup]
-        I2 --> I3[App Spec]
-        I3 --> I4[Feature List]
-    end
-
     subgraph Work["/spec:work"]
-        W1[Discover] --> W2[Plan]
+        W1[Select] --> W2[Plan]
         W2 --> W3[Implement]
         W3 --> W4[Verify]
-        W4 --> W5[Commit]
+        W4 --> W5[Done]
     end
 
-    Init --> Work
-    Work --> |next feature| Work
+    Init["/spec:init"] --> Work
+    Work --> |next| Work
 ```
 
-### Commands
+### PROGRESS.md
 
-| Command        | Purpose                                                      |
-| -------------- | ------------------------------------------------------------ |
-| `/spec:init`   | Initialize project with docs, spec, and feature list         |
-| `/spec:gen`    | Generate `app_spec.txt` from markdown documents              |
-| `/spec:work`   | Main development loop (discover → plan → implement → verify) |
-| `/spec:status` | Quick progress check                                         |
-| `/spec:sync`   | Reconcile tracking files with actual code state (top-down)   |
-| `/spec:align`  | Align spec with code implementation (bottom-up)              |
-| `/spec:audit`  | Audit spec documents for abstraction level violations        |
+Auto-managed session state:
 
-### Agents
-
-| Agent           | Role                                                   |
-| --------------- | ------------------------------------------------------ |
-| `spec-discover` | Reads all docs top-down, returns structured summary    |
-| `spec-planner`  | Creates implementation plan from architectural context |
-| `spec-verifier` | Verifies feature against spec steps                    |
-| `spec-aligner`  | Discovers code features, proposes spec updates         |
-| `spec-auditor`  | Classifies content by abstraction level (WHY/WHAT/HOW) |
-
-### Typical Session
-
-```bash
-# Session 1: Initialize
-/spec:init
-# → Creates docs/, app_spec.txt, feature_list.json
-
-# Session 2+: Implement features
-/spec:work
-# → Discovery → Planning → Implementation → Verification → Commit
-
-# Check progress anytime
-/spec:status
-
-# After interrupted session
-/spec:sync
+```
+14:32 SELECT TASK-auth-login
+14:35 PLAN TASK-auth-login
+14:36 BRANCH task/TASK-auth-login
+14:52 IMPL TASK-auth-login
+14:55 DONE TASK-auth-login
 ```
 
-### Recovery Workflow (after ad-hoc development)
-
-```bash
-# 1. Discover code not in spec
-/spec:align
-# → Adds missing features, marks orphans as deprecated
-
-# 2. Check abstraction levels
-/spec:audit
-# → Reports WHY/WHAT/HOW misplacements
-
-# 3. Manual fixes based on audit report
-
-# 4. Verify implementation status
-/spec:sync
-
-# 5. Resume normal development
-/spec:work
-```
-
-### Feature List Format
-
-```json
-[
-  {
-    "category": "core",
-    "description": "User can log in with email and password",
-    "steps": [
-      "Create login form with email/password fields",
-      "Validate credentials against database",
-      "Return JWT token on success"
-    ],
-    "passes": false
-  }
-]
-```
-
-**Rules:**
-
-- Feature descriptions are immutable after init
-- Only modify `"passes"` field: `false` → `true`
-- Never mark passing until build/test/lint all pass
-
----
-
-## Workflows
-
-### Feature Development
-
-```mermaid
-flowchart LR
-    A[Design] --> B[Implement] --> C[Review] --> D[Commit]
-
-    C -.- C1[review code]
-    D -.- D1[commit changes]
-```
-
-```bash
-# implement...
-review code deep    # or /reviewing-code deep
-commit changes      # or /committing-code
-```
-
-### Quick Quality
-
-```bash
-fix issues          # or /fixing-code
-```
-
-### Pre-deployment
-
-```bash
-deploy check        # or /checking-deploy
-```
+Kept lean: auto-truncates to last 5 entries.
 
 ---
 

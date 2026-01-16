@@ -15,40 +15,30 @@ research "topic"    # or /researching-web
 
 ---
 
-## Skills (User-Invocable)
+## Spec-Driven Development (5 Commands)
 
-Invoke via natural language or `/skill-name`:
-
-| Skill                 | Triggers On                                     |
-| --------------------- | ----------------------------------------------- |
-| `brainstorming-ideas` | "brainstorm", "design feature", "think through" |
-| `fixing-code`         | "fix", "fix issues", "fix errors"               |
-| `reviewing-code`      | "review", "review code", "check this"           |
-| `committing-code`     | "commit", "save changes", "git commit"          |
-| `documenting-code`    | "update docs", "document", "write docs"         |
-| `checking-deploy`     | "deploy check", "validate k8s"                  |
-| `looking-up-docs`     | Library documentation via Context7              |
-| `researching-web`     | "research", "compare X vs Y"                    |
-| `using-git-worktrees` | Parallel development with worktrees             |
+| Command        | Verb   | Purpose                                 |
+| -------------- | ------ | --------------------------------------- |
+| `/spec:init`   | START  | Initialize project or add reqs          |
+| `/spec:work`   | DO     | Main workflow - select, plan, implement |
+| `/spec:status` | SEE    | Progress (args: list, todo, check)      |
+| `/spec:new`    | CREATE | Create task or requirement              |
+| `/spec:done`   | FINISH | Mark complete (args: discover, verify)  |
 
 ---
 
-## Commands
+## Skills (User-Invocable)
 
-| Command         | Description                       |
-| --------------- | --------------------------------- |
-| `/spec:init`    | Initialize spec-driven project    |
-| `/spec:gen`     | Generate app_spec from markdown   |
-| `/spec:work`    | Continue spec-driven development  |
-| `/spec:status`  | Quick progress check              |
-| `/spec:sync`    | Sync feature_list from code       |
-| `/spec:align`   | Align spec with code (bottom-up)  |
-| `/spec:audit`   | Audit spec abstraction levels     |
-| `/test:e2e`     | E2E testing with Playwright       |
-| `/test:improve` | Improve test quality              |
-| `/agent:resume` | Resume a previously spawned agent |
-| `/ai:consult`   | Independent review from Claude    |
-| `/learn`        | Extract learnings → CLAUDE.md     |
+| Skill                 | Triggers On                  |
+| --------------------- | ---------------------------- |
+| `brainstorming-ideas` | "brainstorm", "design"       |
+| `fixing-code`         | "fix", "fix issues"          |
+| `reviewing-code`      | "review", "review code"      |
+| `committing-code`     | "commit", "save changes"     |
+| `documenting-code`    | "update docs", "document"    |
+| `checking-deploy`     | "deploy check", "validate"   |
+| `looking-up-docs`     | Library docs via Context7    |
+| `researching-web`     | "research", "compare X vs Y" |
 
 ---
 
@@ -56,12 +46,12 @@ Invoke via natural language or `/skill-name`:
 
 ### Engineers
 
-| Agent                 | Model | Focus                        |
-| --------------------- | ----- | ---------------------------- |
-| `go-engineer`         | opus  | Go development, stdlib-first |
-| `python-engineer`     | opus  | Python, type hints           |
-| `typescript-engineer` | opus  | TypeScript/React             |
-| `infra-engineer`      | opus  | K8s, Terraform, CI/CD        |
+| Agent                 | Model | Focus              |
+| --------------------- | ----- | ------------------ |
+| `go-engineer`         | opus  | Go, stdlib-first   |
+| `python-engineer`     | opus  | Python, type hints |
+| `typescript-engineer` | opus  | TypeScript/React   |
+| `infra-engineer`      | opus  | K8s, Terraform     |
 
 ### Specialists (deep reviews)
 
@@ -74,41 +64,14 @@ Invoke via natural language or `/skill-name`:
 | `go-docs`     | `py-docs`     | `ts-docs`     |
 | `go-simplify` | `py-simplify` | `ts-simplify` |
 
-### Spec-Driven
-
-| Agent           | Focus                       |
-| --------------- | --------------------------- |
-| `spec-discover` | Project discovery, progress |
-| `spec-planner`  | Implementation planning     |
-| `spec-verifier` | Feature verification        |
-
-### Utility
+### Spec + Utility
 
 | Agent                   | Focus                     |
 | ----------------------- | ------------------------- |
+| `spec-planner`          | Implementation planning   |
 | `docs-keeper`           | Documentation maintenance |
-| `pdf-parser`            | PDF extraction            |
 | `playwright-tester`     | E2E browser testing       |
 | `perplexity-researcher` | Web research              |
-
----
-
-## Skills (Auto-Activated)
-
-Hidden from `/` menu, triggered automatically:
-
-| Skill                | Triggers On                |
-| -------------------- | -------------------------- |
-| `writing-go`         | Go code development        |
-| `writing-python`     | Python code development    |
-| `writing-typescript` | TypeScript code            |
-| `writing-web`        | HTML/CSS/JS/HTMX           |
-| `managing-infra`     | K8s, Terraform, CI/CD      |
-| `using-cloud-cli`    | GCP/AWS CLI commands       |
-| `using-modern-cli`   | rg, fd, bat, sd, eza, dust |
-| `refactoring-code`   | Batch refactoring          |
-| `searching-code`     | Codebase exploration       |
-| `testing-e2e`        | Playwright testing         |
 
 ---
 

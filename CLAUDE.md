@@ -5,57 +5,69 @@ My guidance helps when you're stuck—ask for it.
 
 ## Spec-Driven Development
 
-When working in spec-driven projects (detected by `feature_list.json`):
+### Distributed Spec System (.spec/)
 
-### Documentation Hierarchy
+Detected by `.spec/` folder. Markdown + YAML frontmatter, one file per task/requirement.
 
-Spec-driven projects maintain layered documentation:
+**Structure:**
 
-| Document              | Focus      | Contains                                      |
-| --------------------- | ---------- | --------------------------------------------- |
-| `/docs/*.md`          | WHY        | Research, architecture, guidelines, decisions |
-| `app_spec.txt`        | WHY + WHAT | Technical/functional requirements             |
-| `feature_list.json`   | HOW        | Implementation tasks (references app_spec)    |
-| `claude-progress.txt` | STATE      | Current session progress                      |
+```
+.spec/
+├── PROGRESS.md     # Session state (auto-managed, last 5 entries)
+├── tasks/          # TASK-*.md (HOW - implementation)
+└── reqs/           # REQ-*.md (WHAT - requirements)
+```
 
-**Key principle:** Read top-down for context. `app_spec.txt` captures requirements (WHY/WHAT), while `feature_list.json` details implementation (HOW).
+**Task Status:** `todo` or `done` (delete if obsolete)
 
-### Session Start (automatic via SessionStart hook)
+**Abstraction levels:**
+| Location | Level | Contains |
+|----------|-------|----------|
+| `.spec/reqs/` | WHAT | Success criteria, constraints |
+| `.spec/tasks/` | HOW | Implementation steps, acceptance criteria |
 
-- Git branch and last commit shown
-- Feature progress displayed (X/Y passing, Z%)
-- Recent progress notes highlighted
-- Uncommitted changes warned
+**Commands (5 total):**
+| Command | Purpose |
+|---------|---------|
+| `/spec:init` | Initialize project (or add reqs from docs) |
+| `/spec:work` | Main workflow - select, plan, implement, verify |
+| `/spec:status` | Progress overview (+ `--list`, `--check` flags) |
+| `/spec:new` | Create new task or requirement |
+| `/spec:done` | Mark complete (+ `--discover` finds done tasks) |
 
-### One Feature Per Session
+**Quick queries:**
 
-Focus on ONE failing feature. Complete it fully before starting another.
-Use `jq '[.[] | select(.passes==false)][0]' feature_list.json` to find next.
+```bash
+# Progress
+rg -l '^status: done' .spec/tasks/ | wc -l
 
-### Feature Completion Protocol
+# Next todo
+rg -l '^status: todo' .spec/tasks/ | head -1
+```
 
-NEVER mark `"passes": true` until ALL pass:
+**Agent:**
 
-1. **Build**: `make build` or equivalent - compiles clean
+- `spec-planner` - Creates implementation plans with style learning
+
+**One Task Per Session:** Focus on ONE task. Complete it fully before starting another.
+
+### Task Completion Protocol
+
+NEVER mark done until ALL pass:
+
+1. **Build**: `make build` - compiles clean
 2. **Test**: `make test` - ALL tests pass
 3. **Lint**: `make lint` - ZERO issues
-4. **Verify**: Manual or E2E verification of functionality
-
-### Session End
-
-Update `claude-progress.txt` with:
-
-- Features completed (X/Y → A/B)
-- What to work on next
-- Any blockers or decisions needed
+4. **Verify**: Manual or E2E verification
 
 ### Context Recovery
 
 If session was interrupted:
 
-1. Check `git status` for uncommitted changes
-2. Read "What to work on next" from progress file
-3. Continue from last phase
+1. Check `.spec/PROGRESS.md` for last action (shows task + step)
+2. Check `git status` for uncommitted changes
+3. Check current branch - if on `task/*`, continue that task
+4. Run `/spec:work` which auto-resumes from PROGRESS.md
 
 ## Automated Checks are Mandatory
 
@@ -181,8 +193,8 @@ Agents, skills, and commands have explicit model settings to reduce 5-hour usage
 
 ### Optimized Components
 
-**Haiku**: spec-discover, \*-docs agents, looking-up-docs, using-\*-cli skills, agent/resume, spec/status
-**Sonnet**: docs-keeper, playwright-tester, spec-\* agents, research/deploy/e2e skills, most commands
+**Haiku**: \*-docs agents, looking-up-docs, using-\*-cli skills, agent/resume, spec/status, spec/done, spec/new
+**Sonnet**: docs-keeper, playwright-tester, spec-planner, research/deploy/e2e skills, spec/init, spec/work
 
 ## Working Together
 
