@@ -128,6 +128,18 @@ if echo "$PROMPT_LOWER" | grep -qE '\bbrainstorm\b|\bideate\b|\bdesign\s*(a|an|t
 	skills+="brainstorming-ideas "
 fi
 
+# using-modern-cli: Modern CLI tools for better performance
+# Triggers: grep/find/cat alternatives, bash scripts, command optimization
+if echo "$PROMPT_LOWER" | grep -qE '\bripgrep\b|\brg\b.*search|\bfd\b.*find|\bbat\b.*file|\bsd\b.*replace|\beza\b|\bdust\b|\bprocs\b|\bmodern\s*cli\b|better\s*than\s*(grep|find|cat|sed|ls)|replace.*(grep|find|cat|sed|ls)|faster.*(search|find)|\.gitignore.*respect|bash\s*script|command.*chain|optimize.*(command|cli|shell)'; then
+	skills+="using-modern-cli "
+fi
+
+# frontend-design: Create distinctive frontend interfaces
+# Triggers: UI design, frontend, web component, page design, interface
+if echo "$PROMPT_LOWER" | grep -qE '\bfrontend\s*design\b|\bui\s*design\b|\bdesign\s*(a|an|the|this)?\s*(ui|interface|page|component|landing|dashboard|form)\b|\bcreate\s*(a|an)?\s*(web|frontend)?\s*(component|page|interface)\b|\bpolished\s*(ui|design|interface)\b|\bproduction[\s-]?grade\s*(ui|frontend|interface)\b|\bdistinctive\s*(ui|design|interface)\b|\bavoid.*(generic|ai).*aesthetic'; then
+	skills+="frontend-design:frontend-design "
+fi
+
 # Output only if skills detected (silent when no match)
 if [[ -n "$skills" ]]; then
 	skills="${skills% }"
