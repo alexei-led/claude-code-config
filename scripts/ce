@@ -3,11 +3,13 @@
 
 Usage:
   ce                    # TUI picker → switch + launch claude
-  ce -s                 # TUI picker → switch only (no launch)
   ce z                  # Switch to z.ai + launch claude
-  ce -s z               # Switch to z.ai only
   ce z --continue       # Switch + launch claude --continue
   ce --continue         # TUI picker + launch claude --continue
+
+Copilot proxy is auto-managed:
+  - Starts automatically when switching to copilot
+  - Stops automatically when switching away from copilot
 """
 
 import json
@@ -73,6 +75,37 @@ def check_copilot_proxy() -> bool:
         return True
     except (ValueError, OSError, ProcessLookupError):
         return False
+
+
+def start_copilot_proxy() -> bool:
+    """Start copilot proxy. Returns True if started successfully."""
+    proxy_script = Path.home() / ".claude" / "scripts" / "copilot-proxy.sh"
+    if not proxy_script.exists():
+        print(f"{YELLOW}⚠ Copilot proxy script not found: {proxy_script}{RESET}")
+        return False
+
+    print(f"{DIM}Starting copilot proxy...{RESET}")
+    result = subprocess.run([str(proxy_script)], capture_output=True, text=True)
+    if result.returncode == 0:
+        print(f"{GREEN}✓{RESET} Copilot proxy started")
+        return True
+    else:
+        print(f"{YELLOW}⚠ Failed to start copilot proxy{RESET}")
+        if result.stderr:
+            print(f"{DIM}{result.stderr.strip()}{RESET}")
+        return False
+
+
+def stop_copilot_proxy() -> None:
+    """Stop copilot proxy if running."""
+    if not check_copilot_proxy():
+        return
+
+    proxy_script = Path.home() / ".claude" / "scripts" / "copilot-proxy.sh"
+    if proxy_script.exists():
+        print(f"{DIM}Stopping copilot proxy...{RESET}")
+        subprocess.run([str(proxy_script), "--stop"], capture_output=True)
+        print(f"{GREEN}✓{RESET} Copilot proxy stopped")
 
 
 def ensure_deepseek_config(settings: dict) -> None:
@@ -250,6 +283,14 @@ def switch_env(settings: dict, current: str, target: str) -> tuple[str | None, s
     keychain_msg = None
     secret = None
 
+    # Handle copilot proxy lifecycle
+    if current == "copilot" and target != "copilot":
+        stop_copilot_proxy()
+    elif target == "copilot" and current != "copilot":
+        if not check_copilot_proxy():
+            if not start_copilot_proxy():
+                return None, None  # Failed to start proxy
+
     # Save current env (clean API key first for security)
     current_env = settings.get("env", {}).copy()
     current_env.pop("ANTHROPIC_AUTH_TOKEN", None)  # Remove sensitive data
@@ -289,9 +330,13 @@ def show_help():
 {DIM}Environments:{RESET}
   default (max)         Claude Max (Opus/Sonnet models)
   vertex (v)            Google Vertex AI
-  copilot (cp)          GitHub Copilot proxy
+  copilot (cp)          GitHub Copilot proxy (auto-managed)
   zai (z)               z.ai GLM-4.7 (all tiers)
   deepseek (ds)         DeepSeek (reasoner for Opus, chat for Sonnet/Haiku)
+
+{DIM}Copilot Proxy:{RESET}
+  Auto-starts when switching to copilot
+  Auto-stops when switching away from copilot
 
 {DIM}Keys:{RESET}
   ↑↓ / jk               Move cursor
@@ -349,11 +394,12 @@ def main():
         if target is None:
             sys.exit(0)
 
-    # Check copilot proxy if switching to copilot
+    # Auto-start copilot proxy if switching to copilot
     if target == "copilot" and not check_copilot_proxy():
-        print(f"{YELLOW}⚠ Copilot proxy is not running!{RESET}")
-        print(f"{DIM}Start it with: ~/.claude/scripts/copilot-proxy.sh{RESET}")
-        sys.exit(1)
+        if not start_copilot_proxy():
+            print(f"{YELLOW}⚠ Failed to start copilot proxy{RESET}")
+            print(f"{DIM}Try manually: ~/.claude/scripts/copilot-proxy.sh{RESET}")
+            sys.exit(1)
 
     # Reload settings (TUI may have modified via Space)
     settings = json.loads(SETTINGS.read_text())
@@ -365,8 +411,12 @@ def main():
         # Already on target (either no switch needed, or TUI already switched)
         pass
     else:
-        # Direct CLI mode: need to switch
+        # Direct CLI mode: need to switch (handles copilot proxy lifecycle)
         keychain_msg, secret = switch_env(settings, current_active, target)
+        if keychain_msg is None and secret is None and target == "copilot":
+            # switch_env failed to start proxy
+            print(f"{YELLOW}⚠ Failed to start copilot proxy{RESET}")
+            sys.exit(1)
         print(f"{GREEN}●{RESET} {current_active} {DIM}→{RESET} {BOLD}{target}{RESET}")
         if keychain_msg:
             print(keychain_msg)
