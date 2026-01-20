@@ -74,7 +74,7 @@ next=$(rg -l '^priority: critical' .spec/tasks/ 2>/dev/null | xargs rg -l '^stat
 [ -z "$next" ] && next=$(rg -l '^status: todo' .spec/tasks/ 2>/dev/null | head -1)
 ```
 
-**If no todo tasks**: "All tasks complete! 🎉" Stop.
+**If no todo tasks**: "All tasks complete!" Stop.
 
 **Load task content:**
 

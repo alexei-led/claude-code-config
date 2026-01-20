@@ -11,11 +11,11 @@ argument-hint: <question or file to review>
 
 Get independent review from a fresh Claude perspective (no prior context).
 
-**Spawn claude-reviewer agent:**
+**Spawn review agent:**
 
 ```
 Task(
-  subagent_type="claude-reviewer",
+  subagent_type="general-purpose",
   prompt="Review: $ARGUMENTS
 
 Provide independent analysis with fresh perspective.
