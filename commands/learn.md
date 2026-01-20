@@ -1,5 +1,6 @@
 ---
 model: sonnet
+context: fork
 allowed-tools:
   - TodoWrite
   - Read
@@ -8,52 +9,110 @@ allowed-tools:
   - Grep
   - Glob
   - AskUserQuestion
-description: Extract strategic learnings from session and update project CLAUDE.md
-argument-hint: [topic]
+description: Extract learnings and generate project-specific customizations (CLAUDE.md, commands, skills, hooks)
+argument-hint: [topic] [--dry-run]
 ---
 
 # Learn from Session
 
-Extract concise, actionable instructions from session. Optimize for future Claude context efficiency.
+Extract actionable learnings and generate project-specific customizations. Adapts Claude Code to project patterns over time.
 
-**Use TodoWrite** to track these 6 phases:
+**Use TodoWrite** to track these 8 phases:
 
-1. Find target file
-2. Extract learnings
-3. Distill to instructions
-4. Deduplicate & merge
-5. Present & confirm
-6. Apply changes
+1. Discover existing customizations
+2. Extract learnings from conversation
+3. Categorize by artifact type
+4. Distill to concrete artifacts
+5. Deduplicate & merge with existing
+6. Budget check
+7. Present & confirm
+8. Apply changes
 
 ---
 
-## Phase 1: Target File
+## Phase 1: Discover Existing
 
-Find in order: `.claude/CLAUDE.md` → `CLAUDE.md` → ask user which to create.
+Find ALL project customization files:
+
+```bash
+# Run these in parallel via Glob
+.claude/CLAUDE.md OR CLAUDE.md          # Instructions
+.claude/commands/*.md                    # Commands
+.claude/skills/*/SKILL.md               # Skills
+.claude/settings.json                    # Hooks
+.claude/rules/*.md                       # Rules
+```
+
+**Record counts** for budget tracking later.
 
 ---
 
 ## Phase 2: Extract Learnings
 
-Analyze conversation for:
+Analyze conversation for these signal types:
 
-| Signal             | Look For                                          |
-| ------------------ | ------------------------------------------------- |
-| Corrections        | "no", "wrong", "actually...", "instead..."        |
-| Direct guidance    | "always", "prefer", "use X"                       |
-| Repeated explains  | Same thing clarified 2+ times                     |
-| Project quirks     | Unexpected behaviors, edge cases, workarounds     |
-| Commands/workflows | Specific commands, sequences, scripts that worked |
+### Instruction Signals → CLAUDE.md
 
-**If `$ARGUMENTS` provided**: Extract ONLY learnings related to that topic.
+| Signal             | Look For                                      |
+| ------------------ | --------------------------------------------- |
+| Corrections        | "no", "wrong", "actually...", "instead..."    |
+| Direct guidance    | "always", "prefer", "use X", "never"          |
+| Repeated explains  | Same thing clarified 2+ times                 |
+| Project quirks     | Unexpected behaviors, edge cases, workarounds |
+| Commands/workflows | Specific commands, sequences that worked      |
+
+### Command Signals → .claude/commands/
+
+| Signal              | Look For                                 | Confidence |
+| ------------------- | ---------------------------------------- | ---------- |
+| Repeated task       | Same request 3+ times in session/history | HIGH       |
+| "I always" pattern  | "I always run X before Y"                | HIGH       |
+| Multi-step sequence | "first lint, then test, then build"      | MEDIUM     |
+| Template request    | "create a new X like we discussed"       | MEDIUM     |
+| Workflow mention    | "my workflow is X then Y then Z"         | HIGH       |
+
+### Skill Signals → .claude/skills/
+
+| Signal              | Look For                                        | Confidence |
+| ------------------- | ----------------------------------------------- | ---------- |
+| Complex multi-tool  | Workflow spanning 3+ files with analysis        | HIGH       |
+| Agent orchestration | "spawn agents to check X and Y in parallel"     | HIGH       |
+| Domain expertise    | Detailed tech discussion needing reference docs | MEDIUM     |
+| Progressive need    | "for basic use X, for advanced see Y"           | MEDIUM     |
+
+### Hook Signals → .claude/settings.json
+
+| Signal             | Look For                                 | Confidence |
+| ------------------ | ---------------------------------------- | ---------- |
+| Blocking rule      | "never do X", "always block Y"           | HIGH       |
+| Validation need    | "always run linter after edit"           | HIGH       |
+| Format requirement | "use prettier on save", "format on edit" | MEDIUM     |
+| Approval pattern   | "ask before destructive commands"        | MEDIUM     |
+
+**If `$ARGUMENTS` contains topic**: Extract ONLY learnings related to that topic.
+**If `$ARGUMENTS` contains `--dry-run`**: Show what would be created, don't write.
 
 ---
 
-## Phase 3: Distill to Minimum Viable Instructions
+## Phase 3: Categorize
 
-**Goal**: Maximum signal, minimum tokens. Frame positively.
+Sort extractions into buckets:
 
-### Instruction Patterns
+```
+Instructions: [list of instruction candidates]
+Commands: [list of command candidates with names]
+Skills: [list of skill candidates with names]
+Hooks: [list of hook candidates with events]
+```
+
+**Apply confidence threshold**: Only include HIGH confidence for commands/skills/hooks.
+MEDIUM confidence items go to instructions in CLAUDE.md instead.
+
+---
+
+## Phase 4: Distill to Artifacts
+
+### Instructions → CLAUDE.md format
 
 | Pattern           | Example                                      |
 | ----------------- | -------------------------------------------- |
@@ -64,91 +123,179 @@ Analyze conversation for:
 | `Run: \`...\``    | Run: `kubectl rollout restart deploy/api`    |
 | `Note: X`         | Note: `Get()` returns `nil, nil` when absent |
 
-**One instruction per line. Max 80 chars when possible.**
+**One instruction per line. Max 80 chars.**
 
----
-
-## Phase 4: Deduplicate & Merge
-
-Before adding to CLAUDE.md:
-
-1. **Read existing file** - Understand current structure and content
-2. **Find overlaps** - Search for instructions covering similar topics
-3. **Merge intelligently** - Combine existing + new into improved version
-
-### Merge Strategy
-
-When new instruction overlaps with existing:
+### Commands → .claude/commands/{name}.md
 
 ```markdown
-# Existing in CLAUDE.md:
+---
+description: { 1-line description }
+allowed-tools: { tools needed, e.g., Bash(make *), Read }
+argument-hint: { optional args }
+---
 
-- Use error wrapping
+# {Command Name}
 
-# New from session:
+{Brief purpose}
 
-- Wrap errors with fmt.Errorf and %w verb
+## Steps
 
-# Merged result (update existing):
+1. {step from conversation}
+2. {step from conversation}
 
-- Wrap errors: `fmt.Errorf("op: %w", err)`
+## Context
+
+{Any relevant @ references or bash context}
 ```
 
-| Scenario                  | Action                                 |
-| ------------------------- | -------------------------------------- |
-| New adds specificity      | Update existing with concrete details  |
-| New adds example          | Append example to existing instruction |
-| Both have value           | Combine into single comprehensive line |
-| New is subset of existing | Keep existing, skip new                |
-| Existing is outdated      | Replace existing with new              |
+### Skills → .claude/skills/{name}/SKILL.md
 
-**Prefer updating existing instructions over adding new lines.**
+```markdown
+---
+name: { kebab-case-name }
+description: { when to use, triggers }
+user-invocable: true
+context: fork
+allowed-tools: { restrictions if any }
+---
+
+# {Skill Name}
+
+{Purpose}
+
+## When to Use
+
+- {scenario 1}
+- {scenario 2}
+
+## Workflow
+
+1. {step 1}
+2. {step 2}
+```
+
+### Hooks → settings.json addition
+
+```json
+{
+  "EventType": [
+    {
+      "matcher": "ToolPattern",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "command-here",
+          "timeout": 30
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Default to PostToolUse** (non-blocking) unless explicit blocking requirement.
 
 ---
 
-## Phase 5: Size Check & Present
+## Phase 5: Deduplicate & Merge
 
-**CLAUDE.md budget**: ~200 lines / ~8KB max recommended.
+For each artifact type:
 
-If file exceeds budget:
+1. **Read existing** if file exists
+2. **Find overlaps** by topic/name
+3. **Merge strategy**:
 
-1. Identify stale instructions for removal
-2. Propose consolidations of related items
-3. Suggest trimming verbose sections
+| Scenario                   | Action                                 |
+| -------------------------- | -------------------------------------- |
+| New adds specificity       | Update existing with concrete details  |
+| New adds example           | Append example to existing             |
+| Both have value            | Combine into single comprehensive item |
+| New is subset of existing  | Keep existing, skip new                |
+| Name collision (cmd/skill) | Merge content into existing file       |
 
-Show proposed changes:
+**Prefer updating existing over creating new.**
+
+---
+
+## Phase 6: Budget Check
+
+Recommended limits:
+
+| Artifact  | Limit     | Why                   |
+| --------- | --------- | --------------------- |
+| CLAUDE.md | 200 lines | Context efficiency    |
+| Commands  | 10        | Discoverability       |
+| Skills    | 5         | Complexity management |
+| Hooks     | 5         | Debugging simplicity  |
+
+If exceeding budget:
+
+1. Propose consolidations
+2. Identify stale items for removal
+3. Warn but allow user to proceed
+
+---
+
+## Phase 7: Present & Confirm
+
+Show ALL proposed changes:
 
 ```markdown
-## Proposed: [Topic or "Session Learnings"]
+## Proposed Changes
+
+### CLAUDE.md (instructions)
+
+Target: `.claude/CLAUDE.md`
+Lines: X/200
 
 **Updates:**
 
-- [existing line] → [merged version]
+- [old] → [merged]
 
 **Additions:**
 
 - New instruction
 
-Target: `path/to/CLAUDE.md`
-Lines: total Y/200
+### Commands
+
+- `/pre-commit` - Run checks before commit
+  → `.claude/commands/pre-commit.md`
+
+### Skills
+
+~ `auth-patterns` - Updated with OAuth2 flow
+→ `.claude/skills/auth-patterns/SKILL.md`
+
+### Hooks
+
+- PostToolUse[Edit|Write]: Run prettier
+  → `.claude/settings.json`
+
+---
+
+Rollback: `git checkout .claude/`
 ```
 
 **STOP**: Use `AskUserQuestion`:
 
-| Header | Question               | Options                                    |
-| ------ | ---------------------- | ------------------------------------------ |
-| Action | Apply these learnings? | Append all / Review each / Edit first / No |
+| Header | Question                    | Options                                    |
+| ------ | --------------------------- | ------------------------------------------ |
+| Action | Apply these customizations? | Apply all / Select items / Edit first / No |
+
+If "Select items": Show multi-select for each category.
 
 ---
 
-## Phase 6: Apply
+## Phase 8: Apply
 
-1. **Update existing** - Edit lines that were merged
-2. **Add new** - Insert truly new instructions
-3. **Match sections** - Add to existing section if relevant
-4. **Place strategically** - Frequent/important instructions near top
+Based on confirmation:
 
-### Standard Sections
+1. **CLAUDE.md**: Edit existing lines, add new at appropriate sections
+2. **Commands**: Write new .md files, edit existing for merges
+3. **Skills**: Create directory + SKILL.md, add reference files if needed
+4. **Hooks**: Merge into existing settings.json `hooks` object
+
+### Section Placement (CLAUDE.md)
 
 | Section    | Content                          |
 | ---------- | -------------------------------- |
@@ -164,16 +311,33 @@ Lines: total Y/200
 ```
 LEARNED
 =======
-Target: .claude/CLAUDE.md
-Size: Y lines (Z% of budget)
+Target: .claude/
 
-Updated:
-~ old → new
+Instructions: (CLAUDE.md)
+  ~ "Use error wrapping" → "Wrap errors: fmt.Errorf(\"op: %w\", err)"
+  + "Note: API returns nil, nil when absent"
 
-Added:
-+ instruction
+Commands: (commands/)
+  + /pre-commit - Run lint, test, build
+
+Skills: (skills/)
+  + auth-patterns - OAuth2 and JWT handling
+
+Hooks: (settings.json)
+  + PostToolUse[Edit]: prettier --write
+
+Budget: 45/200 instructions | 3/10 commands | 1/5 skills | 1/5 hooks
 ```
 
 ---
 
-**Execute now. Extract learnings, find overlaps in existing CLAUDE.md, propose merges and additions.**
+## Edge Cases
+
+- **Empty session**: "No learnings detected. Try after a longer conversation."
+- **All low confidence**: Convert to CLAUDE.md instructions instead
+- **No .claude/ directory**: Create it with user permission
+- **--dry-run flag**: Show output but skip Phase 8
+
+---
+
+**Execute now. Discover existing, extract learnings, categorize, and propose customizations.**
