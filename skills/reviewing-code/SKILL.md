@@ -4,6 +4,7 @@ description: Multi-agent code review for security, quality, and architecture. Us
 user-invocable: true
 allowed-tools:
   - Task
+  - TaskOutput
   - TodoWrite
   - AskUserQuestion
   - Bash

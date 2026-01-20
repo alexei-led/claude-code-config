@@ -7,14 +7,14 @@ allowed-tools:
   - Task
   - TaskOutput
   - TodoWrite
-  - Bash(make:*)
-  - Bash(go:*)
-  - Bash(golangci-lint:*)
-  - Bash(pytest:*)
-  - Bash(ruff:*)
-  - Bash(npm:*)
-  - Bash(bun:*)
-  - Bash(bunx:*)
+  - Bash(make *)
+  - Bash(go *)
+  - Bash(golangci-lint *)
+  - Bash(pytest *)
+  - Bash(ruff *)
+  - Bash(npm *)
+  - Bash(bun *)
+  - Bash(bunx *)
 ---
 
 # Fix All Issues

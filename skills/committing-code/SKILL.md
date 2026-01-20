@@ -4,11 +4,11 @@ description: Smart git commits with logical grouping. Use when user says "commit
 user-invocable: true
 context: fork
 allowed-tools:
-  - Bash(git status:*)
-  - Bash(git diff:*)
-  - Bash(git log:*)
-  - Bash(git show:*)
-  - Bash(git branch:*)
+  - Bash(git status *)
+  - Bash(git diff *)
+  - Bash(git log *)
+  - Bash(git show *)
+  - Bash(git branch *)
 ---
 
 # Smart Commit
