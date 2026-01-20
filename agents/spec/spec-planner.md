@@ -2,14 +2,16 @@
 name: spec-planner
 description: Creates implementation plans. Learns codebase style, uses deep thinking.
 tools:
-  - Read
-  - Grep
-  - Glob
-  - LS
-  - Bash(rg:*)
-  - Bash(fd:*)
-  - Bash(git log:*)
-  - mcp__sequential-thinking__sequentialthinking
+  [
+    Read,
+    Grep,
+    Glob,
+    LS,
+    "Bash(rg:*)",
+    "Bash(fd:*)",
+    "Bash(git log:*)",
+    mcp__sequential-thinking__sequentialthinking,
+  ]
 model: sonnet
 color: green
 ---
