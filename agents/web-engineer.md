@@ -13,7 +13,7 @@ tools:
   ]
 model: sonnet
 color: cyan
-skills: [writing-web]
+skills: [writing-web, looking-up-docs]
 ---
 
 ## Role

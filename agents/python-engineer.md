@@ -22,6 +22,7 @@ skills:
     "looking-up-docs",
     "researching-web",
     "using-git-worktrees",
+    "testing-e2e",
     "searching-code",
   ]
 ---
