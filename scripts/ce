@@ -6,10 +6,12 @@ Usage:
   ce z                  # Switch to z.ai + launch claude
   ce z --continue       # Switch + launch claude --continue
   ce --continue         # TUI picker + launch claude --continue
+  ce --stop-proxy       # Stop copilot proxy manually
 
-Copilot proxy is auto-managed:
-  - Starts automatically when switching to copilot
-  - Stops automatically when switching away from copilot
+Copilot proxy:
+  - Starts automatically when switching to copilot (if not already running)
+  - Never auto-stops (safe for multiple concurrent sessions)
+  - Use --stop-proxy to stop manually when done
 """
 
 import json
@@ -283,13 +285,11 @@ def switch_env(settings: dict, current: str, target: str) -> tuple[str | None, s
     keychain_msg = None
     secret = None
 
-    # Handle copilot proxy lifecycle
-    if current == "copilot" and target != "copilot":
-        stop_copilot_proxy()
-    elif target == "copilot" and current != "copilot":
-        if not check_copilot_proxy():
-            if not start_copilot_proxy():
-                return None, None  # Failed to start proxy
+    # Start copilot proxy if switching to copilot and not already running
+    # Note: Never auto-stop proxy - other sessions may be using it
+    if target == "copilot" and not check_copilot_proxy():
+        if not start_copilot_proxy():
+            return None, None  # Failed to start proxy
 
     # Save current env (clean API key first for security)
     current_env = settings.get("env", {}).copy()
@@ -326,17 +326,18 @@ def show_help():
   ce <env>              Switch + launch (e.g., ce z)
   ce <env> <args>       Switch + launch with args (e.g., ce z --continue)
   ce <args>             TUI picker + launch with args (e.g., ce --continue)
+  ce --stop-proxy       Stop copilot proxy manually
 
 {DIM}Environments:{RESET}
   default (max)         Claude Max (Opus/Sonnet models)
   vertex (v)            Google Vertex AI
-  copilot (cp)          GitHub Copilot proxy (auto-managed)
+  copilot (cp)          GitHub Copilot proxy
   zai (z)               z.ai GLM-4.7 (all tiers)
   deepseek (ds)         DeepSeek (reasoner for Opus, chat for Sonnet/Haiku)
 
 {DIM}Copilot Proxy:{RESET}
-  Auto-starts when switching to copilot
-  Auto-stops when switching away from copilot
+  Auto-starts when switching to copilot (if not already running)
+  Never auto-stops (safe for multiple sessions)
 
 {DIM}Keys:{RESET}
   ↑↓ / jk               Move cursor
@@ -350,6 +351,14 @@ def main():
     # Handle --help
     if "--help" in sys.argv or "-h" in sys.argv:
         show_help()
+        sys.exit(0)
+
+    # Handle --stop-proxy
+    if "--stop-proxy" in sys.argv:
+        if check_copilot_proxy():
+            stop_copilot_proxy()
+        else:
+            print(f"{DIM}Copilot proxy not running{RESET}")
         sys.exit(0)
 
     settings = json.loads(SETTINGS.read_text())
