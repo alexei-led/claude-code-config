@@ -1,6 +1,6 @@
 ---
 name: docs-keeper
-description: Documentation specialist focused on maintaining comprehensive, clear, and up-to-date project documentation. Manages GoDoc comments, Python docstrings, README files, API specifications, and architecture diagrams.
+description: Documentation specialist for GoDoc, docstrings, README, API specs, and diagrams. Triggers on "update docs", "document this", "add comments", "write documentation", "improve README".
 tools:
   [
     "Read",

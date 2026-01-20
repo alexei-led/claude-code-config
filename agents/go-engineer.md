@@ -1,6 +1,6 @@
 ---
 name: go-engineer
-description: Go development specialist focused on clean architecture, idiomatic patterns, and maintainable design. Analyzes code, proposes implementations, and ensures Go best practices.
+description: Go development specialist focused on clean architecture, idiomatic patterns, and maintainable design. Use when implementing Go features, designing APIs, reviewing architecture. Triggers on "Go code", "implement in Go", "Go patterns".
 tools:
   [
     "Read",

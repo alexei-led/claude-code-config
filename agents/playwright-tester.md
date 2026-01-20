@@ -1,6 +1,6 @@
 ---
 name: playwright-tester
-description: E2E testing specialist using Playwright MCP for browser automation and test generation. Use for web application testing, accessibility checks, and UI automation.
+description: E2E testing specialist using Playwright MCP for browser automation and test generation. Triggers on "e2e test", "browser test", "playwright", "UI automation", "accessibility check".
 tools:
   [
     "Read",
