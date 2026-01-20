@@ -1,7 +1,7 @@
 ---
 name: ts-qa
 description: TypeScript 5.x QA specialist focused on logic correctness, security vulnerabilities (OWASP), and performance issues. Use for TypeScript code review.
-tools: ["Read", "Grep", "Glob", "LS", "Bash", "LSP"]
+tools: [Read, Grep, Glob, LS, Bash, LSP, mcp__perplexity-ask__perplexity_ask]
 model: opus
 color: blue
 skills: ["writing-typescript"]
