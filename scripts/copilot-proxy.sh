@@ -15,9 +15,9 @@ PID_FILE="${TMPDIR:-/tmp}/copilot-proxy.pid"
 LOG_FILE="${TMPDIR:-/tmp}/copilot-proxy.log"
 
 # Claude Code model configuration (used when sourcing this script's output)
-CLAUDE_MODEL="claude-opus-4.5"
-CLAUDE_SONNET_MODEL="claude-sonnet-4.5"
-CLAUDE_HAIKU_MODEL="claude-haiku-4.5"
+CLAUDE_MODEL="claude-opus-4-5-20251101"
+CLAUDE_SONNET_MODEL="claude-sonnet-4-5-20250929"
+CLAUDE_HAIKU_MODEL="claude-haiku-4-5-20251001"
 
 start_proxy() {
 	local foreground="${1:-false}"
@@ -32,12 +32,12 @@ start_proxy() {
 
 	if [[ "$foreground" == "true" ]]; then
 		# --claude-code enables interactive model selection (requires TTY)
-		exec bunx copilot-api@latest start \
+		exec bunx --reload copilot-api@latest start \
 			--claude-code \
 			--port "$PORT"
 	else
 		# Background mode: skip --claude-code (requires TTY for interactive prompts)
-		nohup bunx copilot-api@latest start \
+		nohup bunx --reload copilot-api@latest start \
 			--port "$PORT" \
 			>"$LOG_FILE" 2>&1 &
 
