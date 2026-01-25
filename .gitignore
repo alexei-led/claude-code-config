@@ -23,6 +23,7 @@ session-env/
 shell-snapshots/
 plans/
 todos/
+tasks/
 file-history/
 
 # Debug and telemetry
