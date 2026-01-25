@@ -37,7 +37,17 @@ copilot)
 		sleep 2 # Give proxy time to start
 	fi
 
-	echo "dummy"
+	# Check if proxy actually started successfully
+	if [ -f "$PID_FILE" ]; then
+		PID=$(cat "$PID_FILE" 2>/dev/null || echo "")
+		if [ -n "$PID" ] && kill -0 "$PID" 2>/dev/null; then
+			echo "dummy"
+			exit 0
+		fi
+	fi
+
+	# Proxy failed to start - fall through to empty (SSO auth)
+	echo ""
 	;;
 default)
 	# Default (Max subscription) - return empty to use Claude.ai SSO
