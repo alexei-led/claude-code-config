@@ -1,4 +1,5 @@
 {
+  "apiKeyHelper": "~/.claude/scripts/auth-helper.sh",
   "env": {},
   "includeCoAuthoredBy": false,
   "permissions": {
@@ -183,11 +184,13 @@
     "CLOUD_ML_REGION": "global",
     "ANTHROPIC_VERTEX_PROJECT_ID": "alexei-playground-457008",
     "ANTHROPIC_MODEL": "claude-opus-4-5@20251101",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-opus-4-5@20251101",
     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-haiku-4-5@20251001"
   },
   "env.copilot": {
     "ANTHROPIC_BASE_URL": "http://localhost:4141",
     "ANTHROPIC_MODEL": "claude-opus-4.5",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-opus-4.5",
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-4.5",
     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-haiku-4.5",
     "DISABLE_NON_ESSENTIAL_MODEL_CALLS": "1",
