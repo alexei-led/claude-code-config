@@ -8,6 +8,11 @@ Usage:
   ce --continue         # TUI picker + launch claude --continue
   ce --stop-proxy       # Stop copilot proxy manually
 
+Claude Code Team (gaia-mbp-m2 only):
+  ce t                  # Launch Claude Code Team
+  ce t --continue       # Launch with args
+  ce --team             # Same as ce t
+
 Copilot proxy:
   - Starts automatically when switching to copilot (if not already running)
   - Never auto-stops (safe for multiple concurrent sessions)
@@ -24,7 +29,24 @@ from pathlib import Path
 
 SETTINGS = Path.home() / ".claude" / "settings.json"
 
-ALIASES = {"max": "default", "v": "vertex", "cp": "copilot", "z": "zai", "ds": "deepseek"}
+ALIASES = {
+    "max": "default",
+    "v": "vertex",
+    "cp": "copilot",
+    "z": "zai",
+    "ds": "deepseek",
+    "t": "team",
+}
+
+# Machine-specific features
+TEAM_MACHINE = "gaia-mbp-m2"
+
+
+def is_team_machine() -> bool:
+    """Check if running on the team-enabled machine."""
+    result = subprocess.run(["hostname", "-s"], capture_output=True, text=True)
+    return result.stdout.strip() == TEAM_MACHINE
+
 
 # Provider descriptions: (display_name, short_description)
 PROVIDERS = {
@@ -33,6 +55,7 @@ PROVIDERS = {
     "copilot": ("Copilot", "GitHub proxy"),
     "zai": ("z.ai", "GLM-4.7, 200K ctx, 128K out"),
     "deepseek": ("DeepSeek", "128K ctx, 64K out, no cache"),
+    "team": ("Claude Code Team", "Work subscription"),
 }
 
 # ANSI escape codes
@@ -220,11 +243,15 @@ def render_menu(envs: list[str], current: str, selected: int, chosen: int | None
         # Description
         desc_text = f"  {desc_style}{desc}{RESET}" if desc else ""
 
-        print(f"{CLEAR_LINE}{prefix}{name_style}{name}{RESET}{alias_hint}{markers}{desc_text}")
+        print(
+            f"{CLEAR_LINE}{prefix}{name_style}{name}{RESET}{alias_hint}{markers}{desc_text}"
+        )
 
     # Footer with key mappings
     print()
-    print(f"  {DIM}↑↓{RESET} move  {DIM}space{RESET} select  {DIM}enter{RESET} run claude  {DIM}esc{RESET} exit")
+    print(
+        f"  {DIM}↑↓{RESET} move  {DIM}space{RESET} select  {DIM}enter{RESET} run claude  {DIM}esc{RESET} exit"
+    )
     print()
 
 
@@ -235,15 +262,20 @@ def clear_menu(num_lines: int):
     sys.stdout.flush()
 
 
-def interactive_select(envs: list[str], current: str, settings: dict) -> tuple[str | None, bool]:
+def interactive_select(
+    envs: list[str], current: str, settings: dict
+) -> tuple[str | None, bool]:
     """Show interactive menu. Returns (env, launch) or (None, False) if cancelled.
 
     Space immediately switches env (saves to settings).
     Enter launches claude with current active env.
+    Returns ("team", True) for team selection - caller handles cc-team launch.
     """
     selected = envs.index(current) if current in envs else 0
     active = current  # Track active env (updated by Space)
-    num_lines = len(envs) + 7  # blank + header + desc + blank + items + blank + footer + blank
+    num_lines = (
+        len(envs) + 7
+    )  # blank + header + desc + blank + items + blank + footer + blank
 
     print(HIDE_CURSOR, end="", flush=True)
     try:
@@ -256,17 +288,21 @@ def interactive_select(envs: list[str], current: str, settings: dict) -> tuple[s
                 clear_menu(num_lines)
                 return None, False
             elif key == "enter":
-                # Switch to selected env (like space) + launch
                 new_env = envs[selected]
+                # Team is special - don't switch env, just signal to launch cc-team
+                if new_env == "team":
+                    clear_menu(num_lines)
+                    return "team", True
+                # Switch to selected env (like space) + launch
                 if new_env != active:
                     switch_env(settings, active, new_env)
                     active = new_env
                 clear_menu(num_lines)
                 return active, True
             elif key == "space":
-                # Switch to selected env immediately
+                # Switch to selected env immediately (skip for team)
                 new_env = envs[selected]
-                if new_env != active:
+                if new_env != "team" and new_env != active:
                     switch_env(settings, active, new_env)
                     active = new_env
             elif key == "up":
@@ -280,7 +316,9 @@ def interactive_select(envs: list[str], current: str, settings: dict) -> tuple[s
         print(SHOW_CURSOR, end="", flush=True)
 
 
-def switch_env(settings: dict, current: str, target: str) -> tuple[str | None, str | None]:
+def switch_env(
+    settings: dict, current: str, target: str
+) -> tuple[str | None, str | None]:
     """Switch to target environment. Returns (keychain_msg, secret) - secret for env export."""
     keychain_msg = None
     secret = None
@@ -328,11 +366,16 @@ def show_help():
   ce <args>             TUI picker + launch with args (e.g., ce --continue)
   ce --stop-proxy       Stop copilot proxy manually
 
+{DIM}Claude Code Team (gaia-mbp-m2 only):{RESET}
+  ce t                  Launch Claude Code Team
+  ce t <args>           Launch with args (e.g., ce t --continue)
+  ce --team             Same as ce t
+
 {DIM}Environments:{RESET}
-  default (max)         Claude Max (Opus/Sonnet models)
+  default (max)         Claude Max
   vertex (v)            Google Vertex AI
   copilot (cp)          GitHub Copilot proxy
-  zai (z)               z.ai GLM-4.7 (all tiers)
+  zai (z)               z.ai (GLM-4.7 for all)
   deepseek (ds)         DeepSeek (reasoner for Opus, chat for Sonnet/Haiku)
 
 {DIM}Copilot Proxy:{RESET}
@@ -361,6 +404,9 @@ def main():
             print(f"{DIM}Copilot proxy not running{RESET}")
         sys.exit(0)
 
+    # Check if team mode is available on this machine
+    team_available = is_team_machine()
+
     settings = json.loads(SETTINGS.read_text())
 
     # Ensure provider configs exist
@@ -370,7 +416,11 @@ def main():
     current = settings.get("_activeEnv", "default")
 
     # Get all available environments
-    env_set = {"default"} | {k[4:] for k in settings if k.startswith("env.") and k != "env"}
+    env_set = {"default"} | {
+        k[4:] for k in settings if k.startswith("env.") and k != "env"
+    }
+    if team_available:
+        env_set.add("team")
     envs = sorted(env_set)
 
     # Parse arguments: first arg is env (if valid alias/name), rest goes to claude
@@ -402,6 +452,18 @@ def main():
         target, launch_claude = interactive_select(envs, current, settings)
         if target is None:
             sys.exit(0)
+
+    # Handle team mode - launch cc-team directly
+    if target == "team":
+        if not team_available:
+            print(f"{YELLOW}⚠ Team mode only available on {TEAM_MACHINE}{RESET}")
+            sys.exit(1)
+        # Show current active env so user knows what they'll return to
+        current_env = settings.get("_activeEnv", "default")
+        current_name = PROVIDERS.get(current_env, (current_env, ""))[0]
+        print(f"{BOLD}Claude Code Team{RESET} {DIM}(env: {current_name}){RESET}")
+        print(f"\n{DIM}Launching cc-team...{RESET}\n")
+        os.execlp("cc-team", "cc-team", *claude_args)
 
     # Auto-start copilot proxy if switching to copilot
     if target == "copilot" and not check_copilot_proxy():
