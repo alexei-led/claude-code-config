@@ -75,3 +75,5 @@ scripts/__pycache__/
 .env
 .env.*
 credentials.json
+# Machine-specific team configs
+.claude-team-*
