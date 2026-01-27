@@ -1,0 +1,1 @@
+/Users/alexei/.ccs/.claude/commands/ccs.md
