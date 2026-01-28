@@ -1,0 +1,779 @@
+#!/usr/bin/env python3
+"""
+specctl - CLI for managing .spec/ task tracking system.
+
+Simple YAML-frontmatter-based state management for spec-driven development.
+All state lives in markdown files - no separate JSON state.
+
+Usage:
+    specctl init                    Create .spec/ structure
+    specctl ready [--epic ID]       Show unblocked tasks in dependency order
+    specctl start <id>              Mark task in-progress
+    specctl done <id> [--evidence]  Mark task done with evidence
+    specctl validate [--all]        Check for issues
+    specctl status [ID]             Show progress overview
+    specctl dep add <task> <dep>    Add dependency (task blocked by dep)
+    specctl show <id>               Show task or epic details
+"""
+
+import argparse
+import subprocess
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Optional
+
+# --- Constants ---
+
+SPEC_DIR = ".spec"
+REQS_DIR = "reqs"
+EPICS_DIR = "epics"
+TASKS_DIR = "tasks"
+PROGRESS_FILE = "PROGRESS.md"
+
+TASK_STATUS = ["todo", "in_progress", "done"]
+EPIC_STATUS = ["open", "done"]
+
+
+# --- Helpers ---
+
+
+def get_repo_root() -> Path:
+    """Find git repo root or current directory."""
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        return Path(result.stdout.strip())
+    except subprocess.CalledProcessError:
+        return Path.cwd()
+
+
+def get_spec_dir() -> Path:
+    """Get .spec/ directory path."""
+    return get_repo_root() / SPEC_DIR
+
+
+def ensure_spec_exists() -> bool:
+    """Check if .spec/ exists."""
+    return get_spec_dir().exists()
+
+
+def now_iso() -> str:
+    """Current timestamp in ISO format."""
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def now_log() -> str:
+    """Current timestamp for PROGRESS.md."""
+    return datetime.now().strftime("%H:%M")
+
+
+def error_exit(message: str, code: int = 1) -> None:
+    """Print error and exit."""
+    print(f"Error: {message}", file=sys.stderr)
+    sys.exit(code)
+
+
+def success_print(message: str) -> None:
+    """Print success message."""
+    print(f"✓ {message}")
+
+
+# --- YAML Frontmatter Parser ---
+
+
+def parse_frontmatter(content: str) -> tuple[dict[str, Any], str]:
+    """Parse YAML frontmatter from markdown content.
+
+    Returns (metadata dict, body text).
+    """
+    if not content.startswith("---"):
+        return {}, content
+
+    parts = content.split("---", 2)
+    if len(parts) < 3:
+        return {}, content
+
+    yaml_part = parts[1].strip()
+    body = parts[2].strip()
+
+    # Simple YAML parser for our use case
+    metadata: dict[str, Any] = {}
+    current_key: Optional[str] = None
+    current_list: list[str] = []
+
+    for line in yaml_part.split("\n"):
+        line = line.rstrip()
+
+        # Handle list items
+        if line.startswith("  - "):
+            if current_key:
+                current_list.append(line[4:].strip())
+            continue
+
+        # Save previous list if any
+        if current_key and current_list:
+            metadata[current_key] = current_list
+            current_list = []
+            current_key = None
+
+        # Handle key: value
+        if ":" in line:
+            key, _, value = line.partition(":")
+            key = key.strip()
+            value = value.strip()
+
+            if not value:
+                # Start of a list
+                current_key = key
+            elif value.startswith("[") and value.endswith("]"):
+                # Inline list
+                items = value[1:-1].split(",")
+                metadata[key] = [
+                    item.strip().strip("\"'") for item in items if item.strip()
+                ]
+            else:
+                # Simple value
+                metadata[key] = value.strip("\"'")
+
+    # Save final list if any
+    if current_key and current_list:
+        metadata[current_key] = current_list
+
+    return metadata, body
+
+
+def serialize_frontmatter(metadata: dict[str, Any], body: str) -> str:
+    """Serialize metadata and body back to markdown with frontmatter."""
+    lines = ["---"]
+
+    for key, value in metadata.items():
+        if isinstance(value, list):
+            if not value:
+                lines.append(f"{key}: []")
+            else:
+                lines.append(f"{key}:")
+                for item in value:
+                    lines.append(f"  - {item}")
+        elif isinstance(value, bool):
+            lines.append(f"{key}: {str(value).lower()}")
+        else:
+            lines.append(f"{key}: {value}")
+
+    lines.append("---")
+    lines.append("")
+    lines.append(body)
+
+    return "\n".join(lines)
+
+
+def update_frontmatter(filepath: Path, updates: dict[str, Any]) -> None:
+    """Update frontmatter in a file."""
+    content = filepath.read_text(encoding="utf-8")
+    metadata, body = parse_frontmatter(content)
+    metadata.update(updates)
+    new_content = serialize_frontmatter(metadata, body)
+    filepath.write_text(new_content, encoding="utf-8")
+
+
+# --- Task/Epic Loading ---
+
+
+def find_tasks(spec_dir: Path, epic_id: Optional[str] = None) -> list[Path]:
+    """Find all task files, optionally filtered by epic."""
+    tasks_dir = spec_dir / TASKS_DIR
+    if not tasks_dir.exists():
+        return []
+
+    tasks = list(tasks_dir.glob("TASK-*.md"))
+
+    if epic_id:
+        filtered = []
+        for task_path in tasks:
+            content = task_path.read_text(encoding="utf-8")
+            metadata, _ = parse_frontmatter(content)
+            if metadata.get("epic") == epic_id:
+                filtered.append(task_path)
+        return filtered
+
+    return tasks
+
+
+def find_epics(spec_dir: Path) -> list[Path]:
+    """Find all epic files."""
+    epics_dir = spec_dir / EPICS_DIR
+    if not epics_dir.exists():
+        return []
+    return list(epics_dir.glob("EPIC-*.md"))
+
+
+def find_reqs(spec_dir: Path) -> list[Path]:
+    """Find all requirement files."""
+    reqs_dir = spec_dir / REQS_DIR
+    if not reqs_dir.exists():
+        return []
+    return list(reqs_dir.glob("REQ-*.md"))
+
+
+def load_task(task_path: Path) -> dict[str, Any]:
+    """Load task metadata and body."""
+    content = task_path.read_text(encoding="utf-8")
+    metadata, body = parse_frontmatter(content)
+    return {
+        "path": task_path,
+        "metadata": metadata,
+        "body": body,
+        "id": metadata.get("id", task_path.stem),
+    }
+
+
+def load_epic(epic_path: Path) -> dict[str, Any]:
+    """Load epic metadata and body."""
+    content = epic_path.read_text(encoding="utf-8")
+    metadata, body = parse_frontmatter(content)
+    return {
+        "path": epic_path,
+        "metadata": metadata,
+        "body": body,
+        "id": metadata.get("id", epic_path.stem),
+    }
+
+
+# --- Dependency Resolution ---
+
+
+def get_ready_tasks(spec_dir: Path, epic_id: Optional[str] = None) -> list[dict]:
+    """Get tasks that are ready to start (todo + no blockers)."""
+    task_paths = find_tasks(spec_dir, epic_id)
+
+    # Load all tasks
+    tasks = [load_task(p) for p in task_paths]
+
+    # Build completion set
+    done_ids = {t["id"] for t in tasks if t["metadata"].get("status") == "done"}
+
+    # Find ready tasks
+    ready = []
+    for task in tasks:
+        meta = task["metadata"]
+        if meta.get("status") != "todo":
+            continue
+
+        blocked_by = meta.get("blocked-by", [])
+        if isinstance(blocked_by, str):
+            blocked_by = [blocked_by]
+
+        # Check if all blockers are done
+        unmet = [b for b in blocked_by if b not in done_ids]
+        if not unmet:
+            ready.append(task)
+
+    # Sort by priority (critical > normal > low)
+    priority_order = {"critical": 0, "normal": 1, "low": 2}
+    ready.sort(
+        key=lambda t: priority_order.get(t["metadata"].get("priority", "normal"), 1)
+    )
+
+    return ready
+
+
+def get_blocked_tasks(
+    spec_dir: Path, epic_id: Optional[str] = None
+) -> list[tuple[dict, list[str]]]:
+    """Get tasks that are blocked with their unmet dependencies."""
+    task_paths = find_tasks(spec_dir, epic_id)
+    tasks = [load_task(p) for p in task_paths]
+    done_ids = {t["id"] for t in tasks if t["metadata"].get("status") == "done"}
+
+    blocked = []
+    for task in tasks:
+        meta = task["metadata"]
+        if meta.get("status") != "todo":
+            continue
+
+        blocked_by = meta.get("blocked-by", [])
+        if isinstance(blocked_by, str):
+            blocked_by = [blocked_by]
+
+        unmet = [b for b in blocked_by if b not in done_ids]
+        if unmet:
+            blocked.append((task, unmet))
+
+    return blocked
+
+
+# --- Progress Logging ---
+
+
+def log_progress(action: str, target: str) -> None:
+    """Append to PROGRESS.md and truncate to last 10 entries."""
+    spec_dir = get_spec_dir()
+    progress_path = spec_dir / PROGRESS_FILE
+
+    # Read existing
+    lines = []
+    if progress_path.exists():
+        lines = progress_path.read_text(encoding="utf-8").strip().split("\n")
+
+    # Add new entry
+    lines.append(f"{now_log()} {action} {target}")
+
+    # Keep last 10
+    if len(lines) > 10:
+        lines = lines[-10:]
+
+    progress_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+# --- Commands ---
+
+
+def cmd_init(args: argparse.Namespace) -> None:
+    """Initialize .spec/ directory structure."""
+    spec_dir = get_spec_dir()
+
+    if spec_dir.exists():
+        print(f".spec/ already exists at {spec_dir}")
+        return
+
+    # Create structure
+    (spec_dir / REQS_DIR).mkdir(parents=True)
+    (spec_dir / EPICS_DIR).mkdir(parents=True)
+    (spec_dir / TASKS_DIR).mkdir(parents=True)
+
+    # Create PROGRESS.md
+    progress_path = spec_dir / PROGRESS_FILE
+    progress_path.write_text(f"{now_log()} INIT .spec/\n", encoding="utf-8")
+
+    success_print(f"Created .spec/ at {spec_dir}")
+    print("\nNext steps:")
+    print("  1. Create a requirement: specctl new req auth")
+    print("  2. Or interview for requirements: /spec:interview 'your feature idea'")
+
+
+def cmd_ready(args: argparse.Namespace) -> None:
+    """Show tasks ready to start."""
+    if not ensure_spec_exists():
+        error_exit(".spec/ not found. Run 'specctl init' first.")
+
+    spec_dir = get_spec_dir()
+    ready = get_ready_tasks(spec_dir, args.epic)
+
+    if not ready:
+        print("No tasks ready to start.")
+
+        # Show blocked tasks
+        blocked = get_blocked_tasks(spec_dir, args.epic)
+        if blocked:
+            print("\nBlocked tasks:")
+            for task, unmet in blocked:
+                print(f"  {task['id']} (waiting for: {', '.join(unmet)})")
+        return
+
+    print("Ready tasks (in priority order):\n")
+    for task in ready:
+        meta = task["metadata"]
+        priority = meta.get("priority", "normal")
+        epic = meta.get("epic", "-")
+        print(f"  {task['id']:30} priority={priority:8} epic={epic}")
+
+    if ready:
+        print(f"\nStart work: specctl start {ready[0]['id']}")
+
+
+def cmd_start(args: argparse.Namespace) -> None:
+    """Mark task as in_progress."""
+    if not ensure_spec_exists():
+        error_exit(".spec/ not found. Run 'specctl init' first.")
+
+    spec_dir = get_spec_dir()
+    task_id = args.id
+
+    # Find task file
+    task_path = spec_dir / TASKS_DIR / f"{task_id}.md"
+    if not task_path.exists():
+        error_exit(f"Task not found: {task_id}")
+
+    task = load_task(task_path)
+    current_status = task["metadata"].get("status", "todo")
+
+    if current_status == "in_progress":
+        print(f"Task {task_id} is already in_progress")
+        return
+
+    if current_status == "done":
+        error_exit(f"Task {task_id} is already done")
+
+    # Update status
+    update_frontmatter(task_path, {"status": "in_progress"})
+    log_progress("START", task_id)
+
+    success_print(f"Started {task_id}")
+
+
+def cmd_done(args: argparse.Namespace) -> None:
+    """Mark task as done with optional evidence."""
+    if not ensure_spec_exists():
+        error_exit(".spec/ not found. Run 'specctl init' first.")
+
+    spec_dir = get_spec_dir()
+    task_id = args.id
+
+    # Find task file
+    task_path = spec_dir / TASKS_DIR / f"{task_id}.md"
+    if not task_path.exists():
+        error_exit(f"Task not found: {task_id}")
+
+    task = load_task(task_path)
+
+    # Build updates
+    updates: dict[str, Any] = {
+        "status": "done",
+        "done-at": now_iso(),
+    }
+
+    if args.summary:
+        updates["done-summary"] = args.summary
+    if args.files:
+        updates["done-files"] = [f.strip() for f in args.files.split(",")]
+    if args.commits:
+        updates["done-commits"] = [c.strip() for c in args.commits.split(",")]
+    if args.tests:
+        updates["done-tests"] = args.tests
+
+    # Update
+    update_frontmatter(task_path, updates)
+    log_progress("DONE", task_id)
+
+    success_print(f"Completed {task_id}")
+
+    # Check for newly unblocked tasks
+    ready = get_ready_tasks(spec_dir, task["metadata"].get("epic"))
+    if ready:
+        print(f"\nNewly unblocked: {', '.join(t['id'] for t in ready[:3])}")
+
+
+def cmd_validate(args: argparse.Namespace) -> None:
+    """Validate .spec/ for issues."""
+    if not ensure_spec_exists():
+        error_exit(".spec/ not found. Run 'specctl init' first.")
+
+    spec_dir = get_spec_dir()
+    issues: list[str] = []
+
+    # Check tasks
+    for task_path in find_tasks(spec_dir):
+        task = load_task(task_path)
+        meta = task["metadata"]
+        task_id = task["id"]
+
+        # Required fields
+        if "status" not in meta:
+            issues.append(f"{task_id}: missing 'status' field")
+
+        # Check blocked-by references exist
+        blocked_by = meta.get("blocked-by", [])
+        if isinstance(blocked_by, str):
+            blocked_by = [blocked_by]
+
+        for dep in blocked_by:
+            dep_path = spec_dir / TASKS_DIR / f"{dep}.md"
+            if not dep_path.exists():
+                issues.append(
+                    f"{task_id}: blocked-by references non-existent task '{dep}'"
+                )
+
+    # Check epics
+    for epic_path in find_epics(spec_dir):
+        epic = load_epic(epic_path)
+        meta = epic["metadata"]
+        epic_id = epic["id"]
+
+        if "status" not in meta:
+            issues.append(f"{epic_id}: missing 'status' field")
+
+        # Check task references
+        tasks = meta.get("tasks", [])
+        if isinstance(tasks, str):
+            tasks = [tasks]
+
+        for task_ref in tasks:
+            task_path = spec_dir / TASKS_DIR / f"{task_ref}.md"
+            if not task_path.exists():
+                issues.append(f"{epic_id}: references non-existent task '{task_ref}'")
+
+    # Check for dependency cycles
+    all_tasks = [load_task(p) for p in find_tasks(spec_dir)]
+
+    def has_cycle(task_id: str, visited: set, path: set) -> bool:
+        if task_id in path:
+            return True
+        if task_id in visited:
+            return False
+
+        visited.add(task_id)
+        path.add(task_id)
+
+        # Find task
+        task = next((t for t in all_tasks if t["id"] == task_id), None)
+        if task:
+            blocked_by = task["metadata"].get("blocked-by", [])
+            if isinstance(blocked_by, str):
+                blocked_by = [blocked_by]
+            for dep in blocked_by:
+                if has_cycle(dep, visited, path):
+                    return True
+
+        path.remove(task_id)
+        return False
+
+    for task in all_tasks:
+        if has_cycle(task["id"], set(), set()):
+            issues.append(f"{task['id']}: part of a dependency cycle")
+            break
+
+    if issues:
+        print("Validation issues found:\n")
+        for issue in issues:
+            print(f"  • {issue}")
+        sys.exit(1)
+    else:
+        success_print("No issues found")
+
+
+def cmd_status(args: argparse.Namespace) -> None:
+    """Show progress overview."""
+    if not ensure_spec_exists():
+        error_exit(".spec/ not found. Run 'specctl init' first.")
+
+    spec_dir = get_spec_dir()
+
+    # If specific ID provided
+    if args.id:
+        # Try task first
+        task_path = spec_dir / TASKS_DIR / f"{args.id}.md"
+        if task_path.exists():
+            task = load_task(task_path)
+            print(f"Task: {task['id']}")
+            print(f"Status: {task['metadata'].get('status', 'unknown')}")
+            print(f"Priority: {task['metadata'].get('priority', 'normal')}")
+            print(f"Epic: {task['metadata'].get('epic', '-')}")
+            blocked = task["metadata"].get("blocked-by", [])
+            if blocked:
+                print(
+                    f"Blocked by: {', '.join(blocked) if isinstance(blocked, list) else blocked}"
+                )
+            return
+
+        # Try epic
+        epic_path = spec_dir / EPICS_DIR / f"{args.id}.md"
+        if epic_path.exists():
+            epic = load_epic(epic_path)
+            print(f"Epic: {epic['id']}")
+            print(f"Status: {epic['metadata'].get('status', 'unknown')}")
+            print(f"Implements: {epic['metadata'].get('implements', '-')}")
+            tasks = epic["metadata"].get("tasks", [])
+            if tasks:
+                print(
+                    f"Tasks: {', '.join(tasks) if isinstance(tasks, list) else tasks}"
+                )
+            return
+
+        error_exit(f"Not found: {args.id}")
+
+    # Overview
+    all_tasks = [load_task(p) for p in find_tasks(spec_dir)]
+    all_epics = [load_epic(p) for p in find_epics(spec_dir)]
+    all_reqs = find_reqs(spec_dir)
+
+    todo = [t for t in all_tasks if t["metadata"].get("status") == "todo"]
+    in_progress = [t for t in all_tasks if t["metadata"].get("status") == "in_progress"]
+    done = [t for t in all_tasks if t["metadata"].get("status") == "done"]
+
+    print("═══════════════════════════════════════════════════")
+    print("                  SPEC STATUS                       ")
+    print("═══════════════════════════════════════════════════")
+    print(f"Requirements: {len(all_reqs)}")
+    print(
+        f"Epics:        {len(all_epics)} ({sum(1 for e in all_epics if e['metadata'].get('status') == 'done')} done)"
+    )
+    print(
+        f"Tasks:        {len(all_tasks)} ({len(done)} done, {len(in_progress)} in progress, {len(todo)} todo)"
+    )
+    print("───────────────────────────────────────────────────")
+
+    if in_progress:
+        print("\nIn Progress:")
+        for task in in_progress:
+            print(f"  → {task['id']}")
+
+    ready = get_ready_tasks(spec_dir)
+    if ready:
+        print("\nReady to Start:")
+        for task in ready[:5]:
+            print(f"  • {task['id']}")
+        if len(ready) > 5:
+            print(f"  ... and {len(ready) - 5} more")
+
+    # Recent progress
+    progress_path = spec_dir / PROGRESS_FILE
+    if progress_path.exists():
+        lines = progress_path.read_text(encoding="utf-8").strip().split("\n")
+        if lines:
+            print("\nRecent Activity:")
+            for line in lines[-5:]:
+                print(f"  {line}")
+
+
+def cmd_dep_add(args: argparse.Namespace) -> None:
+    """Add dependency: task depends on dep."""
+    if not ensure_spec_exists():
+        error_exit(".spec/ not found. Run 'specctl init' first.")
+
+    spec_dir = get_spec_dir()
+    task_id = args.task
+    dep_id = args.dep
+
+    # Verify both exist
+    task_path = spec_dir / TASKS_DIR / f"{task_id}.md"
+    dep_path = spec_dir / TASKS_DIR / f"{dep_id}.md"
+
+    if not task_path.exists():
+        error_exit(f"Task not found: {task_id}")
+    if not dep_path.exists():
+        error_exit(f"Dependency not found: {dep_id}")
+
+    # Load task
+    task = load_task(task_path)
+    blocked_by = task["metadata"].get("blocked-by", [])
+    if isinstance(blocked_by, str):
+        blocked_by = [blocked_by]
+
+    if dep_id in blocked_by:
+        print(f"{task_id} already depends on {dep_id}")
+        return
+
+    blocked_by.append(dep_id)
+    update_frontmatter(task_path, {"blocked-by": blocked_by})
+
+    success_print(f"{task_id} now blocked by {dep_id}")
+
+
+def cmd_show(args: argparse.Namespace) -> None:
+    """Show task or epic details including body."""
+    if not ensure_spec_exists():
+        error_exit(".spec/ not found. Run 'specctl init' first.")
+
+    spec_dir = get_spec_dir()
+    item_id = args.id
+
+    # Try task
+    task_path = spec_dir / TASKS_DIR / f"{item_id}.md"
+    if task_path.exists():
+        print(task_path.read_text(encoding="utf-8"))
+        return
+
+    # Try epic
+    epic_path = spec_dir / EPICS_DIR / f"{item_id}.md"
+    if epic_path.exists():
+        print(epic_path.read_text(encoding="utf-8"))
+        return
+
+    # Try req
+    req_path = spec_dir / REQS_DIR / f"{item_id}.md"
+    if req_path.exists():
+        print(req_path.read_text(encoding="utf-8"))
+        return
+
+    error_exit(f"Not found: {item_id}")
+
+
+# --- Main ---
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="specctl - Spec-driven development CLI",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+    specctl init                        Initialize .spec/
+    specctl ready                       Show tasks ready to start
+    specctl ready --epic EPIC-auth      Show ready tasks for specific epic
+    specctl start TASK-login            Start working on a task
+    specctl done TASK-login             Mark task complete
+    specctl done TASK-login --summary "Added login form" --files "src/login.ts"
+    specctl validate                    Check for issues
+    specctl status                      Show overview
+    specctl dep add TASK-b TASK-a       TASK-b depends on TASK-a
+    specctl show TASK-login             Show task details
+        """,
+    )
+
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    # init
+    subparsers.add_parser("init", help="Initialize .spec/ directory")
+
+    # ready
+    ready_parser = subparsers.add_parser("ready", help="Show tasks ready to start")
+    ready_parser.add_argument("--epic", help="Filter by epic ID")
+
+    # start
+    start_parser = subparsers.add_parser("start", help="Mark task as in_progress")
+    start_parser.add_argument("id", help="Task ID")
+
+    # done
+    done_parser = subparsers.add_parser("done", help="Mark task as done")
+    done_parser.add_argument("id", help="Task ID")
+    done_parser.add_argument("--summary", help="Summary of what was done")
+    done_parser.add_argument("--files", help="Comma-separated list of changed files")
+    done_parser.add_argument("--commits", help="Comma-separated list of commit hashes")
+    done_parser.add_argument("--tests", help="Test results")
+
+    # validate
+    validate_parser = subparsers.add_parser("validate", help="Check for issues")
+    validate_parser.add_argument("--all", action="store_true", help="Check everything")
+
+    # status
+    status_parser = subparsers.add_parser("status", help="Show progress overview")
+    status_parser.add_argument("id", nargs="?", help="Specific task/epic ID")
+
+    # dep
+    dep_parser = subparsers.add_parser("dep", help="Manage dependencies")
+    dep_subparsers = dep_parser.add_subparsers(dest="dep_command", required=True)
+
+    dep_add_parser = dep_subparsers.add_parser("add", help="Add dependency")
+    dep_add_parser.add_argument("task", help="Task that depends on another")
+    dep_add_parser.add_argument("dep", help="Task that must be done first")
+
+    # show
+    show_parser = subparsers.add_parser("show", help="Show item details")
+    show_parser.add_argument("id", help="Task, epic, or requirement ID")
+
+    args = parser.parse_args()
+
+    if args.command == "init":
+        cmd_init(args)
+    elif args.command == "ready":
+        cmd_ready(args)
+    elif args.command == "start":
+        cmd_start(args)
+    elif args.command == "done":
+        cmd_done(args)
+    elif args.command == "validate":
+        cmd_validate(args)
+    elif args.command == "status":
+        cmd_status(args)
+    elif args.command == "dep":
+        cmd_dep_add(args)
+    elif args.command == "show":
+        cmd_show(args)
+
+
+if __name__ == "__main__":
+    main()
