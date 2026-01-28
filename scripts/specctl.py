@@ -30,9 +30,11 @@ REQS_DIR = "reqs"
 EPICS_DIR = "epics"
 TASKS_DIR = "tasks"
 PROGRESS_FILE = "PROGRESS.md"
+SESSION_FILE = "SESSION.yaml"
 
 TASK_STATUS = ["todo", "in_progress", "done"]
 EPIC_STATUS = ["open", "done"]
+SESSION_STEPS = ["planning", "implementing", "testing", "reviewing", "completing"]
 
 
 # --- Helpers ---
@@ -246,6 +248,49 @@ def load_epic(epic_path: Path) -> dict[str, Any]:
 # --- Dependency Resolution ---
 
 
+def would_create_cycle(
+    spec_dir: Path, task_id: str, new_dep_id: str
+) -> Optional[list[str]]:
+    """Check if adding task_id -> new_dep_id would create a cycle.
+
+    Returns the cycle path if found, None otherwise.
+    Uses DFS from new_dep_id following blocked-by to see if we reach task_id.
+    """
+    all_tasks = [load_task(p) for p in find_tasks(spec_dir)]
+    task_map = {t["id"]: t for t in all_tasks}
+
+    def get_deps(tid: str) -> list[str]:
+        """Get dependencies for a task."""
+        task = task_map.get(tid)
+        if not task:
+            return []
+        blocked_by = task["metadata"].get("blocked-by", [])
+        if isinstance(blocked_by, str):
+            blocked_by = [blocked_by]
+        return blocked_by
+
+    # DFS from new_dep_id to see if we can reach task_id
+    def dfs(current: str, path: list[str]) -> Optional[list[str]]:
+        if current == task_id:
+            return path + [current]  # Found cycle
+
+        deps = get_deps(current)
+        # Also consider the new dependency we're about to add
+        if current == task_id:
+            deps = deps + [new_dep_id]
+
+        for dep in deps:
+            if dep in path:
+                continue  # Already in path, skip
+            result = dfs(dep, path + [current])
+            if result:
+                return result
+        return None
+
+    # Start from new_dep_id and see if we reach task_id
+    return dfs(new_dep_id, [])
+
+
 def get_ready_tasks(spec_dir: Path, epic_id: Optional[str] = None) -> list[dict]:
     """Get tasks that are ready to start (todo + no blockers)."""
     task_paths = find_tasks(spec_dir, epic_id)
@@ -306,6 +351,137 @@ def get_blocked_tasks(
     return blocked
 
 
+# --- Git Hook ---
+
+PRE_COMMIT_HOOK = """\
+#!/usr/bin/env bash
+# specctl pre-commit hook - validates .spec/ files before commit
+
+# Check if any .spec/ files are staged
+staged_spec=$(git diff --cached --name-only | grep -E '^\\.spec/' || true)
+
+if [ -n "$staged_spec" ]; then
+    echo "Validating .spec/ files..."
+    if ! specctl validate 2>&1; then
+        echo ""
+        echo "ERROR: .spec/ validation failed. Fix issues before committing."
+        exit 1
+    fi
+    echo "✓ .spec/ validation passed"
+fi
+"""
+
+
+def install_git_hook() -> bool:
+    """Install git pre-commit hook for .spec/ validation.
+
+    Returns True if installed, False if skipped.
+    """
+    repo_root = get_repo_root()
+    hooks_dir = repo_root / ".git" / "hooks"
+
+    if not hooks_dir.exists():
+        return False
+
+    hook_path = hooks_dir / "pre-commit"
+
+    # Check if hook already exists
+    if hook_path.exists():
+        existing = hook_path.read_text(encoding="utf-8")
+        if "specctl validate" in existing:
+            return True  # Already installed
+
+        # Append to existing hook
+        if not existing.endswith("\n"):
+            existing += "\n"
+        existing += "\n# specctl validation\n"
+        existing += PRE_COMMIT_HOOK.split("\n", 2)[2]  # Skip shebang + comment
+        hook_path.write_text(existing, encoding="utf-8")
+    else:
+        hook_path.write_text(PRE_COMMIT_HOOK, encoding="utf-8")
+
+    # Make executable
+    hook_path.chmod(0o755)
+    return True
+
+
+# --- Session State ---
+
+
+def get_session_path() -> Path:
+    """Get path to SESSION.yaml."""
+    return get_spec_dir() / SESSION_FILE
+
+
+def load_session() -> dict[str, Any]:
+    """Load current session state."""
+    session_path = get_session_path()
+    if not session_path.exists():
+        return {}
+
+    content = session_path.read_text(encoding="utf-8")
+    # Simple YAML parsing for session state
+    session: dict[str, Any] = {}
+    for line in content.strip().split("\n"):
+        if ":" in line and not line.startswith("#"):
+            key, _, value = line.partition(":")
+            session[key.strip()] = value.strip()
+    return session
+
+
+def save_session(session: dict[str, Any]) -> None:
+    """Save session state."""
+    session_path = get_session_path()
+    lines = ["# Session state - auto-managed by specctl"]
+    for key, value in session.items():
+        lines.append(f"{key}: {value}")
+    session_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def clear_session() -> None:
+    """Clear session state."""
+    session_path = get_session_path()
+    if session_path.exists():
+        session_path.unlink()
+
+
+def session_start(task_id: str, base_commit: Optional[str] = None) -> None:
+    """Start a session for a task."""
+    session = {
+        "task": task_id,
+        "step": "planning",
+        "started": now_iso(),
+    }
+    if base_commit:
+        session["base_commit"] = base_commit
+    else:
+        # Get current HEAD
+        try:
+            result = subprocess.run(
+                ["git", "rev-parse", "--short", "HEAD"],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            session["base_commit"] = result.stdout.strip()
+        except subprocess.CalledProcessError:
+            pass
+    save_session(session)
+
+
+def session_update_step(step: str) -> None:
+    """Update session step."""
+    session = load_session()
+    if session:
+        session["step"] = step
+        save_session(session)
+
+
+def session_end() -> None:
+    """End current session."""
+    clear_session()
+
+
 # --- Progress Logging ---
 
 
@@ -350,6 +526,11 @@ def cmd_init(args: argparse.Namespace) -> None:
     progress_path.write_text(f"{now_log()} INIT .spec/\n", encoding="utf-8")
 
     success_print(f"Created .spec/ at {spec_dir}")
+
+    # Install git hook
+    if install_git_hook():
+        success_print("Installed git pre-commit hook for .spec/ validation")
+
     print("\nNext steps:")
     print("  1. Create a requirement: specctl new req auth")
     print("  2. Or interview for requirements: /spec:interview 'your feature idea'")
@@ -408,11 +589,23 @@ def cmd_start(args: argparse.Namespace) -> None:
     if current_status == "done":
         error_exit(f"Task {task_id} is already done")
 
+    # Check for existing session
+    existing = load_session()
+    if existing and existing.get("task") != task_id:
+        print(f"Warning: Session exists for {existing.get('task')}")
+        print("  Use 'specctl session clear' to clear it first")
+
     # Update status
     update_frontmatter(task_path, {"status": "in_progress"})
     log_progress("START", task_id)
 
+    # Start session tracking
+    session_start(task_id)
+
     success_print(f"Started {task_id}")
+    session = load_session()
+    if session.get("base_commit"):
+        print(f"  Base commit: {session['base_commit']}")
 
 
 def cmd_done(args: argparse.Namespace) -> None:
@@ -448,6 +641,9 @@ def cmd_done(args: argparse.Namespace) -> None:
     # Update
     update_frontmatter(task_path, updates)
     log_progress("DONE", task_id)
+
+    # End session
+    session_end()
 
     success_print(f"Completed {task_id}")
 
@@ -657,6 +853,12 @@ def cmd_dep_add(args: argparse.Namespace) -> None:
         print(f"{task_id} already depends on {dep_id}")
         return
 
+    # Check for cycles before adding
+    cycle = would_create_cycle(spec_dir, task_id, dep_id)
+    if cycle:
+        cycle_str = " → ".join(cycle)
+        error_exit(f"Cannot add dependency: would create cycle: {cycle_str}")
+
     blocked_by.append(dep_id)
     update_frontmatter(task_path, {"blocked-by": blocked_by})
 
@@ -802,6 +1004,81 @@ def cmd_show(args: argparse.Namespace) -> None:
     error_exit(f"Not found: {item_id}")
 
 
+def cmd_hook(args: argparse.Namespace) -> None:
+    """Install or manage git hooks."""
+    if args.hook_command == "install":
+        if install_git_hook():
+            success_print("Installed git pre-commit hook for .spec/ validation")
+        else:
+            error_exit("Could not install hook (not in a git repository?)")
+    elif args.hook_command == "status":
+        repo_root = get_repo_root()
+        hook_path = repo_root / ".git" / "hooks" / "pre-commit"
+        if hook_path.exists():
+            content = hook_path.read_text(encoding="utf-8")
+            if "specctl validate" in content:
+                success_print("Pre-commit hook is installed")
+            else:
+                print("Pre-commit hook exists but doesn't include specctl validation")
+        else:
+            print("No pre-commit hook installed")
+
+
+def cmd_session(args: argparse.Namespace) -> None:
+    """Manage session state."""
+    if not ensure_spec_exists():
+        error_exit(".spec/ not found. Run 'specctl init' first.")
+
+    if args.session_command == "show":
+        session = load_session()
+        if not session:
+            print("No active session")
+            return
+
+        print("Active Session:")
+        print(f"  Task: {session.get('task', 'unknown')}")
+        print(f"  Step: {session.get('step', 'unknown')}")
+        print(f"  Started: {session.get('started', 'unknown')}")
+        if session.get("base_commit"):
+            print(f"  Base commit: {session['base_commit']}")
+
+    elif args.session_command == "clear":
+        session = load_session()
+        if session:
+            session_end()
+            success_print(f"Cleared session for {session.get('task', 'unknown')}")
+        else:
+            print("No active session to clear")
+
+    elif args.session_command == "step":
+        session = load_session()
+        if not session:
+            error_exit("No active session")
+
+        step = args.step
+        if step not in SESSION_STEPS:
+            error_exit(f"Invalid step: {step}. Valid: {', '.join(SESSION_STEPS)}")
+
+        session_update_step(step)
+        success_print(f"Session step: {step}")
+
+    elif args.session_command == "resume":
+        session = load_session()
+        if not session:
+            print("No session to resume")
+            return
+
+        task_id = session.get("task")
+        step = session.get("step", "planning")
+        base = session.get("base_commit", "")
+
+        print("Session Recovery Info:")
+        print(f"  Task: {task_id}")
+        print(f"  Step: {step}")
+        print(f"  Base: {base}")
+        print(f"\nTo continue: /spec:work {task_id}")
+
+
 # --- Main ---
 
 
@@ -824,6 +1101,12 @@ Examples:
     specctl dep rm TASK-b TASK-a        Remove dependency
     specctl epic close EPIC-auth        Mark epic as done
     specctl show TASK-login             Show task details
+    specctl hook install                Install git pre-commit hook
+    specctl hook status                 Check if hook is installed
+    specctl session show                Show active session
+    specctl session step implementing   Update session step
+    specctl session resume              Show recovery info
+    specctl session clear               Clear session state
         """,
     )
 
@@ -886,6 +1169,25 @@ Examples:
     show_parser = subparsers.add_parser("show", help="Show item details")
     show_parser.add_argument("id", help="Task, epic, or requirement ID")
 
+    # hook
+    hook_parser = subparsers.add_parser("hook", help="Manage git hooks")
+    hook_subparsers = hook_parser.add_subparsers(dest="hook_command", required=True)
+    hook_subparsers.add_parser("install", help="Install pre-commit hook")
+    hook_subparsers.add_parser("status", help="Check hook status")
+
+    # session
+    session_parser = subparsers.add_parser("session", help="Manage session state")
+    session_subparsers = session_parser.add_subparsers(
+        dest="session_command", required=True
+    )
+    session_subparsers.add_parser("show", help="Show current session")
+    session_subparsers.add_parser("clear", help="Clear session state")
+    session_subparsers.add_parser("resume", help="Show recovery info")
+    session_step_parser = session_subparsers.add_parser("step", help="Update step")
+    session_step_parser.add_argument(
+        "step", choices=SESSION_STEPS, help="New step value"
+    )
+
     args = parser.parse_args()
 
     if args.command == "init":
@@ -912,6 +1214,10 @@ Examples:
             cmd_epic_close(args)
     elif args.command == "show":
         cmd_show(args)
+    elif args.command == "hook":
+        cmd_hook(args)
+    elif args.command == "session":
+        cmd_session(args)
 
 
 if __name__ == "__main__":

@@ -60,11 +60,23 @@ specctl status 2>/dev/null || echo "NO_SPEC"
 **Check for interrupted session:**
 
 ```bash
-cat .spec/PROGRESS.md 2>/dev/null | tail -5
+specctl session show 2>/dev/null
 branch=$(git branch --show-current 2>/dev/null)
 ```
 
-**If PROGRESS.md shows interrupted task** (START without DONE) **and on task branch**: Resume from last step.
+**If session exists**: Show recovery info and offer to resume:
+
+```bash
+specctl session resume
+```
+
+Present: "Found interrupted session: {task} at step {step}. Resume or clear?"
+
+| Header  | Question                  | Options                                                                       |
+| ------- | ------------------------- | ----------------------------------------------------------------------------- |
+| Session | Found interrupted session | 1. **Resume** - Continue from {step}<br>2. **Clear & pick new** - Start fresh |
+
+**If resuming**: Jump to the appropriate step based on session step value.
 
 ---
 
@@ -139,6 +151,12 @@ specctl start TASK-xxx
 
 ## Step 2: Plan
 
+**Update session step:**
+
+```bash
+specctl session step planning
+```
+
 **Spawn spec-planner:**
 
 ```
@@ -166,15 +184,19 @@ Task(
 
 ## Step 3: Implement
 
-**Create branch and capture starting point:**
+**Update session step:**
+
+```bash
+specctl session step implementing
+```
+
+**Create branch:**
 
 ```bash
 git checkout -b "task/$task_id" 2>/dev/null || git checkout "task/$task_id"
-
-# Capture BASE_COMMIT for scoped review later
-BASE_COMMIT=$(git rev-parse HEAD)
-echo "$(date +%H:%M) BASE_COMMIT $BASE_COMMIT" >> .spec/PROGRESS.md
 ```
+
+Note: BASE_COMMIT is already tracked in SESSION.yaml from `specctl start`.
 
 **Check memory for pitfalls/conventions:**
 
@@ -209,6 +231,12 @@ Task(
 
 ## Step 4: Verify (Max 3 Attempts)
 
+**Update session step:**
+
+```bash
+specctl session step testing
+```
+
 ```bash
 make build && make test && make lint
 ```
@@ -232,6 +260,12 @@ make build && make test && make lint
 ---
 
 ## Step 5: Complete
+
+**Update session step:**
+
+```bash
+specctl session step completing
+```
 
 **Collect evidence:**
 
@@ -279,11 +313,17 @@ echo -e "\n## $(date +%Y-%m-%d) - $task_id\n{user's convention}" >> .spec/memory
 
 ## Step 7: Review & Commit (User Choice)
 
+**Update session step:**
+
+```bash
+specctl session step reviewing
+```
+
 **Show scoped diff (only this task's changes):**
 
 ```bash
-# Get BASE_COMMIT from PROGRESS.md
-BASE_COMMIT=$(grep "BASE_COMMIT" .spec/PROGRESS.md | tail -1 | awk '{print $3}')
+# Get BASE_COMMIT from session
+BASE_COMMIT=$(grep "base_commit:" .spec/SESSION.yaml 2>/dev/null | cut -d' ' -f2)
 git diff $BASE_COMMIT..HEAD --stat
 ```
 
@@ -299,7 +339,7 @@ Pass scoped diff to review agent:
 
 ```bash
 # Get only this task's changes
-BASE_COMMIT=$(grep "BASE_COMMIT" .spec/PROGRESS.md | tail -1 | awk '{print $3}')
+BASE_COMMIT=$(grep "base_commit:" .spec/SESSION.yaml 2>/dev/null | cut -d' ' -f2)
 git diff $BASE_COMMIT..HEAD > /tmp/task-diff.patch
 ```
 
@@ -325,11 +365,7 @@ gh pr create --title "feat: {task title}" --body "Implements TASK-xxx from EPIC-
 
 ## Step 8: Next Task
 
-**Cleanup PROGRESS.md** - keep last 10 entries:
-
-```bash
-tail -10 .spec/PROGRESS.md > /tmp/progress.tmp && mv /tmp/progress.tmp .spec/PROGRESS.md
-```
+Note: Session is automatically cleared when task is marked done with `specctl done`.
 
 **Check for more ready tasks:**
 

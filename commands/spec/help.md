@@ -44,11 +44,17 @@ description: Quick methodology guide for spec-driven development
 ├─────────────────────────────────────────────────────────────────┤
 │ CLI HELPER (specctl)                                            │
 │   specctl ready           Unblocked tasks in priority order     │
-│   specctl start TASK-xxx  Mark task in_progress                 │
-│   specctl done TASK-xxx   Mark done with evidence               │
-│   specctl validate        Check for issues                      │
+│   specctl start TASK-xxx  Mark task in_progress + start session │
+│   specctl done TASK-xxx   Mark done with evidence + end session │
+│   specctl reset TASK-xxx  Reset task back to todo               │
+│   specctl validate        Check for issues (cycle detection)    │
 │   specctl status          Progress overview                     │
-│   specctl dep add A B     A depends on B                        │
+│   specctl dep add A B     A depends on B (with cycle check)     │
+│   specctl dep rm A B      Remove dependency                     │
+│   specctl epic close X    Mark epic as done                     │
+│   specctl hook install    Install git pre-commit validation     │
+│   specctl session show    Show current session state            │
+│   specctl session resume  Recovery info for interrupted work    │
 │                                                                 │
 ├─────────────────────────────────────────────────────────────────┤
 │ FILE STRUCTURE                                                  │
@@ -56,7 +62,9 @@ description: Quick methodology guide for spec-driven development
 │   ├── reqs/REQ-*.md      Requirements (WHAT) - from interview   │
 │   ├── epics/EPIC-*.md    Epics grouping tasks                   │
 │   ├── tasks/TASK-*.md    Tasks with dependencies                │
-│   └── PROGRESS.md        Session activity log                   │
+│   ├── memory/            Pitfalls, conventions, decisions       │
+│   ├── SESSION.yaml       Current session (task, step, commit)   │
+│   └── PROGRESS.md        Activity log (last 10 entries)         │
 │                                                                 │
 ├─────────────────────────────────────────────────────────────────┤
 │ KEY PRINCIPLES                                                  │

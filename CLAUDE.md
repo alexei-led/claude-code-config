@@ -13,12 +13,15 @@ Detected by `.spec/` folder. Markdown + YAML frontmatter, one file per task/requ
 
 ```
 .spec/
-├── PROGRESS.md     # Session state (auto-managed, last 5 entries)
+├── reqs/           # REQ-*.md (WHAT - requirements)
+├── epics/          # EPIC-*.md (grouping tasks)
 ├── tasks/          # TASK-*.md (HOW - implementation)
-└── reqs/           # REQ-*.md (WHAT - requirements)
+├── memory/         # pitfalls.md, conventions.md, decisions.md
+├── SESSION.yaml    # Current session state (auto-managed)
+└── PROGRESS.md     # Activity log (last 10 entries)
 ```
 
-**Task Status:** `todo` or `done` (delete if obsolete)
+**Task Status:** `todo`, `in_progress`, or `done`
 
 **Abstraction levels:**
 | Location | Level | Contains |
@@ -26,23 +29,25 @@ Detected by `.spec/` folder. Markdown + YAML frontmatter, one file per task/requ
 | `.spec/reqs/` | WHAT | Success criteria, constraints |
 | `.spec/tasks/` | HOW | Implementation steps, acceptance criteria |
 
-**Commands (5 total):**
+**Commands (8 total):**
 | Command | Purpose |
 |---------|---------|
-| `/spec:init` | Initialize project (or add reqs from docs) |
+| `/spec:init` | Initialize project |
+| `/spec:interview` | Deep questioning → REQ-\*.md |
+| `/spec:plan` | Create EPIC + TASK files from REQ |
 | `/spec:work` | Main workflow - select, plan, implement, verify |
-| `/spec:status` | Progress overview (+ `--list`, `--check` flags) |
+| `/spec:status` | Progress overview |
 | `/spec:new` | Create new task or requirement |
-| `/spec:done` | Mark complete (+ `--discover` finds done tasks) |
+| `/spec:done` | Mark complete with evidence |
+| `/spec:help` | Methodology quick reference |
 
 **Quick queries:**
 
 ```bash
-# Progress
-rg -l '^status: done' .spec/tasks/ | wc -l
-
-# Next todo
-rg -l '^status: todo' .spec/tasks/ | head -1
+specctl status                # Progress overview
+specctl ready                 # Next tasks (priority-ordered)
+specctl session show          # Current session state
+specctl validate              # Check for issues
 ```
 
 **Agent:**
@@ -64,10 +69,10 @@ NEVER mark done until ALL pass:
 
 If session was interrupted:
 
-1. Check `.spec/PROGRESS.md` for last action (shows task + step)
+1. Run `specctl session resume` for recovery info (task, step, base commit)
 2. Check `git status` for uncommitted changes
 3. Check current branch - if on `task/*`, continue that task
-4. Run `/spec:work` which auto-resumes from PROGRESS.md
+4. Run `/spec:work` which auto-detects and resumes from SESSION.yaml
 
 ## Automated Checks are Mandatory
 
