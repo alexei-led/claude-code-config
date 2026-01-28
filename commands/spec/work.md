@@ -1,6 +1,6 @@
 ---
 context: fork
-argument-hint: [TASK-xxx]
+argument-hint: [EPIC-xxx | TASK-xxx]
 allowed-tools:
   - Task
   - TaskOutput
@@ -10,6 +10,7 @@ allowed-tools:
   - Skill
   - AskUserQuestion
   - TodoWrite
+  - Bash(specctl:*)
   - Bash(rg:*)
   - Bash(fd:*)
   - Bash(wc:*)
@@ -20,6 +21,7 @@ allowed-tools:
   - Bash(git checkout:*)
   - Bash(git branch:*)
   - Bash(git status:*)
+  - Bash(git diff:*)
   - Bash(git push:*)
   - Bash(make:*)
   - Bash(gh pr:*)
@@ -28,13 +30,14 @@ description: Main workflow - select, plan, implement, verify, done
 
 # Spec Work
 
-Full development workflow. One task per session.
+Full development workflow. One task per session, with user control at every step.
 
 ## Usage
 
 ```
-/spec:work                      # auto-select next task by priority
-/spec:work TASK-xxx             # work on specific task
+/spec:work                      # next ready task (respects dependencies)
+/spec:work EPIC-xxx             # next ready task in specific epic
+/spec:work TASK-xxx             # specific task
 ```
 
 ---
@@ -42,7 +45,7 @@ Full development workflow. One task per session.
 ## Step 0: Check State
 
 ```bash
-ls .spec/tasks 2>/dev/null || echo "NO_SPEC"
+specctl status 2>/dev/null || echo "NO_SPEC"
 ```
 
 **If NO_SPEC**: "Run `/spec:init` first." Stop.
@@ -54,46 +57,47 @@ cat .spec/PROGRESS.md 2>/dev/null | tail -5
 branch=$(git branch --show-current 2>/dev/null)
 ```
 
-**If PROGRESS.md shows interrupted task** (SELECT without DONE) **and on task branch**: Resume from last step.
+**If PROGRESS.md shows interrupted task** (START without DONE) **and on task branch**: Resume from last step.
 
 ---
 
 ## Step 1: Select Task
 
-**If TASK-xxx argument provided**: Use that task.
+**If TASK-xxx argument**: Use that task.
 
-**Otherwise, find by priority:**
+**If EPIC-xxx argument**: Get ready tasks from that epic.
+
+**Otherwise**: Get next ready task (any epic).
 
 ```bash
-total=$(fd -e md . .spec/tasks/ | wc -l | tr -d ' ')
-done_count=$(rg -l '^status: done' .spec/tasks/ 2>/dev/null | wc -l | tr -d ' ')
-
-# Priority: critical → normal → low → any
-next=$(rg -l '^priority: critical' .spec/tasks/ 2>/dev/null | xargs rg -l '^status: todo' 2>/dev/null | head -1)
-[ -z "$next" ] && next=$(rg -l '^priority: normal' .spec/tasks/ 2>/dev/null | xargs rg -l '^status: todo' 2>/dev/null | head -1)
-[ -z "$next" ] && next=$(rg -l '^status: todo' .spec/tasks/ 2>/dev/null | head -1)
+# Get ready tasks (respects dependencies, priority-ordered)
+specctl ready                           # all ready tasks
+specctl ready --epic EPIC-xxx           # ready tasks in specific epic
 ```
 
-**If no todo tasks**: "All tasks complete!" Stop.
+**If no ready tasks**:
 
-**Load task content:**
+- Check blocked tasks: `specctl ready` shows blockers
+- "No tasks ready. Check blocked tasks or create new work."
+- Stop.
 
-Read the task file. Extract `implements:` link.
-
-**Load linked requirement** (if any):
+**Load task:**
 
 ```bash
-req_id=$(rg '^implements:' "$next" -o | cut -d' ' -f2)
-[ -n "$req_id" ] && fd "$req_id.md" .spec/reqs/
+specctl show TASK-xxx
 ```
 
-Read requirement file if found.
+Read task file. Check for epic link and requirement link.
 
-**Log:**
+**Load context:**
+
+- Epic file (if `epic:` field exists)
+- Requirement file (if `implements:` in epic)
+
+**Mark in-progress:**
 
 ```bash
-task_id=$(basename "$next" .md)
-echo "$(date +%H:%M) SELECT $task_id" >> .spec/PROGRESS.md
+specctl start TASK-xxx
 ```
 
 **Present:**
@@ -101,10 +105,11 @@ echo "$(date +%H:%M) SELECT $task_id" >> .spec/PROGRESS.md
 ```
 ## Session
 
-**Progress**: {done_count}/{total}
-**Task**: {task_id}
+**Progress**: {done}/{total} tasks
+**Task**: TASK-xxx
+**Epic**: EPIC-xxx (if any)
 **Priority**: {priority}
-**Implements**: {req_id or "none"}
+**Blocked by**: {deps or "none - ready to start"}
 
 ---
 
@@ -112,11 +117,16 @@ echo "$(date +%H:%M) SELECT $task_id" >> .spec/PROGRESS.md
 
 ---
 
-### Linked Requirement
-{requirement content or "none"}
+### Context
+**Epic**: {epic overview}
+**Requirement**: {requirement summary}
 ```
 
-**STOP**: `AskUserQuestion` - "Work on this? [Yes / Different task]"
+**STOP**: `AskUserQuestion` - "Work on this task?"
+
+| Header  | Question                 | Options                                                                                                                              |
+| ------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Confirm | Start work on {task_id}? | 1. **Yes, proceed** - Start planning<br>2. **Different task** - Pick another<br>3. **View full context** - Show epic and requirement |
 
 ---
 
@@ -129,20 +139,21 @@ Task(
   subagent_type="spec-planner",
   prompt="Create implementation plan.
   Task: {task content}
+  Epic: {epic content}
   Requirement: {requirement content}
   Learn codebase style, return actionable plan."
 )
 ```
 
-**Log:**
-
-```bash
-echo "$(date +%H:%M) PLAN $task_id" >> .spec/PROGRESS.md
-```
-
 **Persist plan:** Append plan summary to task file under `## Plan` section.
 
-**Present plan. STOP**: `AskUserQuestion` - "Approve? [Yes / Modify]"
+**Present plan.**
+
+**STOP**: `AskUserQuestion` - "Approve this plan?"
+
+| Header | Question                          | Options                                                                                                                            |
+| ------ | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Plan   | Approve this implementation plan? | 1. **Yes, implement** - Start coding<br>2. **Modify plan** - I'll explain changes<br>3. **More research** - Explore codebase first |
 
 ---
 
@@ -152,29 +163,24 @@ echo "$(date +%H:%M) PLAN $task_id" >> .spec/PROGRESS.md
 
 ```bash
 git checkout -b "task/$task_id" 2>/dev/null || git checkout "task/$task_id"
-echo "$(date +%H:%M) BRANCH task/$task_id" >> .spec/PROGRESS.md
 ```
 
 **TodoWrite** from plan steps.
 
 **Spawn engineer agent:**
 
+Detect language from task files or epic, then spawn appropriate agent:
+
 ```
 Task(
   subagent_type="{go|python|typescript}-engineer",
   prompt="Implement: {task description}
   Plan: {plan}
-  Return proposals only."
+  Return proposals only - do not apply edits."
 )
 ```
 
-**Apply proposals** with user approval.
-
-**Log:**
-
-```bash
-echo "$(date +%H:%M) IMPL $task_id" >> .spec/PROGRESS.md
-```
+**Apply proposals** with user approval (each edit shown).
 
 ---
 
@@ -188,53 +194,86 @@ make build && make test && make lint
 
 **If fail (attempt < 3)**:
 
-```bash
-echo "$(date +%H:%M) VERIFY fail $task_id attempt N" >> .spec/PROGRESS.md
-```
-
-Fix issues and re-verify.
+- Show errors
+- Fix issues
+- Re-verify
 
 **If fail (attempt = 3)**:
 
-```bash
-echo "$(date +%H:%M) VERIFY blocked $task_id" >> .spec/PROGRESS.md
-```
+**STOP**: `AskUserQuestion` - "Verify failed 3 times"
 
-**STOP**: `AskUserQuestion` - "Verify failed 3x. [Help fix / Skip verify / Stop]"
+| Header  | Question                               | Options                                                                                                                  |
+| ------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Blocked | Verification failed 3 times. What now? | 1. **Help me fix** - Continue debugging<br>2. **Skip verify** - Mark done anyway<br>3. **Stop** - Leave task in progress |
 
 ---
 
 ## Step 5: Complete
 
-**Mark done:**
-
-```
-Edit: status: todo → status: done
-```
-
-**Log:**
+**Collect evidence:**
 
 ```bash
-echo "$(date +%H:%M) DONE $task_id" >> .spec/PROGRESS.md
+# Files changed
+git diff --name-only HEAD~1 2>/dev/null || git diff --name-only --cached
+
+# Commits
+git log --oneline -3
 ```
 
-**Commit:**
+**Mark done with evidence:**
+
+```bash
+specctl done TASK-xxx \
+  --summary "Brief summary of what was done" \
+  --files "file1.ts,file2.ts" \
+  --commits "abc123" \
+  --tests "make test passed"
+```
+
+---
+
+## Step 6: Review & Commit (User Choice)
+
+**STOP**: `AskUserQuestion` - "Task complete. What next?"
+
+| Header | Question                                                 | Options                                                                                                                                                                             |
+| ------ | -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Next   | Task implementation complete. What would you like to do? | 1. **Review changes** - Spawn review agent<br>2. **Commit now** - Create commit<br>3. **Push & PR** - Commit, push, create PR<br>4. **Continue to next task** - Skip commit for now |
+
+### If Review
+
+```
+Skill(skill="reviewing-code")
+```
+
+### If Commit
 
 ```
 Skill(skill="committing-code")
 ```
 
-**Push + PR:**
+### If Push & PR
 
 ```bash
 git push -u origin "task/$task_id"
-gh pr create --title "task: {description}" --body "Implements $task_id"
+gh pr create --title "feat: {task title}" --body "Implements TASK-xxx from EPIC-xxx"
 ```
 
-**Cleanup PROGRESS.md** - keep last 5 entries:
+---
+
+## Step 7: Next Task
+
+**Cleanup PROGRESS.md** - keep last 10 entries:
 
 ```bash
-tail -5 .spec/PROGRESS.md > /tmp/progress.tmp && mv /tmp/progress.tmp .spec/PROGRESS.md
+tail -10 .spec/PROGRESS.md > /tmp/progress.tmp && mv /tmp/progress.tmp .spec/PROGRESS.md
+```
+
+**Check for more ready tasks:**
+
+```bash
+specctl ready --epic EPIC-xxx  # if working on epic
+specctl ready                  # otherwise
 ```
 
 **Summary:**
@@ -242,9 +281,24 @@ tail -5 .spec/PROGRESS.md > /tmp/progress.tmp && mv /tmp/progress.tmp .spec/PROG
 ```
 ## Done
 
-**Task**: {task_id}
-**PR**: {url}
-**Progress**: {done_count}/{total} → {new}
+**Task**: TASK-xxx
+**Summary**: {done-summary}
+**Files**: {changed files}
 
-Next: `/spec:work`
+**Progress**: {done}/{total} tasks in epic
+
+### Next Ready Tasks
+{list from specctl ready}
+
+Continue: `/spec:work` or `/spec:work EPIC-xxx`
 ```
+
+---
+
+## Key Principles
+
+1. **User control**: Every edit shown for approval
+2. **Dependency respect**: `specctl ready` orders by dependencies
+3. **Evidence tracking**: `specctl done` records what was done
+4. **Suggestions not automation**: Review and commit are offered, not forced
+5. **One task per session**: Complete fully before starting next
