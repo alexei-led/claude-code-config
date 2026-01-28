@@ -10,6 +10,8 @@ allowed-tools:
   - Skill
   - AskUserQuestion
   - TodoWrite
+  - mcp__morphllm__edit_file
+  - mcp__sequential-thinking__sequentialthinking
   - Bash(specctl:*)
   - Bash(rg:*)
   - Bash(fd:*)
@@ -18,11 +20,16 @@ allowed-tools:
   - Bash(tail:*)
   - Bash(date:*)
   - Bash(basename:*)
+  - Bash(cat:*)
+  - Bash(mkdir:*)
   - Bash(git checkout:*)
   - Bash(git branch:*)
   - Bash(git status:*)
   - Bash(git diff:*)
+  - Bash(git log:*)
+  - Bash(git rev-parse:*)
   - Bash(git push:*)
+  - Bash(git show:*)
   - Bash(make:*)
   - Bash(gh pr:*)
 description: Main workflow - select, plan, implement, verify, done
@@ -159,11 +166,27 @@ Task(
 
 ## Step 3: Implement
 
-**Create branch:**
+**Create branch and capture starting point:**
 
 ```bash
 git checkout -b "task/$task_id" 2>/dev/null || git checkout "task/$task_id"
+
+# Capture BASE_COMMIT for scoped review later
+BASE_COMMIT=$(git rev-parse HEAD)
+echo "$(date +%H:%M) BASE_COMMIT $BASE_COMMIT" >> .spec/PROGRESS.md
 ```
+
+**Check memory for pitfalls/conventions:**
+
+```bash
+# If memory exists, read it before implementing
+if [ -d .spec/memory ]; then
+  cat .spec/memory/pitfalls.md 2>/dev/null
+  cat .spec/memory/conventions.md 2>/dev/null
+fi
+```
+
+Mention any relevant pitfalls/conventions to the engineer agent.
 
 **TodoWrite** from plan steps.
 
@@ -232,18 +255,57 @@ specctl done TASK-xxx \
 
 ---
 
-## Step 6: Review & Commit (User Choice)
+## Step 6: Capture Learnings (Optional)
+
+**Ask user about learnings:**
+
+| Header | Question                                                  | Options                                                                                                                                                    |
+| ------ | --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Memory | Any pitfalls or conventions to remember for future tasks? | 1. **Yes, record pitfall** - Something went wrong to avoid<br>2. **Yes, record convention** - Pattern to follow<br>3. **No, continue** - Nothing to record |
+
+**If recording:**
+
+```bash
+mkdir -p .spec/memory
+
+# For pitfall
+echo -e "\n## $(date +%Y-%m-%d) - $task_id\n{user's pitfall}" >> .spec/memory/pitfalls.md
+
+# For convention
+echo -e "\n## $(date +%Y-%m-%d) - $task_id\n{user's convention}" >> .spec/memory/conventions.md
+```
+
+---
+
+## Step 7: Review & Commit (User Choice)
+
+**Show scoped diff (only this task's changes):**
+
+```bash
+# Get BASE_COMMIT from PROGRESS.md
+BASE_COMMIT=$(grep "BASE_COMMIT" .spec/PROGRESS.md | tail -1 | awk '{print $3}')
+git diff $BASE_COMMIT..HEAD --stat
+```
 
 **STOP**: `AskUserQuestion` - "Task complete. What next?"
 
-| Header | Question                                                 | Options                                                                                                                                                                             |
-| ------ | -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Next   | Task implementation complete. What would you like to do? | 1. **Review changes** - Spawn review agent<br>2. **Commit now** - Create commit<br>3. **Push & PR** - Commit, push, create PR<br>4. **Continue to next task** - Skip commit for now |
+| Header | Question                                                 | Options                                                                                                                                                                                       |
+| ------ | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Next   | Task implementation complete. What would you like to do? | 1. **Review changes** - Review only this task's diff<br>2. **Commit now** - Create commit<br>3. **Push & PR** - Commit, push, create PR<br>4. **Continue to next task** - Skip commit for now |
 
 ### If Review
 
+Pass scoped diff to review agent:
+
+```bash
+# Get only this task's changes
+BASE_COMMIT=$(grep "BASE_COMMIT" .spec/PROGRESS.md | tail -1 | awk '{print $3}')
+git diff $BASE_COMMIT..HEAD > /tmp/task-diff.patch
+```
+
 ```
 Skill(skill="reviewing-code")
+# Review focuses on /tmp/task-diff.patch content
 ```
 
 ### If Commit
@@ -261,7 +323,7 @@ gh pr create --title "feat: {task title}" --body "Implements TASK-xxx from EPIC-
 
 ---
 
-## Step 7: Next Task
+## Step 8: Next Task
 
 **Cleanup PROGRESS.md** - keep last 10 entries:
 

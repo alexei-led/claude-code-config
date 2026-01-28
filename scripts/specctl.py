@@ -663,6 +663,116 @@ def cmd_dep_add(args: argparse.Namespace) -> None:
     success_print(f"{task_id} now blocked by {dep_id}")
 
 
+def cmd_dep_rm(args: argparse.Namespace) -> None:
+    """Remove dependency: task no longer depends on dep."""
+    if not ensure_spec_exists():
+        error_exit(".spec/ not found. Run 'specctl init' first.")
+
+    spec_dir = get_spec_dir()
+    task_id = args.task
+    dep_id = args.dep
+
+    # Verify task exists
+    task_path = spec_dir / TASKS_DIR / f"{task_id}.md"
+    if not task_path.exists():
+        error_exit(f"Task not found: {task_id}")
+
+    # Load task
+    task = load_task(task_path)
+    blocked_by = task["metadata"].get("blocked-by", [])
+    if isinstance(blocked_by, str):
+        blocked_by = [blocked_by]
+
+    if dep_id not in blocked_by:
+        print(f"{task_id} does not depend on {dep_id}")
+        return
+
+    blocked_by.remove(dep_id)
+    update_frontmatter(task_path, {"blocked-by": blocked_by})
+
+    success_print(f"Removed {dep_id} from {task_id} dependencies")
+
+
+def cmd_epic_close(args: argparse.Namespace) -> None:
+    """Mark epic as done."""
+    if not ensure_spec_exists():
+        error_exit(".spec/ not found. Run 'specctl init' first.")
+
+    spec_dir = get_spec_dir()
+    epic_id = args.id
+
+    # Find epic file
+    epic_path = spec_dir / EPICS_DIR / f"{epic_id}.md"
+    if not epic_path.exists():
+        error_exit(f"Epic not found: {epic_id}")
+
+    epic = load_epic(epic_path)
+    current_status = epic["metadata"].get("status", "open")
+
+    if current_status == "done":
+        print(f"Epic {epic_id} is already done")
+        return
+
+    # Check if all tasks are done
+    tasks = epic["metadata"].get("tasks", [])
+    if isinstance(tasks, str):
+        tasks = [tasks]
+
+    incomplete = []
+    for task_ref in tasks:
+        task_path = spec_dir / TASKS_DIR / f"{task_ref}.md"
+        if task_path.exists():
+            task = load_task(task_path)
+            if task["metadata"].get("status") != "done":
+                incomplete.append(task_ref)
+
+    if incomplete and not args.force:
+        error_exit(
+            f"Epic has incomplete tasks: {', '.join(incomplete)}. Use --force to close anyway."
+        )
+
+    update_frontmatter(epic_path, {"status": "done"})
+    log_progress("CLOSE", epic_id)
+
+    success_print(f"Closed epic {epic_id}")
+
+
+def cmd_reset(args: argparse.Namespace) -> None:
+    """Reset task status back to todo."""
+    if not ensure_spec_exists():
+        error_exit(".spec/ not found. Run 'specctl init' first.")
+
+    spec_dir = get_spec_dir()
+    task_id = args.id
+
+    task_path = spec_dir / TASKS_DIR / f"{task_id}.md"
+    if not task_path.exists():
+        error_exit(f"Task not found: {task_id}")
+
+    task = load_task(task_path)
+    current_status = task["metadata"].get("status", "todo")
+
+    if current_status == "todo":
+        print(f"Task {task_id} is already todo")
+        return
+
+    # Reset to todo, remove done-* fields
+    content = task_path.read_text(encoding="utf-8")
+    metadata, body = parse_frontmatter(content)
+
+    # Remove done-* fields
+    keys_to_remove = [k for k in metadata.keys() if k.startswith("done-")]
+    for key in keys_to_remove:
+        del metadata[key]
+
+    metadata["status"] = "todo"
+    new_content = serialize_frontmatter(metadata, body)
+    task_path.write_text(new_content, encoding="utf-8")
+
+    log_progress("RESET", task_id)
+    success_print(f"Reset {task_id} to todo")
+
+
 def cmd_show(args: argparse.Namespace) -> None:
     """Show task or epic details including body."""
     if not ensure_spec_exists():
@@ -707,9 +817,12 @@ Examples:
     specctl start TASK-login            Start working on a task
     specctl done TASK-login             Mark task complete
     specctl done TASK-login --summary "Added login form" --files "src/login.ts"
+    specctl reset TASK-login            Reset task back to todo
     specctl validate                    Check for issues
     specctl status                      Show overview
     specctl dep add TASK-b TASK-a       TASK-b depends on TASK-a
+    specctl dep rm TASK-b TASK-a        Remove dependency
+    specctl epic close EPIC-auth        Mark epic as done
     specctl show TASK-login             Show task details
         """,
     )
@@ -743,6 +856,10 @@ Examples:
     status_parser = subparsers.add_parser("status", help="Show progress overview")
     status_parser.add_argument("id", nargs="?", help="Specific task/epic ID")
 
+    # reset
+    reset_parser = subparsers.add_parser("reset", help="Reset task back to todo")
+    reset_parser.add_argument("id", help="Task ID")
+
     # dep
     dep_parser = subparsers.add_parser("dep", help="Manage dependencies")
     dep_subparsers = dep_parser.add_subparsers(dest="dep_command", required=True)
@@ -750,6 +867,20 @@ Examples:
     dep_add_parser = dep_subparsers.add_parser("add", help="Add dependency")
     dep_add_parser.add_argument("task", help="Task that depends on another")
     dep_add_parser.add_argument("dep", help="Task that must be done first")
+
+    dep_rm_parser = dep_subparsers.add_parser("rm", help="Remove dependency")
+    dep_rm_parser.add_argument("task", help="Task to remove dependency from")
+    dep_rm_parser.add_argument("dep", help="Dependency to remove")
+
+    # epic
+    epic_parser = subparsers.add_parser("epic", help="Manage epics")
+    epic_subparsers = epic_parser.add_subparsers(dest="epic_command", required=True)
+
+    epic_close_parser = epic_subparsers.add_parser("close", help="Mark epic as done")
+    epic_close_parser.add_argument("id", help="Epic ID")
+    epic_close_parser.add_argument(
+        "--force", action="store_true", help="Close even if tasks incomplete"
+    )
 
     # show
     show_parser = subparsers.add_parser("show", help="Show item details")
@@ -765,12 +896,20 @@ Examples:
         cmd_start(args)
     elif args.command == "done":
         cmd_done(args)
+    elif args.command == "reset":
+        cmd_reset(args)
     elif args.command == "validate":
         cmd_validate(args)
     elif args.command == "status":
         cmd_status(args)
     elif args.command == "dep":
-        cmd_dep_add(args)
+        if args.dep_command == "add":
+            cmd_dep_add(args)
+        elif args.dep_command == "rm":
+            cmd_dep_rm(args)
+    elif args.command == "epic":
+        if args.epic_command == "close":
+            cmd_epic_close(args)
     elif args.command == "show":
         cmd_show(args)
 
