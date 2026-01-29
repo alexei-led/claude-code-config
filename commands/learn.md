@@ -1,8 +1,9 @@
 ---
 model: sonnet
-context: fork
 allowed-tools:
-  - TodoWrite
+  - TaskCreate
+  - TaskUpdate
+  - TaskList
   - Read
   - Edit
   - Write
@@ -17,7 +18,7 @@ argument-hint: [topic] [--dry-run]
 
 Extract actionable learnings and generate project-specific customizations. Adapts Claude Code to project patterns over time.
 
-**Use TodoWrite** to track these 8 phases:
+**Use TaskCreate** to track these 8 phases:
 
 1. Discover existing customizations
 2. Extract learnings from conversation
