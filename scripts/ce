@@ -7,6 +7,7 @@ Usage:
   ce z --continue       # Switch + launch claude --continue
   ce --continue         # TUI picker + launch claude --continue
   ce --stop-proxy       # Stop copilot proxy manually
+  ce --stop-cliproxy    # Stop CLIProxyAPI manually
 
 Claude Code Team (gaia-mbp-m2 only):
   ce t                  # Launch Claude Code Team
@@ -17,6 +18,11 @@ Copilot proxy:
   - Starts automatically when switching to copilot (if not already running)
   - Never auto-stops (safe for multiple concurrent sessions)
   - Use --stop-proxy to stop manually when done
+
+CLIProxyAPI (codex/gemini):
+  - First login: cliproxy.sh --login-codex (or --login-gemini)
+  - Auto-starts when switching to codex or gemini
+  - Use --stop-cliproxy to stop manually when done
 """
 
 import json
@@ -36,6 +42,8 @@ ALIASES = {
     "z": "zai",
     "ds": "deepseek",
     "t": "team",
+    "cx": "codex",
+    "gm": "gemini",
 }
 
 # Machine-specific features
@@ -56,6 +64,8 @@ PROVIDERS = {
     "zai": ("z.ai", "GLM-4.7, 200K ctx, 128K out"),
     "deepseek": ("DeepSeek", "128K ctx, 64K out, no cache"),
     "team": ("Claude Code Team", "Work subscription"),
+    "codex": ("Codex", "GPT-5 via CLIProxyAPI"),
+    "gemini": ("Gemini", "Gemini 3 via CLIProxyAPI"),
 }
 
 # ANSI escape codes
@@ -88,49 +98,83 @@ def get_keychain_secret(service: str) -> str | None:
         return None
 
 
-def check_copilot_proxy() -> bool:
-    """Check if copilot proxy is running."""
-    pid_file = Path(os.environ.get("TMPDIR", "/tmp")) / "copilot-proxy.pid"
-    if not pid_file.exists():
+class ProxyConfig:
+    """Configuration for a proxy service."""
+
+    def __init__(self, name: str, script: str, pid_file: str):
+        self.name = name
+        self.script = Path.home() / ".claude" / "scripts" / script
+        self.pid_file = Path(os.environ.get("TMPDIR", "/tmp")) / pid_file
+
+
+COPILOT_PROXY = ProxyConfig("copilot proxy", "copilot-proxy.sh", "copilot-proxy.pid")
+CLIPROXY = ProxyConfig("CLIProxyAPI", "cliproxy.sh", "cliproxy.pid")
+
+
+def check_proxy(proxy: ProxyConfig) -> bool:
+    """Check if a proxy is running."""
+    if not proxy.pid_file.exists():
+        return False
+    try:
+        pid = int(proxy.pid_file.read_text().strip())
+        os.kill(pid, 0)
+        return True
+    except (ValueError, OSError):
         return False
 
-    try:
-        pid = int(pid_file.read_text().strip())
-        os.kill(pid, 0)  # Signal 0 checks if process exists
-        return True
-    except (ValueError, OSError, ProcessLookupError):
+
+def start_proxy(proxy: ProxyConfig) -> bool:
+    """Start a proxy. Returns True if started successfully."""
+    if not proxy.script.exists():
+        print(f"{YELLOW}⚠ {proxy.name} script not found: {proxy.script}{RESET}")
         return False
+
+    print(f"{DIM}Starting {proxy.name}...{RESET}")
+    result = subprocess.run([str(proxy.script)], capture_output=True, text=True)
+    if result.returncode == 0:
+        print(f"{GREEN}✓{RESET} {proxy.name} started")
+        return True
+    print(f"{YELLOW}⚠ Failed to start {proxy.name}{RESET}")
+    if result.stderr:
+        print(f"{DIM}{result.stderr.strip()}{RESET}")
+    if result.stdout:
+        print(f"{DIM}{result.stdout.strip()}{RESET}")
+    return False
+
+
+def stop_proxy(proxy: ProxyConfig) -> None:
+    """Stop a proxy if running."""
+    if not check_proxy(proxy):
+        return
+    if proxy.script.exists():
+        print(f"{DIM}Stopping {proxy.name}...{RESET}")
+        subprocess.run([str(proxy.script), "--stop"], capture_output=True)
+        print(f"{GREEN}✓{RESET} {proxy.name} stopped")
+
+
+# Convenience wrappers for backwards compatibility
+def check_copilot_proxy() -> bool:
+    return check_proxy(COPILOT_PROXY)
 
 
 def start_copilot_proxy() -> bool:
-    """Start copilot proxy. Returns True if started successfully."""
-    proxy_script = Path.home() / ".claude" / "scripts" / "copilot-proxy.sh"
-    if not proxy_script.exists():
-        print(f"{YELLOW}⚠ Copilot proxy script not found: {proxy_script}{RESET}")
-        return False
-
-    print(f"{DIM}Starting copilot proxy...{RESET}")
-    result = subprocess.run([str(proxy_script)], capture_output=True, text=True)
-    if result.returncode == 0:
-        print(f"{GREEN}✓{RESET} Copilot proxy started")
-        return True
-    else:
-        print(f"{YELLOW}⚠ Failed to start copilot proxy{RESET}")
-        if result.stderr:
-            print(f"{DIM}{result.stderr.strip()}{RESET}")
-        return False
+    return start_proxy(COPILOT_PROXY)
 
 
 def stop_copilot_proxy() -> None:
-    """Stop copilot proxy if running."""
-    if not check_copilot_proxy():
-        return
+    stop_proxy(COPILOT_PROXY)
 
-    proxy_script = Path.home() / ".claude" / "scripts" / "copilot-proxy.sh"
-    if proxy_script.exists():
-        print(f"{DIM}Stopping copilot proxy...{RESET}")
-        subprocess.run([str(proxy_script), "--stop"], capture_output=True)
-        print(f"{GREEN}✓{RESET} Copilot proxy stopped")
+
+def check_cliproxy() -> bool:
+    return check_proxy(CLIPROXY)
+
+
+def start_cliproxy() -> bool:
+    return start_proxy(CLIPROXY)
+
+
+def stop_cliproxy() -> None:
+    stop_proxy(CLIPROXY)
 
 
 def ensure_deepseek_config(settings: dict) -> None:
@@ -168,6 +212,44 @@ def ensure_zai_config(settings: dict) -> None:
             "ANTHROPIC_DEFAULT_SONNET_MODEL": "glm-4.7",
             "ANTHROPIC_DEFAULT_HAIKU_MODEL": "glm-4.5-flash",
             "_keychain": "claude-zai",
+        }
+
+
+def get_cliproxy_url() -> str:
+    """Get CLIProxyAPI base URL, respecting CLIPROXY_PORT env var."""
+    port = os.environ.get("CLIPROXY_PORT", "8317")
+    return f"http://127.0.0.1:{port}"
+
+
+def ensure_codex_config(settings: dict) -> None:
+    """Ensure Codex (GPT-5) environment config exists in settings.
+
+    Uses CLIProxyAPI for OAuth-based access to OpenAI Codex subscription.
+    Models: gpt-5-codex-high (opus), gpt-5-codex (sonnet/haiku)
+    """
+    if "env.codex" not in settings:
+        settings["env.codex"] = {
+            "ANTHROPIC_BASE_URL": get_cliproxy_url(),
+            "ANTHROPIC_DEFAULT_OPUS_MODEL": "gpt-5-codex-high",
+            "ANTHROPIC_DEFAULT_SONNET_MODEL": "gpt-5-codex",
+            "ANTHROPIC_DEFAULT_HAIKU_MODEL": "gpt-5-codex",
+            "_proxy": "cliproxy",
+        }
+
+
+def ensure_gemini_config(settings: dict) -> None:
+    """Ensure Gemini environment config exists in settings.
+
+    Uses CLIProxyAPI for OAuth-based access to Gemini subscription.
+    Models: gemini-3-pro-preview (opus/sonnet), gemini-3-flash (haiku)
+    """
+    if "env.gemini" not in settings:
+        settings["env.gemini"] = {
+            "ANTHROPIC_BASE_URL": get_cliproxy_url(),
+            "ANTHROPIC_DEFAULT_OPUS_MODEL": "gemini-3-pro-preview",
+            "ANTHROPIC_DEFAULT_SONNET_MODEL": "gemini-3-pro-preview",
+            "ANTHROPIC_DEFAULT_HAIKU_MODEL": "gemini-3-flash",
+            "_proxy": "cliproxy",
         }
 
 
@@ -329,6 +411,11 @@ def switch_env(
         if not start_copilot_proxy():
             return None, None  # Failed to start proxy
 
+    # Start CLIProxyAPI if switching to codex or gemini
+    if target in ("codex", "gemini") and not check_cliproxy():
+        if not start_cliproxy():
+            return None, None  # Failed to start proxy
+
     # Save current env (clean API key first for security)
     current_env = settings.get("env", {}).copy()
     current_env.pop("ANTHROPIC_AUTH_TOKEN", None)  # Remove sensitive data
@@ -365,6 +452,7 @@ def show_help():
   ce <env> <args>       Switch + launch with args (e.g., ce z --continue)
   ce <args>             TUI picker + launch with args (e.g., ce --continue)
   ce --stop-proxy       Stop copilot proxy manually
+  ce --stop-cliproxy    Stop CLIProxyAPI manually
 
 {DIM}Claude Code Team (gaia-mbp-m2 only):{RESET}
   ce t                  Launch Claude Code Team
@@ -377,10 +465,18 @@ def show_help():
   copilot (cp)          GitHub Copilot proxy
   zai (z)               z.ai (GLM-4.7 for all)
   deepseek (ds)         DeepSeek (reasoner for Opus, chat for Sonnet/Haiku)
+  codex (cx)            OpenAI GPT-5 via CLIProxyAPI
+  gemini (gm)           Google Gemini 3 via CLIProxyAPI
 
 {DIM}Copilot Proxy:{RESET}
   Auto-starts when switching to copilot (if not already running)
   Never auto-stops (safe for multiple sessions)
+
+{DIM}CLIProxyAPI (codex/gemini):{RESET}
+  First-time setup:
+    cliproxy.sh --login-codex    # For Codex/GPT subscription
+    cliproxy.sh --login-gemini   # For Gemini subscription
+  Auto-starts when switching to codex or gemini
 
 {DIM}Keys:{RESET}
   ↑↓ / jk               Move cursor
@@ -396,7 +492,7 @@ def main():
         show_help()
         sys.exit(0)
 
-    # Handle --stop-proxy
+    # Handle --stop-proxy (copilot)
     if "--stop-proxy" in sys.argv:
         if check_copilot_proxy():
             stop_copilot_proxy()
@@ -404,14 +500,33 @@ def main():
             print(f"{DIM}Copilot proxy not running{RESET}")
         sys.exit(0)
 
+    # Handle --stop-cliproxy
+    if "--stop-cliproxy" in sys.argv:
+        if check_cliproxy():
+            stop_cliproxy()
+        else:
+            print(f"{DIM}CLIProxyAPI not running{RESET}")
+        sys.exit(0)
+
     # Check if team mode is available on this machine
     team_available = is_team_machine()
 
-    settings = json.loads(SETTINGS.read_text())
+    try:
+        settings = json.loads(SETTINGS.read_text())
+    except FileNotFoundError:
+        print(f"{YELLOW}⚠ Settings file not found: {SETTINGS}{RESET}")
+        print(f"{DIM}Run 'claude' first to create default settings{RESET}")
+        sys.exit(1)
+    except json.JSONDecodeError as e:
+        print(f"{YELLOW}⚠ Invalid settings file: {SETTINGS}{RESET}")
+        print(f"{DIM}{e}{RESET}")
+        sys.exit(1)
 
     # Ensure provider configs exist
     ensure_deepseek_config(settings)
     ensure_zai_config(settings)
+    ensure_codex_config(settings)
+    ensure_gemini_config(settings)
     SETTINGS.write_text(json.dumps(settings, indent=2) + "\n")
     current = settings.get("_activeEnv", "default")
 
@@ -465,28 +580,21 @@ def main():
         print(f"\n{DIM}Launching cc-team...{RESET}\n")
         os.execlp("cc-team", "cc-team", *claude_args)
 
-    # Auto-start copilot proxy if switching to copilot
-    if target == "copilot" and not check_copilot_proxy():
-        if not start_copilot_proxy():
-            print(f"{YELLOW}⚠ Failed to start copilot proxy{RESET}")
-            print(f"{DIM}Try manually: ~/.claude/scripts/copilot-proxy.sh{RESET}")
-            sys.exit(1)
-
     # Reload settings (TUI may have modified via Space)
     settings = json.loads(SETTINGS.read_text())
     current_active = settings.get("_activeEnv", "default")
 
     # Switch if needed (only for direct CLI mode, TUI already switched via Space)
     secret = None
-    if target == current_active:
-        # Already on target (either no switch needed, or TUI already switched)
-        pass
-    else:
-        # Direct CLI mode: need to switch (handles copilot proxy lifecycle)
+    if target != current_active:
         keychain_msg, secret = switch_env(settings, current_active, target)
-        if keychain_msg is None and secret is None and target == "copilot":
-            # switch_env failed to start proxy
-            print(f"{YELLOW}⚠ Failed to start copilot proxy{RESET}")
+        if keychain_msg is None and secret is None and target in ("copilot", "codex", "gemini"):
+            print(f"{YELLOW}⚠ Failed to start proxy for {target}{RESET}")
+            if target == "copilot":
+                print(f"{DIM}Try manually: ~/.claude/scripts/copilot-proxy.sh{RESET}")
+            else:
+                print(f"{DIM}Try manually: ~/.claude/scripts/cliproxy.sh{RESET}")
+                print(f"{DIM}Or login first: cliproxy.sh --login-{target}{RESET}")
             sys.exit(1)
         print(f"{GREEN}●{RESET} {current_active} {DIM}→{RESET} {BOLD}{target}{RESET}")
         if keychain_msg:
@@ -504,9 +612,9 @@ def main():
         # Export auth token as env var (never written to file)
         if secret:
             os.environ["ANTHROPIC_AUTH_TOKEN"] = secret
-        elif target == "copilot":
-            # Copilot proxy doesn't need real auth - use dummy token
-            os.environ["ANTHROPIC_AUTH_TOKEN"] = "dummy"
+        elif target in ("copilot", "codex", "gemini"):
+            # Proxy-based providers don't need real auth - use dummy token
+            os.environ["ANTHROPIC_AUTH_TOKEN"] = "sk-dummy"
         print(f"\n{DIM}Launching claude...{RESET}\n")
         os.execlp("claude", "claude", *claude_args)
 

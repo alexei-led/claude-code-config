@@ -213,5 +213,19 @@
     "MAX_THINKING_TOKENS": "64000",
     "DISABLE_TELEMETRY": "true",
     "_keychain": "deepseek-api"
+  },
+  "env.codex": {
+    "ANTHROPIC_BASE_URL": "http://127.0.0.1:8317",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "gpt-5-codex-high",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "gpt-5-codex",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "gpt-5-codex",
+    "_proxy": "cliproxy"
+  },
+  "env.gemini": {
+    "ANTHROPIC_BASE_URL": "http://127.0.0.1:8317",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "gemini-3-pro-preview",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "gemini-3-pro-preview",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "gemini-3-flash",
+    "_proxy": "cliproxy"
   }
 }
