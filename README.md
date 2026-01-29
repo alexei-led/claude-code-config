@@ -84,6 +84,51 @@ research "topic"    # or /researching-web
 | `perplexity-ask`      | Web research              |
 | `playwright`          | E2E browser testing       |
 | `morphllm`            | Fast editing, code search |
+| `gemini`              | Gemini AI queries         |
+| `codex`               | OpenAI Codex agents       |
+
+---
+
+## Using Gemini/Codex Subscriptions
+
+Use Claude Code with your Gemini or Codex subscription via CLIProxyAPI.
+
+### Setup (one-time)
+
+```bash
+# 1. Install CLIProxyAPI
+brew install cliproxyapi
+
+# 2. Login with OAuth
+cliproxy.sh --login-gemini  # For Gemini subscription
+cliproxy.sh --login-codex   # For Codex/GPT subscription
+```
+
+### Usage
+
+```bash
+ce gemini           # Switch to Gemini + launch claude
+ce codex            # Switch to Codex + launch claude
+ce gm --continue    # Gemini with args
+ce cx --continue    # Codex with args
+```
+
+### Models
+
+| Provider | Opus                 | Sonnet/Haiku   |
+| -------- | -------------------- | -------------- |
+| Gemini   | gemini-3-pro-preview | gemini-3-flash |
+| Codex    | gpt-5-codex-high     | gpt-5-codex    |
+
+### Proxy Management
+
+```bash
+cliproxy.sh --status       # Check proxy status
+cliproxy.sh --stop         # Stop proxy
+ce --stop-cliproxy         # Alternative stop command
+```
+
+The proxy starts automatically when switching to gemini/codex.
 
 ---
 
