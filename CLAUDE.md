@@ -181,6 +181,21 @@ My insights on better approaches are valued—please ask for them!
 
 Agents, skills, and commands have explicit model settings to reduce 5-hour usage.
 
+### Environments
+
+Switch providers with `ce <env>`:
+
+| Environment | Provider                   | Best For                        |
+| ----------- | -------------------------- | ------------------------------- |
+| `default`   | Anthropic API              | Standard development            |
+| `vertex`    | Vertex AI                  | Enterprise, GCP integration     |
+| `codex`     | OpenAI Codex (CLIProxyAPI) | Code completion, fast iteration |
+| `gemini`    | Gemini (CLIProxyAPI)       | Large context, multimodal       |
+| `deepseek`  | DeepSeek                   | Reasoning, cost-effective       |
+| `zai`       | Z.ai                       | Alternative provider            |
+
+CLIProxyAPI environments (codex, gemini) require `cliproxy.sh` running on localhost:8317.
+
 ### Model Selection
 
 | Model  | Use For                                              |
@@ -198,8 +213,8 @@ Agents, skills, and commands have explicit model settings to reduce 5-hour usage
 
 ### Optimized Components
 
-**Haiku**: \*-docs agents, looking-up-docs, using-\*-cli skills, agent/resume, spec/status, spec/done, spec/new
-**Sonnet**: docs-keeper, playwright-tester, spec-planner, research/deploy/e2e skills, spec/init, spec/work
+**Haiku**: go-docs, py-docs, ts-docs, web-docs, looking-up-docs, using-cloud-cli, using-modern-cli, agent:resume, spec:status, spec:done, spec:new
+**Sonnet**: docs-keeper, playwright-tester, spec-planner, researching-web, checking-deploy, testing-e2e, spec:init, spec:work, code:deploy
 
 ## Working Together
 

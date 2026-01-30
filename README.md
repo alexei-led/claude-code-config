@@ -1,162 +1,162 @@
 # Claude Code Configuration
 
-Production-quality setup with specialized agents and zero-tolerance quality enforcement.
+Global configuration for Claude Code CLI.
 
----
+## Structure
 
-## Quick Start
-
-```bash
-fix issues          # or /fixing-code
-review code         # or /reviewing-code
-commit changes      # or /committing-code
-research "topic"    # or /researching-web
+```
+~/.claude/
+├── CLAUDE.md              # Global instructions (always loaded)
+├── MCP_Sequential.md      # Sequential thinking guide
+├── settings.json          # Settings, permissions, hooks, environments
+├── keybindings.json       # Custom keybindings
+├── hook-config.json       # Optional hook configuration
+├── commands/              # Custom slash commands
+│   ├── code/              # Code workflow commands
+│   ├── spec/              # Spec-driven development
+│   ├── test/              # Testing commands
+│   ├── agent/             # Agent management
+│   └── ai/                # AI utilities
+├── skills/                # Reusable skills (auto-suggested)
+│   ├── writing-*/         # Language-specific development
+│   ├── managing-infra/    # Infrastructure patterns
+│   ├── reviewing-code/    # Code review
+│   └── ...
+├── hooks/                 # Event-triggered scripts
+│   ├── session-start.sh   # SessionStart: show context
+│   ├── skill-enforcer.sh  # UserPromptSubmit: suggest skills
+│   ├── file-protector.sh  # PreToolUse: block sensitive files
+│   ├── smart-lint.sh      # PostToolUse: auto-lint on edit
+│   └── notify.sh          # Notification: system alerts
+└── scripts/               # Helper scripts
+    ├── auth-helper.sh     # Multi-provider auth routing
+    └── cliproxy.sh        # CLIProxyAPI for Codex/Gemini
 ```
 
----
+## Environments
 
-## Spec-Driven Development (5 Commands)
-
-| Command        | Verb   | Purpose                                 |
-| -------------- | ------ | --------------------------------------- |
-| `/spec:init`   | START  | Initialize project or add reqs          |
-| `/spec:work`   | DO     | Main workflow - select, plan, implement |
-| `/spec:status` | SEE    | Progress (args: list, todo, check)      |
-| `/spec:new`    | CREATE | Create task or requirement              |
-| `/spec:done`   | FINISH | Mark complete (args: discover, verify)  |
-
----
-
-## Skills (User-Invocable)
-
-| Skill                 | Triggers On                  |
-| --------------------- | ---------------------------- |
-| `brainstorming-ideas` | "brainstorm", "design"       |
-| `fixing-code`         | "fix", "fix issues"          |
-| `reviewing-code`      | "review", "review code"      |
-| `committing-code`     | "commit", "save changes"     |
-| `documenting-code`    | "update docs", "document"    |
-| `checking-deploy`     | "deploy check", "validate"   |
-| `looking-up-docs`     | Library docs via Context7    |
-| `researching-web`     | "research", "compare X vs Y" |
-
----
-
-## Agents
-
-### Engineers
-
-| Agent                 | Model | Focus              |
-| --------------------- | ----- | ------------------ |
-| `go-engineer`         | opus  | Go, stdlib-first   |
-| `python-engineer`     | opus  | Python, type hints |
-| `typescript-engineer` | opus  | TypeScript/React   |
-| `infra-engineer`      | opus  | K8s, Terraform     |
-
-### Specialists (deep reviews)
-
-| Go            | Python        | TypeScript    |
-| ------------- | ------------- | ------------- |
-| `go-qa`       | `py-qa`       | `ts-qa`       |
-| `go-tests`    | `py-tests`    | `ts-tests`    |
-| `go-impl`     | `py-impl`     | `ts-impl`     |
-| `go-idioms`   | `py-idioms`   | `ts-idioms`   |
-| `go-docs`     | `py-docs`     | `ts-docs`     |
-| `go-simplify` | `py-simplify` | `ts-simplify` |
-
-### Spec + Utility
-
-| Agent                   | Focus                     |
-| ----------------------- | ------------------------- |
-| `spec-planner`          | Implementation planning   |
-| `docs-keeper`           | Documentation maintenance |
-| `playwright-tester`     | E2E browser testing       |
-| `perplexity-researcher` | Web research              |
-
----
-
-## MCP Servers
-
-| Server                | Purpose                   |
-| --------------------- | ------------------------- |
-| `context7`            | Library docs              |
-| `sequential-thinking` | Multi-step reasoning      |
-| `perplexity-ask`      | Web research              |
-| `playwright`          | E2E browser testing       |
-| `morphllm`            | Fast editing, code search |
-| `gemini`              | Gemini AI queries         |
-| `codex`               | OpenAI Codex agents       |
-
----
-
-## Using Gemini/Codex Subscriptions
-
-Use Claude Code with your Gemini or Codex subscription via CLIProxyAPI.
-
-### Setup (one-time)
+Switch between API providers with `ce`:
 
 ```bash
-# 1. Install CLIProxyAPI
-brew install cliproxyapi
-
-# 2. Login with OAuth
-cliproxy.sh --login-gemini  # For Gemini subscription
-cliproxy.sh --login-codex   # For Codex/GPT subscription
+ce                    # Default (Anthropic API)
+ce vertex             # Vertex AI
+ce codex              # OpenAI Codex via CLIProxyAPI
+ce gemini             # Gemini via CLIProxyAPI
+ce deepseek           # DeepSeek
+ce zai                # Z.ai
 ```
 
-### Usage
+Environments are defined in `settings.json` under `env.*` keys.
 
-```bash
-ce gemini           # Switch to Gemini + launch claude
-ce codex            # Switch to Codex + launch claude
-ce gm --continue    # Gemini with args
-ce cx --continue    # Codex with args
-```
+## Commands
 
-### Models
+User-invocable commands (slash commands):
 
-| Provider | Opus                 | Sonnet/Haiku   |
-| -------- | -------------------- | -------------- |
-| Gemini   | gemini-3-pro-preview | gemini-3-flash |
-| Codex    | gpt-5-codex-high     | gpt-5-codex    |
+| Command         | Description                 |
+| --------------- | --------------------------- |
+| `/spec:work`    | Main spec-driven workflow   |
+| `/spec:init`    | Initialize .spec/ structure |
+| `/spec:status`  | Show progress               |
+| `/code:deploy`  | Deploy infrastructure       |
+| `/test:e2e`     | Run E2E tests               |
+| `/test:improve` | Improve test quality        |
+| `/ai:consult`   | Get fresh perspective       |
+| `/agent:resume` | Resume agent by ID          |
+| `/learn`        | Extract learnings           |
 
-### Proxy Management
+## Skills
 
-```bash
-cliproxy.sh --status       # Check proxy status
-cliproxy.sh --stop         # Stop proxy
-ce --stop-cliproxy         # Alternative stop command
-```
+Skills are auto-suggested by the `skill-enforcer` hook based on prompt content.
+They provide specialized knowledge and tool access for specific domains.
 
-The proxy starts automatically when switching to gemini/codex.
+### Development
 
----
+- `writing-go` - Go 1.25+ patterns
+- `writing-python` - Python 3.14+ patterns
+- `writing-typescript` - TypeScript 5.x patterns
+- `writing-web` - HTML/CSS/JS/HTMX
+
+### Infrastructure
+
+- `managing-infra` - K8s, Terraform, Helm, GHA
+- `using-cloud-cli` - GCP, AWS CLI patterns
+- `checking-deploy` - Validate configs
+
+### Workflow
+
+- `reviewing-code` - Multi-agent review
+- `refactoring-code` - Batch refactoring
+- `committing-code` - Smart commits
+- `searching-code` - WarpGrep exploration
 
 ## Hooks
 
-| Hook             | Purpose                  |
-| ---------------- | ------------------------ |
-| `skill-enforcer` | Suggests relevant skills |
-| `smart-lint`     | Auto-lints after edits   |
-| `file-protector` | Protects sensitive files |
+Event-triggered automation:
 
----
+| Hook              | Event            | Purpose                    |
+| ----------------- | ---------------- | -------------------------- |
+| session-start.sh  | SessionStart     | Show git/spec context      |
+| skill-enforcer.sh | UserPromptSubmit | Suggest relevant skills    |
+| file-protector.sh | PreToolUse       | Block sensitive file edits |
+| smart-lint.sh     | PostToolUse      | Auto-lint after edits      |
+| notify.sh         | Notification     | System notifications       |
 
-## Environment Switching (`ce`)
+### Hook Configuration
+
+Optional: Create `hook-config.json` to customize hook behavior.
+Hooks fall back to sensible defaults if this file doesn't exist.
+
+## Adding New Components
+
+### New Command
 
 ```bash
-ce              # TUI picker
-ce z            # Switch to z.ai + launch
-ce --continue   # TUI + continue session
-```
-
-| Provider | Alias | Pricing |
-| -------- | ----- | ------- |
-| default  | max   | $20/mo  |
-| vertex   | v     | Pay/use |
-| zai      | z     | $0.40/M |
-| deepseek | ds    | $0.28/M |
-
+mkdir -p ~/.claude/commands/category
+cat > ~/.claude/commands/category/name.md << 'CMDEOF'
+---
+context: fork
+allowed-tools: [Task, Read, Grep]
+description: Brief description
 ---
 
-**[Complete Guide →](GUIDE.md)**
+# Command Name
+
+Instructions for Claude...
+CMDEOF
+```
+
+### New Skill
+
+```bash
+mkdir -p ~/.claude/skills/skill-name
+cat > ~/.claude/skills/skill-name/SKILL.md << 'SKILLEOF'
+---
+name: skill-name
+description: When to use this skill
+user-invocable: false
+context: fork
+agent: appropriate-agent
+allowed-tools: [Read, Bash, Grep, Glob]
+---
+
+# Skill Name
+
+Guidance and patterns...
+SKILLEOF
+```
+
+## Debugging
+
+```bash
+# Check settings
+cat ~/.claude/settings.json | jq .
+
+# Test hook manually
+echo '{"prompt":"write go code"}' | ~/.claude/hooks/skill-enforcer.sh
+
+# Check hook logs
+tail -f ~/.claude/logs/performance.jsonl
+
+# Validate configuration
+claude --version
+```

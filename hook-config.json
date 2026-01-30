@@ -1,69 +1,71 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "description": "Configuration for Claude Code hooks - externalized patterns for easy customization",
-  "fileProtector": {
-    "protectedPatterns": [
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "Optional hook configuration. Hooks fall back to defaults if this file doesn't exist.",
+  "file-protector": {
+    "enabled": true,
+    "protected_patterns": [
       "\\.env$",
       "\\.env\\.",
-      "/\\.env$",
-      "secrets/",
-      "secret[s]?\\.",
-      "\\.key$",
-      "\\.pem$",
-      "\\.p12$",
-      "\\.pfx$",
-      "\\.ssh/",
-      "id_rsa",
-      "id_ed25519",
       "credentials",
+      "\\.pem$",
+      "\\.key$",
+      "secret",
       "password",
-      "\\.secret$",
-      "api[_-]?key",
-      "auth[_-]?token"
+      "token",
+      "api[_-]?key"
     ],
-    "lockFilePatterns": [
+    "warn_patterns": [
       "package-lock\\.json$",
       "yarn\\.lock$",
       "pnpm-lock\\.yaml$",
       "go\\.sum$",
       "Cargo\\.lock$",
       "poetry\\.lock$",
-      "Gemfile\\.lock$",
-      "composer\\.lock$"
-    ]
+      "uv\\.lock$"
+    ],
+    "allowed_paths": []
   },
-  "smartLint": {
-    "excludePatterns": [
-      "node_modules/",
-      "vendor/",
-      "venv/",
-      ".venv/",
-      "env/",
-      "virtualenv/",
-      "dist/",
-      "build/",
-      "target/",
-      ".tox/",
-      ".eggs/",
-      "__pycache__/",
-      ".pytest_cache/",
-      ".mypy_cache/",
-      ".cargo/",
-      ".next/",
-      ".nuxt/",
-      "coverage/"
-    ]
+  "smart-lint": {
+    "enabled": true,
+    "auto_fix": true,
+    "file_types": {
+      "go": [
+        "golangci-lint",
+        "go vet"
+      ],
+      "python": [
+        "ruff check --fix",
+        "ruff format"
+      ],
+      "typescript": [
+        "eslint --fix",
+        "prettier --write"
+      ],
+      "terraform": [
+        "terraform fmt",
+        "terraform validate"
+      ]
+    },
+    "token_monitor": {
+      "enabled": false,
+      "warn_threshold_percent": 80
+    }
   },
-  "performanceMonitor": {
-    "contextWarningThreshold": 0.10,
-    "largeFileThreshold": 1000,
-    "maxCommandsWarning": 10,
-    "metricsRetentionDays": 30
+  "performance-monitor": {
+    "enabled": true,
+    "retention_days": 7,
+    "log_file": "~/.claude/logs/performance.jsonl"
   },
-  "skillEnforcer": {
-    "minPromptLength": 10,
-    "skipPatterns": [
-      "^(yes|no|ok|sure|thanks|done|continue|proceed)$"
-    ]
+  "session-start": {
+    "show_emojis": true,
+    "show_git_status": true,
+    "show_spec_status": true,
+    "cleanup_temp_files": true,
+    "cleanup_max_age_hours": 24
+  },
+  "notify": {
+    "enabled": true,
+    "sound": true,
+    "terminal_notification": true
   }
 }

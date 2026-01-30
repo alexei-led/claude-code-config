@@ -22,19 +22,19 @@ skills=""
 
 # writing-go: Idiomatic Go 1.25+ development
 # Triggers: .go files, go commands, Go-specific terms
-if echo "$PROMPT_LOWER" | grep -qE '\.go\b|go\.(mod|sum)|go (test|build|run|fmt|vet|mod|get|generate)|golangci|mockery|\bgolang\b|\bgoroutine|\bchannel\b|\bdefer\b.*func|urfave|testify|cobra/|idiomatic go|in go\b|go (code|project|package|module|interface|struct)|write.*go|implement.*go'; then
+if echo "$PROMPT_LOWER" | grep -qE '\.go\b|go\.(mod|sum)|go (test|build|run|fmt|vet|mod|get|generate)|golangci|mockery|\bgolang\b|\bgoroutines?\b|\bchannel\b|\bdefer\b.*func|urfave|testify|cobra/|idiomatic go|in go\b|go (code|project|package|module|interface|struct)|write.*go|implement.*go|\berror\s*handling\b.*go'; then
 	skills+="writing-go "
 fi
 
 # writing-python: Idiomatic Python 3.14+ development
 # Triggers: .py files, Python commands, Python frameworks
-if echo "$PROMPT_LOWER" | grep -qE '\.pyi?\b|pyproject|requirements\.txt|setup\.py|__init__|python[3]?\b|\buv (run|pip|sync|add|lock)|\bruff\b|pytest|poetry\b|mypy\b|django|flask|fastapi|pandas|numpy|pydantic|dataclass|type hint|asyncio|pip install|write.*python|implement.*python'; then
+if echo "$PROMPT_LOWER" | grep -qE '\.pyi?\b|pyproject|requirements\.txt|setup\.py|__init__|python[3]?\b|\buv (run|pip|sync|add|lock)|\bruff\b|pytest|poetry\b|mypy\b|django|flask|fastapi|pandas|numpy|pydantic|dataclass|type\s*hint|\btyping\b|asyncio|\basync\b.*\bawait\b|pip install|write.*python|implement.*python'; then
 	skills+="writing-python "
 fi
 
 # writing-typescript: TypeScript development with strict typing
 # Triggers: .ts files, TypeScript commands, Node.js/React/Bun
-if echo "$PROMPT_LOWER" | grep -qE '\.tsx?\b|typescript|tsconfig|package\.json|\bnpm\b|\bbun\b|\byarn\b|\bvite\b|react|next\.?js|node\.?js|\bexpress\b|\best\b|vitest|jest|eslint|prettier|write.*typescript|implement.*ts|strict typing'; then
+if echo "$PROMPT_LOWER" | grep -qE '\.(ts|tsx)\b|typescript|tsconfig|package\.json|\bnpm\b|\bbun\b|\byarn\b|\bvite\b|react|next\.?js|node\.?js|\bexpress\b|\best\b|vitest|jest|eslint|prettier|write.*typescript|implement.*ts|strict typing'; then
 	skills+="writing-typescript "
 fi
 
@@ -112,7 +112,7 @@ fi
 
 # testing-e2e: E2E testing with Playwright MCP
 # Triggers: e2e test, playwright, browser testing, UI automation
-if echo "$PROMPT_LOWER" | grep -qE '\be2e\s*(test|testing)?\b|\bplaywright\b|\bbrowser\s*(test|testing|automation)\b|\bui\s*(test|testing|automation)\b|\bend[\s-]?to[\s-]?end\s*(test|testing)?\b|\bvisual\s*(test|testing|regression)\b|\baccessibility\s*(test|testing|check)\b|\ba11y\s*(test|check)\b'; then
+if echo "$PROMPT_LOWER" | grep -qE '\be2e\b.*\btest|\bplaywright\b|\bbrowser\s*(test|testing|automation)\b|\bui\s*(test|testing|automation)\b|\bend[\s-]?to[\s-]?end\b|\bvisual\s*(test|testing|regression)\b|\baccessibility\s*(test|testing|check)\b|\ba11y\s*(test|check)\b'; then
 	skills+="testing-e2e "
 fi
 
