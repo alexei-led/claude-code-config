@@ -10,6 +10,9 @@
 # Claude Code Runtime & Cache
 # =============================================================================
 
+# Update lock file
+.update.lock
+
 # Database and cache
 __store.db
 cache/
