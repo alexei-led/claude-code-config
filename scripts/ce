@@ -84,11 +84,11 @@ CLEAR_LINE = "\033[2K"
 MOVE_UP = "\033[A"
 
 
-def get_keychain_secret(service: str) -> str | None:
-    """Load secret from macOS Keychain."""
+def get_1password_secret(item: str) -> str | None:
+    """Load secret from 1Password."""
     try:
         result = subprocess.run(
-            ["security", "find-generic-password", "-s", service, "-w"],
+            ["op", "item", "get", item, "--fields", "password", "--reveal"],
             capture_output=True,
             text=True,
             check=True,
@@ -192,7 +192,7 @@ def ensure_deepseek_config(settings: dict) -> None:
             "ANTHROPIC_DEFAULT_SONNET_MODEL": "deepseek-chat",
             "ANTHROPIC_DEFAULT_HAIKU_MODEL": "deepseek-chat",
             "DISABLE_PROMPT_CACHING": "1",  # DeepSeek ignores cache_control
-            "_keychain": "deepseek-api",
+            "_1password": "deepseek-api",
         }
 
 
@@ -208,10 +208,11 @@ def ensure_zai_config(settings: dict) -> None:
     if "env.zai" not in settings:
         settings["env.zai"] = {
             "ANTHROPIC_BASE_URL": "https://api.z.ai/api/anthropic",
-            "ANTHROPIC_DEFAULT_OPUS_MODEL": "glm-4.7",
-            "ANTHROPIC_DEFAULT_SONNET_MODEL": "glm-4.7",
-            "ANTHROPIC_DEFAULT_HAIKU_MODEL": "glm-4.5-flash",
-            "_keychain": "claude-zai",
+            "ANTHROPIC_DEFAULT_OPUS_MODEL": "GLM-4.7",
+            "ANTHROPIC_DEFAULT_SONNET_MODEL": "GLM-4.7",
+            "ANTHROPIC_DEFAULT_HAIKU_MODEL": "GLM-4.5-Air",
+            "API_TIMEOUT_MS": "3000000",
+            "_1password": "claude-zai",
         }
 
 
@@ -429,14 +430,14 @@ def switch_env(
     settings["_activeEnv"] = target
     SETTINGS.write_text(json.dumps(settings, indent=2) + "\n")
 
-    # Load secret from keychain (for runtime env export only)
-    keychain_service = target_config.get("_keychain")
-    if keychain_service:
-        secret = get_keychain_secret(keychain_service)
+    # Load secret from 1Password (for runtime env export only)
+    op_item = target_config.get("_1password")
+    if op_item:
+        secret = get_1password_secret(op_item)
         if secret:
-            keychain_msg = f"  {DIM}(key from keychain: {keychain_service}){RESET}"
+            keychain_msg = f"  {DIM}(key from 1Password: {op_item}){RESET}"
         else:
-            keychain_msg = f"  {YELLOW}⚠ keychain not found: {keychain_service}{RESET}"
+            keychain_msg = f"  {YELLOW}⚠ 1Password item not found: {op_item}{RESET}"
 
     return keychain_msg, secret
 
@@ -603,9 +604,9 @@ def main():
     # Load secret for launch (if not already loaded from switch)
     if secret is None:
         target_config = settings.get(f"env.{target}", settings.get("env", {}))
-        keychain_service = target_config.get("_keychain")
-        if keychain_service:
-            secret = get_keychain_secret(keychain_service)
+        op_item = target_config.get("_1password")
+        if op_item:
+            secret = get_1password_secret(op_item)
 
     # Launch claude if requested
     if launch_claude:

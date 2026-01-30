@@ -15,8 +15,8 @@ ACTIVE_ENV=$(jq -r '._activeEnv // "default"' "$SETTINGS_FILE" 2>/dev/null || ec
 # Get env config for active environment
 ENV_CONFIG=$(jq -r ".\"env.${ACTIVE_ENV}\" // {}" "$SETTINGS_FILE" 2>/dev/null)
 
-# Check for keychain service in env config
-KEYCHAIN_SERVICE=$(echo "$ENV_CONFIG" | jq -r '._keychain // empty' 2>/dev/null)
+# Check for 1Password item name in env config
+OP_ITEM=$(echo "$ENV_CONFIG" | jq -r '._1password // empty' 2>/dev/null)
 
 case "$ACTIVE_ENV" in
 copilot)
@@ -55,17 +55,17 @@ default)
 	echo ""
 	;;
 *)
-	# Other providers (zai, deepseek, vertex) - get from keychain
-	if [ -n "$KEYCHAIN_SERVICE" ]; then
-		TOKEN=$(security find-generic-password -s "$KEYCHAIN_SERVICE" -w 2>/dev/null || echo "")
+	# Other providers (zai, deepseek, vertex) - get from 1Password
+	if [ -n "$OP_ITEM" ]; then
+		TOKEN=$(op item get "$OP_ITEM" --fields password --reveal 2>/dev/null || echo "")
 		if [ -n "$TOKEN" ]; then
 			echo "$TOKEN"
 		else
-			# Keychain lookup failed, return empty for SSO fallback
+			# 1Password lookup failed, return empty for SSO fallback
 			echo ""
 		fi
 	else
-		# No keychain configured, return empty for SSO fallback
+		# No 1Password item configured, return empty for SSO fallback
 		echo ""
 	fi
 	;;
