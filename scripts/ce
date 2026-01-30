@@ -586,10 +586,22 @@ def main():
         if not team_available:
             print(f"{YELLOW}⚠ Team mode only available on {TEAM_MACHINE}{RESET}")
             sys.exit(1)
-        # Show current active env so user knows what they'll return to
+
+        # Reset env to avoid leaking proxy settings to cc-team
         current_env = settings.get("_activeEnv", "default")
+        if current_env not in ("default", "team"):
+            # Save current config before clearing
+            env_data = settings.get("env", {}).copy()
+            env_data.pop("ANTHROPIC_AUTH_TOKEN", None)
+            settings[f"env.{current_env}"] = env_data
+
+        # Clear env and reset to default (cc-team uses its own config)
+        settings["env"] = {}
+        settings["_activeEnv"] = "default"
+        SETTINGS.write_text(json.dumps(settings, indent=2) + "\n")
+
         current_name = PROVIDERS.get(current_env, (current_env, ""))[0]
-        print(f"{BOLD}Claude Code Team{RESET} {DIM}(env: {current_name}){RESET}")
+        print(f"{BOLD}Claude Code Team{RESET} {DIM}(was: {current_name}){RESET}")
         print(f"\n{DIM}Launching cc-team...{RESET}\n")
         os.execlp("cc-team", "cc-team", *claude_args)
 
