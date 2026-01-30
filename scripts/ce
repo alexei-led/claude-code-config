@@ -27,6 +27,7 @@ CLIProxyAPI (codex/gemini):
 
 import json
 import os
+import socket
 import subprocess
 import sys
 import termios
@@ -101,18 +102,29 @@ def get_1password_secret(item: str) -> str | None:
 class ProxyConfig:
     """Configuration for a proxy service."""
 
-    def __init__(self, name: str, script: str, pid_file: str):
+    def __init__(self, name: str, script: str, pid_file: str, port: int | None = None):
         self.name = name
         self.script = Path.home() / ".claude" / "scripts" / script
         self.pid_file = Path(os.environ.get("TMPDIR", "/tmp")) / pid_file
+        self.port = port
 
 
-COPILOT_PROXY = ProxyConfig("copilot proxy", "copilot-proxy.sh", "copilot-proxy.pid")
-CLIPROXY = ProxyConfig("CLIProxyAPI", "cliproxy.sh", "cliproxy.pid")
+COPILOT_PROXY = ProxyConfig("copilot proxy", "copilot-proxy.sh", "copilot-proxy.pid", port=8318)
+CLIPROXY = ProxyConfig("CLIProxyAPI", "cliproxy.sh", "cliproxy.pid", port=int(os.environ.get("CLIPROXY_PORT", "8317")))
+
+
+def is_port_in_use(port: int) -> bool:
+    """Check if a port is in use."""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        return s.connect_ex(("127.0.0.1", port)) == 0
 
 
 def check_proxy(proxy: ProxyConfig) -> bool:
-    """Check if a proxy is running."""
+    """Check if a proxy is running (via PID file or port check)."""
+    # First check port - if something is listening, proxy is running
+    if proxy.port and is_port_in_use(proxy.port):
+        return True
+    # Fall back to PID file check
     if not proxy.pid_file.exists():
         return False
     try:
@@ -401,21 +413,21 @@ def interactive_select(
 
 def switch_env(
     settings: dict, current: str, target: str
-) -> tuple[str | None, str | None]:
-    """Switch to target environment. Returns (keychain_msg, secret) - secret for env export."""
-    keychain_msg = None
+) -> tuple[bool, str | None, str | None]:
+    """Switch to target environment. Returns (success, auth_msg, secret)."""
+    auth_msg = None
     secret = None
 
     # Start copilot proxy if switching to copilot and not already running
     # Note: Never auto-stop proxy - other sessions may be using it
     if target == "copilot" and not check_copilot_proxy():
         if not start_copilot_proxy():
-            return None, None  # Failed to start proxy
+            return False, None, None  # Failed to start proxy
 
     # Start CLIProxyAPI if switching to codex or gemini
     if target in ("codex", "gemini") and not check_cliproxy():
         if not start_cliproxy():
-            return None, None  # Failed to start proxy
+            return False, None, None  # Failed to start proxy
 
     # Save current env (clean API key first for security)
     current_env = settings.get("env", {}).copy()
@@ -435,11 +447,11 @@ def switch_env(
     if op_item:
         secret = get_1password_secret(op_item)
         if secret:
-            keychain_msg = f"  {DIM}(key from 1Password: {op_item}){RESET}"
+            auth_msg = f"  {DIM}(key from 1Password: {op_item}){RESET}"
         else:
-            keychain_msg = f"  {YELLOW}⚠ 1Password item not found: {op_item}{RESET}"
+            auth_msg = f"  {YELLOW}⚠ 1Password item not found: {op_item}{RESET}"
 
-    return keychain_msg, secret
+    return True, auth_msg, secret
 
 
 def show_help():
@@ -588,8 +600,8 @@ def main():
     # Switch if needed (only for direct CLI mode, TUI already switched via Space)
     secret = None
     if target != current_active:
-        keychain_msg, secret = switch_env(settings, current_active, target)
-        if keychain_msg is None and secret is None and target in ("copilot", "codex", "gemini"):
+        success, auth_msg, secret = switch_env(settings, current_active, target)
+        if not success:
             print(f"{YELLOW}⚠ Failed to start proxy for {target}{RESET}")
             if target == "copilot":
                 print(f"{DIM}Try manually: ~/.claude/scripts/copilot-proxy.sh{RESET}")
@@ -598,8 +610,8 @@ def main():
                 print(f"{DIM}Or login first: cliproxy.sh --login-{target}{RESET}")
             sys.exit(1)
         print(f"{GREEN}●{RESET} {current_active} {DIM}→{RESET} {BOLD}{target}{RESET}")
-        if keychain_msg:
-            print(keychain_msg)
+        if auth_msg:
+            print(auth_msg)
 
     # Load secret for launch (if not already loaded from switch)
     if secret is None:
