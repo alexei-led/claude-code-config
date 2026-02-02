@@ -451,22 +451,37 @@ lint_markdown() {
 		return 0
 	fi
 
-	local absolute_files=()
+	# Filter out slides.md files (Slidev presentation format)
+	local filtered_files=()
 	for file in "${files[@]}"; do
+		if [[ "$(basename "$file")" != "slides.md" ]]; then
+			filtered_files+=("$file")
+		else
+			log_debug "Skipping Slidev file: $file"
+		fi
+	done
+
+	if [[ "${#filtered_files[@]}" -eq 0 ]]; then
+		log_debug "No Markdown files to lint after filtering"
+		return 0
+	fi
+
+	local absolute_files=()
+	for file in "${filtered_files[@]}"; do
 		absolute_files+=("$(pwd)/${file}")
 	done
 
 	if command_exists prettier; then
-		run_formatter_on_files "Markdown Formatter (prettier)" "prettier --write --ignore-path ''" "prettier --check --ignore-path ''" "${absolute_files[@]}"
+		run_formatter_on_files "Markdown Formatter (prettier)" "prettier --write" "prettier --check" "${absolute_files[@]}"
 	elif command_exists bunx; then
-		run_formatter_on_files "Markdown Formatter (prettier)" "bunx prettier --write --ignore-path ''" "bunx prettier --check --ignore-path ''" "${absolute_files[@]}"
+		run_formatter_on_files "Markdown Formatter (prettier)" "bunx prettier --write" "bunx prettier --check" "${absolute_files[@]}"
 	elif command_exists npx; then
-		run_formatter_on_files "Markdown Formatter (prettier)" "npx prettier --write --ignore-path ''" "npx prettier --check --ignore-path ''" "${absolute_files[@]}"
+		run_formatter_on_files "Markdown Formatter (prettier)" "npx prettier --write" "npx prettier --check" "${absolute_files[@]}"
 	elif command_exists mdformat; then
-		run_formatter_on_files "Markdown Formatter (mdformat)" "mdformat" "mdformat --check" "${files[@]}"
+		run_formatter_on_files "Markdown Formatter (mdformat)" "mdformat" "mdformat --check" "${filtered_files[@]}"
 	fi
 	if command_exists markdownlint; then
-		run_linter "Markdown Linter (markdownlint)" markdownlint --disable MD013 MD026 MD033 MD040 MD041 -- "${files[@]}"
+		run_linter "Markdown Linter (markdownlint)" markdownlint --disable MD013 MD026 MD033 MD040 MD041 -- "${filtered_files[@]}"
 	fi
 }
 
