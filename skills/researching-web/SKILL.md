@@ -13,7 +13,7 @@ allowed-tools:
 
 # Web Research with Perplexity
 
-Two modes: **quick** (MCP direct) or **deep** (Task-based with context).
+**Default**: Call Perplexity MCP directly. Only spawn agent when codebase context is explicitly needed.
 
 ## Best For
 
@@ -23,9 +23,9 @@ Two modes: **quick** (MCP direct) or **deep** (Task-based with context).
 - Documentation references
 - Stable technical content
 
-## Quick Mode (Simple Queries)
+## Default Mode: Direct MCP Call
 
-Use MCP directly for fast, simple lookups:
+**Use this for 90% of research requests.** When user says "ask Perplexity", "research", "look up", etc.:
 
 ```json
 mcp__perplexity-ask__perplexity_ask({
@@ -33,45 +33,27 @@ mcp__perplexity-ask__perplexity_ask({
 })
 ```
 
-## Deep Mode (Context-Aware Research)
+This is fast, reliable, and what users expect.
 
-For codebase-aware research, spawn the **perplexity-researcher** agent.
+## Deep Mode: Agent (Rare)
 
-### Foreground (blocking)
+**Only use when user explicitly asks to compare research with their current code.**
 
-```
-Task(subagent_type="perplexity-researcher", prompt="Research: <topic>")
-```
+Trigger phrases that warrant agent:
 
-### Background (recommended for context efficiency)
-
-Run in background to avoid polluting main context:
+- "compare my code to best practices"
+- "is my implementation following standards"
+- "research and show how my code differs"
 
 ```
-Task(
-  subagent_type="perplexity-researcher",
-  prompt="Research: <topic>",
-  run_in_background=true
-)
+Task(subagent_type="perplexity-researcher", prompt="Research: <topic>", run_in_background=true)
 ```
 
-Retrieve results when ready:
+**DO NOT use agent for:**
 
-```
-TaskOutput(task_id="<agent_id>", block=true)
-```
-
-**Use background mode when:**
-
-- Running multiple research queries in parallel
-- Main task can continue while research runs
-- Want to keep main context clean
-
-### When to Use Deep Mode
-
-- User asks "best way to do X" (needs to compare with current code)
-- Researching improvements to existing code
-- Need to understand if recommendations apply to current stack
+- Simple "ask Perplexity about X" requests
+- General research questions
+- "What is the best way to do X" (unless they mention their code)
 
 ## Query Formulation Tips
 
