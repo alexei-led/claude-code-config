@@ -5,9 +5,9 @@ allowed-tools:
   - Read
   - Write
   - Glob
-  - Bash(mkdir:*)
-  - Bash(date:*)
-  - Bash(echo:*)
+  - Bash(mkdir *)
+  - Bash(date *)
+  - Bash(echo *)
 description: Create new spec document (task or req)
 ---
 

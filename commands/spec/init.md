@@ -10,12 +10,12 @@ allowed-tools:
   - Write
   - AskUserQuestion
   - Glob
-  - Bash(rg:*)
-  - Bash(fd:*)
-  - Bash(git:*)
-  - Bash(mkdir:*)
-  - Bash(date:*)
-  - Bash(echo:*)
+  - Bash(rg *)
+  - Bash(fd *)
+  - Bash(git *)
+  - Bash(mkdir *)
+  - Bash(date *)
+  - Bash(echo *)
 description: Initialize or extend spec-driven project
 ---
 

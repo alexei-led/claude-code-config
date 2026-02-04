@@ -10,10 +10,10 @@ allowed-tools:
   - Edit
   - Glob
   - Grep
-  - Bash(specctl:*)
-  - Bash(mkdir:*)
-  - Bash(ls:*)
-  - Bash(date:*)
+  - Bash(specctl *)
+  - Bash(mkdir *)
+  - Bash(ls *)
+  - Bash(date *)
   - AskUserQuestion
 ---
 

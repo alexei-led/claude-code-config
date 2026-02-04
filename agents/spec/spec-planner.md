@@ -7,9 +7,9 @@ tools:
     Grep,
     Glob,
     LS,
-    "Bash(rg:*)",
-    "Bash(fd:*)",
-    "Bash(git log:*)",
+    "Bash(rg *)",
+    "Bash(fd *)",
+    "Bash(git log *)",
     mcp__sequential-thinking__sequentialthinking,
   ]
 model: sonnet

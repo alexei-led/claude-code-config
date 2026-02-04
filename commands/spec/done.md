@@ -5,12 +5,12 @@ allowed-tools:
   - Read
   - Edit
   - AskUserQuestion
-  - Bash(fd:*)
-  - Bash(rg:*)
-  - Bash(date:*)
-  - Bash(echo:*)
-  - Bash(basename:*)
-  - Bash(make:*)
+  - Bash(fd *)
+  - Bash(rg *)
+  - Bash(date *)
+  - Bash(echo *)
+  - Bash(basename *)
+  - Bash(make *)
 description: Mark task complete (with optional discovery)
 ---
 

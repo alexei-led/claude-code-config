@@ -4,12 +4,12 @@ argument-hint: [TASK-xxx | list | todo | completed | check]
 allowed-tools:
   - Read
   - Grep
-  - Bash(rg:*)
-  - Bash(fd:*)
-  - Bash(wc:*)
-  - Bash(head:*)
-  - Bash(cat:*)
-  - Bash(git branch:*)
+  - Bash(rg *)
+  - Bash(fd *)
+  - Bash(wc *)
+  - Bash(head *)
+  - Bash(cat *)
+  - Bash(git branch *)
 description: Progress overview with optional details
 ---
 

@@ -9,7 +9,7 @@ allowed-tools:
   - Bash
   - Grep
   - Glob
-  - Bash(kubectl:*)
+  - Bash(kubectl *)
 ---
 
 # Infrastructure Patterns

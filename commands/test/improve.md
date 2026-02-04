@@ -4,10 +4,10 @@ allowed-tools:
   - Task
   - TaskOutput
   - TodoWrite
-  - Bash(go test:*)
-  - Bash(pytest:*)
-  - Bash(bun test:*)
-  - Bash(npm test:*)
+  - Bash(go test *)
+  - Bash(pytest *)
+  - Bash(bun test *)
+  - Bash(npm test *)
   - Read
   - Grep
   - Glob

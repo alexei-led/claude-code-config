@@ -95,7 +95,7 @@ Each skill in `~/.claude/skills/` should include:
 | Scenario                         | `allowed-tools` approach                 |
 | -------------------------------- | ---------------------------------------- |
 | Spawns agents (`agent:` or Task) | Must add `context: fork`                 |
-| Specific CLI tool family         | `Bash(kubectl:*)`, `Bash(make:*)`        |
+| Specific CLI tool family         | `Bash(kubectl *)`, `Bash(make *)`        |
 | General CLI recommendations      | Just `Bash` (allows pipelines)           |
 | MCP tool family                  | `mcp__playwright__*`, `mcp__context7__*` |
 

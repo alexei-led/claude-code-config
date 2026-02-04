@@ -9,8 +9,8 @@ allowed-tools:
   - Edit
   - Glob
   - Grep
-  - Bash(specctl:*)
-  - Bash(mkdir:*)
+  - Bash(specctl *)
+  - Bash(mkdir *)
 ---
 
 # Spec Interview

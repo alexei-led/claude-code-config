@@ -5,9 +5,9 @@ allowed-tools:
   - Task
   - TaskOutput
   - TodoWrite
-  - Bash(npx playwright:*)
-  - Bash(npm:*)
-  - Bash(bun:*)
+  - Bash(npx playwright *)
+  - Bash(npm *)
+  - Bash(bun *)
   - Read
   - Grep
   - Glob

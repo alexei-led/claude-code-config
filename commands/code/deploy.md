@@ -8,13 +8,13 @@ allowed-tools:
   - Grep
   - Glob
   - AskUserQuestion
-  - Bash(kubectl:*)
-  - Bash(helm:*)
-  - Bash(kustomize:*)
-  - Bash(terraform:*)
-  - Bash(docker:*)
-  - Bash(git:*)
-  - Bash(make:*)
+  - Bash(kubectl *)
+  - Bash(helm *)
+  - Bash(kustomize *)
+  - Bash(terraform *)
+  - Bash(docker *)
+  - Bash(git *)
+  - Bash(make *)
 description: Deploy infrastructure changes with validation and rollback support
 ---
 
