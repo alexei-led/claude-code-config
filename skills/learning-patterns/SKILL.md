@@ -1,4 +1,7 @@
 ---
+name: learn
+description: Extract learnings and generate project-specific customizations (CLAUDE.md, commands, skills, hooks). Use when user says "learn", "extract learnings", "what did we learn", "save learnings", "adapt config", or wants to improve Claude Code based on conversation patterns.
+user-invocable: true
 model: sonnet
 allowed-tools:
   - TaskCreate
@@ -10,7 +13,6 @@ allowed-tools:
   - Grep
   - Glob
   - AskUserQuestion
-description: Extract learnings and generate project-specific customizations (CLAUDE.md, commands, skills, hooks)
 argument-hint: [topic] [--dry-run]
 ---
 
@@ -52,7 +54,7 @@ Find ALL project customization files:
 
 Analyze conversation for these signal types:
 
-### Instruction Signals → CLAUDE.md
+### Instruction Signals -> CLAUDE.md
 
 | Signal             | Look For                                      |
 | ------------------ | --------------------------------------------- |
@@ -62,7 +64,7 @@ Analyze conversation for these signal types:
 | Project quirks     | Unexpected behaviors, edge cases, workarounds |
 | Commands/workflows | Specific commands, sequences that worked      |
 
-### Command Signals → .claude/commands/
+### Command Signals -> .claude/commands/
 
 | Signal              | Look For                                 | Confidence |
 | ------------------- | ---------------------------------------- | ---------- |
@@ -72,7 +74,7 @@ Analyze conversation for these signal types:
 | Template request    | "create a new X like we discussed"       | MEDIUM     |
 | Workflow mention    | "my workflow is X then Y then Z"         | HIGH       |
 
-### Skill Signals → .claude/skills/
+### Skill Signals -> .claude/skills/
 
 | Signal              | Look For                                        | Confidence |
 | ------------------- | ----------------------------------------------- | ---------- |
@@ -81,7 +83,7 @@ Analyze conversation for these signal types:
 | Domain expertise    | Detailed tech discussion needing reference docs | MEDIUM     |
 | Progressive need    | "for basic use X, for advanced see Y"           | MEDIUM     |
 
-### Hook Signals → .claude/settings.json
+### Hook Signals -> .claude/settings.json
 
 | Signal             | Look For                                 | Confidence |
 | ------------------ | ---------------------------------------- | ---------- |
@@ -113,20 +115,20 @@ MEDIUM confidence items go to instructions in CLAUDE.md instead.
 
 ## Phase 4: Distill to Artifacts
 
-### Instructions → CLAUDE.md format
+### Instructions -> CLAUDE.md format
 
 | Pattern           | Example                                      |
 | ----------------- | -------------------------------------------- |
 | `Use X`           | Use prepared statements for SQL              |
 | `Prefer X over Y` | Prefer explicit returns over bare err        |
-| `When X → do Y`   | When tests fail → check CI logs first        |
+| `When X -> do Y`  | When tests fail -> check CI logs first       |
 | `X requires Y`    | Auth endpoints require Bearer token          |
 | `Run: \`...\``    | Run: `kubectl rollout restart deploy/api`    |
 | `Note: X`         | Note: `Get()` returns `nil, nil` when absent |
 
 **One instruction per line. Max 80 chars.**
 
-### Commands → .claude/commands/{name}.md
+### Commands -> .claude/commands/{name}.md
 
 ```markdown
 ---
@@ -149,7 +151,7 @@ argument-hint: { optional args }
 {Any relevant @ references or bash context}
 ```
 
-### Skills → .claude/skills/{name}/SKILL.md
+### Skills -> .claude/skills/{name}/SKILL.md
 
 ```markdown
 ---
@@ -175,7 +177,7 @@ allowed-tools: { restrictions if any }
 2. {step 2}
 ```
 
-### Hooks → settings.json addition
+### Hooks -> settings.json addition
 
 ```json
 {
@@ -251,7 +253,7 @@ Lines: X/200
 
 **Updates:**
 
-- [old] → [merged]
+- [old] -> [merged]
 
 **Additions:**
 
@@ -260,17 +262,17 @@ Lines: X/200
 ### Commands
 
 - `/pre-commit` - Run checks before commit
-  → `.claude/commands/pre-commit.md`
+  -> `.claude/commands/pre-commit.md`
 
 ### Skills
 
 ~ `auth-patterns` - Updated with OAuth2 flow
-→ `.claude/skills/auth-patterns/SKILL.md`
+-> `.claude/skills/auth-patterns/SKILL.md`
 
 ### Hooks
 
 - PostToolUse[Edit|Write]: Run prettier
-  → `.claude/settings.json`
+  -> `.claude/settings.json`
 
 ---
 
@@ -315,7 +317,7 @@ LEARNED
 Target: .claude/
 
 Instructions: (CLAUDE.md)
-  ~ "Use error wrapping" → "Wrap errors: fmt.Errorf(\"op: %w\", err)"
+  ~ "Use error wrapping" -> "Wrap errors: fmt.Errorf(\"op: %w\", err)"
   + "Note: API returns nil, nil when absent"
 
 Commands: (commands/)

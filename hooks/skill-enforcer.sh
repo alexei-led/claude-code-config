@@ -104,10 +104,10 @@ if echo "$PROMPT_LOWER" | grep -qE '\bupdate\s*(the|my)?\s*(docs|documentation|r
 	skills+="documenting-code "
 fi
 
-# checking-deploy: Validate K8s, Terraform, Helm, GitHub Actions, Docker configs
-# Triggers: deploy check, validate deployment, check k8s, validate infrastructure
-if echo "$PROMPT_LOWER" | grep -qE '\bdeploy\s*check\b|\bcheck\s*(my|the)?\s*deploy(ment)?\b|\bvalidate\s*(my|the)?\s*(deployment|infrastructure|infra|k8s|kubernetes|helm|terraform|config)s?\b|\bcheck\s*(my|the)?\s*(k8s|kubernetes|helm|terraform|workflow|action)\s*(config|manifest|file)s?\b|\bverify\s*(the)?\s*infrastructure\b|\binfra\s*check\b'; then
-	skills+="checking-deploy "
+# deploying-infra: Validate and deploy K8s, Terraform, Helm, GitHub Actions, Docker configs
+# Triggers: deploy check, validate deployment, deploy to staging, terraform apply, helm upgrade, kubectl apply, rollout
+if echo "$PROMPT_LOWER" | grep -qE '\bdeploy\s*check\b|\bcheck\s*(my|the)?\s*deploy(ment)?\b|\bvalidate\s*(my|the)?\s*(deployment|infrastructure|infra|k8s|kubernetes|helm|terraform|config)s?\b|\bcheck\s*(my|the)?\s*(k8s|kubernetes|helm|terraform|workflow|action)\s*(config|manifest|file)s?\b|\bverify\s*(the)?\s*infrastructure\b|\binfra\s*check\b|\bdeploy\s*to\s|apply\s*(the\s*)?(changes|infra)|terraform\s*apply|helm\s*(upgrade|install)|kubectl\s*apply|rollout'; then
+	skills+="deploying-infra "
 fi
 
 # testing-e2e: E2E testing with Playwright MCP
@@ -132,6 +132,18 @@ fi
 # Triggers: grep/find/cat alternatives, bash scripts, command optimization
 if echo "$PROMPT_LOWER" | grep -qE '\bripgrep\b|\brg\b.*search|\bfd\b.*find|\bbat\b.*file|\bsd\b.*replace|\beza\b|\bdust\b|\bprocs\b|\bmodern\s*cli\b|better\s*than\s*(grep|find|cat|sed|ls)|replace.*(grep|find|cat|sed|ls)|faster.*(search|find)|\.gitignore.*respect|bash\s*script|command.*chain|optimize.*(command|cli|shell)'; then
 	skills+="using-modern-cli "
+fi
+
+# improving-tests: Review, refactor, and improve test quality
+# Triggers: improve tests, refactor tests, test coverage, combine tests, table-driven, parametrize
+if echo "$PROMPT_LOWER" | grep -qE '\bimprove\s*(my|the|these)?\s*tests?\b|\brefactor\s*(my|the|these)?\s*tests?\b|\btest\s*coverage\b|\bcombine\s*(the|my)?\s*tests?\b|\btable[\s-]?driven\b|\bparametri[sz]e\b|\btest\.each\b|\beliminate\s*test\s*waste\b|\btest\s*(quality|improvement|cleanup)\b'; then
+	skills+="improving-tests "
+fi
+
+# learning-patterns: Extract learnings and generate customizations
+# Triggers: learn, learnings, adapt config, session patterns
+if echo "$PROMPT_LOWER" | grep -qE '\blearn\b.*\b(from|session|pattern|conversation)\b|\bextract\s*(the)?\s*learnings?\b|\bwhat\s*did\s*(we|i)\s*learn\b|\bsave\s*(the)?\s*learnings?\b|\badapt\s*(the|my)?\s*(config|configuration|settings)\b|\bsession\s*learnings?\b|\bimprove\s*claude\s*code\b|\bcustomiz.*(claude|config)\b|\b(learn|record)\s*from\s*(this|the|our)\s*(session|conversation|chat)\b'; then
+	skills+="learning-patterns "
 fi
 
 # frontend-design: Create distinctive frontend interfaces

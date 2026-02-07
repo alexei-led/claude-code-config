@@ -1,5 +1,9 @@
 ---
+name: improving-tests
+description: Review, refactor, and improve test quality. Use when user says "improve tests", "refactor tests", "test coverage", "combine tests", "table-driven", "parametrize", "test.each", "eliminate test waste", or wants to optimize test structure.
+user-invocable: true
 context: fork
+argument-hint: [review|refactor|coverage|full]
 allowed-tools:
   - Task
   - TaskOutput
@@ -13,7 +17,6 @@ allowed-tools:
   - Glob
   - LS
   - AskUserQuestion
-description: Review, refactor, and improve tests - eliminate waste, combine to tabular, align style
 ---
 
 # Test Improvement
@@ -33,7 +36,15 @@ Improve test quality: review existing, refactor structure, fill coverage gaps.
 
 ## Phase 1: Choose Mode
 
-Use AskUserQuestion:
+**$ARGUMENTS:**
+
+- `review` → Analyze current tests, identify issues
+- `refactor` → Combine to tabular, remove duplicates, align style
+- `coverage` → Generate tests for uncovered code
+- `full` → All of the above
+- (empty) → Ask what to do
+
+If no argument provided, use AskUserQuestion:
 
 | Header | Question                | Options                                                                                                                                                                                                                                             |
 | ------ | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
