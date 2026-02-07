@@ -191,4 +191,7 @@ CLIProxyAPI environments (codex, gemini) require `cliproxy.sh` running on localh
 - Comments: lean, informative, useful and short—only when helpful. No comments in tests
 - **NEVER** skip Research → Plan → Implement
 - **NEVER** mark done until hooks pass and all checks are GREEN
+- Prefer removing unused features over keeping "just in case"
+- Skills activate automatically via enforcer hook — avoid manual command wrappers for discovery
+- Documentation should teach practical usage, not exhaustively list implementation details
 - **REMINDER**: If this file hasn't been referenced in 30+ minutes, RE-READ IT!
