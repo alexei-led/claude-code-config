@@ -1,162 +1,33 @@
 # Claude Code Configuration
 
-Global configuration for Claude Code CLI.
+Custom configuration that makes Claude Code a development partner — with domain skills, automated hooks, and spec-driven workflows.
 
-## Structure
+## How It Works
 
-```
-~/.claude/
-├── CLAUDE.md              # Global instructions (always loaded)
-├── MCP_Sequential.md      # Sequential thinking guide
-├── settings.json          # Settings, permissions, hooks, environments
-├── keybindings.json       # Custom keybindings
-├── hook-config.json       # Optional hook configuration
-├── commands/              # Custom slash commands
-│   ├── code/              # Code workflow commands
-│   ├── spec/              # Spec-driven development
-│   ├── test/              # Testing commands
-│   ├── agent/             # Agent management
-│   └── ai/                # AI utilities
-├── skills/                # Reusable skills (auto-suggested)
-│   ├── writing-*/         # Language-specific development
-│   ├── managing-infra/    # Infrastructure patterns
-│   ├── reviewing-code/    # Code review
-│   └── ...
-├── hooks/                 # Event-triggered scripts
-│   ├── session-start.sh   # SessionStart: show context
-│   ├── skill-enforcer.sh  # UserPromptSubmit: suggest skills
-│   ├── file-protector.sh  # PreToolUse: block sensitive files
-│   ├── smart-lint.sh      # PostToolUse: auto-lint on edit
-│   └── notify.sh          # Notification: system alerts
-└── scripts/               # Helper scripts
-    ├── auth-helper.sh     # Multi-provider auth routing
-    └── cliproxy.sh        # CLIProxyAPI for Codex/Gemini
-```
+**Skills** are the core building blocks. Each skill teaches Claude a specific domain — writing Go, deploying infrastructure, reviewing code, running E2E tests. Skills activate automatically when you talk about their domain (the `skill-enforcer` hook detects patterns in your prompt), or you invoke them directly as `/skill-name`.
+
+**Hooks** run automatically on events: suggest skills on every prompt, lint files after edits, protect sensitive files from accidental changes, show project context on session start.
+
+**Spec-driven development** (`/spec:*` commands) manages structured requirements and tasks for larger projects. Initialize with `/spec:init`, work with `/spec:work`.
+
+**Agents** are specialized subprocesses spawned by skills. Language engineers (`go-engineer`, `python-engineer`, `typescript-engineer`), language specialists for deep review (`go-qa`, `py-tests`, `ts-impl`, etc.), and utility agents (`infra-engineer`, `playwright-tester`). Skills orchestrate agents — you rarely spawn them directly.
+
+## Quick Start
+
+Just talk naturally. The skill enforcer suggests relevant skills based on your prompt:
+
+- "write a Go HTTP handler" → `writing-go` activates
+- "deploy to staging" → `deploying-infra` activates
+- "review my code" → `reviewing-code` activates
+- "improve tests" → `improving-tests` activates
+
+For spec-driven projects: `/spec:init` → `/spec:work` → `/spec:done`.
 
 ## Environments
 
-Switch between API providers with `ce`:
+Switch API providers with `ce <env>`: `default` (Anthropic), `vertex`, `codex`, `gemini`, `deepseek`, `zai`.
 
-```bash
-ce                    # Default (Anthropic API)
-ce vertex             # Vertex AI
-ce codex              # OpenAI Codex via CLIProxyAPI
-ce gemini             # Gemini via CLIProxyAPI
-ce deepseek           # DeepSeek
-ce zai                # Z.ai
-```
+## Reference
 
-Environments are defined in `settings.json` under `env.*` keys.
-
-## Commands
-
-User-invocable commands (slash commands):
-
-| Command         | Description                 |
-| --------------- | --------------------------- |
-| `/spec:work`    | Main spec-driven workflow   |
-| `/spec:init`    | Initialize .spec/ structure |
-| `/spec:status`  | Show progress               |
-| `/code:deploy`  | Deploy infrastructure       |
-| `/test:e2e`     | Run E2E tests               |
-| `/test:improve` | Improve test quality        |
-| `/ai:consult`   | Get fresh perspective       |
-| `/agent:resume` | Resume agent by ID          |
-| `/learn`        | Extract learnings           |
-
-## Skills
-
-Skills are auto-suggested by the `skill-enforcer` hook based on prompt content.
-They provide specialized knowledge and tool access for specific domains.
-
-### Development
-
-- `writing-go` - Go 1.25+ patterns
-- `writing-python` - Python 3.14+ patterns
-- `writing-typescript` - TypeScript 5.x patterns
-- `writing-web` - HTML/CSS/JS/HTMX
-
-### Infrastructure
-
-- `managing-infra` - K8s, Terraform, Helm, GHA
-- `using-cloud-cli` - GCP, AWS CLI patterns
-- `checking-deploy` - Validate configs
-
-### Workflow
-
-- `reviewing-code` - Multi-agent review
-- `refactoring-code` - Batch refactoring
-- `committing-code` - Smart commits
-- `searching-code` - WarpGrep exploration
-
-## Hooks
-
-Event-triggered automation:
-
-| Hook              | Event            | Purpose                    |
-| ----------------- | ---------------- | -------------------------- |
-| session-start.sh  | SessionStart     | Show git/spec context      |
-| skill-enforcer.sh | UserPromptSubmit | Suggest relevant skills    |
-| file-protector.sh | PreToolUse       | Block sensitive file edits |
-| smart-lint.sh     | PostToolUse      | Auto-lint after edits      |
-| notify.sh         | Notification     | System notifications       |
-
-### Hook Configuration
-
-Optional: Create `hook-config.json` to customize hook behavior.
-Hooks fall back to sensible defaults if this file doesn't exist.
-
-## Adding New Components
-
-### New Command
-
-```bash
-mkdir -p ~/.claude/commands/category
-cat > ~/.claude/commands/category/name.md << 'CMDEOF'
----
-context: fork
-allowed-tools: [Task, Read, Grep]
-description: Brief description
----
-
-# Command Name
-
-Instructions for Claude...
-CMDEOF
-```
-
-### New Skill
-
-```bash
-mkdir -p ~/.claude/skills/skill-name
-cat > ~/.claude/skills/skill-name/SKILL.md << 'SKILLEOF'
----
-name: skill-name
-description: When to use this skill
-user-invocable: false
-context: fork
-agent: appropriate-agent
-allowed-tools: [Read, Bash, Grep, Glob]
----
-
-# Skill Name
-
-Guidance and patterns...
-SKILLEOF
-```
-
-## Debugging
-
-```bash
-# Check settings
-cat ~/.claude/settings.json | jq .
-
-# Test hook manually
-echo '{"prompt":"write go code"}' | ~/.claude/hooks/skill-enforcer.sh
-
-# Check hook logs
-tail -f ~/.claude/logs/performance.jsonl
-
-# Validate configuration
-claude --version
-```
+See **GUIDE.md** for detailed usage of skills, agents, and hooks.
+See **CLAUDE.md** for instructions that Claude follows in every session.

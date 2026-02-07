@@ -121,7 +121,7 @@ Coordinate parallel Claude Code sessions. Each teammate has own context window.
 
 ### Subagent Resumption
 
-Long-running agents return an `agentId`. Resume with Task tool's `resume` parameter or `/agent:resume`.
+Long-running agents return an `agentId`. Resume with Task tool's `resume` parameter.
 
 ## Working Memory
 
@@ -180,8 +180,8 @@ CLIProxyAPI environments (codex, gemini) require `cliproxy.sh` running on localh
 
 ### Optimized Components
 
-**Haiku**: go-docs, py-docs, ts-docs, web-docs, looking-up-docs, using-cloud-cli, using-modern-cli, agent:resume, spec:status, spec:done, spec:new
-**Sonnet**: docs-keeper, playwright-tester, spec-planner, researching-web, checking-deploy, testing-e2e, spec:init, spec:work, code:deploy
+**Haiku**: go-docs, py-docs, ts-docs, web-docs, looking-up-docs, using-cloud-cli, using-modern-cli, spec:status, spec:done, spec:new
+**Sonnet**: docs-keeper, playwright-tester, spec-planner, researching-web, deploying-infra, testing-e2e, improving-tests, spec:init, spec:work
 
 ## Working Together
 

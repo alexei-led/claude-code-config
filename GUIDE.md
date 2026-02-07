@@ -1,202 +1,172 @@
-# Claude Code Complete Guide
+# Claude Code Guide
 
-Comprehensive reference for commands, agents, skills, hooks.
-
----
-
-## Architecture Overview
-
-### Command Flow
-
-```mermaid
-flowchart LR
-    User[User] --> Command[/command]
-    Command --> Skill{Skill}
-    Skill --> Agent[Agent]
-    Agent --> Tool[Tool/CLI]
-    Tool --> Summary[Summary]
-    Summary --> User
-```
-
----
-
-## Commands
-
-### Spec-Driven (`/spec:*`) - 5 Commands
-
-| Command        | Verb   | Purpose                                  |
-| -------------- | ------ | ---------------------------------------- |
-| `/spec:init`   | START  | Initialize project or add reqs from docs |
-| `/spec:work`   | DO     | Main workflow - select, plan, implement  |
-| `/spec:status` | SEE    | Progress overview with optional flags    |
-| `/spec:new`    | CREATE | Create new task or requirement           |
-| `/spec:done`   | FINISH | Mark complete with optional discovery    |
-
-#### Status Flags
-
-```bash
-/spec:status                    # overview
-/spec:status TASK-xxx           # show specific task + linked req
-/spec:status --list             # all tasks
-/spec:status --todo             # pending only
-/spec:status --check            # quality audit
-```
-
-#### Done Flags
-
-```bash
-/spec:done TASK-xxx             # mark specific task
-/spec:done --discover           # find potentially done tasks
-/spec:done --verify TASK-xxx    # run tests before marking
-```
-
-### Other Commands
-
-| Command         | Description                       |
-| --------------- | --------------------------------- |
-| `/test:e2e`     | E2E testing with Playwright       |
-| `/test:improve` | Improve test quality              |
-| `/agent:resume` | Resume a previously spawned agent |
-| `/ai:consult`   | Independent review from Claude    |
-| `/learn`        | Extract session learnings         |
-
----
-
-## Agents
-
-### Language Engineers
-
-| Agent                 | Model | Focus                              |
-| --------------------- | ----- | ---------------------------------- |
-| `go-engineer`         | opus  | Go development, clean architecture |
-| `python-engineer`     | opus  | Python development, type safety    |
-| `typescript-engineer` | opus  | TypeScript, React, strict typing   |
-
-### Language Specialists (Deep Review)
-
-**Go**: `go-qa`, `go-tests`, `go-impl`, `go-idioms`, `go-docs`, `go-simplify`
-**Python**: `py-qa`, `py-tests`, `py-impl`, `py-idioms`, `py-docs`, `py-simplify`
-**TypeScript**: `ts-qa`, `ts-tests`, `ts-impl`, `ts-idioms`, `ts-docs`, `ts-simplify`
-**Web**: `web-qa`, `web-tests`, `web-impl`, `web-idioms`, `web-docs`, `web-simplify`
-
-### Spec-Driven Agent
-
-| Agent          | Model  | Focus                        |
-| -------------- | ------ | ---------------------------- |
-| `spec-planner` | sonnet | Creates implementation plans |
-
-### Infrastructure & Utility
-
-| Agent                   | Model  | Focus                                |
-| ----------------------- | ------ | ------------------------------------ |
-| `infra-engineer`        | opus   | K8s, Terraform, Helm, GitHub Actions |
-| `docs-keeper`           | sonnet | Documentation maintenance            |
-| `playwright-tester`     | opus   | E2E browser testing                  |
-| `perplexity-researcher` | haiku  | Web research                         |
+How to use skills, agents, hooks, and spec-driven development effectively.
 
 ---
 
 ## Skills
 
-### User-Invocable
+Skills teach Claude domain-specific knowledge and workflows. There are two kinds:
 
-| Skill                 | Triggers On                        |
-| --------------------- | ---------------------------------- |
-| `brainstorming-ideas` | "brainstorm", "design", "explore"  |
-| `fixing-code`         | "fix", "fix issues", "fix errors"  |
-| `reviewing-code`      | "review", "review code"            |
-| `committing-code`     | "commit", "save changes"           |
-| `documenting-code`    | "update docs", "document"          |
-| `checking-deploy`     | "deploy check", "validate k8s"     |
-| `looking-up-docs`     | Library documentation via Context7 |
-| `researching-web`     | "research", "compare X vs Y"       |
+### User-Invocable (call directly)
 
-### Auto-Activated
+Invoke as `/skill-name` or let the skill enforcer suggest them.
 
-| Skill                | Triggers When         |
-| -------------------- | --------------------- |
-| `writing-go`         | Go code development   |
-| `writing-python`     | Python code           |
-| `writing-typescript` | TypeScript code       |
-| `writing-web`        | HTML/CSS/JS/HTMX      |
-| `managing-infra`     | K8s, Terraform, CI/CD |
-| `refactoring-code`   | Batch refactoring     |
-| `searching-code`     | Codebase exploration  |
+| Skill                 | What It Does                                   | Example Trigger                |
+| --------------------- | ---------------------------------------------- | ------------------------------ |
+| `brainstorming-ideas` | Collaborative design dialogue before coding    | "brainstorm", "design"         |
+| `fixing-code`         | Parallel agents fix all issues, zero tolerance | "fix errors", "make it pass"   |
+| `reviewing-code`      | Multi-agent review (security, quality, idioms) | "review code", "check this"    |
+| `committing-code`     | Smart git commits with logical grouping        | "commit", "save changes"       |
+| `documenting-code`    | Update docs based on recent changes            | "update docs", "document"      |
+| `deploying-infra`     | Validate + deploy K8s/Terraform/Helm           | "deploy to staging", "rollout" |
+| `improving-tests`     | Refactor tests: combine to tabular, fill gaps  | "improve tests", "coverage"    |
+| `testing-e2e`         | Playwright browser automation and test gen     | "e2e test", "playwright"       |
+| `looking-up-docs`     | Library documentation via Context7             | "look up docs", "API ref"      |
+| `researching-web`     | Web research via Perplexity AI                 | "research", "X vs Y"           |
+
+### Auto-Activated (trigger on relevant prompts)
+
+These activate silently when the skill enforcer detects matching patterns.
+
+| Skill                | Activates When                                 |
+| -------------------- | ---------------------------------------------- |
+| `writing-go`         | Go files, go commands, Go-specific terms       |
+| `writing-python`     | Python files, pytest, pip, frameworks          |
+| `writing-typescript` | TS/TSX files, npm/bun, React, Node.js          |
+| `writing-web`        | HTML/CSS/JS/HTMX templates                     |
+| `managing-infra`     | K8s resources, Terraform, Helm, GitHub Actions |
+| `refactoring-code`   | Multi-file batch changes, rename everywhere    |
+| `searching-code`     | "how does X work", trace flow, find all uses   |
+| `learning-patterns`  | "learn from session", extract learnings        |
+
+### How Skills Work
+
+1. You type a prompt
+2. The `skill-enforcer` hook (runs on every prompt) pattern-matches against skill triggers
+3. If matched, it outputs `→ Consider skills: skill-name` as context
+4. Claude loads the skill's `SKILL.md` and follows its workflow
+5. Skills spawn agents, use tools, and produce structured output
+
+### Creating Skills
+
+```
+~/.claude/skills/skill-name/SKILL.md
+```
+
+Key frontmatter fields:
+
+- `name:` — skill identifier
+- `description:` — trigger phrases for auto-activation
+- `user-invocable: true|false` — whether it appears as `/skill-name`
+- `context: fork` — if it spawns agents (prevents context pollution)
+- `allowed-tools:` — tool restrictions
+- `argument-hint:` — shows usage hint (e.g., `[run|record|generate]`)
+
+---
+
+## Agents
+
+Agents are specialized subprocesses with their own context window and tool access. Skills orchestrate agents — you typically don't spawn them directly.
+
+### When to Use Which Agent
+
+| Need                       | Agent                     | Model  |
+| -------------------------- | ------------------------- | ------ |
+| Go implementation          | `go-engineer`             | opus   |
+| Python implementation      | `python-engineer`         | opus   |
+| TypeScript implementation  | `typescript-engineer`     | opus   |
+| Deep Go review             | `go-qa`, `go-tests`, etc. | sonnet |
+| Deep Python review         | `py-qa`, `py-tests`, etc. | sonnet |
+| Deep TypeScript review     | `ts-qa`, `ts-tests`, etc. | sonnet |
+| Infrastructure validation  | `infra-engineer`          | opus   |
+| E2E browser testing        | `playwright-tester`       | opus   |
+| Implementation planning    | `spec-planner`            | sonnet |
+| Documentation updates      | `docs-keeper`             | sonnet |
+| Web research               | `perplexity-researcher`   | haiku  |
+| Quick codebase exploration | `Explore`                 | —      |
+
+### Agent Patterns
+
+**Parallel spawn** — for independent work:
+
+```
+Task(subagent_type="go-tests", run_in_background=true, ...)
+Task(subagent_type="go-qa", run_in_background=true, ...)
+# then collect:
+TaskOutput(task_id=..., block=true)
+```
+
+**Sequential** — when output feeds the next step:
+
+```
+result = Task(subagent_type="Explore", prompt="find all auth handlers")
+# use result to inform next agent
+Task(subagent_type="go-engineer", prompt="refactor auth based on: {result}")
+```
+
+**Resume** — long-running agents return an `agentId`:
+
+```
+Task(resume="<agentId>")
+```
+
+### Agent Teams vs Subagents
+
+| Scenario                           | Use      | Why                               |
+| ---------------------------------- | -------- | --------------------------------- |
+| Independent modules, parallel work | Teams    | Each teammate owns separate files |
+| Code review, competing hypotheses  | Teams    | Reviewers challenge each other    |
+| Research, report-back tasks        | Subagent | Simple, no file conflicts         |
+| Same-file edits                    | Subagent | Avoids merge conflicts            |
 
 ---
 
 ## Hooks
 
-| Hook                | Event            | Purpose                   |
-| ------------------- | ---------------- | ------------------------- |
-| `session-start.sh`  | SessionStart     | Project context on start  |
-| `skill-enforcer.sh` | UserPromptSubmit | Suggests relevant skills  |
-| `file-protector.sh` | PreToolUse       | Protects sensitive files  |
-| `smart-lint.sh`     | PostToolUse      | Auto-lints modified files |
+Hooks run automatically on Claude Code events.
+
+| Hook                | Event            | What It Does                                |
+| ------------------- | ---------------- | ------------------------------------------- |
+| `session-start.sh`  | SessionStart     | Shows git branch, last commit, file context |
+| `skill-enforcer.sh` | UserPromptSubmit | Pattern-matches prompt → suggests skills    |
+| `file-protector.sh` | PreToolUse       | Blocks edits to settings.json, secrets      |
+| `smart-lint.sh`     | PostToolUse      | Auto-runs linter after file edits           |
+
+### Testing Hooks
+
+```bash
+echo '{"prompt":"deploy to staging"}' | ~/.claude/hooks/skill-enforcer.sh
+# → Consider skills: deploying-infra
+```
 
 ---
 
 ## Spec-Driven Development
 
+For structured projects with requirements and tasks.
+
+### Commands
+
+| Command        | Purpose                                              |
+| -------------- | ---------------------------------------------------- |
+| `/spec:init`   | Initialize `.spec/` or add reqs from docs            |
+| `/spec:work`   | Main loop: select → plan → implement → verify → done |
+| `/spec:status` | Progress overview (`--list`, `--todo`, `--check`)    |
+| `/spec:new`    | Create new task or requirement                       |
+| `/spec:done`   | Mark complete (`--discover`, `--verify`)             |
+
 ### Structure
 
 ```
 .spec/
-├── PROGRESS.md     # Session state (auto-managed, last 5 entries)
-├── tasks/          # TASK-*.md (HOW - implementation)
-└── reqs/           # REQ-*.md (WHAT - requirements)
+├── reqs/           # REQ-*.md — WHAT (success criteria, constraints)
+├── tasks/          # TASK-*.md — HOW (implementation steps)
+└── PROGRESS.md     # Auto-managed session log (last 5 entries)
 ```
-
-**Task Status:** `todo` or `done` (delete if obsolete)
-
-### Abstraction Levels
-
-| Location       | Level | Should Contain   | Should NOT Contain |
-| -------------- | ----- | ---------------- | ------------------ |
-| `.spec/reqs/`  | WHAT  | Success criteria | File paths, code   |
-| `.spec/tasks/` | HOW   | Implementation   | Business rationale |
 
 ### Workflow
 
-```mermaid
-flowchart LR
-    subgraph Work["/spec:work"]
-        W1[Select] --> W2[Plan]
-        W2 --> W3[Implement]
-        W3 --> W4[Verify]
-        W4 --> W5[Done]
-    end
+`/spec:init` → `/spec:work` (repeats) → `/spec:done`
 
-    Init["/spec:init"] --> Work
-    Work --> |next| Work
-```
-
-### PROGRESS.md
-
-Auto-managed session state:
-
-```
-14:32 SELECT TASK-auth-login
-14:35 PLAN TASK-auth-login
-14:36 BRANCH task/TASK-auth-login
-14:52 IMPL TASK-auth-login
-14:55 DONE TASK-auth-login
-```
-
-Kept lean: auto-truncates to last 5 entries.
-
----
-
-## File Structure
-
-```
-~/.claude/
-├── README.md           # Overview
-├── GUIDE.md            # This file
-├── CLAUDE.md           # Instructions
-├── agents/             # Agent definitions
-├── commands/           # Slash commands
-├── skills/             # Domain knowledge
-├── hooks/              # Event handlers
-└── scripts/            # Helpers
-```
+Each `/spec:work` cycle: select a task → plan implementation → implement → verify → mark done.

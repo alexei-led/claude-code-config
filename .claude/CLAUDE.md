@@ -66,8 +66,8 @@ Before finalizing a command, verify:
 
 | Pattern                        | Example Command   |
 | ------------------------------ | ----------------- |
-| Background agents + TaskOutput | `/code/commit.md` |
-| Multi-agent parallel review    | `/code/review.md` |
+| Background agents + TaskOutput | `committing-code` |
+| Multi-agent parallel review    | `reviewing-code`  |
 | Full spec workflow             | `/spec/work.md`   |
 
 ## Status Summary (from review)
