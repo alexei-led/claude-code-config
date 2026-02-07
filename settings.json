@@ -1,5 +1,7 @@
 {
-  "env": {},
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
   "includeCoAuthoredBy": false,
   "permissions": {
     "allow": [
@@ -175,6 +177,7 @@
   },
   "alwaysThinkingEnabled": true,
   "env.vertex": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "CLAUDE_CODE_USE_VERTEX": "1",
     "CLOUD_ML_REGION": "global",
     "ANTHROPIC_VERTEX_PROJECT_ID": "alexei-playground-457008",
@@ -183,6 +186,7 @@
     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-haiku-4-5@20251001"
   },
   "env.copilot": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "ANTHROPIC_BASE_URL": "http://localhost:4141",
     "ANTHROPIC_MODEL": "claude-opus-4.5",
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-opus-4.5",
@@ -192,8 +196,11 @@
     "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
     "CLAUDE_CODE_ATTRIBUTION_HEADER": "0"
   },
-  "env.default": {},
+  "env.default": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
   "env.zai": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "apiKeyHelper": "~/.claude/scripts/auth-helper.sh",
     "_1password": "claude-zai",
     "ANTHROPIC_BASE_URL": "https://api.z.ai/api/anthropic",
@@ -205,6 +212,7 @@
   },
   "_activeEnv": "default",
   "env.deepseek": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "apiKeyHelper": "~/.claude/scripts/auth-helper.sh",
     "ANTHROPIC_BASE_URL": "https://api.deepseek.com/anthropic",
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "deepseek-reasoner",
@@ -216,6 +224,7 @@
     "_1password": "deepseek-api"
   },
   "env.codex": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "ANTHROPIC_BASE_URL": "http://127.0.0.1:8317",
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "gpt-5-codex-high",
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "gpt-5-codex",
@@ -223,6 +232,7 @@
     "_proxy": "cliproxy"
   },
   "env.gemini": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "ANTHROPIC_BASE_URL": "http://127.0.0.1:8317",
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "gemini-3-pro-preview",
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "gemini-3-pro-preview",
