@@ -23,16 +23,7 @@ When hooks report issues (exit code 2):
 3. **Verify the fix** by re-running the failed command
 4. **Resume your original task** with todo list awareness
 
-### Reality Checkpoints
-
-**Stop and validate** at these moments:
-
-- After implementing a complete feature
-- Before starting a new major component
-- When something feels wrong
-- Before declaring "done"
-
-Run: `make fmt && make test && make lint`
+**Stop and validate** after implementing a feature, before starting a new component, when something feels wrong, and before declaring "done". Run: `make fmt && make test && make lint`
 
 ## Spec-Driven Development
 
@@ -83,7 +74,7 @@ specctl validate              # Check for issues
 
 **Agent:** `spec-planner` — Creates implementation plans with style learning
 
-**One Task Per Session:** Focus on ONE task. Complete it fully before starting another.
+**IMPORTANT — One Task Per Session:** Focus on ONE task. Complete it fully before starting another.
 
 ### Task Completion Protocol
 
@@ -105,19 +96,13 @@ If session was interrupted:
 
 ## Tools & Agents
 
-### MCP Tools
-
-**Sequential Thinking**: See @MCP_Sequential.md for complex debugging/architecture (3+ components).
-
-**MorphLLM**: Use `edit_file` for batch refactoring, `warpgrep_codebase_search` for codebase understanding. Details in searching-code and refactoring-code skills.
-
 ### Use Multiple Agents
 
-_Leverage subagents aggressively_ for better results:
+Spawn subagents whenever a task has 2+ independent parts:
 
-- Spawn agents to explore different parts of the codebase in parallel
-- Use one agent to write tests while another implements features
-- For complex refactors: One agent identifies changes, another implements them
+- Explore different parts of the codebase in parallel
+- One agent writes tests while another implements features
+- For complex refactors: one agent identifies changes, another implements them
 
 ### Agent Teams
 
@@ -130,7 +115,9 @@ Coordinate parallel Claude Code sessions. Each teammate has own context window.
 | Cross-layer changes (frontend+backend+infra) | Teams    | Parallel development, no conflicts        |
 | Research, sequential deps, same-file edits   | Subagent | Simple report-back, no conflicts          |
 
-Size tasks as self-contained units, assign different files to avoid conflicts. Teams cost more tokens—worth it for parallel exploration/review, not for routine tasks.
+- Size tasks as self-contained units
+- Assign different files to avoid conflicts
+- Teams cost more tokens—worth it for parallel exploration/review, not for routine tasks
 
 ### Subagent Resumption
 
@@ -157,8 +144,6 @@ When stuck or confused:
 
 ## Performance & Security
 
-- No premature optimization—benchmark before claiming faster
-- Validate all inputs at system boundaries
 - Prepared statements for SQL (never concatenate!)
 
 ## Usage Optimization
@@ -190,8 +175,6 @@ CLIProxyAPI environments (codex, gemini) require `cliproxy.sh` running on localh
 
 ### Token Efficiency
 
-- Request concise output: "5 lines max", "JSON only", "bullet points"
-- Use summaries instead of full file dumps
 - Fork heavy analysis (`context: fork`) to avoid main context pollution
 - Batch related edits in single tool calls
 
@@ -203,8 +186,9 @@ CLIProxyAPI environments (codex, gemini) require `cliproxy.sh` running on localh
 ## Working Together
 
 - This is always a feature branch—no backwards compatibility needed
-- When in doubt, choose clarity over cleverness
-- Avoid complex abstractions or "clever" code—the simple solution is usually better
+- When in doubt, choose the simpler solution over the clever one
 - Never add refactoring-style comments
 - Comments: lean, informative, useful and short—only when helpful. No comments in tests
+- **NEVER** skip Research → Plan → Implement
+- **NEVER** mark done until hooks pass and all checks are GREEN
 - **REMINDER**: If this file hasn't been referenced in 30+ minutes, RE-READ IT!
