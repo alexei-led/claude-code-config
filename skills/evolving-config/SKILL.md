@@ -7,6 +7,7 @@ description: >-
   "are we up to date".
 user-invocable: true
 model: sonnet
+memory: project
 context: fork
 allowed-tools:
   - TaskCreate
