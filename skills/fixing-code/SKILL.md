@@ -3,6 +3,7 @@ name: fixing-code
 description: Fix ALL issues via parallel agents with zero tolerance quality enforcement. Use when user says "fix", "fix issues", "fix errors", "fix all", "fix bugs", "fix lint", "fix tests", or wants to resolve code problems.
 user-invocable: true
 context: fork
+argument-hint: [team]
 allowed-tools:
   - Task
   - TaskOutput
@@ -21,10 +22,14 @@ allowed-tools:
 
 Execute until clean. Parallel analysis, sequential fixes.
 
+**Parse `$ARGUMENTS`:**
+
+- `team` → Agent team mode: Analysts compete to find root causes and debate solutions
+
 **Use TodoWrite** to track these 5 phases:
 
 1. Run validation
-2. Parallel analysis (spawn agents)
+2. Parallel analysis (spawn agents or team)
 3. Collect analysis results
 4. Sequential fixes
 5. Final verification
@@ -51,7 +56,19 @@ No Makefile? Detect language and run:
 
 ## Phase 2: Parallel Analysis (Read-Only)
 
-**Spawn ALL relevant language agents IN ONE MESSAGE for parallel execution:**
+### Analysis Mode
+
+**If `team` NOT in `$ARGUMENTS`** (Subagent mode - default):
+
+Spawn ALL relevant language agents IN ONE MESSAGE for parallel execution.
+
+**If `team` in `$ARGUMENTS`** (Team mode):
+
+Create an agent team where analysts compete to find root causes and debate solutions. This mode is better for complex or mysterious issues where multiple perspectives help.
+
+---
+
+### Subagent Mode (Default)
 
 Based on detected languages with issues, spawn analysis agents:
 
@@ -101,6 +118,44 @@ Task(
   - Priority (critical/important/minor)"
 )
 ```
+
+### Team Mode (If `team` in Arguments)
+
+Create an agent team for competing analysis:
+
+```
+Create an agent team to analyze these issues. Spawn analysts for each language:
+
+{If Go issues}:
+- go-qa: Analyze Go issues from security/performance angle
+- go-impl: Analyze from implementation/architecture angle
+- go-tests: Analyze from testability angle
+
+{If Python issues}:
+- py-qa: Analyze Python issues from security/performance angle
+- py-impl: Analyze from implementation angle
+- py-tests: Analyze from test perspective
+
+{If TypeScript issues}:
+- ts-qa: Analyze TypeScript issues from security/performance angle
+- ts-impl: Analyze from implementation angle
+- ts-tests: Analyze from test perspective
+
+{If Web issues}:
+- web-qa: Analyze from security/performance/a11y angle
+- web-impl: Analyze from implementation angle
+
+Have analysts:
+1. Independently diagnose root causes
+2. Compete to find the most likely explanation
+3. Debate proposed solutions
+4. Challenge each other's assumptions
+5. Converge on consensus root cause + fix approach
+
+Return prioritized list with confidence levels and dissenting opinions.
+```
+
+The team lead will synthesize competing analyses into prioritized action plan.
 
 ---
 
@@ -155,6 +210,7 @@ make lint && make test
 ```
 FIX COMPLETE
 ============
+Mode: {Subagent Analysis | Team Analysis}
 Analysis: {N} issues identified by {M} agents
 Fixed: {X} issues
 Remaining: {Y} non-blocking (if any)
@@ -163,6 +219,13 @@ Status: CLEAN | NEEDS ATTENTION
 Changes:
 - file1.go:42 - Fixed null pointer check
 - file2.py:15 - Added missing type hint
+```
+
+## Examples
+
+```
+/fixing-code           # Subagent mode: parallel analysis
+/fixing-code team      # Team mode: competing analysis with debate
 ```
 
 ---

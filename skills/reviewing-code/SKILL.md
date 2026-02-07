@@ -8,7 +8,7 @@ allowed-tools:
   - TodoWrite
   - AskUserQuestion
   - Bash
-argument-hint: [deep] [external]
+argument-hint: [deep] [team] [external]
 ---
 
 # Multi-Agent Code Review
@@ -16,7 +16,7 @@ argument-hint: [deep] [external]
 **Use TodoWrite** to track these 4 phases:
 
 1. Detect languages and scope
-2. Spawn review agents
+2. Spawn review agents (or team)
 3. Collect agent results
 4. Aggregate and present findings
 
@@ -25,16 +25,20 @@ argument-hint: [deep] [external]
 **Parse `$ARGUMENTS`:**
 
 - `deep` → 6-12 specialized Claude sub-agents (language-specific reviewers)
+- `team` → **Agent team mode**: Reviewers challenge each other's findings
 - `external` → Add external AI reviewers (Codex + Gemini). **Only if explicitly requested.**
 
 **IMPORTANT:** Without `external` flag, run ONLY Claude agents. Never run Codex or Gemini unless `external` is in arguments.
 
-| Arguments     | Claude Agents                                                       | External (Codex + Gemini) |
-| ------------- | ------------------------------------------------------------------- | ------------------------- |
-| (none)        | go-engineer, python-engineer                                        | ❌ No                     |
-| deep          | go-qa, go-idioms, go-tests, go-impl, go-docs, go-simplify (+ py-\*) | ❌ No                     |
-| external      | go-engineer, python-engineer                                        | ✅ Yes                    |
-| deep external | All 6-12 specialized sub-agents                                     | ✅ Yes                    |
+| Arguments          | Claude Agents                                                       | Mode     | External (Codex + Gemini) |
+| ------------------ | ------------------------------------------------------------------- | -------- | ------------------------- |
+| (none)             | go-engineer, python-engineer                                        | Subagent | ❌ No                     |
+| deep               | go-qa, go-idioms, go-tests, go-impl, go-docs, go-simplify (+ py-\*) | Subagent | ❌ No                     |
+| team               | go-engineer, python-engineer                                        | **Team** | ❌ No                     |
+| deep team          | All 6-12 specialized sub-agents                                     | **Team** | ❌ No                     |
+| external           | go-engineer, python-engineer                                        | Subagent | ✅ Yes                    |
+| team external      | go-engineer, python-engineer                                        | **Team** | ✅ Yes                    |
+| deep team external | All 6-12 specialized sub-agents                                     | **Team** | ✅ Yes                    |
 
 ---
 
@@ -56,7 +60,25 @@ Build git command based on choice.
 
 ---
 
-## Step 2: Spawn Agents (ALL in ONE message)
+## Step 2: Spawn Agents or Team (ALL in ONE message)
+
+### Team Mode vs Subagent Mode
+
+**If `team` in `$ARGUMENTS`**: Use agent team for collaborative review with debate.
+
+**Team mode benefits:**
+
+- Reviewers challenge each other's findings
+- Competing perspectives surface edge cases
+- Faster for complex PRs (parallel independent work)
+
+**Subagent mode benefits:**
+
+- Simpler coordination
+- Lower token cost
+- Better for straightforward reviews
+
+---
 
 ### Default Mode: Language Engineers
 
@@ -113,6 +135,8 @@ Invoke agents by their `subagent_type` (models defined in agent metadata):
 | web-docs      | Comments, ARIA labels           |
 | web-simplify  | CSS bloat, unnecessary JS       |
 
+**If `team` NOT in `$ARGUMENTS`** (Subagent mode):
+
 Spawn each agent using its subagent_type directly:
 
 ```
@@ -120,6 +144,58 @@ Task(subagent_type="{agent}", prompt="Review code from: {git_command}. Output: f
 ```
 
 Agent's own `model` setting (from metadata) is respected automatically.
+
+**If `team` in `$ARGUMENTS`** (Team mode):
+
+Create an agent team with specialized reviewers:
+
+```
+Create an agent team to review code from: {git_command}.
+
+Spawn teammates for detected languages:
+
+{If Go detected}:
+- go-qa: Security, logic, OWASP Top 10
+- go-idioms: Patterns, error handling, stdlib usage
+- go-tests: Test coverage, quality, edge cases
+- go-impl: Requirements match, DI, edge cases
+- go-docs: Documentation quality
+- go-simplify: Over-abstraction, dead code
+
+{If Python detected}:
+- py-qa: Security, logic, OWASP Top 10
+- py-idioms: Pythonic patterns, type hints
+- py-tests: pytest patterns, coverage
+- py-impl: Requirements, DI wiring
+- py-docs: Docstrings, type hints
+- py-simplify: Over-abstraction, complexity
+
+{If TypeScript detected}:
+- ts-qa: Security, async safety, OWASP
+- ts-idioms: Strict typing, patterns
+- ts-tests: Test quality, coverage
+- ts-impl: Requirements match
+- ts-docs: Documentation
+- ts-simplify: Over-engineering
+
+{If Web detected}:
+- web-qa: Security, performance, a11y
+- web-idioms: Semantic HTML, CSS, JS patterns
+- web-tests: E2E/Playwright quality
+- web-impl: Requirements, responsiveness
+- web-docs: Comments, ARIA labels
+- web-simplify: CSS bloat, unnecessary JS
+
+Have reviewers:
+1. Review code independently
+2. Challenge each other's findings
+3. Flag disagreements for discussion
+4. Converge on consensus issues
+
+Report format: file:line - Issue. Fix. [Flagged by: agent1, agent2]
+```
+
+The team lead will coordinate reviewers and synthesize results.
 
 ### External Mode: Add Codex + Gemini (ONLY if `external` in arguments)
 
@@ -144,9 +220,10 @@ Task(subagent_type="gemini-consultant", prompt="review: Review architecture of {
 ```markdown
 ## Code Review Summary
 
-**Mode**: {default|deep} {+external}
+**Mode**: {default|deep} {team} {+external}
 **Scope**: {description}
 **Agents**: {count} reviewers
+**Coordination**: {Subagents | Agent Team}
 
 ---
 
@@ -180,10 +257,12 @@ Task(subagent_type="gemini-consultant", prompt="review: Review architecture of {
 ## Examples
 
 ```
-/reviewing-code                 # Claude only: go-engineer, python-engineer
-/reviewing-code deep            # Claude only: 6-12 specialized sub-agents (NO external)
-/reviewing-code external        # Claude engineers + Codex + Gemini
-/reviewing-code deep external   # All Claude sub-agents + Codex + Gemini
+/reviewing-code                      # Subagents: go-engineer, python-engineer
+/reviewing-code deep                 # Subagents: 6-12 specialized (NO external)
+/reviewing-code team                 # Agent team: engineers challenge each other
+/reviewing-code deep team            # Agent team: all 6-12 specialists with debate
+/reviewing-code external             # Subagents: Claude + Codex + Gemini
+/reviewing-code deep team external   # Agent team: all specialists + external reviewers
 ```
 
 **Execute this workflow now.**
