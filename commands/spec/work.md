@@ -212,7 +212,13 @@ Mention any relevant pitfalls/conventions to the engineer agent.
 
 **TodoWrite** from plan steps.
 
-**Spawn engineer agent:**
+**Ask about implementation approach:**
+
+| Header | Question                           | Options                                                                                                                                                                                                                  |
+| ------ | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Mode   | How should we implement this task? | 1. **Solo engineer** - Single agent implements<br>2. **Implementation pair** - Engineer + test specialist work as team (tests written in parallel)<br>3. **Team research first** - Explore with team before implementing |
+
+**If Solo engineer** (default):
 
 Detect language from task files or epic, then spawn appropriate agent:
 
@@ -226,6 +232,48 @@ Task(
 ```
 
 **Apply proposals** with user approval (each edit shown).
+
+**If Implementation pair**:
+
+Create an agent team with engineer + test specialist:
+
+```
+Create an agent team to implement this task.
+
+Spawn two teammates:
+- Primary: {go|python|typescript}-engineer
+  Writes implementation code following the plan
+
+- Secondary: {go|python|typescript}-tests
+  Writes tests in parallel, identifies coverage gaps
+
+Have them coordinate:
+1. Engineer proposes implementation
+2. Test specialist proposes tests simultaneously
+3. Both review each other's work
+4. Converge on final implementation + tests
+
+Return proposals only - do not apply edits.
+```
+
+**Apply proposals** from both teammates with user approval.
+
+**If Team research first**:
+
+Create an agent team to research before implementing:
+
+```
+Create a research team to explore this feature.
+
+Spawn teammates:
+- Explore: Find similar implementations in codebase
+- {go|python|typescript}-engineer: Propose architecture
+- {go|python|typescript}-tests: Identify testability concerns
+
+Have them share findings and converge on approach.
+```
+
+After research, proceed with solo engineer or implementation pair based on findings.
 
 ---
 
