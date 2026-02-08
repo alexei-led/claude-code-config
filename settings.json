@@ -1,5 +1,7 @@
 {
-  "env": {},
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
   "includeCoAuthoredBy": false,
   "permissions": {
     "allow": [
@@ -175,17 +177,20 @@
     }
   },
   "alwaysThinkingEnabled": true,
+  "_activeEnv": "default",
+  "env.default": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
   "env.vertex": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "CLAUDE_CODE_USE_VERTEX": "1",
     "CLOUD_ML_REGION": "global",
     "ANTHROPIC_VERTEX_PROJECT_ID": "alexei-playground-457008",
     "ANTHROPIC_MODEL": "claude-opus-4-5@20251101",
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-opus-4-5@20251101",
-    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-haiku-4-5@20251001"
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-haiku-4-5@20251001",
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
   },
   "env.copilot": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "ANTHROPIC_BASE_URL": "http://localhost:4141",
     "ANTHROPIC_MODEL": "claude-opus-4.5",
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-opus-4.5",
@@ -193,25 +198,10 @@
     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-haiku-4.5",
     "DISABLE_NON_ESSENTIAL_MODEL_CALLS": "1",
     "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
-    "CLAUDE_CODE_ATTRIBUTION_HEADER": "0"
-  },
-  "env.default": {
+    "CLAUDE_CODE_ATTRIBUTION_HEADER": "0",
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
   },
-  "env.zai": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
-    "apiKeyHelper": "~/.claude/scripts/auth-helper.sh",
-    "_1password": "claude-zai",
-    "ANTHROPIC_BASE_URL": "https://api.z.ai/api/anthropic",
-    "ANTHROPIC_DEFAULT_OPUS_MODEL": "GLM-4.7",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL": "GLM-4.7",
-    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "GLM-4.5-Air",
-    "API_TIMEOUT_MS": "3000000",
-    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
-  },
-  "_activeEnv": "default",
   "env.deepseek": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "apiKeyHelper": "~/.claude/scripts/auth-helper.sh",
     "ANTHROPIC_BASE_URL": "https://api.deepseek.com/anthropic",
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "deepseek-reasoner",
@@ -219,23 +209,36 @@
     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "deepseek-chat",
     "model": "deepseek-reasoner",
     "MAX_THINKING_TOKENS": "64000",
+    "DISABLE_PROMPT_CACHING": "1",
     "DISABLE_TELEMETRY": "true",
-    "_1password": "deepseek-api"
+    "_1password": "deepseek-api",
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
+  "env.zai": {
+    "apiKeyHelper": "~/.claude/scripts/auth-helper.sh",
+    "ANTHROPIC_BASE_URL": "https://api.z.ai/api/anthropic",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "GLM-4.7",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "GLM-4.7",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "GLM-4.5-Air",
+    "API_TIMEOUT_MS": "3000000",
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+    "_1password": "claude-zai",
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
   },
   "env.codex": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "ANTHROPIC_BASE_URL": "http://127.0.0.1:8317",
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "gpt-5-codex-high",
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "gpt-5-codex",
     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "gpt-5-codex",
-    "_proxy": "cliproxy"
+    "_proxy": "cliproxy",
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
   },
   "env.gemini": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "ANTHROPIC_BASE_URL": "http://127.0.0.1:8317",
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "gemini-3-pro-preview",
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "gemini-3-pro-preview",
     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "gemini-3-flash",
-    "_proxy": "cliproxy"
+    "_proxy": "cliproxy",
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
   }
 }
