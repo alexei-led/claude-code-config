@@ -385,7 +385,10 @@ def interactive_select(
                     return "team", True
                 # Switch to selected env (like space) + launch
                 if new_env != active:
-                    switch_env(settings, active, new_env)
+                    success, _, _ = switch_env(settings, active, new_env)
+                    if not success:
+                        clear_menu(num_lines)
+                        return None, False
                     active = new_env
                 clear_menu(num_lines)
                 return active, True
@@ -393,8 +396,9 @@ def interactive_select(
                 # Switch to selected env immediately (skip for team)
                 new_env = envs[selected]
                 if new_env != "team" and new_env != active:
-                    switch_env(settings, active, new_env)
-                    active = new_env
+                    success, _, _ = switch_env(settings, active, new_env)
+                    if success:
+                        active = new_env
             elif key == "up":
                 selected = (selected - 1) % len(envs)
             elif key == "down":
