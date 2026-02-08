@@ -27,6 +27,7 @@ CLIProxyAPI (codex/gemini):
 
 import json
 import os
+import select
 import socket
 import subprocess
 import sys
@@ -35,6 +36,11 @@ import tty
 from pathlib import Path
 
 SETTINGS = Path.home() / ".claude" / "settings.json"
+
+# Env vars that must survive all environment switches
+PERSISTENT_ENV = {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
+}
 
 ALIASES = {
     "max": "default",
@@ -164,68 +170,11 @@ def stop_proxy(proxy: ProxyConfig) -> None:
         print(f"{GREEN}✓{RESET} {proxy.name} stopped")
 
 
-# Convenience wrappers for backwards compatibility
-def check_copilot_proxy() -> bool:
-    return check_proxy(COPILOT_PROXY)
-
-
-def start_copilot_proxy() -> bool:
-    return start_proxy(COPILOT_PROXY)
-
-
-def stop_copilot_proxy() -> None:
-    stop_proxy(COPILOT_PROXY)
-
-
-def check_cliproxy() -> bool:
-    return check_proxy(CLIPROXY)
-
-
-def start_cliproxy() -> bool:
-    return start_proxy(CLIPROXY)
-
-
-def stop_cliproxy() -> None:
-    stop_proxy(CLIPROXY)
-
-
-def ensure_deepseek_config(settings: dict) -> None:
-    """Ensure DeepSeek environment config exists in settings.
-
-    Limitations (Anthropic API compatibility):
-    - budget_tokens: IGNORED (thinking uses up to 64K automatically)
-    - cache_control: IGNORED (no prompt caching via Anthropic API)
-    - Context: 128K, Output: 64K max in thinking mode
-    """
-    if "env.deepseek" not in settings:
-        settings["env.deepseek"] = {
-            "ANTHROPIC_BASE_URL": "https://api.deepseek.com/anthropic",
-            "ANTHROPIC_DEFAULT_OPUS_MODEL": "deepseek-reasoner",
-            "ANTHROPIC_DEFAULT_SONNET_MODEL": "deepseek-chat",
-            "ANTHROPIC_DEFAULT_HAIKU_MODEL": "deepseek-chat",
-            "DISABLE_PROMPT_CACHING": "1",  # DeepSeek ignores cache_control
-            "_1password": "deepseek-api",
-        }
-
-
-def ensure_zai_config(settings: dict) -> None:
-    """Ensure z.ai environment config exists in settings.
-
-    GLM-4.7 specs:
-    - Context: 200K tokens, Output: 128K tokens
-    - Thinking: enabled by default (no budget_tokens param)
-    - Caching: supported
-    - Pricing: ~$0.40/1M input tokens
-    """
-    if "env.zai" not in settings:
-        settings["env.zai"] = {
-            "ANTHROPIC_BASE_URL": "https://api.z.ai/api/anthropic",
-            "ANTHROPIC_DEFAULT_OPUS_MODEL": "GLM-4.7",
-            "ANTHROPIC_DEFAULT_SONNET_MODEL": "GLM-4.7",
-            "ANTHROPIC_DEFAULT_HAIKU_MODEL": "GLM-4.5-Air",
-            "API_TIMEOUT_MS": "3000000",
-            "_1password": "claude-zai",
-        }
+def apply_persistent_env(env_dict: dict) -> dict:
+    """Ensure persistent env vars are present in an env dict."""
+    for key, value in PERSISTENT_ENV.items():
+        env_dict.setdefault(key, value)
+    return env_dict
 
 
 def get_cliproxy_url() -> str:
@@ -234,36 +183,80 @@ def get_cliproxy_url() -> str:
     return f"http://127.0.0.1:{port}"
 
 
-def ensure_codex_config(settings: dict) -> None:
-    """Ensure Codex (GPT-5) environment config exists in settings.
+# Default configs for each provider (applied only when env.X is missing)
+DEFAULT_CONFIGS: dict[str, dict[str, str]] = {
+    "default": {},
+    "vertex": {
+        "CLAUDE_CODE_USE_VERTEX": "1",
+        "CLOUD_ML_REGION": "global",
+        "ANTHROPIC_VERTEX_PROJECT_ID": "alexei-playground-457008",
+        "ANTHROPIC_MODEL": "claude-opus-4-5@20251101",
+        "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-opus-4-5@20251101",
+        "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-haiku-4-5@20251001",
+    },
+    "copilot": {
+        "ANTHROPIC_BASE_URL": "http://localhost:4141",
+        "ANTHROPIC_MODEL": "claude-opus-4.5",
+        "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-opus-4.5",
+        "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-4.5",
+        "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-haiku-4.5",
+        "DISABLE_NON_ESSENTIAL_MODEL_CALLS": "1",
+        "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+        "CLAUDE_CODE_ATTRIBUTION_HEADER": "0",
+    },
+    "deepseek": {
+        "apiKeyHelper": "~/.claude/scripts/auth-helper.sh",
+        "ANTHROPIC_BASE_URL": "https://api.deepseek.com/anthropic",
+        "ANTHROPIC_DEFAULT_OPUS_MODEL": "deepseek-reasoner",
+        "ANTHROPIC_DEFAULT_SONNET_MODEL": "deepseek-chat",
+        "ANTHROPIC_DEFAULT_HAIKU_MODEL": "deepseek-chat",
+        "model": "deepseek-reasoner",
+        "MAX_THINKING_TOKENS": "64000",
+        "DISABLE_PROMPT_CACHING": "1",
+        "DISABLE_TELEMETRY": "true",
+        "_1password": "deepseek-api",
+    },
+    "zai": {
+        "apiKeyHelper": "~/.claude/scripts/auth-helper.sh",
+        "ANTHROPIC_BASE_URL": "https://api.z.ai/api/anthropic",
+        "ANTHROPIC_DEFAULT_OPUS_MODEL": "GLM-4.7",
+        "ANTHROPIC_DEFAULT_SONNET_MODEL": "GLM-4.7",
+        "ANTHROPIC_DEFAULT_HAIKU_MODEL": "GLM-4.5-Air",
+        "API_TIMEOUT_MS": "3000000",
+        "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+        "_1password": "claude-zai",
+    },
+}
 
-    Uses CLIProxyAPI for OAuth-based access to OpenAI Codex subscription.
-    Models: gpt-5-codex-high (opus), gpt-5-codex (sonnet/haiku)
-    """
-    if "env.codex" not in settings:
-        settings["env.codex"] = {
-            "ANTHROPIC_BASE_URL": get_cliproxy_url(),
+
+def _cliproxy_configs() -> dict[str, dict[str, str]]:
+    """Build CLIProxyAPI-based configs (codex/gemini) with resolved URL."""
+    url = get_cliproxy_url()
+    return {
+        "codex": {
+            "ANTHROPIC_BASE_URL": url,
             "ANTHROPIC_DEFAULT_OPUS_MODEL": "gpt-5-codex-high",
             "ANTHROPIC_DEFAULT_SONNET_MODEL": "gpt-5-codex",
             "ANTHROPIC_DEFAULT_HAIKU_MODEL": "gpt-5-codex",
             "_proxy": "cliproxy",
-        }
-
-
-def ensure_gemini_config(settings: dict) -> None:
-    """Ensure Gemini environment config exists in settings.
-
-    Uses CLIProxyAPI for OAuth-based access to Gemini subscription.
-    Models: gemini-3-pro-preview (opus/sonnet), gemini-3-flash (haiku)
-    """
-    if "env.gemini" not in settings:
-        settings["env.gemini"] = {
-            "ANTHROPIC_BASE_URL": get_cliproxy_url(),
+        },
+        "gemini": {
+            "ANTHROPIC_BASE_URL": url,
             "ANTHROPIC_DEFAULT_OPUS_MODEL": "gemini-3-pro-preview",
             "ANTHROPIC_DEFAULT_SONNET_MODEL": "gemini-3-pro-preview",
             "ANTHROPIC_DEFAULT_HAIKU_MODEL": "gemini-3-flash",
             "_proxy": "cliproxy",
-        }
+        },
+    }
+
+
+def ensure_provider_configs(settings: dict) -> None:
+    """Ensure all provider env configs exist in settings."""
+    all_configs = {**DEFAULT_CONFIGS, **_cliproxy_configs()}
+    for name, config in all_configs.items():
+        key = f"env.{name}"
+        if key not in settings:
+            settings[key] = apply_persistent_env(dict(config))
 
 
 def get_key() -> str:
@@ -274,13 +267,15 @@ def get_key() -> str:
         tty.setraw(fd)
         ch = sys.stdin.read(1)
         if ch == "\x1b":  # Escape sequence
-            ch2 = sys.stdin.read(1)
-            if ch2 == "[":
-                ch3 = sys.stdin.read(1)
-                if ch3 == "A":
-                    return "up"
-                elif ch3 == "B":
-                    return "down"
+            # Wait briefly for follow-up chars (arrow keys send \x1b[A etc.)
+            if select.select([sys.stdin], [], [], 0.05)[0]:
+                ch2 = sys.stdin.read(1)
+                if ch2 == "[" and select.select([sys.stdin], [], [], 0.05)[0]:
+                    ch3 = sys.stdin.read(1)
+                    if ch3 == "A":
+                        return "up"
+                    elif ch3 == "B":
+                        return "down"
             return "esc"
         elif ch == "\r" or ch == "\n":
             return "enter"
@@ -420,22 +415,24 @@ def switch_env(
 
     # Start copilot proxy if switching to copilot and not already running
     # Note: Never auto-stop proxy - other sessions may be using it
-    if target == "copilot" and not check_copilot_proxy():
-        if not start_copilot_proxy():
+    if target == "copilot" and not check_proxy(COPILOT_PROXY):
+        if not start_proxy(COPILOT_PROXY):
             return False, None, None  # Failed to start proxy
 
     # Start CLIProxyAPI if switching to codex or gemini
-    if target in ("codex", "gemini") and not check_cliproxy():
-        if not start_cliproxy():
+    if target in ("codex", "gemini") and not check_proxy(CLIPROXY):
+        if not start_proxy(CLIPROXY):
             return False, None, None  # Failed to start proxy
 
     # Save current env (clean API key first for security)
     current_env = settings.get("env", {}).copy()
     current_env.pop("ANTHROPIC_AUTH_TOKEN", None)  # Remove sensitive data
+    apply_persistent_env(current_env)
     settings[f"env.{current}"] = current_env
 
     # Load target env config (without secrets for storage)
     target_config = settings.get(f"env.{target}", {}).copy()
+    apply_persistent_env(target_config)
 
     # Store clean config in settings (NO secrets in file!)
     settings["env"] = target_config
@@ -507,16 +504,16 @@ def main():
 
     # Handle --stop-proxy (copilot)
     if "--stop-proxy" in sys.argv:
-        if check_copilot_proxy():
-            stop_copilot_proxy()
+        if check_proxy(COPILOT_PROXY):
+            stop_proxy(COPILOT_PROXY)
         else:
             print(f"{DIM}Copilot proxy not running{RESET}")
         sys.exit(0)
 
     # Handle --stop-cliproxy
     if "--stop-cliproxy" in sys.argv:
-        if check_cliproxy():
-            stop_cliproxy()
+        if check_proxy(CLIPROXY):
+            stop_proxy(CLIPROXY)
         else:
             print(f"{DIM}CLIProxyAPI not running{RESET}")
         sys.exit(0)
@@ -536,10 +533,7 @@ def main():
         sys.exit(1)
 
     # Ensure provider configs exist
-    ensure_deepseek_config(settings)
-    ensure_zai_config(settings)
-    ensure_codex_config(settings)
-    ensure_gemini_config(settings)
+    ensure_provider_configs(settings)
     SETTINGS.write_text(json.dumps(settings, indent=2) + "\n")
     current = settings.get("_activeEnv", "default")
 
@@ -596,7 +590,7 @@ def main():
             settings[f"env.{current_env}"] = env_data
 
         # Clear env and reset to default (cc-team uses its own config)
-        settings["env"] = {}
+        settings["env"] = apply_persistent_env({})
         settings["_activeEnv"] = "default"
         SETTINGS.write_text(json.dumps(settings, indent=2) + "\n")
 
