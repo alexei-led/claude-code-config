@@ -8,7 +8,7 @@ allowed-tools:
   - TodoWrite
   - AskUserQuestion
   - Bash
-argument-hint: [deep] [team] [external]
+argument-hint: "[deep] [team] [external]"
 ---
 
 # Multi-Agent Code Review

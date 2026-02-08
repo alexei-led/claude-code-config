@@ -3,7 +3,7 @@ name: testing-e2e
 description: E2E testing with Playwright MCP for browser automation, test generation, and UI testing. Use when discussing E2E tests, Playwright, browser testing, UI automation, visual testing, or accessibility testing. Supports TypeScript tests and Go/HTMX web applications.
 user-invocable: true
 context: fork
-argument-hint: [run|record|generate|verify <feature>]
+argument-hint: "[run|record|generate|verify <feature>]"
 allowed-tools:
   - Task
   - TaskOutput

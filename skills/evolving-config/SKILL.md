@@ -21,7 +21,7 @@ allowed-tools:
   - WebFetch
   - AskUserQuestion
   - mcp__perplexity-ask__perplexity_ask
-argument-hint: [--dry-run]
+argument-hint: "[--dry-run]"
 ---
 
 # Evolve Configuration

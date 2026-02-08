@@ -3,7 +3,7 @@ name: improving-tests
 description: Review, refactor, and improve test quality. Use when user says "improve tests", "refactor tests", "test coverage", "combine tests", "table-driven", "parametrize", "test.each", "eliminate test waste", or wants to optimize test structure.
 user-invocable: true
 context: fork
-argument-hint: [review|refactor|coverage|full]
+argument-hint: "[review|refactor|coverage|full]"
 allowed-tools:
   - Task
   - TaskOutput

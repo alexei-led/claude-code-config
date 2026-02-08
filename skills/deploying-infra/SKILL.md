@@ -3,7 +3,7 @@ name: deploying-infra
 description: Validate and deploy Kubernetes, Terraform, Helm, Kustomize, GitHub Actions, and Docker configs. Use when user says "deploy", "deploy to staging", "apply changes", "terraform apply", "helm upgrade", "kubectl apply", "rollout", "deploy check", "validate deployment", "validate infrastructure", or wants to verify or apply infrastructure changes.
 user-invocable: true
 context: fork
-argument-hint: [--dry-run | --apply] [environment]
+argument-hint: "[--dry-run | --apply] [environment]"
 allowed-tools:
   - Task
   - TaskOutput

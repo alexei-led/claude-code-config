@@ -13,7 +13,7 @@ allowed-tools:
   - mcp__perplexity-ask__perplexity_ask
   - WebFetch
   - Bash(git *)
-argument-hint: [<topic>]
+argument-hint: "[<topic>]"
 ---
 
 # Brainstorming Ideas Into Designs

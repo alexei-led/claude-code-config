@@ -3,7 +3,7 @@ name: fixing-code
 description: Fix ALL issues via parallel agents with zero tolerance quality enforcement. Use when user says "fix", "fix issues", "fix errors", "fix all", "fix bugs", "fix lint", "fix tests", or wants to resolve code problems.
 user-invocable: true
 context: fork
-argument-hint: [team]
+argument-hint: "[team]"
 allowed-tools:
   - Task
   - TaskOutput

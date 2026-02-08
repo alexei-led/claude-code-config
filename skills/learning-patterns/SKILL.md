@@ -14,7 +14,7 @@ allowed-tools:
   - Grep
   - Glob
   - AskUserQuestion
-argument-hint: [topic] [--dry-run]
+argument-hint: "[topic] [--dry-run]"
 ---
 
 # Learn from Session
