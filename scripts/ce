@@ -29,13 +29,36 @@ import json
 import os
 import select
 import socket
+import stat
 import subprocess
 import sys
+import tempfile
 import termios
 import tty
 from pathlib import Path
 
 SETTINGS = Path.home() / ".claude" / "settings.json"
+
+
+def write_settings(settings: dict) -> None:
+    """Atomically write settings to disk with restricted permissions (0600)."""
+    data = json.dumps(settings, indent=2) + "\n"
+    fd, tmp_path = tempfile.mkstemp(dir=SETTINGS.parent, suffix=".json.tmp")
+    try:
+        os.write(fd, data.encode())
+        os.close(fd)
+        fd = -1
+        os.chmod(tmp_path, stat.S_IRUSR | stat.S_IWUSR)
+        os.replace(tmp_path, SETTINGS)
+    except BaseException:
+        if fd >= 0:
+            os.close(fd)
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
+        raise
+
 
 # Env vars that must survive all environment switches
 PERSISTENT_ENV = {
@@ -59,8 +82,7 @@ TEAM_MACHINE = "gaia-mbp-m2"
 
 def is_team_machine() -> bool:
     """Check if running on the team-enabled machine."""
-    result = subprocess.run(["hostname", "-s"], capture_output=True, text=True)
-    return result.stdout.strip() == TEAM_MACHINE
+    return socket.gethostname().split(".")[0] == TEAM_MACHINE
 
 
 # Provider descriptions: (display_name, short_description)
@@ -116,7 +138,16 @@ class ProxyConfig:
 
 
 COPILOT_PROXY = ProxyConfig("copilot proxy", "copilot-proxy.sh", "copilot-proxy.pid", port=8318)
-CLIPROXY = ProxyConfig("CLIProxyAPI", "cliproxy.sh", "cliproxy.pid", port=int(os.environ.get("CLIPROXY_PORT", "8317")))
+
+def _cliproxy_port() -> int:
+    raw = os.environ.get("CLIPROXY_PORT", "8317")
+    try:
+        return int(raw)
+    except ValueError:
+        print(f"{YELLOW}⚠ Invalid CLIPROXY_PORT={raw!r}, using 8317{RESET}")
+        return 8317
+
+CLIPROXY = ProxyConfig("CLIProxyAPI", "cliproxy.sh", "cliproxy.pid", port=_cliproxy_port())
 
 
 def is_port_in_use(port: int) -> bool:
@@ -128,7 +159,7 @@ def is_port_in_use(port: int) -> bool:
 def check_proxy(proxy: ProxyConfig) -> bool:
     """Check if a proxy is running (via PID file or port check)."""
     # First check port - if something is listening, proxy is running
-    if proxy.port and is_port_in_use(proxy.port):
+    if proxy.port is not None and is_port_in_use(proxy.port):
         return True
     # Fall back to PID file check
     if not proxy.pid_file.exists():
@@ -148,7 +179,11 @@ def start_proxy(proxy: ProxyConfig) -> bool:
         return False
 
     print(f"{DIM}Starting {proxy.name}...{RESET}")
-    result = subprocess.run([str(proxy.script)], capture_output=True, text=True)
+    try:
+        result = subprocess.run([str(proxy.script)], capture_output=True, text=True, timeout=15)
+    except subprocess.TimeoutExpired:
+        print(f"{YELLOW}⚠ {proxy.name} start timed out (15s){RESET}")
+        return False
     if result.returncode == 0:
         print(f"{GREEN}✓{RESET} {proxy.name} started")
         return True
@@ -428,9 +463,10 @@ def switch_env(
         if not start_proxy(CLIPROXY):
             return False, None, None  # Failed to start proxy
 
-    # Save current env (clean API key first for security)
-    current_env = settings.get("env", {}).copy()
-    current_env.pop("ANTHROPIC_AUTH_TOKEN", None)  # Remove sensitive data
+    # Save current env from the canonical stored config, not the live "env" dict
+    # (live dict may be stale after rapid TUI switches)
+    current_env = settings.get(f"env.{current}", settings.get("env", {})).copy()
+    current_env.pop("ANTHROPIC_AUTH_TOKEN", None)
     apply_persistent_env(current_env)
     settings[f"env.{current}"] = current_env
 
@@ -441,7 +477,7 @@ def switch_env(
     # Store clean config in settings (NO secrets in file!)
     settings["env"] = target_config
     settings["_activeEnv"] = target
-    SETTINGS.write_text(json.dumps(settings, indent=2) + "\n")
+    write_settings(settings)
 
     # Load secret from 1Password (for runtime env export only)
     op_item = target_config.get("_1password")
@@ -522,9 +558,6 @@ def main():
             print(f"{DIM}CLIProxyAPI not running{RESET}")
         sys.exit(0)
 
-    # Check if team mode is available on this machine
-    team_available = is_team_machine()
-
     try:
         settings = json.loads(SETTINGS.read_text())
     except FileNotFoundError:
@@ -538,16 +571,19 @@ def main():
 
     # Ensure provider configs exist
     ensure_provider_configs(settings)
-    SETTINGS.write_text(json.dumps(settings, indent=2) + "\n")
+    write_settings(settings)
     current = settings.get("_activeEnv", "default")
 
-    # Get all available environments
+    # Check if team mode is available (after early exits to avoid subprocess overhead)
+    team_available = is_team_machine()
+
+    # Get all available environments (PROVIDERS order, then any extras alphabetically)
     env_set = {"default"} | {
-        k[4:] for k in settings if k.startswith("env.") and k != "env"
+        k[4:] for k in settings if k.startswith("env.") and len(k) > 4
     }
     if team_available:
         env_set.add("team")
-    envs = sorted(env_set)
+    envs = [e for e in PROVIDERS if e in env_set] + sorted(env_set - set(PROVIDERS))
 
     # Parse arguments: first arg is env (if valid alias/name), rest goes to claude
     args = sys.argv[1:]
@@ -596,12 +632,16 @@ def main():
         # Clear env and reset to default (cc-team uses its own config)
         settings["env"] = apply_persistent_env({})
         settings["_activeEnv"] = "default"
-        SETTINGS.write_text(json.dumps(settings, indent=2) + "\n")
+        write_settings(settings)
 
         current_name = PROVIDERS.get(current_env, (current_env, ""))[0]
         print(f"{BOLD}Claude Code Team{RESET} {DIM}(was: {current_name}){RESET}")
         print(f"\n{DIM}Launching cc-team...{RESET}\n")
-        os.execlp("cc-team", "cc-team", *claude_args)
+        try:
+            os.execlp("cc-team", "cc-team", *claude_args)
+        except FileNotFoundError:
+            print(f"{YELLOW}⚠ cc-team not found in PATH{RESET}")
+            sys.exit(1)
 
     # Reload settings (TUI may have modified via Space)
     settings = json.loads(SETTINGS.read_text())
@@ -639,8 +679,19 @@ def main():
             # Proxy-based providers don't need real auth - use dummy token
             os.environ["ANTHROPIC_AUTH_TOKEN"] = "sk-dummy"
         print(f"\n{DIM}Launching claude...{RESET}\n")
-        os.execlp("claude", "claude", *claude_args)
+        try:
+            os.execlp("claude", "claude", *claude_args)
+        except FileNotFoundError:
+            print(f"{YELLOW}⚠ claude not found in PATH{RESET}")
+            sys.exit(1)
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print(f"\n{SHOW_CURSOR}", end="")
+        sys.exit(130)
+    except Exception as e:
+        print(f"\n{SHOW_CURSOR}{YELLOW}Error: {e}{RESET}")
+        sys.exit(1)
