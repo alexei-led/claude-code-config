@@ -2,127 +2,128 @@
 
 ## Directory Selection Process
 
-### 1. Check Existing Directories
+### 1. Detect Project Name and Root
 
 ```bash
-ls -d .worktrees 2>/dev/null     # Preferred (hidden)
-ls -d worktrees 2>/dev/null      # Alternative
+repo_root=$(git rev-parse --show-toplevel)
+project=$(basename "$repo_root")
+parent=$(dirname "$repo_root")
 ```
 
-If found: Use that directory. If both exist, `.worktrees` wins.
+### 2. Determine Worktree Path
 
-### 2. Check CLAUDE.md
+**Priority order:**
+
+1. Check CLAUDE.md for explicit preference
+2. Use sibling directory pattern (default): `../<project>-<branch-slug>`
 
 ```bash
-grep -i "worktree.*director" CLAUDE.md 2>/dev/null
+# Slugify branch name: feature/auth → feature-auth
+slug=$(echo "$BRANCH_NAME" | tr '/' '-')
+path="$parent/$project-$slug"
 ```
 
-If preference specified: Use it without asking.
-
-### 3. Ask User
-
-```
-No worktree directory found. Where should I create worktrees?
-
-1. .worktrees/ (project-local, hidden)
-2. ~/.config/superpowers/worktrees/<project-name>/ (global location)
-```
-
-## Safety Verification
-
-### For Project-Local Directories
-
-**MUST verify .gitignore before creating worktree:**
+### 3. Check for Conflicts
 
 ```bash
-grep -q "^\.worktrees/$" .gitignore || grep -q "^worktrees/$" .gitignore
+# Verify path doesn't already exist
+[ -d "$path" ] && echo "Directory already exists: $path" && exit 1
+
+# Verify branch isn't already checked out
+git worktree list | grep -q "\[$BRANCH_NAME\]" && echo "Branch already checked out" && exit 1
 ```
-
-**If NOT in .gitignore:**
-
-1. Add appropriate line to .gitignore
-2. Commit the change
-3. Proceed with worktree creation
-
-### For Global Directory
-
-No .gitignore verification needed - outside project entirely.
 
 ## Creation Steps
 
-### 1. Detect Project Name
+### 1. Create Worktree
 
 ```bash
-project=$(basename "$(git rev-parse --show-toplevel)")
+# New branch from base
+git worktree add "$path" -b "$BRANCH_NAME" "$BASE_BRANCH"
+
+# Existing branch
+git worktree add "$path" "$BRANCH_NAME"
 ```
 
-### 2. Create Worktree
-
-```bash
-# Determine full path
-case $LOCATION in
-  .worktrees|worktrees)
-    path="$LOCATION/$BRANCH_NAME"
-    ;;
-  ~/.config/superpowers/worktrees/*)
-    path="~/.config/superpowers/worktrees/$project/$BRANCH_NAME"
-    ;;
-esac
-
-# Create worktree with new branch
-git worktree add "$path" -b "$BRANCH_NAME"
-cd "$path"
-```
-
-### 3. Run Project Setup
+### 2. Run Project Setup
 
 Auto-detect and run appropriate setup:
 
 ```bash
+cd "$path"
+
 # Node.js
 [ -f package.json ] && npm install
 
-# Rust
-[ -f Cargo.toml ] && cargo build
-
-# Python
-[ -f requirements.txt ] && pip install -r requirements.txt
-[ -f pyproject.toml ] && uv sync
-
 # Go
 [ -f go.mod ] && go mod download
+
+# Python
+[ -f pyproject.toml ] && uv sync
+[ -f requirements.txt ] && pip install -r requirements.txt
+
+# Rust
+[ -f Cargo.toml ] && cargo build
 ```
 
-### 4. Verify Clean Baseline
+### 3. Verify Clean Baseline
 
 Run tests to ensure worktree starts clean:
 
 ```bash
-# Use project-appropriate command
 make test  # or npm test, cargo test, pytest, go test ./...
 ```
 
 **If tests fail:** Report failures, ask whether to proceed.
 **If tests pass:** Report ready.
 
-### 5. Report Location
+### 4. Report Location
 
 ```
 Worktree ready at <full-path>
 Tests passing (<N> tests, 0 failures)
 Ready to implement <feature-name>
+
+To work in this worktree:
+  cd <full-path>
+```
+
+## Cleanup Workflow
+
+### After Merging a Branch
+
+```bash
+# Remove the worktree
+git worktree remove ../myproject-feature-auth
+
+# Delete the branch (if merged)
+git branch -d feature/auth
+```
+
+### Periodic Maintenance
+
+```bash
+# List all worktrees — check for stale ones
+git worktree list
+
+# Prune entries for manually deleted directories
+git worktree prune
+
+# Check for locked or prunable worktrees
+git worktree list --verbose
 ```
 
 ## Quick Reference
 
-| Situation                   | Action                      |
-| --------------------------- | --------------------------- |
-| `.worktrees/` exists        | Use it (verify .gitignore)  |
-| `worktrees/` exists         | Use it (verify .gitignore)  |
-| Both exist                  | Use `.worktrees/`           |
-| Neither exists              | Check CLAUDE.md → Ask user  |
-| Directory not in .gitignore | Add it immediately + commit |
-| Tests fail during baseline  | Report failures + ask       |
+| Situation                  | Action                                  |
+| -------------------------- | --------------------------------------- |
+| Creating worktree          | Sibling: `../<project>-<branch-slug>`   |
+| CLAUDE.md has preference   | Use specified location                  |
+| Path already exists        | Report conflict, ask user               |
+| Branch already checked out | Report, suggest existing worktree       |
+| Tests fail during baseline | Report failures + ask                   |
+| Done with feature          | `git worktree remove` + `git branch -d` |
+| Stale worktrees            | `git worktree prune`                    |
 
 ## Common Commands
 
@@ -131,28 +132,36 @@ Ready to implement <feature-name>
 git worktree list
 
 # Remove worktree (after merging branch)
-git worktree remove .worktrees/feature-name
+git worktree remove ../myproject-feature-name
 
-# Prune stale worktrees
+# Prune stale worktree entries
 git worktree prune
 
-# Move worktree
-git worktree move .worktrees/old-name .worktrees/new-name
+# Move worktree to new location
+git worktree move ../old-name ../new-name
+
+# Lock worktree (prevent pruning, e.g. on removable drive)
+git worktree lock ../myproject-feature-name
 ```
 
 ## Common Mistakes
 
-**Skipping .gitignore verification**
+**Nesting worktrees inside the repo**
 
-- Worktree contents get tracked, pollute git status
-- Fix: Always check .gitignore before creating project-local worktree
+- Requires .gitignore management, pollutes git status
+- Fix: Always use sibling directories
+
+**Non-descriptive directory names**
+
+- `../temp`, `../wt2` — requires inspection to understand purpose
+- Fix: Use `<project>-<branch-slug>` convention
+
+**Forgetting to clean up**
+
+- Each worktree duplicates working files, wastes disk space
+- Fix: Remove worktrees promptly after merging; run `git worktree prune` periodically
 
 **Assuming directory location**
 
 - Creates inconsistency, violates project conventions
-- Fix: Follow priority: existing > CLAUDE.md > ask
-
-**Proceeding with failing tests**
-
-- Can't distinguish new bugs from pre-existing issues
-- Fix: Report failures, get explicit permission
+- Fix: Follow priority: CLAUDE.md preference > sibling default

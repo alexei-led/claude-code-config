@@ -1,46 +1,39 @@
 #!/bin/bash
-# Setup a new git worktree with proper safety checks
+# Setup a new git worktree as a sibling directory
 # Usage: setup-worktree.sh <branch-name> [base-branch]
 
 set -euo pipefail
 
 BRANCH_NAME="${1:?Usage: setup-worktree.sh <branch-name> [base-branch]}"
 BASE_BRANCH="${2:-main}"
-WORKTREE_DIR=".worktrees"
 
 # Ensure we're in a git repo
-git rev-parse --show-toplevel >/dev/null 2>&1 || {
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || {
 	echo "Error: Not in a git repository"
 	exit 1
 }
 
-# Check/create worktree directory
-if [ -d ".worktrees" ]; then
-	WORKTREE_DIR=".worktrees"
-elif [ -d "worktrees" ]; then
-	WORKTREE_DIR="worktrees"
-else
-	WORKTREE_DIR=".worktrees"
-	mkdir -p "$WORKTREE_DIR"
+PROJECT=$(basename "$REPO_ROOT")
+PARENT=$(dirname "$REPO_ROOT")
 
-	# Ensure .gitignore includes worktree dir
-	if ! grep -q "^\.worktrees/$" .gitignore 2>/dev/null; then
-		echo ".worktrees/" >>.gitignore
-		git add .gitignore
-		git commit -m "chore: add .worktrees to gitignore"
-		echo "Added .worktrees/ to .gitignore"
-	fi
-fi
-
-WORKTREE_PATH="$WORKTREE_DIR/$BRANCH_NAME"
+# Slugify branch name: feature/auth → feature-auth
+SLUG=$(echo "$BRANCH_NAME" | tr '/' '-')
+WORKTREE_PATH="$PARENT/$PROJECT-$SLUG"
 
 # Check if worktree already exists
 if [ -d "$WORKTREE_PATH" ]; then
-	echo "Worktree already exists at $WORKTREE_PATH"
+	echo "Error: Directory already exists at $WORKTREE_PATH"
 	exit 1
 fi
 
-# Create worktree
+# Check if branch is already checked out in another worktree
+if git worktree list | grep -q "\[$BRANCH_NAME\]"; then
+	echo "Error: Branch '$BRANCH_NAME' is already checked out"
+	git worktree list
+	exit 1
+fi
+
+# Create worktree as sibling directory
 echo "Creating worktree at $WORKTREE_PATH from $BASE_BRANCH..."
 git worktree add "$WORKTREE_PATH" -b "$BRANCH_NAME" "$BASE_BRANCH"
 
@@ -62,8 +55,11 @@ elif [ -f "Cargo.toml" ]; then
 fi
 
 echo ""
-echo "Worktree ready at: $(pwd)"
-echo "Branch: $BRANCH_NAME"
+echo "Worktree ready at: $WORKTREE_PATH"
+echo "Branch: $BRANCH_NAME (based on $BASE_BRANCH)"
 echo ""
-echo "To switch to this worktree:"
+echo "To work in this worktree:"
 echo "  cd $WORKTREE_PATH"
+echo ""
+echo "When done:"
+echo "  git worktree remove $WORKTREE_PATH"

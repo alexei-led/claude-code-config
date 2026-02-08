@@ -17,35 +17,49 @@ Git worktrees create isolated workspaces sharing the same repository, allowing w
 ## Quick Start
 
 ```bash
-# Create worktree with new branch
-git worktree add .worktrees/feature-auth -b feature/auth
+# Create worktree as sibling directory (best practice)
+git worktree add ../myproject-feature-auth -b feature/auth
 
-# Create worktree from existing branch
-git worktree add .worktrees/bugfix bugfix/issue-123
+# Create from existing branch
+git worktree add ../myproject-bugfix-123 bugfix/issue-123
 
-# List worktrees
+# List all worktrees
 git worktree list
 
-# Remove worktree
-git worktree remove .worktrees/feature-auth
+# Remove when done
+git worktree remove ../myproject-feature-auth
+
+# Clean up stale entries
+git worktree prune
 ```
 
-## Directory Selection
+## Directory Strategy
 
-1. Check existing: `.worktrees/` or `worktrees/`
-2. Check CLAUDE.md for preference
-3. Ask user if neither exists
+Worktrees are created as **sibling directories** to the main repo (not inside it):
 
-## Safety Requirements
-
-**Before creating project-local worktree:**
-
-```bash
-# Verify directory is in .gitignore
-grep -q "^\.worktrees/$" .gitignore || grep -q "^worktrees/$" .gitignore
+```
+~/projects/
+├── myproject/                    # main worktree (main branch)
+├── myproject-feature-auth/       # linked worktree
+└── myproject-hotfix-login/       # linked worktree
 ```
 
-If NOT in .gitignore: Add it immediately and commit.
+**Why siblings, not children:**
+
+- No .gitignore pollution — worktree is outside the repo
+- Cleaner `git status` — no risk of tracking worktree contents
+- Standard practice endorsed by git docs and community
+- Each worktree has independent build artifacts, node_modules, etc.
+
+## Naming Convention
+
+`<project>-<branch-slug>` — self-documenting, instantly shows purpose.
+
+| Branch             | Worktree Directory           |
+| ------------------ | ---------------------------- |
+| `feature/auth`     | `../myproject-feature-auth`  |
+| `bugfix/issue-123` | `../myproject-bugfix-123`    |
+| `experiment/v2`    | `../myproject-experiment-v2` |
 
 ## References
 
