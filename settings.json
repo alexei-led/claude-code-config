@@ -81,6 +81,11 @@
             "type": "command",
             "command": "$HOME/.claude/hooks/session-start.sh",
             "timeout": 3
+          },
+          {
+            "type": "command",
+            "command": "ccbot hook 2>/dev/null || true",
+            "timeout": 5
           }
         ]
       }
