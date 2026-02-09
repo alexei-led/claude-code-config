@@ -170,3 +170,46 @@ For structured projects with requirements and tasks.
 `/spec:init` → `/spec:work` (repeats) → `/spec:done`
 
 Each `/spec:work` cycle: select a task → plan implementation → implement → verify → mark done.
+
+---
+
+## Remote Sessions (tmux + ccbot)
+
+Control Claude Code from anywhere — desktop, SSH, or iPhone via Telegram.
+
+### Architecture
+
+`1 Telegram Topic = 1 tmux Window = 1 Claude Code Session`
+
+- **`ce`** auto-wraps in tmux, switches environments, launches claude
+- **ccbot** bridges Telegram to tmux (iPhone/mobile access)
+- **tmux** provides session persistence (survives terminal close)
+
+### Quick Reference
+
+| Task                    | Command                          |
+| ----------------------- | -------------------------------- |
+| Start session           | `ce` (auto-creates tmux)         |
+| Start with specific env | `ce z` (zai in tmux)             |
+| Resume session          | `ce` (attaches to existing tmux) |
+| Start Telegram bridge   | `ce bot`                         |
+| Skip tmux wrapping      | `ce --no-tmux`                   |
+| New tmux window         | `Ctrl+b c` then `ce --no-tmux`   |
+| Update ccbot            | `uv tool upgrade ccbot`          |
+
+### ccbot Telegram Commands
+
+| Command                       | Action                   |
+| ----------------------------- | ------------------------ |
+| `/screenshot`                 | Terminal screenshot      |
+| `/esc`                        | Interrupt Claude         |
+| `/history`                    | Conversation history     |
+| `/clear`, `/compact`, `/cost` | Forwarded to Claude Code |
+| Any text                      | Sent as input to Claude  |
+
+### Setup
+
+1. Install: `uv tool install git+https://github.com/six-ddc/ccbot.git`
+2. Config: `~/.ccbot/.env` (chezmoi + 1Password)
+3. Hook: `ccbot hook` on SessionStart (auto-registers sessions)
+4. Run: `ce bot` (starts Telegram bridge)

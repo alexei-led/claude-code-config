@@ -27,7 +27,17 @@ For spec-driven projects: `/spec:init` → `/spec:work` → `/spec:done`.
 
 Switch API providers with `ce <env>`: `default` (Anthropic), `vertex`, `codex`, `gemini`, `deepseek`, `zai`.
 
+## Remote Sessions
+
+`ce` auto-wraps in a tmux session for persistence. Control sessions from desktop, SSH, or iPhone via Telegram:
+
+- `ce` — start or resume session (auto-creates/attaches tmux)
+- `ce bot` — start ccbot Telegram bridge
+- `ce --no-tmux` — skip tmux wrapping
+
+Architecture: `1 Telegram Topic = 1 tmux Window = 1 Claude Code Session`. Install ccbot with `uv tool install`, config in `~/.ccbot/.env` (chezmoi + 1Password).
+
 ## Reference
 
-See **GUIDE.md** for detailed usage of skills, agents, and hooks.
+See **GUIDE.md** for detailed usage of skills, agents, hooks, and remote sessions.
 See **CLAUDE.md** for instructions that Claude follows in every session.
