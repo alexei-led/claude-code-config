@@ -249,6 +249,14 @@ def start_ccbot() -> None:
         print(f"{YELLOW}⚠ ccbot config not found: {CCBOT_DIR}{RESET}")
         print(f"{DIM}Run: mkdir ~/.ccbot && chezmoi apply ~/.ccbot/.env{RESET}")
         sys.exit(1)
+    # Pre-load .env into os.environ so ccbot finds vars regardless of cwd
+    env_file = CCBOT_DIR / ".env"
+    if env_file.exists():
+        for line in env_file.read_text().splitlines():
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                key, _, value = line.partition("=")
+                os.environ.setdefault(key.strip(), value.strip())
     os.chdir(CCBOT_DIR)
     try:
         os.execlp("ccbot", "ccbot")
