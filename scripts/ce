@@ -2,27 +2,34 @@
 """Claude Code environment switcher with interactive TUI.
 
 Usage:
-  ce                    # TUI picker → switch + launch claude
-  ce z                  # Switch to z.ai + launch claude
-  ce z --continue       # Switch + launch claude --continue
-  ce --continue         # TUI picker + launch claude --continue
-  ce --stop-proxy       # Stop copilot proxy manually
-  ce --stop-cliproxy    # Stop CLIProxyAPI manually
+  ce                    # TUI picker → switch + launch claude (auto-tmux)
+  ce z                  # Switch to z.ai → launch claude
+  ce z --continue       # Switch → launch with claude args
+  ce --continue         # TUI picker → launch with claude args
+  ce team               # Launch Claude Code Team (alias: t)
+  ce bot                # Start ccbot Telegram bridge (alias: b)
+  ce --no-tmux          # Skip tmux auto-wrapping
+  ce --stop-proxy       # Stop copilot proxy
+  ce --stop-cliproxy    # Stop CLIProxyAPI
 
-Claude Code Team (gaia-mbp-m2 only):
-  ce t                  # Launch Claude Code Team
-  ce t --continue       # Launch with args
-  ce --team             # Same as ce t
+tmux:
+  - Auto-creates/attaches tmux session 'ccbot' for all launchers
+  - Detected via $TMUX — skipped when already inside tmux
+  - Use --no-tmux to force skip
+
+ccbot (Telegram bridge):
+  - Install: uv tool install git+https://github.com/six-ddc/ccbot.git
+  - Config: ~/.ccbot/.env
+  - Run: ce bot
 
 Copilot proxy:
-  - Starts automatically when switching to copilot (if not already running)
-  - Never auto-stops (safe for multiple concurrent sessions)
-  - Use --stop-proxy to stop manually when done
+  - Auto-starts when switching to copilot
+  - Use --stop-proxy to stop manually
 
 CLIProxyAPI (codex/gemini):
   - First login: cliproxy.sh --login-codex (or --login-gemini)
   - Auto-starts when switching to codex or gemini
-  - Use --stop-cliproxy to stop manually when done
+  - Use --stop-cliproxy to stop manually
 """
 
 import json
@@ -38,6 +45,8 @@ import tty
 from pathlib import Path
 
 SETTINGS = Path.home() / ".claude" / "settings.json"
+TMUX_SESSION = "ccbot"
+CCBOT_DIR = Path.home() / ".ccbot"
 
 
 def write_settings(settings: dict) -> None:
@@ -74,6 +83,7 @@ ALIASES = {
     "t": "team",
     "cx": "codex",
     "gm": "gemini",
+    "b": "bot",
 }
 
 # Machine-specific features
@@ -95,6 +105,7 @@ PROVIDERS = {
     "team": ("Claude Code Team", "Work subscription"),
     "codex": ("Codex", "GPT-5 via CLIProxyAPI"),
     "gemini": ("Gemini", "Gemini 3 via CLIProxyAPI"),
+    "bot": ("ccbot", "Telegram bridge for tmux sessions"),
 }
 
 # ANSI escape codes
@@ -205,6 +216,50 @@ def stop_proxy(proxy: ProxyConfig) -> None:
         print(f"{GREEN}✓{RESET} {proxy.name} stopped")
 
 
+def tmux_session_exists(session: str) -> bool:
+    """Check if a tmux session exists."""
+    return subprocess.run(
+        ["tmux", "has-session", "-t", session],
+        capture_output=True,
+    ).returncode == 0
+
+
+def ensure_tmux() -> None:
+    """If not in tmux, re-exec ce inside a tmux session.
+
+    New session: creates it running ce with original args.
+    Existing session: just attaches (user sees current state).
+    """
+    if os.environ.get("TMUX"):
+        return  # Already in tmux
+
+    if tmux_session_exists(TMUX_SESSION):
+        print(f"{DIM}Attaching to tmux session '{TMUX_SESSION}'...{RESET}")
+        os.execlp("tmux", "tmux", "attach-session", "-t", TMUX_SESSION)
+    else:
+        ce_path = str(Path(__file__).resolve())
+        args = [sys.executable, ce_path] + sys.argv[1:]
+        print(f"{DIM}Creating tmux session '{TMUX_SESSION}'...{RESET}")
+        os.execlp("tmux", "tmux", "new-session", "-s", TMUX_SESSION, *args)
+
+
+def start_ccbot() -> None:
+    """Start ccbot Telegram bridge."""
+    if not CCBOT_DIR.exists():
+        print(f"{YELLOW}⚠ ccbot config not found: {CCBOT_DIR}{RESET}")
+        print(f"{DIM}Run: mkdir ~/.ccbot && chezmoi apply ~/.ccbot/.env{RESET}")
+        sys.exit(1)
+    os.chdir(CCBOT_DIR)
+    try:
+        os.execlp("ccbot", "ccbot")
+    except FileNotFoundError:
+        print(
+            f"{YELLOW}⚠ ccbot not found. Install:{RESET}"
+            f" {DIM}uv tool install git+https://github.com/six-ddc/ccbot.git{RESET}"
+        )
+        sys.exit(1)
+
+
 def apply_persistent_env(env_dict: dict) -> dict:
     """Ensure persistent env vars are present in an env dict."""
     for key, value in PERSISTENT_ENV.items():
@@ -295,24 +350,30 @@ def ensure_provider_configs(settings: dict) -> None:
 
 
 def get_key() -> str:
-    """Read a single keypress."""
+    """Read a single keypress.
+
+    Uses os.read() for unbuffered reads so select() can correctly detect
+    remaining bytes in escape sequences. Python's sys.stdin.read() buffers
+    at the interpreter level, making select() on the fd unreliable.
+    """
     fd = sys.stdin.fileno()
     old_settings = termios.tcgetattr(fd)
     try:
         tty.setraw(fd)
-        ch = sys.stdin.read(1)
+        ch = os.read(fd, 1).decode("utf-8", errors="replace")
         if ch == "\x1b":  # Escape sequence
-            # Wait briefly for follow-up chars (arrow keys send \x1b[A etc.)
-            if select.select([sys.stdin], [], [], 0.05)[0]:
-                ch2 = sys.stdin.read(1)
-                if ch2 == "[" and select.select([sys.stdin], [], [], 0.05)[0]:
-                    ch3 = sys.stdin.read(1)
+            # Wait for follow-up chars (arrow keys send \x1b[A or \x1bOA)
+            if select.select([fd], [], [], 0.15)[0]:
+                ch2 = os.read(fd, 1).decode("utf-8", errors="replace")
+                # \x1b[ = CSI (normal mode), \x1bO = SS3 (application cursor mode / tmux)
+                if ch2 in ("[", "O") and select.select([fd], [], [], 0.15)[0]:
+                    ch3 = os.read(fd, 1).decode("utf-8", errors="replace")
                     if ch3 == "A":
                         return "up"
                     elif ch3 == "B":
                         return "down"
             return "esc"
-        elif ch == "\r" or ch == "\n":
+        elif ch in ("\r", "\n"):
             return "enter"
         elif ch == " ":
             return "space"
@@ -496,18 +557,20 @@ def show_help():
     print(f"""
 {BOLD}{CYAN}ce{RESET} {DIM}— Claude Environment Switcher{RESET}
 
-{DIM}Usage:{RESET}
+{DIM}Launchers (auto-wrap in tmux):{RESET}
   ce                    Interactive TUI picker
   ce <env>              Switch + launch (e.g., ce z)
   ce <env> <args>       Switch + launch with args (e.g., ce z --continue)
   ce <args>             TUI picker + launch with args (e.g., ce --continue)
-  ce --stop-proxy       Stop copilot proxy manually
-  ce --stop-cliproxy    Stop CLIProxyAPI manually
+  ce team               Launch Claude Code Team (alias: t)
+  ce bot                Start ccbot Telegram bridge (alias: b)
 
-{DIM}Claude Code Team (gaia-mbp-m2 only):{RESET}
-  ce t                  Launch Claude Code Team
-  ce t <args>           Launch with args (e.g., ce t --continue)
-  ce --team             Same as ce t
+{DIM}Modifiers:{RESET}
+  --no-tmux             Skip tmux auto-wrapping
+
+{DIM}Management (no tmux):{RESET}
+  --stop-proxy          Stop copilot proxy
+  --stop-cliproxy       Stop CLIProxyAPI
 
 {DIM}Environments:{RESET}
   default (max)         Claude Max
@@ -518,17 +581,16 @@ def show_help():
   codex (cx)            OpenAI GPT-5 via CLIProxyAPI
   gemini (gm)           Google Gemini 3 via CLIProxyAPI
 
-{DIM}Copilot Proxy:{RESET}
-  Auto-starts when switching to copilot (if not already running)
-  Never auto-stops (safe for multiple sessions)
+{DIM}tmux:{RESET}
+  Auto-creates/attaches session '{TMUX_SESSION}' for all launchers
+  Skipped when already inside tmux ($TMUX detected)
+  Use --no-tmux to force skip
 
-{DIM}CLIProxyAPI (codex/gemini):{RESET}
-  First-time setup:
-    cliproxy.sh --login-codex    # For Codex/GPT subscription
-    cliproxy.sh --login-gemini   # For Gemini subscription
-  Auto-starts when switching to codex or gemini
+{DIM}Proxies:{RESET}
+  Copilot: auto-starts on switch, --stop-proxy to stop
+  CLIProxyAPI: cliproxy.sh --login-codex/--login-gemini first time
 
-{DIM}Keys:{RESET}
+{DIM}TUI Keys:{RESET}
   ↑↓ / jk               Move cursor
   Space                 Select provider (saves to settings)
   Enter                 Run claude with selected provider
@@ -558,6 +620,13 @@ def main():
             print(f"{DIM}CLIProxyAPI not running{RESET}")
         sys.exit(0)
 
+    # --- tmux gate: extract --no-tmux, then auto-wrap ---
+    no_tmux = "--no-tmux" in sys.argv
+    if no_tmux:
+        sys.argv.remove("--no-tmux")
+    else:
+        ensure_tmux()  # re-execs inside tmux if not already there
+
     try:
         settings = json.loads(SETTINGS.read_text())
     except FileNotFoundError:
@@ -583,6 +652,7 @@ def main():
     }
     if team_available:
         env_set.add("team")
+    env_set.add("bot")
     envs = [e for e in PROVIDERS if e in env_set] + sorted(env_set - set(PROVIDERS))
 
     # Parse arguments: first arg is env (if valid alias/name), rest goes to claude
@@ -614,6 +684,10 @@ def main():
         target, launch_claude = interactive_select(envs, current, settings)
         if target is None:
             sys.exit(0)
+
+    # Handle bot mode - launch ccbot Telegram bridge
+    if target == "bot":
+        start_ccbot()  # never returns (execlp)
 
     # Handle team mode - launch cc-team directly
     if target == "team":
