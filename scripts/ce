@@ -254,10 +254,14 @@ def start_ccbot() -> None:
     if env_file.exists():
         for line in env_file.read_text().splitlines():
             line = line.strip()
+            if line.startswith("export "):
+                line = line[7:].strip()
             if line and not line.startswith("#") and "=" in line:
                 key, _, value = line.partition("=")
-                os.environ.setdefault(key.strip(), value.strip())
-    os.chdir(CCBOT_DIR)
+                val = value.strip()
+                if len(val) >= 2 and val[0] == val[-1] and val[0] in ('"', "'"):
+                    val = val[1:-1]
+                os.environ.setdefault(key.strip(), val)
     try:
         os.execlp("ccbot", "ccbot")
     except FileNotFoundError:
