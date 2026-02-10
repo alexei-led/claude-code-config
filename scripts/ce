@@ -2,20 +2,21 @@
 """Claude Code environment switcher with interactive TUI.
 
 Usage:
-  ce                    # TUI picker → switch + launch claude (auto-tmux)
+  ce                    # TUI picker → switch + launch claude
   ce z                  # Switch to z.ai → launch claude
   ce z --continue       # Switch → launch with claude args
   ce --continue         # TUI picker → launch with claude args
   ce team               # Launch Claude Code Team (alias: t)
   ce bot                # Start ccbot Telegram bridge (alias: b)
-  ce --no-tmux          # Skip tmux auto-wrapping
+  ce --tmux             # Wrap in tmux session 'ccbot'
+  ce --tmux=dev         # Wrap in tmux session 'dev'
   ce --stop-proxy       # Stop copilot proxy
   ce --stop-cliproxy    # Stop CLIProxyAPI
 
 tmux:
-  - Auto-creates/attaches tmux session 'ccbot' for all launchers
+  - Use --tmux to wrap in tmux session (default name: 'ccbot')
+  - Use --tmux=SESSION for custom session name
   - Detected via $TMUX — skipped when already inside tmux
-  - Use --no-tmux to force skip
 
 ccbot (Telegram bridge):
   - Install: uv tool install git+https://github.com/six-ddc/ccbot.git
@@ -45,7 +46,6 @@ import tty
 from pathlib import Path
 
 SETTINGS = Path.home() / ".claude" / "settings.json"
-TMUX_SESSION = "ccbot"
 CCBOT_DIR = Path.home() / ".ccbot"
 
 
@@ -224,7 +224,7 @@ def tmux_session_exists(session: str) -> bool:
     ).returncode == 0
 
 
-def ensure_tmux() -> None:
+def ensure_tmux(session: str) -> None:
     """If not in tmux, re-exec ce inside a tmux session.
 
     New session: creates it running ce with original args.
@@ -233,14 +233,14 @@ def ensure_tmux() -> None:
     if os.environ.get("TMUX"):
         return  # Already in tmux
 
-    if tmux_session_exists(TMUX_SESSION):
-        print(f"{DIM}Attaching to tmux session '{TMUX_SESSION}'...{RESET}")
-        os.execlp("tmux", "tmux", "attach-session", "-t", TMUX_SESSION)
+    if tmux_session_exists(session):
+        print(f"{DIM}Attaching to tmux session '{session}'...{RESET}")
+        os.execlp("tmux", "tmux", "attach-session", "-t", session)
     else:
         ce_path = str(Path(__file__).resolve())
         args = [sys.executable, ce_path] + sys.argv[1:]
-        print(f"{DIM}Creating tmux session '{TMUX_SESSION}'...{RESET}")
-        os.execlp("tmux", "tmux", "new-session", "-s", TMUX_SESSION, *args)
+        print(f"{DIM}Creating tmux session '{session}'...{RESET}")
+        os.execlp("tmux", "tmux", "new-session", "-s", session, *args)
 
 
 def start_ccbot() -> None:
@@ -569,7 +569,7 @@ def show_help():
     print(f"""
 {BOLD}{CYAN}ce{RESET} {DIM}— Claude Environment Switcher{RESET}
 
-{DIM}Launchers (auto-wrap in tmux):{RESET}
+{DIM}Launchers:{RESET}
   ce                    Interactive TUI picker
   ce <env>              Switch + launch (e.g., ce z)
   ce <env> <args>       Switch + launch with args (e.g., ce z --continue)
@@ -578,9 +578,10 @@ def show_help():
   ce bot                Start ccbot Telegram bridge (alias: b)
 
 {DIM}Modifiers:{RESET}
-  --no-tmux             Skip tmux auto-wrapping
+  --tmux                Wrap in tmux session 'ccbot'
+  --tmux=SESSION        Wrap in tmux with custom session name
 
-{DIM}Management (no tmux):{RESET}
+{DIM}Management:{RESET}
   --stop-proxy          Stop copilot proxy
   --stop-cliproxy       Stop CLIProxyAPI
 
@@ -594,9 +595,9 @@ def show_help():
   gemini (gm)           Google Gemini 3 via CLIProxyAPI
 
 {DIM}tmux:{RESET}
-  Auto-creates/attaches session '{TMUX_SESSION}' for all launchers
+  Use --tmux to wrap in tmux session (default: 'ccbot')
+  Use --tmux=SESSION for custom session name
   Skipped when already inside tmux ($TMUX detected)
-  Use --no-tmux to force skip
 
 {DIM}Proxies:{RESET}
   Copilot: auto-starts on switch, --stop-proxy to stop
@@ -632,12 +633,20 @@ def main():
             print(f"{DIM}CLIProxyAPI not running{RESET}")
         sys.exit(0)
 
-    # --- tmux gate: extract --no-tmux, then auto-wrap ---
-    no_tmux = "--no-tmux" in sys.argv
-    if no_tmux:
-        sys.argv.remove("--no-tmux")
-    else:
-        ensure_tmux()  # re-execs inside tmux if not already there
+    # --- tmux gate: opt-in with --tmux or --tmux=SESSION ---
+    tmux_session = None
+    for arg in sys.argv[1:]:
+        if arg == "--tmux":
+            tmux_session = "ccbot"
+            sys.argv.remove(arg)
+            break
+        if arg.startswith("--tmux="):
+            tmux_session = arg.split("=", 1)[1] or "ccbot"
+            sys.argv.remove(arg)
+            break
+
+    if tmux_session:
+        ensure_tmux(tmux_session)  # re-execs inside tmux if not already there
 
     try:
         settings = json.loads(SETTINGS.read_text())
