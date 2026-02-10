@@ -7,6 +7,7 @@ Usage:
   ce z --continue       # Switch → launch with claude args
   ce --continue         # TUI picker → launch with claude args
   ce team               # Launch Claude Code Team (alias: t)
+  ce --current          # Launch with current active env (for ccbot)
   ce --tmux             # Wrap in tmux session 'ccbot'
   ce --tmux=dev         # Wrap in tmux session 'dev'
   ce --stop-proxy       # Stop copilot proxy
@@ -500,10 +501,12 @@ def switch_env(
 
     # Save current env from the canonical stored config, not the live "env" dict
     # (live dict may be stale after rapid TUI switches)
-    current_env = settings.get(f"env.{current}", settings.get("env", {})).copy()
-    current_env.pop("ANTHROPIC_AUTH_TOKEN", None)
-    apply_persistent_env(current_env)
-    settings[f"env.{current}"] = current_env
+    # Skip for "team" — it's a launcher, not a real env config
+    if current != "team":
+        current_env = settings.get(f"env.{current}", settings.get("env", {})).copy()
+        current_env.pop("ANTHROPIC_AUTH_TOKEN", None)
+        apply_persistent_env(current_env)
+        settings[f"env.{current}"] = current_env
 
     # Load target env config (without secrets for storage)
     target_config = settings.get(f"env.{target}", {}).copy()
@@ -539,6 +542,7 @@ def show_help():
   ce team               Launch Claude Code Team (alias: t)
 
 {DIM}Modifiers:{RESET}
+  --current             Launch with current active env (for ccbot)
   --tmux                Wrap in tmux session 'ccbot'
   --tmux=SESSION        Wrap in tmux with custom session name
 
@@ -594,8 +598,9 @@ def main():
             print(f"{DIM}CLIProxyAPI not running{RESET}")
         sys.exit(0)
 
-    # --- tmux gate: opt-in with --tmux or --tmux=SESSION ---
+    # --- Flag parsing: extract --tmux and --current before env resolution ---
     tmux_session = None
+    use_current = False
     for arg in sys.argv[1:]:
         if arg == "--tmux":
             tmux_session = "ccbot"
@@ -605,6 +610,9 @@ def main():
             tmux_session = arg.split("=", 1)[1] or "ccbot"
             sys.argv.remove(arg)
             break
+    if "--current" in sys.argv:
+        sys.argv.remove("--current")
+        use_current = True
 
     if tmux_session:
         ensure_tmux(tmux_session)  # re-execs inside tmux if not already there
@@ -629,8 +637,9 @@ def main():
     team_available = is_team_machine()
 
     # Get all available environments (PROVIDERS order, then any extras alphabetically)
+    # Exclude "team" from settings keys — it's a launcher, not a regular env
     env_set = {"default"} | {
-        k[4:] for k in settings if k.startswith("env.") and len(k) > 4
+        k[4:] for k in settings if k.startswith("env.") and len(k) > 4 and k != "env.team"
     }
     if team_available:
         env_set.add("team")
@@ -642,7 +651,12 @@ def main():
     claude_args = []
     launch_claude = False
 
-    if args:
+    if use_current:
+        # --current: launch with whatever _activeEnv is set to
+        target = current
+        claude_args = args
+        launch_claude = True
+    elif args:
         first = args[0]
         candidate = ALIASES.get(first, first)
 
@@ -680,9 +694,9 @@ def main():
             env_data.pop("ANTHROPIC_AUTH_TOKEN", None)
             settings[f"env.{current_env}"] = env_data
 
-        # Clear env and reset to default (cc-team uses its own config)
+        # Clear env (cc-team uses its own config) but track team as active
         settings["env"] = apply_persistent_env({})
-        settings["_activeEnv"] = "default"
+        settings["_activeEnv"] = "team"
         write_settings(settings)
 
         current_name = PROVIDERS.get(current_env, (current_env, ""))[0]
