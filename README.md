@@ -29,13 +29,13 @@ Switch API providers with `ce <env>`: `default` (Anthropic), `vertex`, `codex`, 
 
 ## Remote Sessions
 
-`ce` auto-wraps in a tmux session for persistence. Control sessions from desktop, SSH, or iPhone via Telegram:
+Control Claude Code from anywhere via Telegram using [ccbot](https://github.com/six-ddc/ccbot):
 
-- `ce` — start or resume session (auto-creates/attaches tmux)
-- `ce bot` — start ccbot Telegram bridge
-- `ce --no-tmux` — skip tmux wrapping
+1. `ccbot` — starts bot, manages tmux session `ccbot`
+2. `ce --tmux` — attach to the ccbot tmux session (or create one)
+3. Inside tmux, use `ce <env>` to switch providers
 
-Architecture: `1 Telegram Topic = 1 tmux Window = 1 Claude Code Session`. Install ccbot with `uv tool install`, config in `~/.ccbot/.env` (chezmoi + 1Password).
+Architecture: `1 Telegram Topic = 1 tmux Window = 1 Claude Code Session`. Set `CLAUDE_COMMAND=ce --current` in `~/.ccbot/.env` so new windows launch with the active env.
 
 ## Reference
 

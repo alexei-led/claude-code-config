@@ -175,27 +175,34 @@ Each `/spec:work` cycle: select a task → plan implementation → implement →
 
 ## Remote Sessions (tmux + ccbot)
 
-Control Claude Code from anywhere — desktop, SSH, or iPhone via Telegram.
+Control Claude Code from anywhere — desktop, SSH, or iPhone via Telegram using [ccbot](https://github.com/six-ddc/ccbot).
 
 ### Architecture
 
 `1 Telegram Topic = 1 tmux Window = 1 Claude Code Session`
 
-- **`ce`** auto-wraps in tmux, switches environments, launches claude
-- **ccbot** bridges Telegram to tmux (iPhone/mobile access)
-- **tmux** provides session persistence (survives terminal close)
+- **ccbot** — standalone bot that manages a tmux session, bridges Telegram messages to Claude
+- **tmux** — session persistence (survives terminal close, SSH disconnect)
+- **`ce --tmux`** — attach to the ccbot tmux session from a terminal
 
-### Quick Reference
+### Usage
 
-| Task                    | Command                          |
-| ----------------------- | -------------------------------- |
-| Start session           | `ce` (auto-creates tmux)         |
-| Start with specific env | `ce z` (zai in tmux)             |
-| Resume session          | `ce` (attaches to existing tmux) |
-| Start Telegram bridge   | `ce bot`                         |
-| Skip tmux wrapping      | `ce --no-tmux`                   |
-| New tmux window         | `Ctrl+b c` then `ce --no-tmux`   |
-| Update ccbot            | `uv tool upgrade ccbot`          |
+```bash
+# Start the bot (creates tmux session 'ccbot', manages windows)
+ccbot
+
+# Attach to the tmux session from terminal
+ce --tmux
+
+# Inside tmux, switch providers as usual
+ce z              # switch to zai
+ce default        # switch to default
+
+# Custom tmux session name
+ce --tmux=dev
+```
+
+ccbot creates windows and runs `CLAUDE_COMMAND` for each Telegram topic. Set `CLAUDE_COMMAND=ce --current` in `~/.ccbot/.env` — this launches with whatever env you last selected (including team).
 
 ### ccbot Telegram Commands
 
@@ -210,6 +217,6 @@ Control Claude Code from anywhere — desktop, SSH, or iPhone via Telegram.
 ### Setup
 
 1. Install: `uv tool install git+https://github.com/six-ddc/ccbot.git`
-2. Config: `~/.ccbot/.env` (chezmoi + 1Password)
+2. Config: `~/.ccbot/.env` (chezmoi + 1Password) — set `CLAUDE_COMMAND=ce --current`
 3. Hook: `ccbot hook` on SessionStart (auto-registers sessions)
-4. Run: `ce bot` (starts Telegram bridge)
+4. Run: `ccbot` directly (or via systemd/launchd for persistence)
