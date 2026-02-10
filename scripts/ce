@@ -7,7 +7,6 @@ Usage:
   ce z --continue       # Switch → launch with claude args
   ce --continue         # TUI picker → launch with claude args
   ce team               # Launch Claude Code Team (alias: t)
-  ce bot                # Start ccbot Telegram bridge (alias: b)
   ce --tmux             # Wrap in tmux session 'ccbot'
   ce --tmux=dev         # Wrap in tmux session 'dev'
   ce --stop-proxy       # Stop copilot proxy
@@ -17,11 +16,6 @@ tmux:
   - Use --tmux to wrap in tmux session (default name: 'ccbot')
   - Use --tmux=SESSION for custom session name
   - Detected via $TMUX — skipped when already inside tmux
-
-ccbot (Telegram bridge):
-  - Install: uv tool install git+https://github.com/six-ddc/ccbot.git
-  - Config: ~/.ccbot/.env
-  - Run: ce bot
 
 Copilot proxy:
   - Auto-starts when switching to copilot
@@ -46,7 +40,6 @@ import tty
 from pathlib import Path
 
 SETTINGS = Path.home() / ".claude" / "settings.json"
-CCBOT_DIR = Path.home() / ".ccbot"
 
 
 def write_settings(settings: dict) -> None:
@@ -83,7 +76,6 @@ ALIASES = {
     "t": "team",
     "cx": "codex",
     "gm": "gemini",
-    "b": "bot",
 }
 
 # Machine-specific features
@@ -105,7 +97,6 @@ PROVIDERS = {
     "team": ("Claude Code Team", "Work subscription"),
     "codex": ("Codex", "GPT-5 via CLIProxyAPI"),
     "gemini": ("Gemini", "Gemini 3 via CLIProxyAPI"),
-    "bot": ("ccbot", "Telegram bridge for tmux sessions"),
 }
 
 # ANSI escape codes
@@ -241,35 +232,6 @@ def ensure_tmux(session: str) -> None:
         args = [sys.executable, ce_path] + sys.argv[1:]
         print(f"{DIM}Creating tmux session '{session}'...{RESET}")
         os.execlp("tmux", "tmux", "new-session", "-s", session, *args)
-
-
-def start_ccbot() -> None:
-    """Start ccbot Telegram bridge."""
-    if not CCBOT_DIR.exists():
-        print(f"{YELLOW}⚠ ccbot config not found: {CCBOT_DIR}{RESET}")
-        print(f"{DIM}Run: mkdir ~/.ccbot && chezmoi apply ~/.ccbot/.env{RESET}")
-        sys.exit(1)
-    # Pre-load .env into os.environ so ccbot finds vars regardless of cwd
-    env_file = CCBOT_DIR / ".env"
-    if env_file.exists():
-        for line in env_file.read_text().splitlines():
-            line = line.strip()
-            if line.startswith("export "):
-                line = line[7:].strip()
-            if line and not line.startswith("#") and "=" in line:
-                key, _, value = line.partition("=")
-                val = value.strip()
-                if len(val) >= 2 and val[0] == val[-1] and val[0] in ('"', "'"):
-                    val = val[1:-1]
-                os.environ.setdefault(key.strip(), val)
-    try:
-        os.execlp("ccbot", "ccbot")
-    except FileNotFoundError:
-        print(
-            f"{YELLOW}⚠ ccbot not found. Install:{RESET}"
-            f" {DIM}uv tool install git+https://github.com/six-ddc/ccbot.git{RESET}"
-        )
-        sys.exit(1)
 
 
 def apply_persistent_env(env_dict: dict) -> dict:
@@ -575,7 +537,6 @@ def show_help():
   ce <env> <args>       Switch + launch with args (e.g., ce z --continue)
   ce <args>             TUI picker + launch with args (e.g., ce --continue)
   ce team               Launch Claude Code Team (alias: t)
-  ce bot                Start ccbot Telegram bridge (alias: b)
 
 {DIM}Modifiers:{RESET}
   --tmux                Wrap in tmux session 'ccbot'
@@ -673,7 +634,6 @@ def main():
     }
     if team_available:
         env_set.add("team")
-    env_set.add("bot")
     envs = [e for e in PROVIDERS if e in env_set] + sorted(env_set - set(PROVIDERS))
 
     # Parse arguments: first arg is env (if valid alias/name), rest goes to claude
@@ -705,10 +665,6 @@ def main():
         target, launch_claude = interactive_select(envs, current, settings)
         if target is None:
             sys.exit(0)
-
-    # Handle bot mode - launch ccbot Telegram bridge
-    if target == "bot":
-        start_ccbot()  # never returns (execlp)
 
     # Handle team mode - launch cc-team directly
     if target == "team":
