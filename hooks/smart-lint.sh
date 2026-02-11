@@ -282,7 +282,9 @@ lint_python() {
 		run_formatter_on_files "Python Formatter (black)" "black" "black --check" "${files[@]}"
 	fi
 	if command_exists ruff; then
-		run_linter "Python Linter (ruff)" ruff check --fix "${files[@]}"
+		# --unfixable=F401: report unused imports but don't auto-remove them
+		# AI agents add imports in one edit and use them in the next
+		run_linter "Python Linter (ruff)" ruff check --fix --unfixable=F401 "${files[@]}"
 	elif command_exists flake8; then
 		run_linter "Python Linter (flake8)" flake8 "${files[@]}"
 	fi
