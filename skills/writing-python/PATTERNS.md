@@ -246,12 +246,12 @@ def get_user_endpoint(user_id: str) -> UserResponse:
 ### Python 3.14 Exception Syntax
 
 ```python
-# No parens needed for multiple exceptions
-except ValueError | TypeError | KeyError:
+# No parens needed for multiple exceptions (PEP 758, Python 3.14+)
+except ValueError, TypeError, KeyError:
     handle_error()
 
-# With binding
-except ValueError | TypeError as e:
+# With binding (parens required when using 'as')
+except (ValueError, TypeError) as e:
     log_error(e)
 ```
 

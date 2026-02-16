@@ -38,7 +38,7 @@ allowed-tools:
 5. **Explicit Error Handling**
    - Custom exception hierarchy for domain errors
    - Raise early, handle at boundaries
-   - except ValueError | TypeError: (no parens)
+   - except ValueError, TypeError: (no parens needed in 3.14+)
 
 ## Quick Patterns
 
@@ -113,8 +113,8 @@ def process(data: Any) -> Any:  # Don't do this
 ### Error Handling
 
 ```python
-# except without parens (3.14)
-except ValueError | TypeError:
+# except without parens (PEP 758, Python 3.14+)
+except ValueError, TypeError:
     handle_error()
 
 # Custom exceptions
@@ -129,7 +129,7 @@ class NotFoundError(AppError):
 
 - **Deferred annotations**: No `from __future__ import annotations`
 - **Template strings (t"")**: `t"Hello {name}"` returns Template
-- **except without parens**: `except ValueError | TypeError:`
+- **except without parens**: `except ValueError, TypeError:` (PEP 758)
 - **concurrent.interpreters**: True parallelism
 - **compression.zstd**: Zstandard in stdlib
 - **Free-threaded build**: No GIL (opt-in)
