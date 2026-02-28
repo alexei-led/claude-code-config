@@ -1,0 +1,89 @@
+{
+  "theme": "nord",
+  "style": "powerline",
+  "display": {
+    "charset": "unicode",
+    "autoWrap": true,
+    "padding": 1,
+    "colorCompatibility": "auto",
+    "lines": [
+      {
+        "segments": {
+          "git": {
+            "enabled": true
+          },
+          "directory": {
+            "enabled": true
+          },
+          "model": {
+            "enabled": true
+          }
+        }
+      },
+      {
+        "segments": {
+          "context": {
+            "enabled": true
+          },
+          "block": {
+            "enabled": true,
+            "type": "both"
+          },
+          "today": {
+            "enabled": true,
+            "type": "cost"
+          },
+          "session": {
+            "enabled": true
+          }
+        }
+      }
+    ]
+  },
+  "directory": {
+    "style": "fish"
+  },
+  "git": {
+    "showSha": false,
+    "showWorkingTree": true,
+    "showOperation": true,
+    "showTag": false,
+    "showTimeSinceCommit": false,
+    "showStashCount": true,
+    "showUpstream": true,
+    "showRepoName": false
+  },
+  "context": {
+    "showPercentageOnly": false
+  },
+  "session": {
+    "type": "cost",
+    "costSource": "calculated"
+  },
+  "block": {
+    "type": "both"
+  },
+  "today": {
+    "type": "cost"
+  },
+  "budget": {
+    "session": {
+      "amount": 15.0,
+      "warningThreshold": 80
+    },
+    "block": {
+      "amount": 20.0,
+      "warningThreshold": 75
+    },
+    "today": {
+      "amount": 25.0,
+      "warningThreshold": 80
+    }
+  },
+  "modelContextLimits": {
+    "sonnet": 1000000,
+    "opus": 200000,
+    "haiku": 200000,
+    "default": 200000
+  }
+}

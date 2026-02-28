@@ -1,0 +1,76 @@
+title = "Claude Code Config - Gitleaks Configuration"
+
+[extend]
+useDefault = true
+
+[allowlist]
+paths = [
+    '''\.gitignore''',
+    '''\.gitleaks\.toml''',
+]
+
+# Scripts that reference token field names (not actual secrets)
+[[rules]]
+id = "cliproxy-false-positive"
+description = "OAuth token field names in import script"
+path = '''scripts/cliproxy-import-gemini\.py'''
+[rules.allowlist]
+regexTarget = "match"
+regexes = [
+    '''(access_token|refresh_token|id_token|token_type|token_uri|token)''',
+]
+
+# Belt-and-suspenders: block files that .gitignore should already exclude
+[[rules]]
+id = "claude-secrets-file"
+description = "Claude Code secrets file must never be committed"
+path = '''secrets\.json'''
+entropy = 0
+
+[[rules]]
+id = "claude-settings-file"
+description = "Claude Code settings with API permissions"
+path = '''settings\.json$'''
+entropy = 0
+
+[[rules]]
+id = "claude-local-settings"
+description = "Claude Code local settings"
+path = '''settings\.local\.json'''
+entropy = 0
+
+[[rules]]
+id = "claude-model-profiles"
+description = "Model profiles may contain API keys"
+path = '''model-profiles\.json'''
+entropy = 0
+
+[[rules]]
+id = "claude-active-env"
+description = "Active environment may reference credentials"
+path = '''active-env\.json'''
+entropy = 0
+
+[[rules]]
+id = "claude-session-env"
+description = "Session environment variables"
+path = '''session-env/'''
+entropy = 0
+
+[[rules]]
+id = "claude-projects-state"
+description = "Per-project state with session transcripts"
+path = '''projects/'''
+entropy = 0
+
+[[rules]]
+id = "claude-history"
+description = "Session history may contain echoed secrets"
+path = '''history\.jsonl'''
+entropy = 0
+
+[[rules]]
+id = "claude-backups"
+description = "Backup files contain full settings with secrets"
+path = '''backups/'''
+entropy = 0

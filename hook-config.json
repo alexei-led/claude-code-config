@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "Optional hook configuration. Hooks fall back to defaults if this file doesn't exist.",
+  "file-protector": {
+    "enabled": true,
+    "protected_patterns": [
+      "\\.env$",
+      "\\.env\\.",
+      "credentials",
+      "\\.pem$",
+      "\\.key$",
+      "secret",
+      "password",
+      "token",
+      "api[_-]?key"
+    ],
+    "warn_patterns": [
+      "package-lock\\.json$",
+      "yarn\\.lock$",
+      "pnpm-lock\\.yaml$",
+      "go\\.sum$",
+      "Cargo\\.lock$",
+      "poetry\\.lock$",
+      "uv\\.lock$"
+    ],
+    "allowed_paths": []
+  },
+  "smart-lint": {
+    "enabled": true,
+    "auto_fix": true,
+    "file_types": {
+      "go": [
+        "golangci-lint",
+        "go vet"
+      ],
+      "python": [
+        "ruff check --fix",
+        "ruff format"
+      ],
+      "typescript": [
+        "eslint --fix",
+        "prettier --write"
+      ],
+      "terraform": [
+        "terraform fmt",
+        "terraform validate"
+      ]
+    },
+    "token_monitor": {
+      "enabled": false,
+      "warn_threshold_percent": 80
+    }
+  },
+  "performance-monitor": {
+    "enabled": true,
+    "retention_days": 7,
+    "log_file": "~/.claude/logs/performance.jsonl"
+  },
+  "session-start": {
+    "show_emojis": true,
+    "show_git_status": true,
+    "show_spec_status": true,
+    "cleanup_temp_files": true,
+    "cleanup_max_age_hours": 24
+  },
+  "notify": {
+    "enabled": true,
+    "sound": true,
+    "terminal_notification": true
+  }
+}

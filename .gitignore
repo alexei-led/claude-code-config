@@ -1,0 +1,43 @@
+# === Secrets & Credentials ===
+secrets.json
+active-env.json
+model-profiles.json
+.claude/settings.local.json
+
+# === Settings with permissions (contains allowed URLs/domains) ===
+settings.json
+
+# === Session history (may echo sensitive prompts) ===
+history.jsonl
+
+# === Ephemeral / Session State ===
+session-env/
+tasks/
+teams/
+todos/
+paste-cache/
+shell-snapshots/
+
+# === Caches & Build Artifacts ===
+cache/
+.mypy_cache/
+__pycache__/
+*.pyc
+
+# === Logs & Debug ===
+debug/
+telemetry/
+
+# === Large / Generated ===
+backups/
+file-history/
+plans/
+
+# === Project-specific state (per-repo, not portable) ===
+projects/
+
+# === Plugin binaries ===
+plugins/
+
+# === OS artifacts ===
+.DS_Store

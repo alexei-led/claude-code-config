@@ -1,0 +1,76 @@
+# .claude-hooks-ignore - Patterns for files to skip during linting
+#
+# This file uses gitignore-style patterns to exclude files from hooks.
+# Place this in your project root to customize what gets checked.
+
+# Generated files
+*.pb.go
+*_gen.go
+*.generated.*
+*.min.js
+*.min.css
+
+# Dependencies
+vendor/
+node_modules/
+.venv/
+venv/
+target/
+dist/
+build/
+
+# Third-party code
+third_party/
+external/
+libs/
+
+# Test fixtures and data
+testdata/
+fixtures/
+*.test.json
+*.test.xml
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+*.o
+*.a
+*.so
+*.exe
+*.dll
+*.pyc
+__pycache__/
+
+# Documentation
+docs/_build/
+site/
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+.cache/
+
+# Large files
+*.mp4
+*.mov
+*.zip
+*.tar.gz
+
+# Environment files (may contain different formatting)
+.env
+.env.*
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3

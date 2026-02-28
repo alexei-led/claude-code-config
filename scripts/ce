@@ -1,0 +1,1052 @@
+#!/usr/bin/env python3
+"""Claude Code environment switcher with interactive TUI.
+
+Usage:
+  ce                    # TUI picker → switch + launch claude
+  ce z                  # Switch to z.ai → launch claude
+  ce z --continue       # Switch → launch with claude args
+  ce --continue         # TUI picker → launch with claude args
+  ce team               # Launch Claude Code Team (alias: t)
+  ce --current          # Launch with current active env (for ccbot)
+  ce --tmux             # Wrap in tmux session 'ccbot'
+  ce --tmux=dev         # Wrap in tmux session 'dev'
+  ce --stop-proxy       # Stop copilot proxy
+  ce --stop-cliproxy    # Stop CLIProxyAPI
+
+Thinking (router-for-me):
+  ce cx --thinking=high  # Override thinking level for this session
+  Profile default:       "thinking": "high" in model-profiles.json
+  Env override:          CE_CODEX_THINKING=medium
+  Levels: none, minimal, low, medium, high, xhigh, auto
+
+Model profiles:
+  ce --show-models          # Show resolved model IDs per provider
+  ce --show-models --json   # Machine-readable model IDs
+  ce --init-model-profiles  # Create default ~/.claude/model-profiles.json
+  ce --migrate-models       # Extract model IDs from settings → profile
+  ce --migrate-models=check # Dry run: show what would be migrated
+
+tmux:
+  - Use --tmux to wrap in tmux session (default name: 'ccbot')
+  - Use --tmux=SESSION for custom session name
+  - Detected via $TMUX — skipped when already inside tmux
+
+Copilot proxy:
+  - Auto-starts when switching to copilot
+  - Use --stop-proxy to stop manually
+
+CLIProxyAPI (codex/gemini):
+  - First login: cliproxy.sh --login-codex (or --login-gemini)
+  - Auto-starts when switching to codex or gemini
+  - Use --stop-cliproxy to stop manually
+"""
+
+import json
+import os
+import select
+import socket
+import stat
+import subprocess
+import sys
+import tempfile
+import termios
+import tty
+from pathlib import Path
+
+SETTINGS = Path.home() / ".claude" / "settings.json"
+ACTIVE_ENV_FILE = Path.home() / ".claude" / "active-env.json"
+SECRETS_FILE = Path.home() / ".claude" / "secrets.json"
+MODEL_PROFILES_FILE = Path(
+    os.environ.get(
+        "CE_MODEL_PROFILE_FILE",
+        str(Path.home() / ".claude" / "model-profiles.json"),
+    )
+)
+
+# Env var keys that are model identifiers (managed by profiles, stripped from settings)
+MODEL_KEYS = frozenset(
+    {
+        "ANTHROPIC_MODEL",
+        "ANTHROPIC_DEFAULT_OPUS_MODEL",
+        "ANTHROPIC_DEFAULT_SONNET_MODEL",
+        "ANTHROPIC_DEFAULT_HAIKU_MODEL",
+        "model",
+    }
+)
+
+# Profile friendly field → env var mapping (and reverse)
+PROFILE_TO_ENV = {
+    "opus": "ANTHROPIC_DEFAULT_OPUS_MODEL",
+    "sonnet": "ANTHROPIC_DEFAULT_SONNET_MODEL",
+    "haiku": "ANTHROPIC_DEFAULT_HAIKU_MODEL",
+}
+ENV_TO_PROFILE = {v: k for k, v in PROFILE_TO_ENV.items()}
+
+THINKING_LEVELS = frozenset({"none", "minimal", "low", "medium", "high", "xhigh", "auto"})
+
+# Default model profiles (written by --init-model-profiles)
+DEFAULT_MODEL_PROFILES: dict[str, dict[str, str]] = {
+    "vertex": {
+        "opus": "claude-opus-4-5@20251101",
+        "sonnet": "claude-sonnet-4-5@20250929",
+        "haiku": "claude-haiku-4-5@20251001",
+        "ANTHROPIC_MODEL": "claude-opus-4-6@default",
+    },
+    "copilot": {
+        "opus": "claude-opus-4.6",
+        "sonnet": "claude-sonnet-4.5",
+        "haiku": "claude-haiku-4.5",
+        "ANTHROPIC_MODEL": "claude-opus-4.6",
+    },
+    "deepseek": {
+        "opus": "deepseek-reasoner",
+        "sonnet": "deepseek-chat",
+        "haiku": "deepseek-chat",
+        "model": "deepseek-reasoner",
+    },
+    "zai": {
+        "opus": "glm-5",
+        "sonnet": "glm-5",
+        "haiku": "glm-4.5-air",
+    },
+    "codex": {
+        "opus": "gpt-5.3-codex",
+        "sonnet": "gpt-5.3-codex",
+        "haiku": "gpt-5.1-codex-mini",
+        "thinking": "high",
+    },
+    "gemini": {
+        "opus": "gemini-3-pro-preview",
+        "sonnet": "gemini-3-pro-preview",
+        "haiku": "gemini-3-flash-preview",
+    },
+}
+
+
+def _atomic_write(
+    path: Path, data: str, mode: int = stat.S_IRUSR | stat.S_IWUSR
+) -> None:
+    """Atomically write data to a file with restricted permissions."""
+    fd, tmp_path = tempfile.mkstemp(dir=path.parent, suffix=".json.tmp")
+    try:
+        os.write(fd, data.encode())
+        os.close(fd)
+        fd = -1
+        os.chmod(tmp_path, mode)
+        os.replace(tmp_path, path)
+    except BaseException:
+        if fd >= 0:
+            os.close(fd)
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
+        raise
+
+
+def _write_json(path: Path, data: dict) -> None:
+    """Atomically write JSON data to a file with 0600 permissions."""
+    _atomic_write(path, json.dumps(data, indent=2) + "\n")
+
+
+def _read_json(path: Path) -> dict | None:
+    """Read JSON file, returning None on missing/invalid."""
+    try:
+        return json.loads(path.read_text())
+    except (FileNotFoundError, json.JSONDecodeError):
+        return None
+
+
+def write_settings(settings: dict) -> None:
+    """Atomically write settings to disk with restricted permissions (0600)."""
+    _write_json(SETTINGS, settings)
+
+
+def read_active_env() -> str:
+    """Read active environment from state file."""
+    data = _read_json(ACTIVE_ENV_FILE)
+    return data.get("env", "default") if data else "default"
+
+
+def write_active_env(env: str) -> None:
+    """Write active environment to state file."""
+    _write_json(ACTIVE_ENV_FILE, {"env": env})
+
+
+def get_secret(env_name: str) -> str | None:
+    """Read API secret for an environment from chezmoi-baked secrets file."""
+    data = _read_json(SECRETS_FILE)
+    if data:
+        value = data.get(env_name)
+        return value if value else None
+    return None
+
+
+# --- Model profiles ---
+
+
+def load_model_profiles() -> dict:
+    """Load model profiles from file. Returns empty dict if missing/invalid."""
+    return _read_json(MODEL_PROFILES_FILE) or {}
+
+
+def resolve_provider_models(
+    provider: str,
+    profiles: dict | None = None,
+    thinking: str | None = None,
+) -> dict[str, str]:
+    """Resolve model env vars for a provider from profiles + env overrides.
+
+    Env overrides: CE_<PROVIDER>_OPUS, CE_<PROVIDER>_SONNET, CE_<PROVIDER>_HAIKU
+    Thinking: CE_<PROVIDER>_THINKING or profile "thinking" field
+    """
+    if profiles is None:
+        profiles = load_model_profiles()
+    profile = profiles.get(provider, {})
+    if not profile:
+        return {}
+
+    result: dict[str, str] = {}
+    upper = provider.upper()
+
+    # Resolve thinking level: CLI flag > env override > profile > none
+    think = (
+        thinking
+        or os.environ.get(f"CE_{upper}_THINKING")
+        or profile.get("thinking")
+    )
+    suffix = f"({think})" if think and think in THINKING_LEVELS else ""
+
+    # Map friendly names (opus/sonnet/haiku) → env vars, with CE_ overrides
+    for field, env_key in PROFILE_TO_ENV.items():
+        override = os.environ.get(f"CE_{upper}_{field.upper()}")
+        value = override if override is not None else profile.get(field)
+        if value:
+            result[env_key] = value + suffix
+
+    # Pass through raw env var keys (ANTHROPIC_MODEL, model, etc.)
+    for key, value in profile.items():
+        if key in MODEL_KEYS and key not in result:
+            result[key] = value + suffix
+
+    return result
+
+
+def init_model_profiles(force: bool = False) -> None:
+    """Write default model profiles to disk."""
+    if MODEL_PROFILES_FILE.exists() and not force:
+        print(f"{YELLOW}⚠ Profile file already exists: {MODEL_PROFILES_FILE}{RESET}")
+        print(f"{DIM}Use --init-model-profiles --force to overwrite{RESET}")
+        sys.exit(1)
+    _write_json(MODEL_PROFILES_FILE, DEFAULT_MODEL_PROFILES)
+    print(f"{GREEN}✓{RESET} Model profiles written to {MODEL_PROFILES_FILE}")
+
+
+def show_models(as_json: bool = False) -> None:
+    """Print current model configuration per provider."""
+    profiles = load_model_profiles()
+    if not profiles:
+        print(f"{YELLOW}⚠ No model profiles found at {MODEL_PROFILES_FILE}{RESET}")
+        print(f"{DIM}Run: ce --init-model-profiles{RESET}")
+        sys.exit(1)
+
+    if as_json:
+        print(
+            json.dumps(
+                {p: resolve_provider_models(p, profiles) for p in sorted(profiles)},
+                indent=2,
+            )
+        )
+        return
+
+    print(f"\n  {BOLD}{CYAN}Model Profiles{RESET}  {DIM}{MODEL_PROFILES_FILE}{RESET}\n")
+    for provider in sorted(profiles):
+        models = resolve_provider_models(provider, profiles)
+        name = PROVIDERS.get(provider, (provider, ""))[0]
+        think = profiles.get(provider, {}).get("thinking")
+        think_hint = f"  {CYAN}thinking={think}{RESET}" if think else ""
+        print(f"  {BOLD}{name}{RESET} ({provider}){think_hint}")
+        for env_key in sorted(models):
+            field = ENV_TO_PROFILE.get(env_key)
+            override_var = f"CE_{provider.upper()}_{field.upper()}" if field else None
+            marker = (
+                f" {CYAN}(env override){RESET}"
+                if override_var and os.environ.get(override_var)
+                else ""
+            )
+            print(f"    {DIM}{env_key}{RESET} = {models[env_key]}{marker}")
+        print()
+
+
+def migrate_models(dry_run: bool = False) -> None:
+    """Extract model keys from settings.json into model profiles file."""
+    settings = _read_json(SETTINGS)
+    if not settings:
+        print(f"{YELLOW}⚠ Cannot read settings: {SETTINGS}{RESET}")
+        sys.exit(1)
+
+    extracted: dict[str, dict[str, str]] = {}
+    for key, env_dict in settings.items():
+        if (
+            not key.startswith("env.")
+            or len(key) <= 4
+            or not isinstance(env_dict, dict)
+        ):
+            continue
+        provider = key[4:]
+        models = {}
+        for mk in MODEL_KEYS:
+            if mk in env_dict and isinstance(env_dict[mk], str) and env_dict[mk]:
+                field = ENV_TO_PROFILE.get(mk, mk)
+                models[field] = env_dict[mk]
+        if models:
+            extracted[provider] = models
+
+    if not extracted:
+        print(f"{DIM}No model keys found in settings — nothing to migrate{RESET}")
+        return
+
+    if dry_run:
+        print(f"\n  {BOLD}Migration preview{RESET} (dry run)\n")
+        for provider, models in sorted(extracted.items()):
+            print(f"  {provider}:")
+            for field, value in sorted(models.items()):
+                print(f"    {field}: {value}")
+        print(f"\n  {DIM}Would write to: {MODEL_PROFILES_FILE}{RESET}")
+        print(f"  {DIM}Would remove model keys from settings.json{RESET}")
+        return
+
+    # Merge with existing profiles (existing values take precedence)
+    profiles = load_model_profiles()
+    for provider, models in extracted.items():
+        if provider not in profiles:
+            profiles[provider] = models
+        else:
+            for field, value in models.items():
+                profiles[provider].setdefault(field, value)
+
+    _write_json(MODEL_PROFILES_FILE, profiles)
+    print(f"{GREEN}✓{RESET} Model profiles written to {MODEL_PROFILES_FILE}")
+
+    # Strip model keys from all env.* and env entries
+    for key in list(settings.keys()):
+        if (key.startswith("env.") and len(key) > 4) or key == "env":
+            if isinstance(settings[key], dict):
+                settings[key] = {
+                    k: v for k, v in settings[key].items() if k not in MODEL_KEYS
+                }
+    write_settings(settings)
+    print(f"{GREEN}✓{RESET} Model keys removed from settings.json")
+
+
+# --- Persistent env and aliases ---
+
+PERSISTENT_ENV = {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
+}
+
+ALIASES = {
+    "max": "default",
+    "v": "vertex",
+    "cp": "copilot",
+    "z": "zai",
+    "ds": "deepseek",
+    "t": "team",
+    "cx": "codex",
+    "gm": "gemini",
+}
+
+TEAM_MACHINE = "gaia-mbp-m2"
+
+
+def is_team_machine() -> bool:
+    """Check if running on the team-enabled machine."""
+    return socket.gethostname().split(".")[0] == TEAM_MACHINE
+
+
+# Provider descriptions: (display_name, short_description)
+PROVIDERS = {
+    "default": ("Claude Max", "Anthropic API (default models)"),
+    "vertex": ("Vertex AI", "Google Cloud Vertex AI"),
+    "copilot": ("Copilot", "GitHub Copilot proxy"),
+    "zai": ("z.ai", "Z.ai API"),
+    "deepseek": ("DeepSeek", "DeepSeek API"),
+    "team": ("Claude Code Team", "Work subscription"),
+    "codex": ("Codex", "OpenAI via CLIProxyAPI"),
+    "gemini": ("Gemini", "Google Gemini via CLIProxyAPI"),
+}
+
+# ANSI escape codes
+RESET = "\033[0m"
+BOLD = "\033[1m"
+DIM = "\033[2m"
+CYAN = "\033[36m"
+GREEN = "\033[32m"
+YELLOW = "\033[33m"
+WHITE = "\033[97m"
+HIDE_CURSOR = "\033[?25l"
+SHOW_CURSOR = "\033[?25h"
+CLEAR_LINE = "\033[2K"
+MOVE_UP = "\033[A"
+
+
+# --- Proxy management ---
+
+
+class ProxyConfig:
+    """Configuration for a proxy service."""
+
+    def __init__(self, name: str, script: str, pid_file: str, port: int | None = None):
+        self.name = name
+        self.script = Path.home() / ".claude" / "scripts" / script
+        self.pid_file = Path(os.environ.get("TMPDIR", "/tmp")) / pid_file
+        self.port = port
+
+
+def _cliproxy_port() -> int:
+    raw = os.environ.get("CLIPROXY_PORT", "8317")
+    try:
+        return int(raw)
+    except ValueError:
+        print(f"{YELLOW}⚠ Invalid CLIPROXY_PORT={raw!r}, using 8317{RESET}")
+        return 8317
+
+
+COPILOT_PROXY = ProxyConfig(
+    "copilot proxy", "copilot-proxy.sh", "copilot-proxy.pid", port=8318
+)
+CLIPROXY = ProxyConfig(
+    "CLIProxyAPI", "cliproxy.sh", "cliproxy.pid", port=_cliproxy_port()
+)
+
+# Map provider names to required proxy
+PROXY_FOR_PROVIDER: dict[str, ProxyConfig] = {
+    "copilot": COPILOT_PROXY,
+    "codex": CLIPROXY,
+    "gemini": CLIPROXY,
+}
+
+
+def is_port_in_use(port: int) -> bool:
+    """Check if a port is in use."""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        return s.connect_ex(("127.0.0.1", port)) == 0
+
+
+def check_proxy(proxy: ProxyConfig) -> bool:
+    """Check if a proxy is running (via port or PID file)."""
+    if proxy.port is not None and is_port_in_use(proxy.port):
+        return True
+    if not proxy.pid_file.exists():
+        return False
+    try:
+        pid = int(proxy.pid_file.read_text().strip())
+        os.kill(pid, 0)
+        return True
+    except (ValueError, OSError):
+        return False
+
+
+def start_proxy(proxy: ProxyConfig) -> bool:
+    """Start a proxy. Returns True if started successfully."""
+    if not proxy.script.exists():
+        print(f"{YELLOW}⚠ {proxy.name} script not found: {proxy.script}{RESET}")
+        return False
+
+    print(f"{DIM}Starting {proxy.name}...{RESET}")
+    try:
+        result = subprocess.run(
+            [str(proxy.script)], capture_output=True, text=True, timeout=15
+        )
+    except subprocess.TimeoutExpired:
+        print(f"{YELLOW}⚠ {proxy.name} start timed out (15s){RESET}")
+        return False
+    if result.returncode == 0:
+        print(f"{GREEN}✓{RESET} {proxy.name} started")
+        return True
+    print(f"{YELLOW}⚠ Failed to start {proxy.name}{RESET}")
+    if result.stderr:
+        print(f"{DIM}{result.stderr.strip()}{RESET}")
+    if result.stdout:
+        print(f"{DIM}{result.stdout.strip()}{RESET}")
+    return False
+
+
+def stop_proxy(proxy: ProxyConfig) -> None:
+    """Stop a proxy if running."""
+    if not check_proxy(proxy):
+        return
+    if proxy.script.exists():
+        print(f"{DIM}Stopping {proxy.name}...{RESET}")
+        subprocess.run([str(proxy.script), "--stop"], capture_output=True)
+        print(f"{GREEN}✓{RESET} {proxy.name} stopped")
+
+
+def ensure_proxy(target: str) -> bool:
+    """Start required proxy for target provider. Returns False on failure."""
+    proxy = PROXY_FOR_PROVIDER.get(target)
+    if proxy and not check_proxy(proxy):
+        return start_proxy(proxy)
+    return True
+
+
+# --- tmux ---
+
+
+def tmux_session_exists(session: str) -> bool:
+    """Check if a tmux session exists."""
+    return (
+        subprocess.run(
+            ["tmux", "has-session", "-t", session],
+            capture_output=True,
+        ).returncode
+        == 0
+    )
+
+
+def ensure_tmux(session: str) -> None:
+    """If not in tmux, re-exec ce inside a tmux session."""
+    if os.environ.get("TMUX"):
+        return
+
+    if tmux_session_exists(session):
+        print(f"{DIM}Attaching to tmux session '{session}'...{RESET}")
+        os.execlp("tmux", "tmux", "attach-session", "-t", session)
+    else:
+        ce_path = str(Path(__file__).resolve())
+        args = [sys.executable, ce_path] + sys.argv[1:]
+        print(f"{DIM}Creating tmux session '{session}'...{RESET}")
+        os.execlp("tmux", "tmux", "new-session", "-s", session, *args)
+
+
+def apply_persistent_env(env_dict: dict) -> dict:
+    """Ensure persistent env vars are present in an env dict."""
+    for key, value in PERSISTENT_ENV.items():
+        env_dict.setdefault(key, value)
+    return env_dict
+
+
+# --- Provider configs (non-model settings only; models come from profiles) ---
+
+DEFAULT_CONFIGS: dict[str, dict[str, str]] = {
+    "default": {},
+    "vertex": {
+        "CLAUDE_CODE_USE_VERTEX": "1",
+        "CLOUD_ML_REGION": "global",
+        "ANTHROPIC_VERTEX_PROJECT_ID": "alexei-playground-457008",
+    },
+    "copilot": {
+        "ANTHROPIC_BASE_URL": "http://localhost:4141",
+        "DISABLE_NON_ESSENTIAL_MODEL_CALLS": "1",
+        "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+        "CLAUDE_CODE_ATTRIBUTION_HEADER": "0",
+    },
+    "deepseek": {
+        "ANTHROPIC_BASE_URL": "https://api.deepseek.com/anthropic",
+        "MAX_THINKING_TOKENS": "64000",
+        "DISABLE_PROMPT_CACHING": "1",
+        "DISABLE_TELEMETRY": "true",
+    },
+    "zai": {
+        "ANTHROPIC_BASE_URL": "https://api.z.ai/api/anthropic",
+        "API_TIMEOUT_MS": "3000000",
+        "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+    },
+}
+
+
+def _cliproxy_configs() -> dict[str, dict[str, str]]:
+    """Build CLIProxyAPI-based configs (codex/gemini) — non-model settings only."""
+    url = f"http://127.0.0.1:{_cliproxy_port()}"
+    base = {"ANTHROPIC_BASE_URL": url, "_proxy": "cliproxy"}
+    return {"codex": dict(base), "gemini": dict(base)}
+
+
+def ensure_provider_configs(settings: dict) -> None:
+    """Ensure all provider env configs exist in settings.
+
+    Precedence: settings[env.X] (user overrides) > DEFAULT_CONFIGS + profiles (defaults).
+    Only applies when env.X is completely missing.
+    """
+    profiles = load_model_profiles()
+    all_configs = {**DEFAULT_CONFIGS, **_cliproxy_configs()}
+    for name, config in all_configs.items():
+        key = f"env.{name}"
+        if key not in settings:
+            env = apply_persistent_env(dict(config))
+            env.update(resolve_provider_models(name, profiles))
+            settings[key] = env
+
+
+# --- TUI ---
+
+
+def get_key() -> str:
+    """Read a single keypress.
+
+    Uses os.read() for unbuffered reads so select() can correctly detect
+    remaining bytes in escape sequences. Python's sys.stdin.read() buffers
+    at the interpreter level, making select() on the fd unreliable.
+    """
+    fd = sys.stdin.fileno()
+    old_settings = termios.tcgetattr(fd)
+    try:
+        tty.setraw(fd)
+        ch = os.read(fd, 1).decode("utf-8", errors="replace")
+        if ch == "\x1b":
+            if select.select([fd], [], [], 0.15)[0]:
+                ch2 = os.read(fd, 1).decode("utf-8", errors="replace")
+                if ch2 in ("[", "O") and select.select([fd], [], [], 0.15)[0]:
+                    ch3 = os.read(fd, 1).decode("utf-8", errors="replace")
+                    if ch3 == "A":
+                        return "up"
+                    elif ch3 == "B":
+                        return "down"
+            return "esc"
+        elif ch in ("\r", "\n"):
+            return "enter"
+        elif ch == " ":
+            return "space"
+        elif ch == "q":
+            return "esc"
+        elif ch == "j":
+            return "down"
+        elif ch == "k":
+            return "up"
+        return ch
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+
+
+def render_menu(envs: list[str], current: str, selected: int):
+    """Render the interactive menu."""
+    print()
+    print(f"  {BOLD}{CYAN}ce{RESET} {DIM}— Claude Environment Switcher{RESET}")
+    print(f"  {DIM}Switch between Claude Code API providers{RESET}")
+    print()
+
+    for i, env in enumerate(envs):
+        is_active = env == current
+        is_selected = i == selected
+
+        name, desc = PROVIDERS.get(env, (env, ""))
+
+        if is_selected:
+            prefix = f"  {CYAN}❯{RESET} "
+            name_style = f"{BOLD}{WHITE}"
+            desc_style = CYAN
+        else:
+            prefix = "    "
+            name_style = DIM
+            desc_style = DIM
+
+        marker = f" {GREEN}●{RESET}" if is_active else ""
+        alias = next((a for a, e in ALIASES.items() if e == env), None)
+        alias_hint = f" {DIM}({alias}){RESET}" if alias else ""
+        desc_text = f"  {desc_style}{desc}{RESET}" if desc else ""
+
+        print(
+            f"{CLEAR_LINE}{prefix}{name_style}{name}{RESET}{alias_hint}{marker}{desc_text}"
+        )
+
+    print()
+    print(
+        f"  {DIM}↑↓{RESET} move  {DIM}space{RESET} select  {DIM}enter{RESET} run claude  {DIM}esc{RESET} exit"
+    )
+    print()
+
+
+def clear_menu(num_lines: int):
+    """Clear the rendered menu."""
+    for _ in range(num_lines):
+        sys.stdout.write(f"{MOVE_UP}{CLEAR_LINE}")
+    sys.stdout.flush()
+
+
+def interactive_select(
+    envs: list[str], current: str, settings: dict
+) -> tuple[str | None, bool]:
+    """Show interactive menu. Returns (env, launch) or (None, False) if cancelled."""
+    selected = envs.index(current) if current in envs else 0
+    active = current
+    num_lines = len(envs) + 7
+
+    print(HIDE_CURSOR, end="", flush=True)
+    try:
+        render_menu(envs, active, selected)
+
+        while True:
+            key = get_key()
+
+            if key == "esc":
+                clear_menu(num_lines)
+                return None, False
+            elif key == "enter":
+                new_env = envs[selected]
+                if new_env == "team":
+                    clear_menu(num_lines)
+                    return "team", True
+                if new_env != active:
+                    success, _, _ = switch_env(settings, active, new_env)
+                    if not success:
+                        clear_menu(num_lines)
+                        return None, False
+                    active = new_env
+                clear_menu(num_lines)
+                return active, True
+            elif key == "space":
+                new_env = envs[selected]
+                if new_env != "team" and new_env != active:
+                    success, _, _ = switch_env(settings, active, new_env)
+                    if success:
+                        active = new_env
+            elif key == "up":
+                selected = (selected - 1) % len(envs)
+            elif key == "down":
+                selected = (selected + 1) % len(envs)
+
+            clear_menu(num_lines)
+            render_menu(envs, active, selected)
+    finally:
+        print(SHOW_CURSOR, end="", flush=True)
+
+
+# --- Environment switching ---
+
+
+def switch_env(
+    settings: dict, current: str, target: str
+) -> tuple[bool, str | None, str | None]:
+    """Switch to target environment. Returns (success, auth_msg, secret).
+
+    Model keys are stripped from stored configs (env.* entries).
+    The active env dict gets models merged from profiles at launch time.
+    """
+    auth_msg = None
+    secret = None
+
+    if not ensure_proxy(target):
+        return False, None, None
+
+    # Save current env (strip model keys — they come from profiles)
+    if current != "team":
+        current_env = settings.get(f"env.{current}", settings.get("env", {})).copy()
+        current_env.pop("ANTHROPIC_AUTH_TOKEN", None)
+        for mk in MODEL_KEYS:
+            current_env.pop(mk, None)
+        apply_persistent_env(current_env)
+        settings[f"env.{current}"] = current_env
+
+    # Load target config, merge models for runtime, store clean for persistence
+    target_config = settings.get(f"env.{target}", {}).copy()
+    for mk in MODEL_KEYS:
+        target_config.pop(mk, None)
+    apply_persistent_env(target_config)
+
+    # Runtime env includes models; stored env does not
+    runtime_env = dict(target_config)
+    runtime_env.update(resolve_provider_models(target))
+
+    settings["env"] = runtime_env
+    settings[f"env.{target}"] = target_config
+    write_settings(settings)
+    write_active_env(target)
+
+    secret = get_secret(target)
+    if secret:
+        auth_msg = f"  {DIM}(key from secrets){RESET}"
+
+    return True, auth_msg, secret
+
+
+def export_model_env(target: str, thinking: str | None = None) -> None:
+    """Export model env vars for target provider into process environment."""
+    for key, value in resolve_provider_models(target, thinking=thinking).items():
+        os.environ[key] = value
+
+
+# --- CLI ---
+
+
+def show_help():
+    """Print help message."""
+    print(f"""
+{BOLD}{CYAN}ce{RESET} {DIM}— Claude Environment Switcher{RESET}
+
+{DIM}Launchers:{RESET}
+  ce                    Interactive TUI picker
+  ce <env>              Switch + launch (e.g., ce z)
+  ce <env> <args>       Switch + launch with args (e.g., ce z --continue)
+  ce <args>             TUI picker + launch with args (e.g., ce --continue)
+  ce team               Launch Claude Code Team (alias: t)
+
+{DIM}Modifiers:{RESET}
+  --current             Launch with current active env (for ccbot)
+  --thinking=LEVEL      Set thinking level (none/minimal/low/medium/high/xhigh/auto)
+  --tmux                Wrap in tmux session 'ccbot'
+  --tmux=SESSION        Wrap in tmux with custom session name
+
+{DIM}Management:{RESET}
+  --stop-proxy          Stop copilot proxy
+  --stop-cliproxy       Stop CLIProxyAPI
+
+{DIM}Model Profiles:{RESET}
+  --show-models         Show resolved model IDs per provider
+  --show-models --json  Machine-readable output
+  --init-model-profiles Create default model profiles
+  --migrate-models      Extract model IDs from settings → profile
+  --migrate-models=check  Dry run of migration
+
+  Models are stored in {MODEL_PROFILES_FILE}
+  Override per-provider: CE_<PROVIDER>_OPUS, CE_<PROVIDER>_SONNET, CE_<PROVIDER>_HAIKU
+
+{DIM}Thinking (router-for-me):{RESET}
+  --thinking=LEVEL      Override thinking level for this session
+  Profile default:      "thinking": "high" in model-profiles.json
+  Env override:         CE_<PROVIDER>_THINKING=medium
+  Levels: none, minimal, low, medium, high, xhigh, auto
+
+  Appends (level) to model names — proxy strips suffix and sets reasoning_effort.
+  Default for codex: high (best ROI for code tasks)
+
+{DIM}Environments:{RESET}
+  default (max)         Claude Max (Anthropic API)
+  vertex (v)            Google Vertex AI
+  copilot (cp)          GitHub Copilot proxy
+  zai (z)               z.ai API
+  deepseek (ds)         DeepSeek API
+  codex (cx)            OpenAI via CLIProxyAPI
+  gemini (gm)           Google Gemini via CLIProxyAPI
+
+{DIM}tmux:{RESET}
+  Use --tmux to wrap in tmux session (default: 'ccbot')
+  Use --tmux=SESSION for custom session name
+  Skipped when already inside tmux ($TMUX detected)
+
+{DIM}Proxies:{RESET}
+  Copilot: auto-starts on switch, --stop-proxy to stop
+  CLIProxyAPI: cliproxy.sh --login-codex/--login-gemini first time
+
+{DIM}TUI Keys:{RESET}
+  ↑↓ / jk               Move cursor
+  Space                 Select provider (saves to settings)
+  Enter                 Run claude with selected provider
+  Esc / q               Exit
+""")
+
+
+def main():
+    if "--help" in sys.argv or "-h" in sys.argv:
+        show_help()
+        sys.exit(0)
+
+    # Model profile commands (early exit)
+    if "--init-model-profiles" in sys.argv:
+        init_model_profiles(force="--force" in sys.argv)
+        sys.exit(0)
+
+    if "--show-models" in sys.argv:
+        show_models(as_json="--json" in sys.argv)
+        sys.exit(0)
+
+    for arg in sys.argv[1:]:
+        if arg == "--migrate-models":
+            migrate_models(dry_run=False)
+            sys.exit(0)
+        if arg == "--migrate-models=check":
+            migrate_models(dry_run=True)
+            sys.exit(0)
+
+    # Proxy stop commands
+    if "--stop-proxy" in sys.argv:
+        if check_proxy(COPILOT_PROXY):
+            stop_proxy(COPILOT_PROXY)
+        else:
+            print(f"{DIM}Copilot proxy not running{RESET}")
+        sys.exit(0)
+
+    if "--stop-cliproxy" in sys.argv:
+        if check_proxy(CLIPROXY):
+            stop_proxy(CLIPROXY)
+        else:
+            print(f"{DIM}CLIProxyAPI not running{RESET}")
+        sys.exit(0)
+
+    # --- Flag parsing: extract --tmux, --current, --thinking before env resolution ---
+    tmux_session = None
+    use_current = False
+    thinking_override = None
+    for arg in sys.argv[1:]:
+        if arg == "--tmux":
+            tmux_session = "ccbot"
+            sys.argv.remove(arg)
+            break
+        if arg.startswith("--tmux="):
+            tmux_session = arg.split("=", 1)[1] or "ccbot"
+            sys.argv.remove(arg)
+            break
+    if "--current" in sys.argv:
+        sys.argv.remove("--current")
+        use_current = True
+    for arg in sys.argv[1:]:
+        if arg.startswith("--thinking="):
+            thinking_override = arg.split("=", 1)[1].lower()
+            sys.argv.remove(arg)
+            if thinking_override not in THINKING_LEVELS:
+                print(
+                    f"{YELLOW}⚠ Invalid thinking level: {thinking_override}{RESET}"
+                )
+                print(f"{DIM}Valid: {', '.join(sorted(THINKING_LEVELS))}{RESET}")
+                sys.exit(1)
+            break
+
+    if tmux_session:
+        ensure_tmux(tmux_session)
+
+    try:
+        settings = json.loads(SETTINGS.read_text())
+    except FileNotFoundError:
+        print(f"{YELLOW}⚠ Settings file not found: {SETTINGS}{RESET}")
+        print(f"{DIM}Run 'claude' first to create default settings{RESET}")
+        sys.exit(1)
+    except json.JSONDecodeError as e:
+        print(f"{YELLOW}⚠ Invalid settings file: {SETTINGS}{RESET}")
+        print(f"{DIM}{e}{RESET}")
+        sys.exit(1)
+
+    # Warn if settings still contain legacy model keys (should be in profiles)
+    legacy = [
+        k[4:]
+        for k in settings
+        if k.startswith("env.")
+        and len(k) > 4
+        and isinstance(settings[k], dict)
+        and any(mk in settings[k] for mk in MODEL_KEYS)
+    ]
+    if legacy:
+        print(
+            f"{YELLOW}⚠ Legacy model keys found in settings for: {', '.join(legacy)}{RESET}"
+        )
+        print(f"{DIM}Run: ce --migrate-models{RESET}\n")
+
+    ensure_provider_configs(settings)
+    write_settings(settings)
+    current = read_active_env()
+
+    team_available = is_team_machine()
+
+    env_set = {"default"} | {
+        k[4:]
+        for k in settings
+        if k.startswith("env.") and len(k) > 4 and k != "env.team"
+    }
+    if team_available:
+        env_set.add("team")
+    envs = [e for e in PROVIDERS if e in env_set] + sorted(env_set - set(PROVIDERS))
+
+    # Parse arguments
+    args = sys.argv[1:]
+    target = None
+    claude_args = []
+    launch_claude = False
+
+    if use_current:
+        target = current
+        claude_args = args
+        launch_claude = True
+    elif args:
+        first = args[0]
+        candidate = ALIASES.get(first, first)
+
+        if candidate in envs:
+            target = candidate
+            claude_args = args[1:]
+            launch_claude = True
+        else:
+            claude_args = args
+            target, launch_claude = interactive_select(envs, current, settings)
+            if target is None:
+                sys.exit(0)
+            if not launch_claude:
+                claude_args = []
+    else:
+        target, launch_claude = interactive_select(envs, current, settings)
+        if target is None:
+            sys.exit(0)
+
+    # Handle team mode
+    if target == "team":
+        if not team_available:
+            print(f"{YELLOW}⚠ Team mode only available on {TEAM_MACHINE}{RESET}")
+            sys.exit(1)
+
+        current_env = read_active_env()
+        if current_env not in ("default", "team"):
+            env_data = settings.get("env", {}).copy()
+            env_data.pop("ANTHROPIC_AUTH_TOKEN", None)
+            for mk in MODEL_KEYS:
+                env_data.pop(mk, None)
+            settings[f"env.{current_env}"] = env_data
+
+        settings["env"] = apply_persistent_env({})
+        write_settings(settings)
+        write_active_env("team")
+
+        current_name = PROVIDERS.get(current_env, (current_env, ""))[0]
+        print(f"{BOLD}Claude Code Team{RESET} {DIM}(was: {current_name}){RESET}")
+        print(f"\n{DIM}Launching cc-team...{RESET}\n")
+        try:
+            os.execlp("cc-team", "cc-team", *claude_args)
+        except FileNotFoundError:
+            print(f"{YELLOW}⚠ cc-team not found in PATH{RESET}")
+            sys.exit(1)
+
+    # Reload settings (TUI may have modified via Space)
+    settings = json.loads(SETTINGS.read_text())
+    current_active = read_active_env()
+
+    # Switch if needed
+    secret = None
+    if target != current_active:
+        success, auth_msg, secret = switch_env(settings, current_active, target)
+        if not success:
+            proxy = PROXY_FOR_PROVIDER.get(target)
+            print(f"{YELLOW}⚠ Failed to start proxy for {target}{RESET}")
+            if proxy:
+                print(f"{DIM}Try manually: {proxy.script}{RESET}")
+                if proxy is CLIPROXY:
+                    print(f"{DIM}Or login first: cliproxy.sh --login-{target}{RESET}")
+            sys.exit(1)
+        print(f"{GREEN}●{RESET} {current_active} {DIM}→{RESET} {BOLD}{target}{RESET}")
+        if auth_msg:
+            print(auth_msg)
+
+    if secret is None:
+        secret = get_secret(target)
+
+    # Launch claude
+    if launch_claude:
+        if secret:
+            os.environ["ANTHROPIC_AUTH_TOKEN"] = secret
+        elif target in PROXY_FOR_PROVIDER:
+            os.environ["ANTHROPIC_AUTH_TOKEN"] = "sk-dummy"
+        export_model_env(target, thinking=thinking_override)
+        if thinking_override:
+            print(f"  {DIM}thinking: {thinking_override}{RESET}")
+        print(f"\n{DIM}Launching claude...{RESET}\n")
+        try:
+            os.execlp("claude", "claude", *claude_args)
+        except FileNotFoundError:
+            print(f"{YELLOW}⚠ claude not found in PATH{RESET}")
+            sys.exit(1)
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        print(f"\n{SHOW_CURSOR}", end="")
+        sys.exit(130)
+    except Exception as e:
+        print(f"\n{SHOW_CURSOR}{YELLOW}Error: {e}{RESET}")
+        sys.exit(1)
