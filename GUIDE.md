@@ -12,33 +12,38 @@ Skills teach Claude domain-specific knowledge and workflows. There are two kinds
 
 Invoke as `/skill-name` or let the skill enforcer suggest them.
 
-| Skill                 | What It Does                                   | Example Trigger                |
-| --------------------- | ---------------------------------------------- | ------------------------------ |
-| `brainstorming-ideas` | Collaborative design dialogue before coding    | "brainstorm", "design"         |
-| `fixing-code`         | Parallel agents fix all issues, zero tolerance | "fix errors", "make it pass"   |
-| `reviewing-code`      | Multi-agent review (security, quality, idioms) | "review code", "check this"    |
-| `committing-code`     | Smart git commits with logical grouping        | "commit", "save changes"       |
-| `documenting-code`    | Update docs based on recent changes            | "update docs", "document"      |
-| `deploying-infra`     | Validate + deploy K8s/Terraform/Helm           | "deploy to staging", "rollout" |
-| `improving-tests`     | Refactor tests: combine to tabular, fill gaps  | "improve tests", "coverage"    |
-| `testing-e2e`         | Playwright browser automation and test gen     | "e2e test", "playwright"       |
-| `looking-up-docs`     | Library documentation via Context7             | "look up docs", "API ref"      |
-| `researching-web`     | Web research via Perplexity AI                 | "research", "X vs Y"           |
+| Skill                 | What It Does                                     | Example Trigger                |
+| --------------------- | ------------------------------------------------ | ------------------------------ |
+| `brainstorming-ideas` | Collaborative design dialogue before coding      | "brainstorm", "design"         |
+| `committing-code`     | Smart git commits with logical grouping          | "commit", "save changes"       |
+| `debating-ideas`      | Dialectic agents stress-test design decisions    | "debate", "pros and cons"      |
+| `deploying-infra`     | Validate + deploy K8s/Terraform/Helm             | "deploy to staging", "rollout" |
+| `documenting-code`    | Update docs based on recent changes              | "update docs", "document"      |
+| `evolving-config`     | Audit config against latest Claude Code features | "evolve", "audit config"       |
+| `fixing-code`         | Parallel agents fix all issues, zero tolerance   | "fix errors", "make it pass"   |
+| `improving-tests`     | Refactor tests: combine to tabular, fill gaps    | "improve tests", "coverage"    |
+| `looking-up-docs`     | Library documentation via Context7               | "look up docs", "API ref"      |
+| `researching-web`     | Web research via Perplexity AI                   | "research", "X vs Y"           |
+| `reviewing-code`      | Multi-agent review (security, quality, idioms)   | "review code", "check this"    |
+| `testing-e2e`         | Playwright browser automation and test gen       | "e2e test", "playwright"       |
 
 ### Auto-Activated (trigger on relevant prompts)
 
 These activate silently when the skill enforcer detects matching patterns.
 
-| Skill                | Activates When                                 |
-| -------------------- | ---------------------------------------------- |
-| `writing-go`         | Go files, go commands, Go-specific terms       |
-| `writing-python`     | Python files, pytest, pip, frameworks          |
-| `writing-typescript` | TS/TSX files, npm/bun, React, Node.js          |
-| `writing-web`        | HTML/CSS/JS/HTMX templates                     |
-| `managing-infra`     | K8s resources, Terraform, Helm, GitHub Actions |
-| `refactoring-code`   | Multi-file batch changes, rename everywhere    |
-| `searching-code`     | "how does X work", trace flow, find all uses   |
-| `learning-patterns`  | "learn from session", extract learnings        |
+| Skill                 | Activates When                                 |
+| --------------------- | ---------------------------------------------- |
+| `learning-patterns`   | "learn from session", extract learnings        |
+| `managing-infra`      | K8s resources, Terraform, Helm, GitHub Actions |
+| `refactoring-code`    | Multi-file batch changes, rename everywhere    |
+| `searching-code`      | "how does X work", trace flow, find all uses   |
+| `using-cloud-cli`     | bq queries, gcloud/aws commands                |
+| `using-git-worktrees` | Starting feature work needing isolation        |
+| `using-modern-cli`    | rg, fd, bat, eza, sd instead of legacy tools   |
+| `writing-go`          | Go files, go commands, Go-specific terms       |
+| `writing-python`      | Python files, pytest, pip, frameworks          |
+| `writing-typescript`  | TS/TSX files, npm/bun, React, Node.js          |
+| `writing-web`         | HTML/CSS/JS/HTMX templates                     |
 
 ### How Skills Work
 
@@ -126,12 +131,15 @@ Task(resume="<agentId>")
 
 Hooks run automatically on Claude Code events.
 
-| Hook                | Event            | What It Does                                |
-| ------------------- | ---------------- | ------------------------------------------- |
-| `session-start.sh`  | SessionStart     | Shows git branch, last commit, file context |
-| `skill-enforcer.sh` | UserPromptSubmit | Pattern-matches prompt → suggests skills    |
-| `file-protector.sh` | PreToolUse       | Blocks edits to settings.json, secrets      |
-| `smart-lint.sh`     | PostToolUse      | Auto-runs linter after file edits           |
+| Hook                     | Event            | What It Does                                |
+| ------------------------ | ---------------- | ------------------------------------------- |
+| `session-start.sh`       | SessionStart     | Shows git branch, last commit, file context |
+| `skill-enforcer.sh`      | UserPromptSubmit | Pattern-matches prompt → suggests skills    |
+| `file-protector.sh`      | PreToolUse       | Blocks edits to settings.json, secrets      |
+| `smart-lint.sh`          | PostToolUse      | Auto-runs linter after file edits           |
+| `notify.sh`              | PostToolUse      | Desktop notifications for long operations   |
+| `performance-monitor.sh` | PostToolUse      | Tracks tool execution performance           |
+| `test-runner.sh`         | PostToolUse      | Auto-runs tests after code changes          |
 
 ### Testing Hooks
 
