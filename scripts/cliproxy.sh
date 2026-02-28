@@ -99,7 +99,7 @@ stop_proxy() {
 		fi
 	else
 		echo "No PID file found. Proxy may not be running."
-		pkill -f "cliproxyapi" 2>/dev/null && echo "Killed orphan proxy process" || :
+		if pkill -f "cliproxyapi" 2>/dev/null; then echo "Killed orphan proxy process"; fi
 	fi
 }
 

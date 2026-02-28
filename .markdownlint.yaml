@@ -1,6 +1,16 @@
-# Relaxed config for AI instruction docs (skills, agents, commands)
-MD013: false # Line length - AI docs are naturally long
-MD024: false # Duplicate headings - common in structured docs
-MD033: false # Inline HTML - some skills use HTML tables
-MD036: false # Emphasis as heading - used in skill docs
-MD041: false # First line heading - files have YAML frontmatter
+# Config for AI instruction docs (skills, agents, commands)
+# Default: all rules disabled, only enable what matters
+default: false
+# Rules we enforce
+MD001: true # Heading levels increment by one
+MD003: true # Heading style consistency
+MD018: true # No space after hash in heading
+MD019: true # Multiple spaces after hash in heading
+MD023: true # Headings must start at beginning of line
+MD028: true # Blank line inside blockquote
+MD037: true # Spaces inside emphasis markers
+MD038: true # Spaces inside code span
+MD042: true # No empty links
+MD046: true # Code block style consistency
+MD049: true # Emphasis style consistency
+MD050: true # Strong style consistency

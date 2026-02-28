@@ -92,7 +92,7 @@ stop_proxy() {
 	else
 		echo "No PID file found. Proxy may not be running."
 		# Try to find and kill any running proxy
-		pkill -f "copilot-api.*start" 2>/dev/null && echo "Killed orphan proxy process" || true
+		if pkill -f "copilot-api.*start" 2>/dev/null; then echo "Killed orphan proxy process"; fi
 	fi
 }
 
