@@ -33,6 +33,7 @@ telemetry/
 backups/
 file-history/
 plans/
+powerline/usage/
 
 # === Project-specific state (per-repo, not portable) ===
 projects/
