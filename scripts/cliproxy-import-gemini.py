@@ -1,12 +1,20 @@
 #!/usr/bin/env python3
 """Import Gemini CLI credentials into CLIProxyAPI.
 
-Both tools use the same OAuth client ID,
-so the refresh token is directly compatible. This converts Gemini CLI's oauth_creds.json
-into CLIProxyAPI's GeminiTokenStorage format.
+Both tools use the same OAuth client ID, so the refresh token is directly
+compatible. Converts Gemini CLI's oauth_creds.json into CLIProxyAPI's
+GeminiTokenStorage format.
 
 Useful when `cliproxyapi -login` fails (e.g., 1000+ GCP projects in picker)
 and you already have a working Gemini CLI installation.
+
+Setup:
+    Create ~/.claude/scripts/.env with:
+        GEMINI_OAUTH_CLIENT_ID=<client-id>.apps.googleusercontent.com
+        GEMINI_OAUTH_CLIENT_SECRET=<client-secret>
+
+    Get these from Gemini CLI's source or Google Cloud Console:
+    https://console.cloud.google.com/apis/credentials
 
 Usage:
     uv run cliproxy-import-gemini.py                     # default paths
@@ -21,6 +29,24 @@ import os
 import stat
 import sys
 from pathlib import Path
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+
+
+def _load_env(env_path: Path) -> None:
+    """Load KEY=VALUE pairs from a .env file into os.environ."""
+    if not env_path.is_file():
+        return
+    for line in env_path.read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        key, _, value = line.partition("=")
+        if key and _ == "=":
+            os.environ.setdefault(key.strip(), value.strip())
+
+
+_load_env(SCRIPT_DIR / ".env")
 
 CLIENT_ID = os.environ.get("GEMINI_OAUTH_CLIENT_ID", "")
 CLIENT_SECRET = os.environ.get("GEMINI_OAUTH_CLIENT_SECRET", "")
@@ -52,6 +78,13 @@ def main() -> None:
         help="CLIProxyAPI auth directory (default: ~/.cli-proxy-api)",
     )
     args = parser.parse_args()
+
+    if not CLIENT_ID or not CLIENT_SECRET:
+        print("Error: OAuth credentials not configured", file=sys.stderr)
+        print(f"Create {SCRIPT_DIR / '.env'} with:", file=sys.stderr)
+        print("  GEMINI_OAUTH_CLIENT_ID=<id>.apps.googleusercontent.com", file=sys.stderr)
+        print("  GEMINI_OAUTH_CLIENT_SECRET=<secret>", file=sys.stderr)
+        sys.exit(1)
 
     if not args.source.exists():
         print(f"Error: {args.source} not found", file=sys.stderr)

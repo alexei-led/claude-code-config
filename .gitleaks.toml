@@ -74,3 +74,9 @@ id = "claude-backups"
 description = "Backup files contain full settings with secrets"
 path = '''backups/'''
 entropy = 0
+
+[[rules]]
+id = "claude-scripts-env"
+description = "Scripts .env file with OAuth credentials"
+path = '''scripts/\.env'''
+entropy = 0

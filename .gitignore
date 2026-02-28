@@ -3,6 +3,7 @@ secrets.json
 active-env.json
 model-profiles.json
 .claude/settings.local.json
+scripts/.env
 
 # === Settings with permissions (contains allowed URLs/domains) ===
 settings.json
