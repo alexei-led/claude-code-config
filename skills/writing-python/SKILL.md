@@ -143,9 +143,12 @@ class NotFoundError(AppError):
 ## Tooling
 
 ```bash
-uv sync                    # Install deps
-ruff check --fix .         # Lint and autofix
-ruff format .              # Format
-pytest -v                  # Test
-mypy .                     # Type check
+uv sync                              # Install deps from pyproject.toml
+uv add pkg                           # Add dependency
+uv run python script.py              # Run script in project env
+uv run --with pkg python script.py   # Run with one-off dep (no install)
+uv run --extra test pytest -v        # Run tests (optional-dep group)
+ruff check --fix .                   # Lint and autofix
+ruff format .                        # Format
+mypy .                               # Type check
 ```

@@ -82,7 +82,9 @@ PROFILE_TO_ENV = {
 }
 ENV_TO_PROFILE = {v: k for k, v in PROFILE_TO_ENV.items()}
 
-THINKING_LEVELS = frozenset({"none", "minimal", "low", "medium", "high", "xhigh", "auto"})
+THINKING_LEVELS = frozenset(
+    {"none", "minimal", "low", "medium", "high", "xhigh", "auto"}
+)
 
 # Default model profiles (written by --init-model-profiles)
 DEFAULT_MODEL_PROFILES: dict[str, dict[str, str]] = {
@@ -211,9 +213,7 @@ def resolve_provider_models(
 
     # Resolve thinking level: CLI flag > env override > profile > none
     think = (
-        thinking
-        or os.environ.get(f"CE_{upper}_THINKING")
-        or profile.get("thinking")
+        thinking or os.environ.get(f"CE_{upper}_THINKING") or profile.get("thinking")
     )
     suffix = f"({think})" if think and think in THINKING_LEVELS else ""
 
@@ -893,9 +893,7 @@ def main():
             thinking_override = arg.split("=", 1)[1].lower()
             sys.argv.remove(arg)
             if thinking_override not in THINKING_LEVELS:
-                print(
-                    f"{YELLOW}⚠ Invalid thinking level: {thinking_override}{RESET}"
-                )
+                print(f"{YELLOW}⚠ Invalid thinking level: {thinking_override}{RESET}")
                 print(f"{DIM}Valid: {', '.join(sorted(THINKING_LEVELS))}{RESET}")
                 sys.exit(1)
             break

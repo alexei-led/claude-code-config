@@ -1,6 +1,6 @@
 ---
 description: Monitor a Claude Code team in tmux, auto-approve prompts, and report status
-allowed-tools: Bash, Read
+allowed-tools: [Bash, Read]
 argument-hint: "<tmux-window> [duration-seconds]"
 ---
 

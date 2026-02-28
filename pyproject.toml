@@ -1,0 +1,25 @@
+[project]
+name = "claude-code-config"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "python-frontmatter",
+    "pyyaml",
+]
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[tool.ruff]
+target-version = "py312"
+include = ["scripts/ce"]
+exclude = ["skills/.system/**"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+"scripts/ce" = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

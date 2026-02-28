@@ -1,0 +1,59 @@
+name: CI
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+jobs:
+  python-lint:
+    name: Python Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/ruff-action@v3
+        with:
+          args: check --output-format=github
+      - uses: astral-sh/ruff-action@v3
+        with:
+          args: format --check
+  shell-lint:
+    name: Shell Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: luizm/action-sh-checker@v0.9.0
+        env:
+          SHELLCHECK_OPTS: -e SC1090 -e SC1091
+          SHFMT_OPTS: -i 0
+  validate:
+    name: Config Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv run python scripts/validate-config.py
+  markdown-lint:
+    name: Markdown Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DavidAnson/markdownlint-cli2-action@v20
+        with:
+          globs: '**/*.md'
+  secrets:
+    name: Secret Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv run --extra test python -m pytest tests/ -v

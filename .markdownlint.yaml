@@ -1,0 +1,6 @@
+# Relaxed config for AI instruction docs (skills, agents, commands)
+MD013: false # Line length - AI docs are naturally long
+MD024: false # Duplicate headings - common in structured docs
+MD033: false # Inline HTML - some skills use HTML tables
+MD036: false # Emphasis as heading - used in skill docs
+MD041: false # First line heading - files have YAML frontmatter
