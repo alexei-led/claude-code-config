@@ -45,14 +45,22 @@ print_summary_and_exit() {
 		exit 2
 	else
 		# Include token monitoring inline
-		local context_files=(~/.claude/CLAUDE.md ~/.claude/commands/@*.md ~/.claude/settings.json)
 		local total_words=0
-		for file in "${context_files[@]}"; do
-			if [[ -f "$file" ]]; then
-				local words
-				words=$(wc -w <"$file" 2>/dev/null || echo 0)
-				total_words=$((total_words + words))
-			fi
+		local w
+		# CLAUDE.md + settings
+		for f in ~/.claude/CLAUDE.md ~/.claude/.claude/CLAUDE.md ~/.claude/settings.json; do
+			[[ -f "$f" ]] && {
+				w=$(wc -w <"$f" 2>/dev/null | tr -d ' ')
+				total_words=$((total_words + w))
+			}
+		done
+		# Commands, skills, agents (top-level .md only)
+		for f in ~/.claude/commands/*.md ~/.claude/commands/**/*.md \
+			~/.claude/skills/*/SKILL.md ~/.claude/agents/*.md ~/.claude/agents/**/*.md; do
+			[[ -f "$f" ]] && {
+				w=$(wc -w <"$f" 2>/dev/null | tr -d ' ')
+				total_words=$((total_words + w))
+			}
 		done
 		local approx_tokens=$((total_words * 4 / 3))
 		echo -e "${PROJECT_TYPE} project ${GREEN}✅ Style OK${NC} ${CYAN}📊 ~${approx_tokens} tokens${NC}" >&2

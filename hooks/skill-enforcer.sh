@@ -146,12 +146,6 @@ if echo "$PROMPT_LOWER" | grep -qE '\blearn\b.*\b(from|session|pattern|conversat
 	skills+="learning-patterns "
 fi
 
-# frontend-design: Create distinctive frontend interfaces
-# Triggers: UI design, frontend, web component, page design, interface
-if echo "$PROMPT_LOWER" | grep -qE '\bfrontend\s*design\b|\bui\s*design\b|\bdesign\s*(a|an|the|this)?\s*(ui|interface|page|component|landing|dashboard|form)\b|\bcreate\s*(a|an)?\s*(web|frontend)?\s*(component|page|interface)\b|\bpolished\s*(ui|design|interface)\b|\bproduction[\s-]?grade\s*(ui|frontend|interface)\b|\bdistinctive\s*(ui|design|interface)\b|\bavoid.*(generic|ai).*aesthetic'; then
-	skills+="frontend-design:frontend-design "
-fi
-
 # spec:status: Progress overview for spec-driven projects
 # Triggers: project status, progress, how far along, spec status
 if echo "$PROMPT_LOWER" | grep -qE '\b(project|spec|task)\s*(status|progress|overview)\b|\bhow\s*(far|much|many|is)\s*(along|done|progress|left|remain|complete)\b|\bwhat.*(done|left|remain|progress|status)\b|\bshow\s*(me\s*)?(progress|status|overview)\b|\bhow.*project\s*(going|doing)\b'; then
