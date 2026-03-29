@@ -3,6 +3,8 @@ name: go-docs
 description: Go documentation specialist focused on godoc comments, meaningful comments only, and zero test comments. Use for Go code review.
 tools: ["Read", "Grep", "Glob", "LS", "Bash", "LSP"]
 model: haiku
+effort: medium
+maxTurns: 10
 color: orange
 skills: ["writing-go"]
 ---
