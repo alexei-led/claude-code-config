@@ -51,11 +51,6 @@
       "warn_threshold_percent": 80
     }
   },
-  "performance-monitor": {
-    "enabled": true,
-    "retention_days": 7,
-    "log_file": "~/.claude/logs/performance.jsonl"
-  },
   "session-start": {
     "show_emojis": true,
     "show_git_status": true,
