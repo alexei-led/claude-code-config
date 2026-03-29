@@ -88,7 +88,7 @@ Agents are specialized subprocesses with their own context window and tool acces
 | E2E browser testing        | `playwright-tester`       | opus   |
 | Implementation planning    | `spec-planner`            | sonnet |
 | Documentation updates      | `docs-keeper`             | sonnet |
-| Web research               | `perplexity-researcher`   | haiku  |
+| Web research               | `perplexity-researcher`   | sonnet |
 | Quick codebase exploration | `Explore`                 | —      |
 
 ### Agent Patterns
@@ -160,8 +160,8 @@ Switch between API providers with the `ce` environment switcher.
 ce                    # TUI picker → switch + launch claude
 ce cx                 # Switch to codex → launch
 ce gm --continue      # Switch to gemini → launch with --continue
-ce --current          # Launch with last-used env (for ccbot)
-ce --tmux             # Wrap in tmux session 'ccbot'
+ce --current          # Launch with last-used env (for ccgram)
+ce --tmux             # Wrap in tmux session 'ccgram'
 ```
 
 ### Providers
@@ -276,23 +276,23 @@ Each `/spec:work` cycle: select a task → plan implementation → implement →
 
 ---
 
-## Remote Sessions (tmux + ccbot)
+## Remote Sessions (tmux + ccgram)
 
-Control Claude Code from anywhere — desktop, SSH, or iPhone via Telegram using [ccbot](https://github.com/six-ddc/ccbot).
+Control Claude Code from anywhere — desktop, SSH, or iPhone via Telegram using [ccgram](https://github.com/alexei/ccgram).
 
 ### Architecture
 
 `1 Telegram Topic = 1 tmux Window = 1 Claude Code Session`
 
-- **ccbot** — standalone bot that manages a tmux session, bridges Telegram messages to Claude
+- **ccgram** — standalone bot that manages a tmux session, bridges Telegram messages to Claude
 - **tmux** — session persistence (survives terminal close, SSH disconnect)
-- **`ce --tmux`** — attach to the ccbot tmux session from a terminal
+- **`ce --tmux`** — attach to the ccgram tmux session from a terminal
 
 ### Usage
 
 ```bash
-# Start the bot (creates tmux session 'ccbot', manages windows)
-ccbot
+# Start the bot (creates tmux session 'ccgram', manages windows)
+ccgram
 
 # Attach to the tmux session from terminal
 ce --tmux
@@ -305,9 +305,9 @@ ce default        # switch to default
 ce --tmux=dev
 ```
 
-ccbot creates windows and runs `CLAUDE_COMMAND` for each Telegram topic. Set `CLAUDE_COMMAND=ce --current` in `~/.ccbot/.env` — this launches with whatever env you last selected (including team).
+ccgram creates windows and runs `CLAUDE_COMMAND` for each Telegram topic. Set `CLAUDE_COMMAND=ce --current` in `~/.ccgram/.env` — this launches with whatever env you last selected (including team).
 
-### ccbot Telegram Commands
+### ccgram Telegram Commands
 
 | Command                       | Action                   |
 | ----------------------------- | ------------------------ |
@@ -319,7 +319,7 @@ ccbot creates windows and runs `CLAUDE_COMMAND` for each Telegram topic. Set `CL
 
 ### Setup
 
-1. Install: `uv tool install git+https://github.com/six-ddc/ccbot.git`
-2. Config: `~/.ccbot/.env` (chezmoi + 1Password) — set `CLAUDE_COMMAND=ce --current`
-3. Hook: `ccbot hook` on SessionStart (auto-registers sessions)
-4. Run: `ccbot` directly (or via systemd/launchd for persistence)
+1. Install: `uv tool install git+https://github.com/alexei/ccgram.git`
+2. Config: `~/.ccgram/.env` (chezmoi + 1Password) — set `CLAUDE_COMMAND=ce --current`
+3. Hook: `ccgram hook` on SessionStart (auto-registers sessions)
+4. Run: `ccgram` directly (or via systemd/launchd for persistence)

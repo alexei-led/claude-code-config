@@ -7,8 +7,8 @@ Usage:
   ce z --continue       # Switch → launch with claude args
   ce --continue         # TUI picker → launch with claude args
   ce team               # Launch Claude Code Team (alias: t)
-  ce --current          # Launch with current active env (for ccbot)
-  ce --tmux             # Wrap in tmux session 'ccbot'
+  ce --current          # Launch with current active env (for ccgram)
+  ce --tmux             # Wrap in tmux session 'ccgram'
   ce --tmux=dev         # Wrap in tmux session 'dev'
   ce --stop-proxy       # Stop copilot proxy
   ce --stop-cliproxy    # Stop CLIProxyAPI
@@ -27,7 +27,7 @@ Model profiles:
   ce --migrate-models=check # Dry run: show what would be migrated
 
 tmux:
-  - Use --tmux to wrap in tmux session (default name: 'ccbot')
+  - Use --tmux to wrap in tmux session (default name: 'ccgram')
   - Use --tmux=SESSION for custom session name
   - Detected via $TMUX — skipped when already inside tmux
 
@@ -343,6 +343,7 @@ def migrate_models(dry_run: bool = False) -> None:
 
 PERSISTENT_ENV = {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
+    "EDITOR": "vim",
 }
 
 ALIASES = {
@@ -781,9 +782,9 @@ def show_help():
   ce team               Launch Claude Code Team (alias: t)
 
 {DIM}Modifiers:{RESET}
-  --current             Launch with current active env (for ccbot)
+  --current             Launch with current active env (for ccgram)
   --thinking=LEVEL      Set thinking level (none/minimal/low/medium/high/xhigh/auto)
-  --tmux                Wrap in tmux session 'ccbot'
+  --tmux                Wrap in tmux session 'ccgram'
   --tmux=SESSION        Wrap in tmux with custom session name
 
 {DIM}Management:{RESET}
@@ -819,7 +820,7 @@ def show_help():
   gemini (gm)           Google Gemini via CLIProxyAPI
 
 {DIM}tmux:{RESET}
-  Use --tmux to wrap in tmux session (default: 'ccbot')
+  Use --tmux to wrap in tmux session (default: 'ccgram')
   Use --tmux=SESSION for custom session name
   Skipped when already inside tmux ($TMUX detected)
 
@@ -878,11 +879,11 @@ def main():
     thinking_override = None
     for arg in sys.argv[1:]:
         if arg == "--tmux":
-            tmux_session = "ccbot"
+            tmux_session = "ccgram"
             sys.argv.remove(arg)
             break
         if arg.startswith("--tmux="):
-            tmux_session = arg.split("=", 1)[1] or "ccbot"
+            tmux_session = arg.split("=", 1)[1] or "ccgram"
             sys.argv.remove(arg)
             break
     if "--current" in sys.argv:
