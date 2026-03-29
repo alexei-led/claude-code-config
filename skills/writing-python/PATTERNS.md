@@ -61,7 +61,6 @@ UI guards → unbound topic → dead window recovery → message forwarding.
 ```
 
 **Naming:**
-
 - Full variable names: `window_id` not `wid`, `session_id` not `sid`
 - `snake_case` for functions/variables, `PascalCase` for classes
 - Constants as module-level `UPPER_SNAKE_CASE`

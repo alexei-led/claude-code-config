@@ -96,8 +96,6 @@ get_changed_files() {
 		".next/"
 		".nuxt/"
 		"coverage/"
-		"skills/.system/"
-		"sessions/"
 	)
 
 	# ACMRTUXB = Added, Copied, Modified, Renamed, Type-changed, Unmerged, Unknown, Broken

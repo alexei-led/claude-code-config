@@ -29,11 +29,11 @@ exclude_lines = ["pragma: no cover", "if __name__ == .__main__.", "logger\\."]
 
 ## Tiered Testing
 
-| Tier        | Scope                     | Command                 | Speed  |
-| ----------- | ------------------------- | ----------------------- | ------ |
-| Unit        | Mocked, isolated          | `make test`             | Fast   |
+| Tier        | Scope                    | Command               | Speed |
+| ----------- | ------------------------ | --------------------- | ----- |
+| Unit        | Mocked, isolated         | `make test`           | Fast  |
 | Integration | Real filesystem/processes | `make test-integration` | Medium |
-| E2E         | Full system               | `make test-e2e`         | Slow   |
+| E2E         | Full system              | `make test-e2e`       | Slow  |
 
 ## Basic Tests
 
