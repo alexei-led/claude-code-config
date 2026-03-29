@@ -36,7 +36,6 @@ fi
 
 # Map $TERM_PROGRAM to bundle ID (works across machines)
 case "${TERM_PROGRAM:-Terminal}" in
-ghostty | Ghostty) BUNDLE_ID="com.mitchellh.ghostty" ;;
 iTerm.app) BUNDLE_ID="com.googlecode.iterm2" ;;
 WezTerm) BUNDLE_ID="com.github.wez.wezterm" ;;
 Alacritty) BUNDLE_ID="org.alacritty" ;;
