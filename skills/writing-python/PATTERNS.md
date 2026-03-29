@@ -3,10 +3,13 @@
 ## Contents
 
 - [Project Structure](#project-structure)
+- [Module Conventions](#module-conventions)
 - [Protocol-Based Interfaces](#protocol-based-interfaces)
-- [Flat Control Flow: No Nested Conditions](#flat-control-flow-no-nested-conditions)
+- [Dataclasses](#dataclasses)
+- [Flat Control Flow](#flat-control-flow)
 - [Type Hints (No Any)](#type-hints-no-any)
 - [Error Handling](#error-handling)
+- [Structured Logging](#structured-logging)
 - [Async Patterns](#async-patterns)
 - [Configuration](#configuration)
 - [Context Managers](#context-managers)
@@ -16,42 +19,73 @@
 ## Project Structure
 
 ```
-src/
-└── mypackage/
-    ├── __init__.py
-    ├── __main__.py      # CLI entry
-    ├── domain/          # Business logic
-    ├── services/        # Operations
-    └── adapters/        # External integrations
-tests/
-pyproject.toml
+my-project/
+├── pyproject.toml           # single source of truth
+├── uv.lock                  # committed
+├── .python-version          # e.g., "3.12"
+├── Makefile                 # fmt, lint, typecheck, test, check
+├── src/
+│   └── my_package/
+│       ├── __init__.py
+│       ├── __main__.py      # CLI entry
+│       ├── cli.py           # Click command groups
+│       ├── config.py        # Config singleton (env + .env)
+│       ├── domain/          # Business logic, models
+│       ├── services/        # Operations, orchestration
+│       ├── providers/       # External integrations (Protocol-based)
+│       ├── handlers/        # Event/message handlers
+│       └── utils.py         # Shared helpers
+├── tests/
+│   ├── conftest.py          # Root: env setup, shared fixtures
+│   ├── my_package/
+│   │   ├── conftest.py      # Unit fixtures, factories
+│   │   └── test_*.py        # Unit tests
+│   ├── integration/
+│   │   ├── conftest.py      # Integration fixtures
+│   │   └── test_*.py        # Real filesystem/processes
+│   └── e2e/
+│       └── test_*.py        # Full system tests (slow)
+└── scripts/                 # Build/release helpers
 ```
+
+## Module Conventions
+
+Every `.py` file starts with a module-level docstring: one-sentence summary, then core responsibilities.
+
+```python
+"""Text message handling — step functions for the text_handler orchestrator.
+
+Routes incoming text messages through a bool early-return chain:
+UI guards → unbound topic → dead window recovery → message forwarding.
+"""
+```
+
+**Naming:**
+
+- Full variable names: `window_id` not `wid`, `session_id` not `sid`
+- `snake_case` for functions/variables, `PascalCase` for classes
+- Constants as module-level `UPPER_SNAKE_CASE`
+- User-data keys: define string constants in a dedicated module
 
 ## Protocol-Based Interfaces
 
-Protocols enable duck typing with type hints. Define at consumer (like Go interfaces).
-
-### Pattern
+Define at consumer side (like Go interfaces). Any class with matching methods satisfies the Protocol.
 
 ```python
 from typing import Protocol
 
-# Protocol at consumer—defines what it needs
 class UserStore(Protocol):
     def get(self, id: str) -> User | None: ...
     def save(self, user: User) -> None: ...
 
 class UserService:
     def __init__(self, store: UserStore):
-        self.store = store  # accepts any matching impl
+        self.store = store
 
-# Any class with matching methods satisfies the Protocol
+# Satisfies UserStore without inheritance
 class PostgresStore:
     def get(self, id: str) -> User | None: ...
     def save(self, user: User) -> None: ...
-
-# Works! No explicit inheritance needed
-service = UserService(PostgresStore())
 ```
 
 ### Protocol vs ABC
@@ -63,25 +97,45 @@ service = UserService(PostgresStore())
 | Implicit satisfaction       | Protocol |
 | Explicit method enforcement | ABC      |
 
+## Dataclasses
+
+### Frozen + Slots for Performance
+
 ```python
-# Protocol: implicit satisfaction (preferred)
-class Readable(Protocol):
-    def read(self, n: int = -1) -> bytes: ...
+from dataclasses import dataclass
 
-# ABC: explicit inheritance required
-from abc import ABC, abstractmethod
-
-class Readable(ABC):
-    @abstractmethod
-    def read(self, n: int = -1) -> bytes: ...
+@dataclass(frozen=True, slots=True)
+class StatusUpdate:
+    raw_text: str
+    display_label: str
+    is_interactive: bool = False
 ```
 
-## Flat Control Flow: No Nested Conditions
-
-### Guard Clauses Pattern
+### Config Singleton
 
 ```python
-# GOOD: flat, readable
+@dataclass
+class Config:
+    api_url: str
+    port: int = 8080
+    debug: bool = False
+
+    @classmethod
+    def from_env(cls) -> "Config":
+        return cls(
+            api_url=os.environ["API_URL"],
+            port=int(os.environ.get("PORT", 8080)),
+            debug=os.environ.get("DEBUG", "").lower() == "true",
+        )
+```
+
+**Precedence:** CLI flag > env var > .env file > default value.
+
+## Flat Control Flow
+
+### Guard Clauses
+
+```python
 def process_order(order: Order | None) -> Result:
     if order is None:
         raise ValueError("order required")
@@ -91,49 +145,32 @@ def process_order(order: Order | None) -> Result:
         raise ValueError("order must have items")
     if order.total <= 0:
         raise ValueError("invalid total")
-
-    # Happy path at lowest nesting level
-    return save_order(order)
-
-# BAD: deeply nested
-def process_order(order: Order | None) -> Result:
-    if order is not None:
-        if order.id:
-            if order.items:
-                if order.total > 0:
-                    return save_order(order)
-    raise ValueError("invalid order")
+    return save_order(order)  # happy path at end
 ```
 
-### Pattern Matching to Flatten
+### Pattern Matching
 
 ```python
-# GOOD: match instead of if-elif chain
 def handle_event(event: Event) -> None:
     match event:
         case ClickEvent(x=x, y=y):
             handle_click(x, y)
         case KeyEvent(code=code):
             handle_key(code)
-        case ScrollEvent(delta=delta):
-            handle_scroll(delta)
         case _:
             raise ValueError(f"Unknown event: {event}")
 
-# GOOD: match on dict patterns
+# Dict pattern matching
 match response:
     case {"status": "success", "data": data}:
         return process_data(data)
     case {"status": "error", "message": msg}:
         raise ApiError(msg)
-    case {"status": status}:
-        raise ValueError(f"Unknown status: {status}")
 ```
 
 ### Extract Complex Conditions
 
 ```python
-# GOOD: extract to functions
 def can_process_payment(user: User, amount: float) -> bool:
     if not user.is_active:
         return False
@@ -142,51 +179,32 @@ def can_process_payment(user: User, amount: float) -> bool:
     if amount > MAX_TRANSACTION:
         return False
     return True
-
-def process_payment(user: User, amount: float) -> Result:
-    if not can_process_payment(user, amount):
-        raise PaymentError("Cannot process payment")
-    return execute_payment(user, amount)
 ```
 
 ## Type Hints (No Any)
 
+### PEP 695 Generics (3.12+)
+
+```python
+# NEW: type parameter syntax (preferred)
+def first[T](items: list[T]) -> T | None:
+    return items[0] if items else None
+
+type Vector = list[float]
+
+# LEGACY: TypeVar (pre-3.12 codebases)
+from typing import TypeVar
+T = TypeVar("T")
+def first(items: list[T]) -> T | None:
+    return items[0] if items else None
+```
+
 ### Concrete Types
 
 ```python
-# GOOD: concrete types everywhere
-def get_user(user_id: str) -> User | None:
-    ...
-
-def process_items(items: list[Item], *, limit: int = 100) -> list[Result]:
-    ...
-
-async def fetch(url: str, timeout: float = 30.0) -> bytes:
-    ...
-
-# BAD: unnecessary Any
-def process(data: Any) -> Any:  # Don't do this
-    ...
-```
-
-### Generics When Needed
-
-```python
-from typing import TypeVar
-
-T = TypeVar("T")
-
-def first(items: list[T]) -> T | None:
-    return items[0] if items else None
-
-def retry(fn: Callable[[], T], attempts: int = 3) -> T:
-    for i in range(attempts):
-        try:
-            return fn()
-        except Exception:
-            if i == attempts - 1:
-                raise
-    raise RuntimeError("Unreachable")
+def get_user(user_id: str) -> User | None: ...
+def process_items(items: list[Item], *, limit: int = 100) -> list[Result]: ...
+async def fetch(url: str, timeout: float = 30.0) -> bytes: ...
 ```
 
 ### TypedDict for Dict Schemas
@@ -198,9 +216,15 @@ class UserDict(TypedDict):
     id: str
     name: str
     email: NotRequired[str]
+```
 
-def process_user(data: UserDict) -> User:
-    return User(id=data["id"], name=data["name"])
+### Literal for Constrained Strings
+
+```python
+from typing import Literal
+
+PromptMode = Literal["replace", "wrap"]
+OutputFormat = Literal["json", "csv", "table"]
 ```
 
 ## Error Handling
@@ -216,11 +240,6 @@ class NotFoundError(AppError):
         self.resource = resource
         self.id = id
         super().__init__(f"{resource} not found: {id}")
-
-class ValidationError(AppError):
-    def __init__(self, field: str, message: str):
-        self.field = field
-        super().__init__(f"{field}: {message}")
 ```
 
 ### Raise Early, Handle at Boundaries
@@ -237,22 +256,58 @@ def get_user(user_id: str) -> User:
 @app.get("/users/{user_id}")
 def get_user_endpoint(user_id: str) -> UserResponse:
     try:
-        user = get_user(user_id)
-        return UserResponse.from_domain(user)
+        return UserResponse.from_domain(get_user(user_id))
     except NotFoundError:
         raise HTTPException(status_code=404)
 ```
 
-### Python 3.14 Exception Syntax
+### Exception Chaining
 
 ```python
-# No parens needed for multiple exceptions (PEP 758, Python 3.14+)
-except ValueError, TypeError, KeyError:
-    handle_error()
+try:
+    result = parse_config(path)
+except json.JSONDecodeError as e:
+    raise ConfigError(f"Invalid config: {path}") from e
+```
 
-# With binding (parens required when using 'as')
-except (ValueError, TypeError) as e:
+### Specific Exception Types (Never Bare except)
+
+```python
+# GOOD
+except OSError:
+    handle_io_error()
+except (ValueError, KeyError) as e:
     log_error(e)
+
+# BAD
+except Exception:  # too broad
+    pass
+```
+
+## Structured Logging
+
+Use `structlog` for structured, contextualized logging. Never `print()`.
+
+```python
+import structlog
+logger = structlog.get_logger()
+
+logger.info("processing_started", user_id=user.id, count=len(items))
+logger.debug("config_loaded", dir=str(config.config_dir))
+logger.warning("deprecated_usage", old=old_name, new=new_name)
+logger.error("operation_failed", error=str(e), session_id=sid)
+```
+
+### Throttled Logging
+
+For high-frequency events, throttle to avoid log spam:
+
+```python
+def log_throttled(key: str, msg: str, cooldown: float = 300.0) -> None:
+    now = time.monotonic()
+    if now - _last_logged.get(key, 0) >= cooldown:
+        logger.info(msg)
+        _last_logged[key] = now
 ```
 
 ## Async Patterns
@@ -271,29 +326,35 @@ async def fetch_all(urls: list[str]) -> list[bytes]:
 ```python
 async def fetch_with_timeout(url: str, timeout: float = 30.0) -> bytes:
     async with asyncio.timeout(timeout):
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as resp:
-                return await resp.read()
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(url)
+            return resp.content
+```
+
+### Task Exception Tracking
+
+```python
+def task_done_callback(task: asyncio.Task) -> None:
+    if not task.cancelled() and task.exception():
+        logger.error("background_task_failed", error=str(task.exception()))
 ```
 
 ## Configuration
 
-### Dataclass-Based
+### Dataclass with Env Precedence
 
 ```python
-import os
-from dataclasses import dataclass
-
 @dataclass
 class Config:
-    database_url: str
+    api_url: str
     port: int = 8080
     debug: bool = False
 
     @classmethod
     def from_env(cls) -> "Config":
+        load_dotenv()  # python-dotenv
         return cls(
-            database_url=os.environ["DATABASE_URL"],
+            api_url=os.environ["API_URL"],
             port=int(os.environ.get("PORT", 8080)),
             debug=os.environ.get("DEBUG", "").lower() == "true",
         )
@@ -339,9 +400,11 @@ def read_config(path: Path) -> dict:
 - Guard clauses reduce nesting (max 2 levels)
 - Pattern matching for complex conditionals
 - Protocol for interfaces (not ABC)
-- Concrete types (no Any)
-- `snake_case` for functions/variables
-- `PascalCase` for classes
+- Concrete types (no Any), PEP 695 generics (3.12+)
+- `snake_case` for functions/variables, `PascalCase` for classes
+- Full variable names (`window_id`, not `wid`)
 - `pathlib.Path` over `os.path`
+- `structlog` for logging, not `print()`
 - f-strings for formatting
 - Context managers for resources
+- Dataclasses with `frozen=True, slots=True` for value objects

@@ -3,10 +3,37 @@
 ## Framework: pytest
 
 ```bash
-uv add --dev pytest pytest-asyncio pytest-cov
-pytest -v
-pytest --cov=src
+uv add --group dev pytest pytest-asyncio pytest-cov pytest-timeout hypothesis
+pytest -v                    # unit tests
+pytest -m integration        # integration tests
+pytest -m "not integration"  # skip slow tests
 ```
+
+## Pytest Configuration
+
+```toml
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["--import-mode=importlib", "--strict-markers", "-ra"]
+asyncio_mode = "auto"
+markers = [
+    "integration: tests using real filesystem or external processes",
+    "e2e: end-to-end tests (slow, local only)",
+]
+
+[tool.coverage.run]
+source = ["my_package"]
+branch = true
+exclude_lines = ["pragma: no cover", "if __name__ == .__main__.", "logger\\."]
+```
+
+## Tiered Testing
+
+| Tier        | Scope                     | Command                 | Speed  |
+| ----------- | ------------------------- | ----------------------- | ------ |
+| Unit        | Mocked, isolated          | `make test`             | Fast   |
+| Integration | Real filesystem/processes | `make test-integration` | Medium |
+| E2E         | Full system               | `make test-e2e`         | Slow   |
 
 ## Basic Tests
 
@@ -17,20 +44,16 @@ def test_validate_email_valid():
 def test_validate_email_empty():
     with pytest.raises(ValidationError, match="email required"):
         validate_email("")
-
-def test_validate_email_invalid():
-    with pytest.raises(ValidationError, match="invalid format"):
-        validate_email("invalid")
 ```
 
 ## Parametrized Tests
 
 ```python
 @pytest.mark.parametrize("email,expected_error", [
-    ("user@example.com", None),
-    ("", "email required"),
-    ("invalid", "invalid format"),
-    ("user@", "invalid format"),
+    pytest.param("user@example.com", None, id="valid-email"),
+    pytest.param("", "email required", id="empty-string"),
+    pytest.param("invalid", "invalid format", id="no-at-sign"),
+    pytest.param("user@", "invalid format", id="no-domain"),
 ])
 def test_validate_email(email: str, expected_error: str | None):
     if expected_error:
@@ -53,11 +76,52 @@ def mock_repo():
 
 def test_get_user(user_service, mock_repo):
     mock_repo.get.return_value = User(id="123", name="Test")
-
     result = user_service.get_user("123")
-
     assert result.name == "Test"
     mock_repo.get.assert_called_once_with("123")
+```
+
+### Factory Fixtures
+
+For complex test data, use factory fixtures that return builder functions:
+
+```python
+@pytest.fixture
+def make_mock_provider():
+    """Factory: build a mock provider with configurable status."""
+    def _make(*, has_status: bool = False, interactive: bool = False):
+        provider = MagicMock(spec=AgentProvider)
+        if has_status:
+            status = StatusUpdate(raw_text="Working...", display_label="…working")
+            provider.parse_terminal_status.return_value = status
+        else:
+            provider.parse_terminal_status.return_value = None
+        return provider
+    return _make
+
+@pytest.fixture
+def make_jsonl_entry():
+    """Factory: build raw JSONL dict."""
+    def _make(msg_type="assistant", content="", *, timestamp=None):
+        return {"type": msg_type, "message": {"content": content},
+                "timestamp": timestamp or "2024-01-01T00:00:00Z"}
+    return _make
+```
+
+### Autouse Fixtures for Environment
+
+```python
+# tests/conftest.py — root conftest: force env BEFORE imports
+import os, tempfile
+os.environ["API_TOKEN"] = "test-token"
+os.environ["CONFIG_DIR"] = tempfile.mkdtemp(prefix="test-")
+
+@pytest.fixture(autouse=True)
+def _clean_env(monkeypatch):
+    """Remove provider-specific env vars so tests use defaults."""
+    for key in list(os.environ):
+        if key.startswith("MYAPP_") and key.endswith("_COMMAND"):
+            monkeypatch.delenv(key)
 ```
 
 ## Mocking
@@ -65,7 +129,7 @@ def test_get_user(user_service, mock_repo):
 **Use `unittest.mock` + `pytest-mock` (mocker fixture) for all mocking.**
 
 ```python
-from unittest.mock import Mock, patch, AsyncMock, create_autospec
+from unittest.mock import Mock, MagicMock, AsyncMock, patch, create_autospec
 ```
 
 ### Mock Types
@@ -79,8 +143,6 @@ from unittest.mock import Mock, patch, AsyncMock, create_autospec
 
 ### Argument Matching (CRITICAL)
 
-**Choose matchers deliberately—don't over-match or under-match:**
-
 | Approach                | Use When                                          |
 | ----------------------- | ------------------------------------------------- |
 | Exact value             | Business-critical values (IDs, table names, keys) |
@@ -88,63 +150,19 @@ from unittest.mock import Mock, patch, AsyncMock, create_autospec
 | Custom `__eq__` matcher | Partial object matching                           |
 
 ```python
-from unittest.mock import Mock, call
-
 def test_with_exact_values():
     mock_repo = Mock()
     service = Service(repo=mock_repo)
-
     service.process_order("order-123", "customer-456")
-
-    # GOOD: Exact values for business-critical parameters
     mock_repo.save.assert_called_once_with("order-123", "customer-456")
 
 def test_with_partial_matching():
     mock_repo = Mock()
     service = Service(repo=mock_repo)
-
     service.create_user(email="test@example.com")
-
-    # GOOD: Check specific arg without matching everything
     call_args = mock_repo.save.call_args
     assert call_args.kwargs["email"] == "test@example.com"
-    assert call_args.kwargs["id"] is not None  # generated, just check exists
-
-# Custom matcher for partial object matching
-class HasAttrs:
-    def __init__(self, **attrs):
-        self.attrs = attrs
-    def __eq__(self, other):
-        return all(getattr(other, k, None) == v for k, v in self.attrs.items())
-    def __repr__(self):
-        return f"HasAttrs({self.attrs})"
-
-def test_with_custom_matcher():
-    mock_repo = Mock()
-    service = Service(repo=mock_repo)
-
-    service.create_user(email="test@example.com", name="Test")
-
-    # GOOD: Match important fields, ignore generated ones
-    mock_repo.save.assert_called_once_with(HasAttrs(email="test@example.com"))
-```
-
-### Type-Safe Mocking with autospec
-
-**Use `create_autospec` or `spec=` to catch signature mismatches:**
-
-```python
-from unittest.mock import create_autospec
-
-def test_with_autospec():
-    # Validates call signatures at runtime
-    mock_repo = create_autospec(UserRepository)
-
-    mock_repo.get("123")  # OK
-    mock_repo.get()  # TypeError: missing required argument
-
-    # With pytest-mock
-    mock_repo = mocker.Mock(spec=UserRepository)
+    assert call_args.kwargs["id"] is not None
 ```
 
 ### Patching Best Practices
@@ -155,57 +173,79 @@ def test_with_autospec():
 # myapp/services.py
 from myapp.clients import api_client
 
-def process():
-    return api_client.fetch()
-
 # tests/test_services.py
-@patch("myapp.services.api_client")  # Patch where it's USED
+@patch("myapp.services.api_client")  # patch where USED
 def test_process(mock_client):
     mock_client.fetch.return_value = {"data": "test"}
-    result = process()
-    assert result == {"data": "test"}
+    assert process() == {"data": "test"}
 
 # With pytest-mock (preferred)
 def test_process(mocker):
     mock_client = mocker.patch("myapp.services.api_client")
     mock_client.fetch.return_value = {"data": "test"}
-    result = process()
-    assert result == {"data": "test"}
+    assert process() == {"data": "test"}
 ```
 
 ### Async Mocking
 
 ```python
-from unittest.mock import AsyncMock
-import pytest
-
-@pytest.mark.asyncio
-async def test_async_service(mocker):
+async def test_async_service():
     mock_client = AsyncMock()
     mock_client.fetch.return_value = {"status": "ok"}
-
     service = Service(client=mock_client)
     result = await service.process()
-
     assert result == "ok"
     mock_client.fetch.assert_awaited_once()
 ```
 
-### Common Mistakes to Avoid
+## Property-Based Testing (Hypothesis)
 
-- **Patching wrong target**: Patch where object is used, not defined
-- **Missing spec/autospec**: Use `spec=` or `create_autospec` for important boundaries
-- **Mock without assertions**: Always verify mocks were called correctly
-- **Over-mocking**: Mock boundaries, not internals
-- **Using Mock for async**: Use `AsyncMock` for async functions
-- **Not resetting mocks**: Use fresh mocks per test (mocker fixture handles this)
+Use Hypothesis for edge case discovery, especially for parsing, serialization, and data transformation:
+
+```python
+from hypothesis import given, strategies as st
+
+@given(st.text(min_size=1, max_size=100))
+def test_message_splits_correctly(text):
+    result = split_message(text)
+    assert all(len(msg) <= 4096 for msg in result)
+    assert "".join(result) == text
+
+@given(st.integers(min_value=0, max_value=1000))
+def test_rate_limit_non_negative(value):
+    result = compute_delay(value)
+    assert result >= 0
+```
+
+## Click CLI Testing
+
+```python
+from click.testing import CliRunner
+
+@pytest.fixture
+def runner():
+    return CliRunner()
+
+def test_command_success(runner):
+    result = runner.invoke(cli, ["subcommand", "--flag", "value"])
+    assert result.exit_code == 0
+    assert "expected output" in result.output
+
+def test_command_with_env(runner):
+    result = runner.invoke(cli, [], env={"MY_VAR": "value"})
+    assert result.exit_code == 0
+
+def test_command_file_input(runner):
+    with runner.isolated_filesystem():
+        Path("input.txt").write_text("test data")
+        result = runner.invoke(cli, ["process", "input.txt"])
+        assert result.exit_code == 0
+```
 
 ## Async Tests
 
 ```python
-import pytest
-
-@pytest.mark.asyncio
+# With asyncio_mode = "auto", no @pytest.mark.asyncio needed
 async def test_async_fetch():
     result = await fetch_data("https://api.example.com")
     assert result is not None
@@ -215,62 +255,40 @@ async def async_client():
     client = AsyncClient()
     yield client
     await client.close()
-
-@pytest.mark.asyncio
-async def test_with_async_fixture(async_client):
-    result = await async_client.get("/users")
-    assert result.status == 200
 ```
 
 ## Test Organization
 
 ```
 tests/
-├── conftest.py          # Shared fixtures
-├── test_domain/
-│   └── test_user.py
-├── test_services/
-│   └── test_user_service.py
-└── test_integration/
-    └── test_api.py
-```
-
-## conftest.py
-
-```python
-import pytest
-
-@pytest.fixture
-def sample_user():
-    return User(id="123", name="Test", email="test@example.com")
-
-@pytest.fixture
-def db_session():
-    session = create_test_session()
-    yield session
-    session.rollback()
-    session.close()
+├── conftest.py              # Root: env vars, shared fixtures
+├── my_package/
+│   ├── conftest.py          # Unit fixtures, factory fixtures
+│   ├── test_config.py
+│   ├── test_session.py
+│   └── handlers/
+│       └── test_text_handler.py
+├── integration/
+│   ├── conftest.py          # Real resources, cleanup
+│   └── test_full_flow.py
+└── e2e/
+    └── test_system.py
 ```
 
 ## Integration Tests
 
 ```python
 @pytest.mark.integration
-def test_database_integration(db_session):
-    repo = UserRepository(db_session)
+async def test_session_lifecycle(tmp_path):
+    config_dir = tmp_path / "config"
+    config_dir.mkdir()
+    manager = SessionManager(config_dir)
 
-    user = User(name="Test", email="test@example.com")
-    repo.save(user)
+    session_id = manager.create_session("test-window")
+    assert manager.get_session(session_id) is not None
 
-    result = repo.get(user.id)
-    assert result.name == "Test"
-```
-
-Run integration tests:
-
-```bash
-pytest -m integration
-pytest -m "not integration"  # Skip them
+    manager.close_session(session_id)
+    assert manager.get_session(session_id) is None
 ```
 
 ## Coverage
@@ -285,16 +303,17 @@ pytest --cov=src --cov-fail-under=80
 **CRITICAL: Zero tolerance for test waste**
 
 - **No pointless tests**: Don't test trivial behavior (getters, constructors)
-- **No naive tests**: Don't just test obvious happy paths—include edge cases
-- **No duplicate tests**: Same scenario tested multiple ways → keep one, delete others
-- **Combine with parametrize**: 2+ tests for same function → single `@pytest.mark.parametrize` (mandatory)
-- **No comments in tests**: Tests should be self-explanatory unless logic is genuinely non-obvious
+- **No naive tests**: Include edge cases, not just happy paths
+- **No duplicate tests**: Same scenario tested multiple ways → keep one
+- **Combine with parametrize**: 2+ tests for same function → `@pytest.mark.parametrize` (mandatory)
+- **Use `pytest.param(..., id="desc")`** for readable parametrized test names
+- **No comments in tests**: Tests should be self-explanatory
 
 **Standard Guidelines**
 
 - One assertion per test (when practical)
 - Descriptive test names: `test_validate_email_empty_raises_error`
-- Use fixtures for setup
-- Use `pytest.param(..., id="desc")` for readable parametrized test names
+- Use fixtures for setup, factory fixtures for complex data
 - Keep tests independent
 - Test behavior, not implementation
+- Use `spec=` or `create_autospec` for type-safe mocks

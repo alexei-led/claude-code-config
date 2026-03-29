@@ -10,56 +10,61 @@ allowed-tools:
 
 # Git Worktrees
 
-Git worktrees create isolated workspaces sharing the same repository, allowing work on multiple branches simultaneously.
+## Core Principle
 
-## Quick Start
+**Main repo stays on main/master — never edit directly.** Every branch gets its own worktree (a sibling folder). Delete the worktree after the branch merges.
+
+Think of a worktree as a **disposable branch folder**, not a long-lived parallel environment.
+
+**Exception:** Trivial one-liner commits on a solo project can go directly on main to avoid ceremony overhead.
+
+## Workflow
 
 ```bash
-# Create worktree as sibling directory (best practice)
-git worktree add ../myproject-feature-auth -b feature/auth
+# 1. Create worktree for new work (from main repo)
+git worktree add ../myproject-fix-cron -b fix-cron
 
-# Create from existing branch
-git worktree add ../myproject-bugfix-123 bugfix/issue-123
+# 2. Work there (open editor/Claude Code in that folder)
+cd ../myproject-fix-cron
 
-# List all worktrees
-git worktree list
-
-# Remove when done
-git worktree remove ../myproject-feature-auth
-
-# Clean up stale entries
-git worktree prune
+# 3. After PR is merged — clean up from main repo
+cd ../myproject
+git worktree remove ../myproject-fix-cron
+git branch -d fix-cron
+git pull
 ```
 
-## Directory Strategy
+## Directory Layout
 
-Worktrees are created as **sibling directories** to the main repo (not inside it):
+Worktrees are **sibling directories** (not nested inside the repo):
 
 ```
 ~/projects/
-├── myproject/                    # main worktree (main branch)
-├── myproject-feature-auth/       # linked worktree
-└── myproject-hotfix-login/       # linked worktree
+├── myproject/                    # main worktree — always on main, always clean
+├── myproject-fix-cron/           # worktree for fix-cron branch
+└── myproject-add-model/          # worktree for add-model branch
 ```
 
-**Why siblings, not children:**
-
-- No .gitignore pollution — worktree is outside the repo
-- Cleaner `git status` — no risk of tracking worktree contents
-- Standard practice endorsed by git docs and community
-- Each worktree has independent build artifacts, node_modules, etc.
+**Why siblings:** no .gitignore pollution, clean git status, independent build artifacts.
 
 ## Naming Convention
 
-`<project>-<branch-slug>` — self-documenting, instantly shows purpose.
+`<project>-<branch-slug>` — slashes become dashes, self-documenting.
 
-| Branch             | Worktree Directory           |
-| ------------------ | ---------------------------- |
-| `feature/auth`     | `../myproject-feature-auth`  |
-| `bugfix/issue-123` | `../myproject-bugfix-123`    |
-| `experiment/v2`    | `../myproject-experiment-v2` |
+| Branch             | Worktree Directory          |
+| ------------------ | --------------------------- |
+| `fix-cron`         | `../myproject-fix-cron`     |
+| `feature/auth`     | `../myproject-feature-auth` |
+| `bugfix/issue-123` | `../myproject-bugfix-123`   |
+
+## When to Suggest Worktrees
+
+- User wants to start a new feature, fix, or experiment
+- User is about to edit code on main/master
+- User wants to try multiple approaches to the same problem
+- User has uncommitted changes and wants to start something else
 
 ## References
 
-- [WORKFLOW.md](WORKFLOW.md) - Detailed workflow steps
-- [scripts/](scripts/) - Helper scripts
+- [WORKFLOW.md](WORKFLOW.md) - Detailed steps, project setup, common mistakes
+- [scripts/](scripts/) - Helper script for automated setup
