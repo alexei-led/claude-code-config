@@ -137,9 +137,10 @@ Hooks run automatically on Claude Code events.
 | `skill-enforcer.sh`      | UserPromptSubmit | Pattern-matches prompt → suggests skills    |
 | `file-protector.sh`      | PreToolUse       | Blocks edits to settings.json, secrets      |
 | `smart-lint.sh`          | PostToolUse      | Auto-runs linter after file edits           |
-| `notify.sh`              | PostToolUse      | Desktop notifications for long operations   |
-| `performance-monitor.sh` | PostToolUse      | Tracks tool execution performance           |
-| `test-runner.sh`         | PostToolUse      | Auto-runs tests after code changes          |
+| `notify.sh`              | Notification     | Desktop notifications for long operations   |
+| `performance-monitor.sh` | PostCompact      | Tracks context compaction metrics           |
+| `worktree-create.sh`     | WorktreeCreate   | Sets up isolated git worktree environment   |
+| `worktree-remove.sh`     | WorktreeRemove   | Cleans up worktree on exit                  |
 
 ### Testing Hooks
 

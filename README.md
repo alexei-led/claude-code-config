@@ -41,11 +41,12 @@ The `ce` script switches Claude Code between providers. Run `ce vertex` to switc
 
 ## Key Components
 
-| Component | Count | Description                                                                                         |
-| --------- | ----- | --------------------------------------------------------------------------------------------------- |
-| Skills    | 23    | Domain workflows: writing, reviewing, fixing, deploying, spec-driven dev, and more                  |
-| Agents    | 14    | Specialized agents for Go, Python, TypeScript, web, infra, and planning                             |
-| Hooks     | 7     | session-start, skill-enforcer, file-protector, smart-lint, notify, performance-monitor, test-runner |
+| Component | Count | Description                                                                         |
+| --------- | ----- | ----------------------------------------------------------------------------------- |
+| Skills    | 23    | Domain workflows: writing, reviewing, fixing, deploying, spec-driven dev, and more  |
+| Agents    | 34    | 10 top-level (Go, Python, TS, web, infra, planning) + 24 review/refactor sub-agents |
+| Hooks     | 8     | Session, prompt, lint, protect, notify, performance, worktree lifecycle             |
+| Commands  | 9     | 8 spec-driven dev (`/spec:*`) + `/watch-team`                                       |
 
 Skills are loaded automatically by the `skill-enforcer` hook when trigger phrases match. Two skills (`evolving-config`, `learning-patterns`) are local to this repo; the rest are global.
 
