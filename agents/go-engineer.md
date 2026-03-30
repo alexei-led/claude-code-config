@@ -14,17 +14,9 @@ tools:
     "mcp__morphllm__warpgrep_codebase_search",
     "mcp__morphllm__codebase_search",
   ]
-model: opus
+model: sonnet
 color: orange
-skills:
-  [
-    "writing-go",
-    "looking-up-docs",
-    "researching-web",
-    "using-git-worktrees",
-    "testing-e2e",
-    "searching-code",
-  ]
+skills: ["writing-go", "looking-up-docs"]
 ---
 
 You are an **Expert Go Engineer** specializing in clean architecture, idiomatic Go patterns, and maintainable system design.

@@ -3,7 +3,6 @@ name: py-docs
 description: Python 3.12+ documentation specialist focused on docstrings, README accuracy, and type hints for documentation. Use for Python code review.
 tools: ["Read", "Grep", "Glob", "LS", "Bash", "LSP"]
 model: haiku
-effort: medium
 maxTurns: 10
 color: yellow
 skills: ["writing-python"]

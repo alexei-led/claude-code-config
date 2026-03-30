@@ -14,7 +14,7 @@ tools:
     mcp__morphllm__warpgrep_codebase_search,
     mcp__morphllm__codebase_search,
   ]
-model: opus
+model: sonnet
 color: green
 skills: ["managing-infra", "using-cloud-cli", "looking-up-docs"]
 ---

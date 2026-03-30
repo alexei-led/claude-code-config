@@ -3,7 +3,6 @@ name: web-docs
 description: Web documentation specialist for comments and ARIA labels. Use for HTML/CSS/JS review.
 tools: [Read, Grep, Glob, LS, Bash, LSP]
 model: haiku
-effort: medium
 maxTurns: 10
 color: cyan
 skills: [writing-web]

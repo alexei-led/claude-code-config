@@ -3,6 +3,7 @@ name: ts-impl
 description: TypeScript 5.x implementation specialist focused on requirements match, dependency injection, runtime validation, and edge cases. Use for TypeScript code review.
 tools: ["Read", "Grep", "Glob", "LS", "Bash", "LSP"]
 model: opus
+effort: high
 color: blue
 skills: ["writing-typescript"]
 ---

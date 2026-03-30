@@ -2,8 +2,7 @@
 name: ts-idioms
 description: TypeScript 5.x idioms specialist focused on strict typing, discriminated unions, modern patterns (satisfies, as const), and composition. Use for TypeScript code review.
 tools: ["Read", "Grep", "Glob", "LS", "Bash", "LSP"]
-model: haiku
-effort: medium
+model: sonnet
 color: blue
 skills: ["writing-typescript"]
 ---

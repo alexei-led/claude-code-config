@@ -3,6 +3,7 @@ name: py-impl
 description: Python 3.12+ implementation specialist focused on requirements match, dependency injection wiring, and edge cases. Use for Python code review.
 tools: ["Read", "Grep", "Glob", "LS", "Bash", "LSP"]
 model: opus
+effort: high
 color: yellow
 skills: ["writing-python"]
 ---

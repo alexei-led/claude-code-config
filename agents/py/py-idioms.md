@@ -2,8 +2,7 @@
 name: py-idioms
 description: Python 3.12+ idioms specialist focused on Pythonic patterns, PEP8, type hints, and Protocol usage. Use for Python code review.
 tools: ["Read", "Grep", "Glob", "LS", "Bash", "LSP"]
-model: haiku
-effort: medium
+model: sonnet
 color: yellow
 skills: ["writing-python"]
 ---

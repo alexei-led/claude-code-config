@@ -3,6 +3,7 @@ name: py-qa
 description: Python 3.12+ QA specialist focused on logic correctness, security vulnerabilities, and performance issues. Use for Python code review.
 tools: [Read, Grep, Glob, LS, Bash, LSP, mcp__perplexity-ask__perplexity_ask]
 model: opus
+effort: high
 maxTurns: 15
 color: yellow
 skills: ["writing-python"]

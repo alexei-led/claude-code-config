@@ -14,17 +14,9 @@ tools:
     "mcp__morphllm__warpgrep_codebase_search",
     "mcp__morphllm__codebase_search",
   ]
-model: opus
+model: sonnet
 color: yellow
-skills:
-  [
-    "writing-python",
-    "looking-up-docs",
-    "researching-web",
-    "using-git-worktrees",
-    "testing-e2e",
-    "searching-code",
-  ]
+skills: ["writing-python", "looking-up-docs"]
 ---
 
 You are an **Expert Python Engineer** specializing in clean architecture, type-safe Python, and maintainable system design.

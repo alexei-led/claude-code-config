@@ -1,53 +1,113 @@
 #!/usr/bin/env bash
 # notify.sh - Notification hook for Claude Code with project context
 #
-# Available input fields:
-#   session_id, cwd, message, notification_type, transcript_path, permission_mode
+# Input JSON fields: session_id, cwd, message, notification_type,
+#                    transcript_path, permission_mode
+#
+# Env vars used (inherited from Claude Code process):
+#   KITTY_LISTEN_ON, KITTY_PID, KITTY_WINDOW_ID  - kitty detection + navigation
+#   TMUX_PANE                                      - tmux pane navigation
+#   TERM_PROGRAM                                   - fallback terminal detection
+#   CLAUDE_TERMINAL_BUNDLE_ID                      - manual override
 
-# Read JSON input (from stdin or first argument)
+# --- Parse input ---
 json_input="${1:-$(cat)}"
 
-# Parse JSON - extract all available context
 title=$(echo "$json_input" | jq -r '.title // "Claude Code"')
 message=$(echo "$json_input" | jq -r '.message // "No message"')
 cwd=$(echo "$json_input" | jq -r '.cwd // ""')
 notification_type=$(echo "$json_input" | jq -r '.notification_type // ""')
-# session_id available but not used currently
-# session_id=$(echo "$json_input" | jq -r '.session_id // ""')
+session_id=$(echo "$json_input" | jq -r '.session_id // ""')
+permission_mode=$(echo "$json_input" | jq -r '.permission_mode // ""')
 
-# Extract project name from cwd (last directory component)
-project_name=""
+# --- Title: prepend project name ---
 if [[ -n "$cwd" ]]; then
-	project_name=$(basename "$cwd")
-	title="[$project_name] $title"
+	title="[$(basename "$cwd")] $title"
 fi
 
-# Add notification type context
+# --- Emoji prefix + subtitle by type ---
+subtitle=""
 case "$notification_type" in
-permission_prompt) title="🔐 $title" ;;
-idle_prompt) title="💤 $title" ;;
+permission_prompt)
+	title="🔐 $title"
+	if [[ -n "$permission_mode" && "$permission_mode" != "default" ]]; then
+		subtitle="Permission required · $permission_mode mode"
+	else
+		subtitle="Action required"
+	fi
+	;;
+idle_prompt)
+	title="💤 $title"
+	subtitle="Waiting for input"
+	;;
 esac
 
-# Check if terminal-notifier is available
+# --- Sound by type ---
+sound_flag=()
+case "$notification_type" in
+permission_prompt) sound_flag=(-sound Funk) ;;
+idle_prompt) sound_flag=(-sound default) ;;
+esac
+
+# --- Fallback if no terminal-notifier ---
 if ! command -v terminal-notifier &>/dev/null; then
 	echo "📢 $title: $message" >&2
 	exit 0
 fi
 
-# Map $TERM_PROGRAM to bundle ID (works across machines)
-case "${TERM_PROGRAM:-Terminal}" in
-iTerm.app) BUNDLE_ID="com.googlecode.iterm2" ;;
-WezTerm) BUNDLE_ID="com.github.wez.wezterm" ;;
-Alacritty) BUNDLE_ID="org.alacritty" ;;
-kitty) BUNDLE_ID="net.kovidgoyal.kitty" ;;
-*) BUNDLE_ID="com.apple.Terminal" ;;
-esac
+# --- Resolve tool paths (needed for -execute which runs in minimal-PATH /bin/sh) ---
+kitty_bin=$(command -v kitty 2>/dev/null || echo "/opt/homebrew/bin/kitty")
+tmux_bin=$(command -v tmux 2>/dev/null || echo "/opt/homebrew/bin/tmux")
 
-# Allow override via environment variable
+# --- Detect parent terminal via kitty socket ---
+kitty_socket=""
+if [[ -n "${KITTY_LISTEN_ON:-}" ]]; then
+	kitty_socket="$KITTY_LISTEN_ON"
+elif [[ -n "${KITTY_PID:-}" ]]; then
+	kitty_socket="unix:/tmp/kitty-${KITTY_PID}"
+fi
+kitty_socket_path="${kitty_socket#unix:}"
+
+if [[ -n "$kitty_socket" && -S "$kitty_socket_path" ]]; then
+	BUNDLE_ID="net.kovidgoyal.kitty"
+else
+	case "${TERM_PROGRAM:-}" in
+	iTerm.app) BUNDLE_ID="com.googlecode.iterm2" ;;
+	WezTerm) BUNDLE_ID="com.github.wez.wezterm" ;;
+	Alacritty) BUNDLE_ID="org.alacritty" ;;
+	kitty) BUNDLE_ID="net.kovidgoyal.kitty" ;;
+	*) BUNDLE_ID="com.apple.Terminal" ;;
+	esac
+fi
 BUNDLE_ID="${CLAUDE_TERMINAL_BUNDLE_ID:-$BUNDLE_ID}"
 
-# Send notification
-terminal-notifier -title "$title" \
-	-message "$message" \
-	-activate "$BUNDLE_ID" \
-	2>/dev/null || echo "📢 $title: $message" >&2
+# --- Build click-to-navigate command (kitty + tmux) ---
+execute_cmd=""
+if [[ -n "$kitty_socket" && -S "$kitty_socket_path" ]]; then
+	nav_parts=("/usr/bin/open -b net.kovidgoyal.kitty")
+
+	if [[ -n "${KITTY_WINDOW_ID:-}" ]]; then
+		nav_parts+=("${kitty_bin} @ --to ${kitty_socket} focus-tab -m window_id:${KITTY_WINDOW_ID} 2>/dev/null")
+	fi
+
+	if [[ -n "${TMUX_PANE:-}" ]]; then
+		nav_parts+=("${tmux_bin} select-pane -t ${TMUX_PANE} 2>/dev/null")
+	fi
+
+	execute_cmd=$(printf '%s; ' "${nav_parts[@]}")
+	execute_cmd="${execute_cmd%; }"
+fi
+
+# --- Send notification ---
+tn_args=(
+	-title "$title"
+	-message "$message"
+	-activate "$BUNDLE_ID"
+)
+[[ -n "$subtitle" ]] && tn_args+=(-subtitle "$subtitle")
+[[ -n "$session_id" ]] && tn_args+=(-group "claude-${session_id}")
+[[ ${#sound_flag[@]} -gt 0 ]] && tn_args+=("${sound_flag[@]}")
+[[ -n "$execute_cmd" ]] && tn_args+=(-execute "$execute_cmd")
+
+terminal-notifier "${tn_args[@]}" 2>/dev/null ||
+	echo "📢 $title: $message" >&2

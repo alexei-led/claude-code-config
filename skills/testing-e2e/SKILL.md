@@ -1,6 +1,6 @@
 ---
 name: testing-e2e
-description: E2E testing with Playwright MCP for browser automation, test generation, and UI testing. Use when discussing E2E tests, Playwright, browser testing, UI automation, visual testing, or accessibility testing. Supports TypeScript tests and Go/HTMX web applications.
+description: E2E testing with Playwright for browser automation, test generation, and UI testing. Use when discussing E2E tests, Playwright, browser testing, UI automation, visual testing, or accessibility testing. Supports TypeScript tests and Go/HTMX web applications.
 user-invocable: true
 context: fork
 argument-hint: "[run|record|generate|verify <feature>]"
@@ -11,17 +11,17 @@ allowed-tools:
   - Bash(npx playwright *)
   - Bash(npm *)
   - Bash(bun *)
+  - Bash(node *)
   - Read
   - Grep
   - Glob
   - LS
   - AskUserQuestion
-  - mcp__playwright__*
 ---
 
 # E2E Testing with Playwright
 
-Execute E2E testing workflows using Playwright MCP.
+Execute E2E testing workflows using Playwright scripts (via playwright-skill).
 
 **Use TodoWrite** to track these 4 phases:
 
@@ -72,12 +72,12 @@ npx playwright test --headed
 
 ### Record Session
 
-Use Playwright MCP tools for browser interaction:
+Write a Playwright script to `/tmp/playwright-record-*.js` that:
 
-1. `browser_navigate` - Go to target URL
-2. `browser_snapshot` - Inspect page structure
-3. `browser_click`, `browser_type`, `browser_fill_form` - Interact
-4. Generate test file with Page Object pattern
+1. Launches browser with `headless: false` and `slowMo: 100`
+2. Navigates to target URL
+3. Captures interactions and generates test with Page Object pattern
+4. Execute via: `cd ~/.claude/skills/playwright-skill && node run.js /tmp/playwright-record-*.js`
 
 ### Generate Test
 
@@ -146,17 +146,15 @@ Details:
 
 ---
 
-## Key Tools
+## Execution
 
-| Tool                       | Purpose                |
-| -------------------------- | ---------------------- |
-| `browser_navigate`         | Go to URL              |
-| `browser_snapshot`         | Get accessibility tree |
-| `browser_click`            | Click elements         |
-| `browser_type`             | Type text              |
-| `browser_fill_form`        | Fill form fields       |
-| `browser_generate_locator` | Get best locator       |
-| `browser_verify_text`      | Assert text content    |
+Write Playwright scripts to `/tmp/` and run via the playwright-skill executor:
+
+```bash
+cd ~/.claude/skills/playwright-skill && node run.js /tmp/playwright-test-*.js
+```
+
+The executor handles module resolution, auto-installs Chromium if needed, and provides helper utilities. See `playwright-skill/SKILL.md` for full patterns.
 
 ## Supported Stacks
 

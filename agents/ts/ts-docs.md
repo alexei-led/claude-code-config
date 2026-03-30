@@ -3,7 +3,6 @@ name: ts-docs
 description: TypeScript 5.x documentation specialist focused on JSDoc, TSDoc, comment quality, and README accuracy. Use for TypeScript code review.
 tools: ["Read", "Grep", "Glob", "LS", "Bash", "LSP"]
 model: haiku
-effort: medium
 maxTurns: 10
 color: blue
 skills: ["writing-typescript"]
