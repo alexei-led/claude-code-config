@@ -5,8 +5,40 @@ on:
       - master
   pull_request:
 jobs:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      python: ${{ steps.filter.outputs.python }}
+      shell: ${{ steps.filter.outputs.shell }}
+      markdown: ${{ steps.filter.outputs.markdown }}
+      config: ${{ steps.filter.outputs.config }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            python:
+              - '**/*.py'
+              - 'pyproject.toml'
+              - 'uv.lock'
+            shell:
+              - '**/*.sh'
+              - '.shellcheckrc'
+            markdown:
+              - '**/*.md'
+              - '.markdownlint.yaml'
+            config:
+              - '**/*.json'
+              - '**/*.toml'
+              - 'scripts/validate-config.py'
   python-lint:
     name: Python Lint
+    needs: changes
+    if: needs.changes.outputs.python == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,6 +50,8 @@ jobs:
           args: format --check
   shell-lint:
     name: Shell Lint
+    needs: changes
+    if: needs.changes.outputs.shell == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,21 +59,40 @@ jobs:
         env:
           SHELLCHECK_OPTS: -e SC1090 -e SC1091
           SHFMT_OPTS: -i 0
-  validate:
-    name: Config Validation
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
-      - run: uv run python scripts/validate-config.py
   markdown-lint:
     name: Markdown Lint
+    needs: changes
+    if: needs.changes.outputs.markdown == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: DavidAnson/markdownlint-cli2-action@v20
         with:
           globs: '**/*.md'
+  validate:
+    name: Config Validation
+    needs: changes
+    if: needs.changes.outputs.config == 'true' || needs.changes.outputs.python == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-caching: true
+          cache-dependency-glob: uv.lock
+      - run: uv run python scripts/validate-config.py
+  test:
+    name: Tests
+    needs: changes
+    if: needs.changes.outputs.config == 'true' || needs.changes.outputs.python == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-caching: true
+          cache-dependency-glob: uv.lock
+      - run: uv run --extra test python -m pytest tests/ -v
   secrets:
     name: Secret Scan
     runs-on: ubuntu-latest
@@ -50,10 +103,23 @@ jobs:
       - uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  test:
-    name: Tests
+  ci-success:
+    name: CI Success
+    needs:
+      - python-lint
+      - shell-lint
+      - markdown-lint
+      - validate
+      - test
+      - secrets
+    if: always()
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
-      - run: uv run --extra test python -m pytest tests/ -v
+      - name: Check all jobs
+        run: |
+          results='${{ toJson(needs) }}'
+          if echo "$results" | grep -q '"result": "failure"'; then
+            echo "::error::One or more CI jobs failed"
+            exit 1
+          fi
+          echo "All jobs passed or were skipped"
