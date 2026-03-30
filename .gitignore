@@ -45,9 +45,6 @@ powerline/usage/
 # === Project-specific state (per-repo, not portable) ===
 projects/
 
-# === Plugin binaries ===
-plugins/
-
 # === System skills (managed externally) ===
 skills/.system/
 

@@ -1,0 +1,19 @@
+{
+  "name": "infra-ops",
+  "description": "Infrastructure and cloud operations: Kubernetes, Terraform, Helm, GitHub Actions, AWS, GCP",
+  "version": "1.0.0",
+  "author": {
+    "name": "Alexei Ledenev"
+  },
+  "repository": "https://github.com/alexei-led/cc-thingz",
+  "license": "MIT",
+  "keywords": [
+    "kubernetes",
+    "terraform",
+    "helm",
+    "github-actions",
+    "aws",
+    "gcp",
+    "infrastructure"
+  ]
+}

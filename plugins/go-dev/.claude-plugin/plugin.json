@@ -1,0 +1,15 @@
+{
+  "name": "go-dev",
+  "description": "Idiomatic Go development with stdlib-first patterns, testing, and CLI tooling",
+  "version": "1.0.0",
+  "author": {
+    "name": "Alexei Ledenev"
+  },
+  "repository": "https://github.com/alexei-led/cc-thingz",
+  "license": "MIT",
+  "keywords": [
+    "go",
+    "golang",
+    "development"
+  ]
+}

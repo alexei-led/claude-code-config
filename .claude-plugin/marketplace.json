@@ -1,0 +1,54 @@
+{
+  "name": "cc-thingz",
+  "owner": {
+    "name": "Alexei Ledenev",
+    "email": "alexei.led@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "dev-workflow",
+      "source": "./plugins/dev-workflow",
+      "description": "Core development loop: code review, fixes, commits, linting hooks, and 24 language-specific review agents"
+    },
+    {
+      "name": "go-dev",
+      "source": "./plugins/go-dev",
+      "description": "Idiomatic Go development with stdlib-first patterns, testing, and CLI tooling"
+    },
+    {
+      "name": "python-dev",
+      "source": "./plugins/python-dev",
+      "description": "Python 3.12+ development with uv/ruff/pyright toolchain and modern patterns"
+    },
+    {
+      "name": "typescript-dev",
+      "source": "./plugins/typescript-dev",
+      "description": "TypeScript development with strict typing, React patterns, and modern tooling"
+    },
+    {
+      "name": "web-dev",
+      "source": "./plugins/web-dev",
+      "description": "Web frontend development with vanilla HTML, CSS, JavaScript, and HTMX"
+    },
+    {
+      "name": "infra-ops",
+      "source": "./plugins/infra-ops",
+      "description": "Infrastructure and cloud operations: Kubernetes, Terraform, Helm, GitHub Actions, AWS, GCP"
+    },
+    {
+      "name": "dev-tools",
+      "source": "./plugins/dev-tools",
+      "description": "Developer utilities: modern CLI tools, git worktrees, docs lookup, web research, brainstorming"
+    },
+    {
+      "name": "spec-system",
+      "source": "./plugins/spec-system",
+      "description": "Spec-driven development: structured requirements, tasks, and planning workflows"
+    },
+    {
+      "name": "testing-e2e",
+      "source": "./plugins/testing-e2e",
+      "description": "End-to-end testing with Playwright: browser automation, test generation, and UI testing"
+    }
+  ]
+}
