@@ -6,6 +6,23 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 major = breaking config/hook changes, minor = new skills/features, patch = fixes.
 
+## [1.1.0] - 2026-03-30
+
+Restructured as a 9-plugin marketplace for community sharing.
+
+### Added
+
+- MIT LICENSE file
+- Marketplace metadata (description, version, categories, tags)
+- Plugin-level `plugin.json` manifests for all 9 plugins
+
+### Changed
+
+- Restructured from flat config into 9 installable plugins
+- 26 skills, 34 agents, 9 hooks, 9 commands across all plugins
+- Updated README with correct installation syntax per official plugin docs
+- Updated GUIDE with plugin-relative paths and companion tool notes
+
 ## [1.0.0] - 2026-02-28
 
 Initial versioned release of the Claude Code configuration.

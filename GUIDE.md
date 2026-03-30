@@ -55,8 +55,10 @@ These activate silently when the skill enforcer detects matching patterns.
 
 ### Creating Skills
 
+Skills live inside a plugin's `skills/` directory:
+
 ```
-~/.claude/skills/skill-name/SKILL.md
+plugins/my-plugin/skills/skill-name/SKILL.md
 ```
 
 Key frontmatter fields:
@@ -145,13 +147,15 @@ Hooks run automatically on Claude Code events.
 ### Testing Hooks
 
 ```bash
-echo '{"prompt":"deploy to staging"}' | ~/.claude/hooks/skill-enforcer.sh
+echo '{"prompt":"deploy to staging"}' | plugins/dev-workflow/hooks/skill-enforcer.sh
 # → Consider skills: deploying-infra
 ```
 
 ---
 
 ## Environments (`ce`)
+
+> **Note**: `ce` is a companion tool, not part of the plugin marketplace. See the [ce repository](https://github.com/alexei-led/ce) for installation.
 
 Switch between API providers with the `ce` environment switcher.
 
@@ -279,7 +283,9 @@ Each `/spec:work` cycle: select a task → plan implementation → implement →
 
 ## Remote Sessions (tmux + ccgram)
 
-Control Claude Code from anywhere — desktop, SSH, or iPhone via Telegram using [ccgram](https://github.com/alexei/ccgram).
+> **Note**: `ccgram` is a companion tool, not part of the plugin marketplace. See the [ccgram repository](https://github.com/alexei-led/ccgram) for installation.
+
+Control Claude Code from anywhere — desktop, SSH, or iPhone via Telegram using [ccgram](https://github.com/alexei-led/ccgram).
 
 ### Architecture
 

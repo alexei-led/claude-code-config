@@ -4,17 +4,24 @@ A Claude Code plugin marketplace with 9 installable plugins for development work
 
 ## Installation
 
-Install all plugins at once:
+Add the marketplace:
 
 ```bash
 /plugin marketplace add alexei-led/cc-thingz
 ```
 
-Or install individual plugins:
+Then install plugins you want:
 
 ```bash
-/plugin marketplace add alexei-led/cc-thingz --plugin dev-workflow
-/plugin marketplace add alexei-led/cc-thingz --plugin go-dev
+/plugin install dev-workflow@cc-thingz
+/plugin install go-dev@cc-thingz
+/plugin install python-dev@cc-thingz
+```
+
+Or install all at once:
+
+```bash
+/plugin install dev-workflow@cc-thingz go-dev@cc-thingz python-dev@cc-thingz typescript-dev@cc-thingz web-dev@cc-thingz infra-ops@cc-thingz dev-tools@cc-thingz spec-system@cc-thingz testing-e2e@cc-thingz
 ```
 
 ## Plugins
@@ -31,7 +38,7 @@ Or install individual plugins:
 | **spec-system**    | 0      | 1      | Spec-driven development: requirements, tasks, and planning workflows               |
 | **testing-e2e**    | 2      | 1      | E2E testing with Playwright: browser automation and test generation                |
 
-**Totals**: 26 skills, 34 agents, 9 hooks, 8 commands
+**Totals**: 26 skills, 34 agents, 9 hooks, 9 commands
 
 ## Plugin Details
 
@@ -103,6 +110,10 @@ GitHub Actions validates on every push:
 2. Python linting — ruff
 3. Shell linting — shellcheck
 4. Smoke tests — pytest
+
+## License
+
+[MIT](LICENSE)
 
 ## Further Reading
 
