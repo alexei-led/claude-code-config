@@ -4,51 +4,114 @@
     "name": "Alexei Ledenev",
     "email": "alexei.led@gmail.com"
   },
+  "metadata": {
+    "description": "A curated collection of Claude Code plugins for development workflows, language-specific tooling, infrastructure ops, and more",
+    "version": "1.1.0"
+  },
   "plugins": [
     {
       "name": "dev-workflow",
       "source": "./plugins/dev-workflow",
-      "description": "Core development loop: code review, fixes, commits, linting hooks, and 24 language-specific review agents"
+      "description": "Core development loop: code review, fixes, commits, linting hooks, and 24 language-specific review agents",
+      "category": "workflow",
+      "tags": [
+        "code-review",
+        "linting",
+        "commit",
+        "hooks"
+      ]
     },
     {
       "name": "go-dev",
       "source": "./plugins/go-dev",
-      "description": "Idiomatic Go development with stdlib-first patterns, testing, and CLI tooling"
+      "description": "Idiomatic Go development with stdlib-first patterns, testing, and CLI tooling",
+      "category": "language",
+      "tags": [
+        "go",
+        "golang"
+      ]
     },
     {
       "name": "python-dev",
       "source": "./plugins/python-dev",
-      "description": "Python 3.12+ development with uv/ruff/pyright toolchain and modern patterns"
+      "description": "Python 3.12+ development with uv/ruff/pyright toolchain and modern patterns",
+      "category": "language",
+      "tags": [
+        "python",
+        "uv",
+        "ruff"
+      ]
     },
     {
       "name": "typescript-dev",
       "source": "./plugins/typescript-dev",
-      "description": "TypeScript development with strict typing, React patterns, and modern tooling"
+      "description": "TypeScript development with strict typing, React patterns, and modern tooling",
+      "category": "language",
+      "tags": [
+        "typescript",
+        "react",
+        "nodejs"
+      ]
     },
     {
       "name": "web-dev",
       "source": "./plugins/web-dev",
-      "description": "Web frontend development with vanilla HTML, CSS, JavaScript, and HTMX"
+      "description": "Web frontend development with vanilla HTML, CSS, JavaScript, and HTMX",
+      "category": "language",
+      "tags": [
+        "html",
+        "css",
+        "javascript",
+        "htmx"
+      ]
     },
     {
       "name": "infra-ops",
       "source": "./plugins/infra-ops",
-      "description": "Infrastructure and cloud operations: Kubernetes, Terraform, Helm, GitHub Actions, AWS, GCP"
+      "description": "Infrastructure and cloud operations: Kubernetes, Terraform, Helm, GitHub Actions, AWS, GCP",
+      "category": "infrastructure",
+      "tags": [
+        "kubernetes",
+        "terraform",
+        "helm",
+        "aws",
+        "gcp"
+      ]
     },
     {
       "name": "dev-tools",
       "source": "./plugins/dev-tools",
-      "description": "Developer utilities: modern CLI tools, git worktrees, docs lookup, web research, brainstorming"
+      "description": "Developer utilities: modern CLI tools, git worktrees, docs lookup, web research, brainstorming",
+      "category": "utilities",
+      "tags": [
+        "cli",
+        "worktrees",
+        "research",
+        "documentation"
+      ]
     },
     {
       "name": "spec-system",
       "source": "./plugins/spec-system",
-      "description": "Spec-driven development: structured requirements, tasks, and planning workflows"
+      "description": "Spec-driven development: structured requirements, tasks, and planning workflows",
+      "category": "workflow",
+      "tags": [
+        "spec",
+        "planning",
+        "requirements",
+        "tasks"
+      ]
     },
     {
       "name": "testing-e2e",
       "source": "./plugins/testing-e2e",
-      "description": "End-to-end testing with Playwright: browser automation, test generation, and UI testing"
+      "description": "End-to-end testing with Playwright: browser automation, test generation, and UI testing",
+      "category": "testing",
+      "tags": [
+        "playwright",
+        "e2e",
+        "browser-automation"
+      ]
     }
   ]
 }
