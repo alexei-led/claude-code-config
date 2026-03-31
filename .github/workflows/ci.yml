@@ -40,7 +40,7 @@ jobs:
   python-lint:
     name: Python Lint
     needs: changes
-    if: needs.changes.outputs.python == 'true'
+    if: needs.changes.outputs.python == 'true' || github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -53,7 +53,7 @@ jobs:
   shell-lint:
     name: Shell Lint
     needs: changes
-    if: needs.changes.outputs.shell == 'true'
+    if: needs.changes.outputs.shell == 'true' || github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -64,7 +64,7 @@ jobs:
   markdown-lint:
     name: Markdown Lint
     needs: changes
-    if: needs.changes.outputs.markdown == 'true'
+    if: needs.changes.outputs.markdown == 'true' || github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -74,7 +74,7 @@ jobs:
   validate:
     name: Config Validation
     needs: changes
-    if: needs.changes.outputs.config == 'true' || needs.changes.outputs.python == 'true'
+    if: needs.changes.outputs.config == 'true' || needs.changes.outputs.python == 'true' || github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -87,7 +87,7 @@ jobs:
   test:
     name: Tests
     needs: changes
-    if: needs.changes.outputs.config == 'true' || needs.changes.outputs.python == 'true'
+    if: needs.changes.outputs.config == 'true' || needs.changes.outputs.python == 'true' || github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -121,8 +121,8 @@ jobs:
       - name: Check all jobs
         run: |
           results='${{ toJson(needs) }}'
-          if echo "$results" | grep -q '"result": "failure"'; then
-            echo "::error::One or more CI jobs failed"
+          if echo "$results" | grep -qE '"result": "(failure|cancelled)"'; then
+            echo "::error::One or more CI jobs failed or were cancelled"
             exit 1
           fi
           echo "All jobs passed or were skipped"
