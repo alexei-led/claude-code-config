@@ -9,7 +9,13 @@ from pathlib import Path
 
 import pytest
 
-SPECCTL = Path(__file__).resolve().parent.parent / "scripts" / "specctl.py"
+SPECCTL = (
+    Path(__file__).resolve().parent.parent
+    / "plugins"
+    / "spec-system"
+    / "scripts"
+    / "specctl.py"
+)
 
 
 def run_specctl(*args: str, cwd: str | None = None) -> subprocess.CompletedProcess:
