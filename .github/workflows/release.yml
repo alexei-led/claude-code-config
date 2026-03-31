@@ -17,13 +17,7 @@ jobs:
         with:
           enable-caching: true
           cache-dependency-glob: uv.lock
-      - run: uv run python scripts/validate-config.py
-      - run: uv run --extra test python -m pytest tests/ -v
-      - uses: luizm/action-sh-checker@v0.9.0
-        env:
-          SHELLCHECK_OPTS: -e SC1090 -e SC1091
-          SHFMT_OPTS: -i 0
-      - run: bash scripts/generate-flat.sh --check
+      - run: make validate test
   release:
     name: Create Release
     needs: validate

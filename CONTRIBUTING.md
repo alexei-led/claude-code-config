@@ -1,5 +1,11 @@
 # Contributing
 
+## Setup
+
+```bash
+make setup    # Install pre-commit hook + dev dependencies
+```
+
 ## Adding a Plugin
 
 1. Create a directory under `plugins/<your-plugin>/`
@@ -16,6 +22,7 @@
 
 3. Add skills, agents, hooks, or commands in their respective directories
 4. Register the plugin in `.claude-plugin/marketplace.json`
+5. Run `make flat` to sync symlinks
 
 ## Directory Structure
 
@@ -34,30 +41,23 @@ plugins/your-plugin/
     └── your-command.md    # Requires description frontmatter
 ```
 
-## Setup
-
-Install the pre-commit hook to run all checks before each commit:
+## Available Commands
 
 ```bash
-cp scripts/pre-commit .git/hooks/pre-commit
-```
-
-## Validation
-
-```bash
-uv run python scripts/validate-config.py    # Config and frontmatter checks
-uv run --extra test python -m pytest tests/ -v  # Tests
-uv run ruff check .                          # Python lint
-uv run ruff format --check .                 # Python format
-bash scripts/generate-flat.sh                # Sync flat/ symlinks
+make help       # Show all commands
+make ci         # Run full CI pipeline locally (lint + validate + test)
+make lint       # Run all linters
+make test       # Run pytest
+make validate   # Validate configs and flat/ sync
+make fmt        # Auto-format Python files
+make flat       # Sync flat/ symlinks
 ```
 
 ## PR Checklist
 
-- [ ] `uv run python scripts/validate-config.py` passes with 0 errors and 0 warnings
-- [ ] All tests pass
+- [ ] `make ci` passes
 - [ ] Plugin version bumped if modifying existing plugins
 - [ ] CHANGELOG.md updated
 - [ ] README.md plugin table updated (skill/agent counts)
-- [ ] GUIDE.md updated if adding skills, agents, or hooks
-- [ ] `scripts/generate-flat.sh` run to sync flat/ directory
+- [ ] Plugin README.md updated if adding skills, agents, or hooks
+- [ ] `make flat` run to sync flat/ directory

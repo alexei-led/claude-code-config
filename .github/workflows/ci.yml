@@ -82,8 +82,7 @@ jobs:
         with:
           enable-caching: true
           cache-dependency-glob: uv.lock
-      - run: uv run python scripts/validate-config.py
-      - run: bash scripts/generate-flat.sh --check
+      - run: make validate
   test:
     name: Tests
     needs: changes
@@ -95,7 +94,7 @@ jobs:
         with:
           enable-caching: true
           cache-dependency-glob: uv.lock
-      - run: uv run --extra test python -m pytest tests/ -v
+      - run: make test
   secrets:
     name: Secret Scan
     runs-on: ubuntu-latest
