@@ -10,7 +10,7 @@ Add the marketplace:
 /plugin marketplace add alexei-led/cc-thingz
 ```
 
-Then install plugins you want:
+Install plugins you want:
 
 ```bash
 /plugin install dev-workflow@cc-thingz
@@ -18,11 +18,18 @@ Then install plugins you want:
 /plugin install python-dev@cc-thingz
 ```
 
-Or install all at once:
+## Prerequisites
 
-```bash
-/plugin install dev-workflow@cc-thingz go-dev@cc-thingz python-dev@cc-thingz typescript-dev@cc-thingz web-dev@cc-thingz infra-ops@cc-thingz dev-tools@cc-thingz spec-system@cc-thingz testing-e2e@cc-thingz
-```
+Some plugins use MCP servers for enhanced capabilities. These are optional — plugins degrade gracefully without them, but you'll get the best experience with all four configured.
+
+| MCP Server                                                                                              | Purpose                                     | Used By                                                                  |
+| ------------------------------------------------------------------------------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------ |
+| [Context7](https://github.com/upstash/context7)                                                         | Library and framework documentation lookup  | All 9 plugins                                                            |
+| [Perplexity](https://github.com/ppl-ai/modelcontextprotocol)                                            | Web research and technical comparisons      | dev-workflow, dev-tools, infra-ops                                       |
+| [Sequential Thinking](https://github.com/modelcontextprotocol/servers/tree/main/src/sequentialthinking) | Step-by-step reasoning for complex planning | go-dev, python-dev, typescript-dev, infra-ops, spec-system               |
+| [MorphLLM](https://github.com/morphllm/morph-claude-code)                                               | Fast codebase search and batch file editing | dev-workflow, go-dev, python-dev, typescript-dev, infra-ops, spec-system |
+
+See [GUIDE.md](GUIDE.md#mcp-servers) for details on what each MCP enables.
 
 ## Plugins
 
@@ -40,44 +47,6 @@ Or install all at once:
 
 **Totals**: 26 skills, 34 agents, 9 hooks, 9 commands
 
-## Plugin Details
-
-### dev-workflow
-
-Core development loop. Includes skills for committing, reviewing, fixing, documenting, refactoring, searching code, and improving tests. Ships with 24 review sub-agents (6 per language: Go, Python, TypeScript, Web) plus `docs-keeper`. Hooks: skill-enforcer, file-protector, smart-lint, session-start, notify, performance-monitor, test-runner.
-
-### go-dev
-
-`writing-go` skill with CLI patterns, testing idioms, and Go best practices. Includes `go-engineer` agent.
-
-### python-dev
-
-`writing-python` skill with uv/ruff/pyright toolchain, CLI patterns, and testing. Includes `python-engineer` agent.
-
-### typescript-dev
-
-`writing-typescript` skill with strict typing, React patterns, and testing. Includes `typescript-engineer` agent.
-
-### web-dev
-
-`writing-web` skill for vanilla HTML/CSS/JS and HTMX. Includes `web-engineer` agent.
-
-### infra-ops
-
-Skills for managing infrastructure (Kubernetes, Terraform, Helm, Dockerfiles, GitHub Actions, Makefiles), deploying, and using cloud CLIs (AWS, GCP). Includes `infra-engineer` agent.
-
-### dev-tools
-
-Utility skills: modern CLI tools (rg, fd, bat), git worktrees, docs lookup via Context7, web research via Perplexity, usage analysis, config evolution, Gemini integration, brainstorming, dialectic debate, and pattern learning. Agents: `perplexity-researcher`, `pdf-parser`. Hooks: worktree-create, worktree-remove.
-
-### spec-system
-
-Spec-driven development with 8 slash commands (`/spec:init`, `/spec:interview`, `/spec:plan`, `/spec:work`, `/spec:status`, `/spec:new`, `/spec:done`, `/spec:help`). Includes `spec-planner` agent and `specctl` CLI.
-
-### testing-e2e
-
-E2E testing skills: `testing-e2e` for test strategy and `playwright-skill` for browser automation with Playwright. Includes `playwright-tester` agent.
-
 ## Structure
 
 ```
@@ -94,27 +63,10 @@ plugins/
 └── testing-e2e/     # E2E testing with Playwright
 ```
 
-## Versioning
-
-All plugins start at `1.0.0`. Git tags per plugin: `dev-workflow-v1.0.0`, `go-dev-v1.1.0`, etc.
-
-- **major** — breaking changes (renamed skills, changed behavior)
-- **minor** — new skills or agents
-- **patch** — fixes and refinements
-
-## CI
-
-GitHub Actions validates on every push:
-
-1. Config validation — frontmatter and cross-references
-2. Python linting — ruff
-3. Shell linting — shellcheck
-4. Smoke tests — pytest
-
 ## License
 
 [MIT](LICENSE)
 
-## Further Reading
+## Documentation
 
-See [GUIDE.md](GUIDE.md) for detailed usage: skill invocation, agent coordination, hook behavior, and spec-driven development workflow.
+See [GUIDE.md](GUIDE.md) for detailed usage: per-plugin breakdowns, skill invocation, agent coordination, hook behavior, and spec-driven workflows.

@@ -1,6 +1,98 @@
 # Claude Code Guide
 
-How to use skills, agents, hooks, and spec-driven development effectively.
+Detailed usage for skills, agents, hooks, and spec-driven development.
+
+---
+
+## Plugin Details
+
+### dev-workflow
+
+Core development loop. Skills for committing, reviewing, fixing, documenting, refactoring, searching code, and improving tests. Ships with 24 review sub-agents (6 per language: Go, Python, TypeScript, Web) plus `docs-keeper`. Hooks: skill-enforcer, file-protector, smart-lint, session-start, notify, performance-monitor, test-runner.
+
+### go-dev
+
+`writing-go` skill with CLI patterns, testing idioms, and Go best practices. Includes `go-engineer` agent.
+
+### python-dev
+
+`writing-python` skill with uv/ruff/pyright toolchain, CLI patterns, and testing. Includes `python-engineer` agent.
+
+### typescript-dev
+
+`writing-typescript` skill with strict typing, React patterns, and testing. Includes `typescript-engineer` agent.
+
+### web-dev
+
+`writing-web` skill for vanilla HTML/CSS/JS and HTMX. Includes `web-engineer` agent.
+
+### infra-ops
+
+Skills for managing infrastructure (Kubernetes, Terraform, Helm, Dockerfiles, GitHub Actions, Makefiles), deploying, and using cloud CLIs (AWS, GCP). Includes `infra-engineer` agent.
+
+### dev-tools
+
+Utility skills: modern CLI tools (rg, fd, bat), git worktrees, docs lookup via Context7, web research via Perplexity, usage analysis, config evolution, brainstorming, dialectic debate, and pattern learning. Agents: `perplexity-researcher`, `pdf-parser`. Hooks: worktree-create, worktree-remove.
+
+### spec-system
+
+Spec-driven development with 8 slash commands (`/spec:init`, `/spec:interview`, `/spec:plan`, `/spec:work`, `/spec:status`, `/spec:new`, `/spec:done`, `/spec:help`). Includes `spec-planner` agent and `specctl` CLI.
+
+### testing-e2e
+
+E2E testing skills: `testing-e2e` for test strategy and `playwright-skill` for browser automation with Playwright. Includes `playwright-tester` agent.
+
+---
+
+## MCP Servers
+
+Plugins use four MCP (Model Context Protocol) servers for capabilities beyond Claude's built-in tools. All are optional — skills and agents work without them but with reduced functionality.
+
+### Context7
+
+Library and framework documentation lookup. Fetches current docs for any library, so Claude doesn't rely on potentially outdated training data.
+
+**Used by:** All 9 plugins — every language engineer agent, `docs-keeper`, `playwright-tester`, `looking-up-docs` skill, and `documenting-code` skill.
+
+**What breaks without it:** Doc lookup skills return no results. Engineer agents can't verify API syntax against current docs.
+
+### Perplexity
+
+Web research via Perplexity AI. Searches the web for technical comparisons, best practices, and up-to-date information.
+
+**Used by:** `dev-tools` (researching-web, looking-up-docs, evolving-config, brainstorming-ideas), `dev-workflow` (QA and simplify review agents), `infra-ops` (deploying-infra).
+
+**What breaks without it:** `/researching-web` skill won't work. Review agents lose the ability to check current best practices. Config evolution can't discover new Claude Code features.
+
+### Sequential Thinking
+
+Step-by-step reasoning for complex planning and implementation tasks. Helps Claude break down multi-step problems systematically.
+
+**Used by:** `go-dev`, `python-dev`, `typescript-dev`, `infra-ops` (all engineer agents), `spec-system` (spec-planner agent and `/spec:work` command).
+
+**What breaks without it:** Engineer agents still work but may produce less structured plans. Spec planning loses its systematic decomposition.
+
+### MorphLLM
+
+Fast semantic codebase search (`warpgrep_codebase_search`, `codebase_search`) and batch file editing (`edit_file`) for large codebases.
+
+**Used by:** `dev-workflow` (searching-code, refactoring-code), `go-dev`, `python-dev`, `typescript-dev`, `infra-ops` (all engineer agents), `spec-system` (`/spec:work`).
+
+**What breaks without it:** Codebase search falls back to Grep/Glob (slower, less semantic). Batch refactoring loses the ability to edit multiple files in one operation.
+
+### Per-Plugin MCP Usage
+
+| Plugin             | Context7 | Perplexity | Sequential Thinking | MorphLLM |
+| ------------------ | -------- | ---------- | ------------------- | -------- |
+| **dev-workflow**   | yes      | yes        | —                   | yes      |
+| **go-dev**         | yes      | —          | yes                 | yes      |
+| **python-dev**     | yes      | —          | yes                 | yes      |
+| **typescript-dev** | yes      | —          | yes                 | yes      |
+| **web-dev**        | yes      | —          | —                   | —        |
+| **infra-ops**      | yes      | yes        | yes                 | yes      |
+| **dev-tools**      | yes      | yes        | —                   | —        |
+| **spec-system**    | —        | —          | yes                 | yes      |
+| **testing-e2e**    | yes      | —          | —                   | —        |
 
 ---
 
@@ -76,7 +168,7 @@ Key frontmatter fields:
 
 Agents are specialized subprocesses with their own context window and tool access. Skills orchestrate agents — you typically don't spawn them directly.
 
-### When to Use Which Agent
+### Agent Reference
 
 | Need                       | Agent                     | Model  |
 | -------------------------- | ------------------------- | ------ |
