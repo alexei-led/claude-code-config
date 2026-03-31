@@ -12,14 +12,9 @@ test = ["pytest"]
 
 [tool.ruff]
 target-version = "py312"
-include = ["scripts/ce"]
-exclude = ["skills/.system/**"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B"]
-
-[tool.ruff.lint.per-file-ignores]
-"scripts/ce" = ["E501"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
