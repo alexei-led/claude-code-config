@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+# Create a release tag with automatic version bumping.
+#
+# Usage: scripts/release-tag v1.2.0
+#
+# This script:
+# 1. Validates the version format (vX.Y.Z)
+# 2. Bumps all plugin.json + marketplace.json to the new version
+# 3. Updates CHANGELOG.md with a placeholder entry
+# 4. Commits the version bump
+# 5. Creates an annotated git tag
+set -euo pipefail
+
+if [ $# -ne 1 ]; then
+    echo "Usage: scripts/release-tag <version>"
+    echo "Example: scripts/release-tag v1.2.0"
+    exit 1
+fi
+
+TAG="$1"
+VERSION="${TAG#v}"
+
+# Validate semver format
+if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    echo "ERROR: '$TAG' is not a valid semver tag (expected vX.Y.Z)"
+    exit 1
+fi
+
+# Check for clean working tree
+if [ -n "$(git status --porcelain)" ]; then
+    echo "ERROR: working tree is not clean — commit or stash changes first"
+    exit 1
+fi
+
+# Check tag doesn't already exist
+if git rev-parse "$TAG" &>/dev/null; then
+    echo "ERROR: tag '$TAG' already exists"
+    exit 1
+fi
+
+echo "Bumping versions to $VERSION..."
+
+# Bump marketplace.json
+sed -i '' "s/\"version\": \"[^\"]*\"/\"version\": \"$VERSION\"/" .claude-plugin/marketplace.json
+
+# Bump all plugin.json files
+for f in plugins/*/.claude-plugin/plugin.json; do
+    sed -i '' "s/\"version\": \"[^\"]*\"/\"version\": \"$VERSION\"/" "$f"
+done
+
+# Add CHANGELOG entry if not already present
+if ! grep -q "\[$VERSION\]" CHANGELOG.md; then
+    DATE=$(date +%Y-%m-%d)
+    sed -i '' "/^## \[/i\\
+## [$VERSION] - $DATE\\
+\\
+" CHANGELOG.md
+    echo "Added CHANGELOG entry for $VERSION — edit it before pushing."
+fi
+
+# Show what changed
+echo ""
+echo "Version bumped to $VERSION in:"
+grep -rl "\"$VERSION\"" .claude-plugin/marketplace.json plugins/*/.claude-plugin/plugin.json | sed 's/^/  /'
+echo ""
+
+# Commit and tag
+git add .claude-plugin/marketplace.json plugins/*/.claude-plugin/plugin.json CHANGELOG.md
+git commit -m "chore: bump version to $VERSION"
+git tag -a "$TAG" -m "Release $VERSION"
+
+echo ""
+echo "Created tag $TAG"
+echo "Push with: git push origin master $TAG"
