@@ -1,5 +1,5 @@
 ---
-name: learn
+name: learning-patterns
 description: Extract learnings and generate project-specific customizations (CLAUDE.md, commands, skills, hooks). Use when user says "learn", "extract learnings", "what did we learn", "save learnings", "adapt config", or wants to improve Claude Code based on conversation patterns.
 user-invocable: true
 model: sonnet

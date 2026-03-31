@@ -164,6 +164,30 @@ if echo "$PROMPT_LOWER" | grep -qE '\b(start|begin|continue|resume)\s*(spec\s*)?
 	skills+="spec:work "
 fi
 
+# analyzing-usage: Analyze Claude Code usage, cost, and efficiency
+# Triggers: usage, cost, spending, tokens, burn rate, budget
+if echo "$PROMPT_LOWER" | grep -qE '\busage\b.*\b(report|analyz|stat|cost|token|session)\b|\bcost\b.*\b(analyz|report|break|track|session)\b|\bspending\b|\bburn\s*rate\b|\btoken\s*(usage|count|stat)\b|\banalyze\s*(my|the)?\s*usage\b|\bhow\s*much\s*(did|have|am)\s*(i|we)\s*(spend|spent|using)\b|\bbudget\b.*\b(check|track|monitor)\b|\befficiency\b.*\b(report|analyz)\b|\bccusage\b'; then
+	skills+="analyzing-usage "
+fi
+
+# debating-ideas: Dialectic agents stress-test design decisions
+# Triggers: debate, argue both sides, devil's advocate, stress test idea
+if echo "$PROMPT_LOWER" | grep -qE '\bdebate\b|\bargue\s*(both)?\s*sides\b|\bdevil.?s?\s*advocate\b|\bstress[\s-]?test\s*(this|the|my|an?)?\s*(idea|approach|design|decision|claim)\b|\bpros\s*(and|&)\s*cons\s*(of)?\s*(this|the|my)?\s*(approach|design|decision)\b|\bchallenge\s*(this|the|my)?\s*(idea|approach|assumption)\b|\brigorous\s*(evaluat|review|analys)\b|\bdialectic\b'; then
+	skills+="debating-ideas "
+fi
+
+# evolving-config: Audit Claude Code config against latest features
+# Triggers: evolve, self-improve, audit config, what's new in claude code
+if echo "$PROMPT_LOWER" | grep -qE '\bevolve\b|\bself[\s-]?improv\b|\baudit\s*(my|the)?\s*(config|configuration|settings|setup)\b|\bwhat.?s\s*new\s*in\s*claude\s*code\b|\bupgrade\s*(my|the)?\s*(config|configuration|settings)\b|\bcheck\s*(for)?\s*(improvement|update)s?\b|\bare\s*(we|my\s*settings?)\s*up[\s-]?to[\s-]?date\b|\blatest\s*(claude|features)\b|\bimprove\s*(my|the)?\s*(claude|config|setup)\b'; then
+	skills+="evolving-config "
+fi
+
+# using-gemini: Consult Gemini CLI for second opinions or web search
+# Triggers: ask gemini, gemini search, gemini opinion, second AI perspective
+if echo "$PROMPT_LOWER" | grep -qE '\bask\s*gemini\b|\bgemini\s*(search|opinion|review|check|consult)\b|\bget\s*gemini\b|\bconsult\s*gemini\b|\bgemini\s*-p\b|\bsecond\s*(ai|opinion|perspective)\b'; then
+	skills+="using-gemini "
+fi
+
 # Output only if skills detected (silent when no match)
 if [[ -n "$skills" ]]; then
 	skills="${skills% }"
