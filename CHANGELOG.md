@@ -6,6 +6,44 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 major = breaking config/hook changes, minor = new skills/features, patch = fixes.
 
+## [1.1.1] - 2026-03-31
+
+Full repository review and cleanup.
+
+### Fixed
+
+- Broken specctl test path after plugin restructuring (10 test failures)
+- Ruff config referencing deleted `scripts/ce` (linter was scanning nothing)
+- Plugin version mismatch (all plugin.json now match marketplace 1.1.1)
+- Skill-enforcer missing 4 user-invocable skills
+- `learning-patterns` skill name mismatch (was `learn`, now matches directory)
+- CI gate not detecting cancelled job state
+- README skill counts (26 → 27)
+
+### Added
+
+- Per-plugin README.md for all 9 plugins
+- Makefile with lint, test, validate, fmt, flat, ci, setup, release targets
+- CONTRIBUTING.md with plugin authoring guide and PR checklist
+- Pre-commit hook running full CI pipeline
+- Release tag script with automatic version bumping
+- CI badge, version badge, and project narrative in README
+- Dependabot pip ecosystem tracking
+- `using-gemini` skill documented in README
+
+### Changed
+
+- Replaced monolithic GUIDE.md with per-plugin READMEs + expanded project README
+- CI and release workflows now use Makefile targets
+- All lint/test jobs run unconditionally on push to master
+- Dependabot frequency: monthly → weekly
+
+### Removed
+
+- GUIDE.md (split into per-plugin READMEs)
+- Orphaned root files: claude-powerline.json, MCP_Sequential.md, .claude-hooks-config.sh, .claude-hooks-ignore
+- install-tools.sh (user-specific, not marketplace-related)
+
 ## [1.1.0] - 2026-03-30
 
 Restructured as a 9-plugin marketplace for community sharing.
