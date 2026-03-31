@@ -9,9 +9,13 @@ lint-python: ## Lint Python files with ruff
 	uv run ruff check .
 	uv run ruff format --check .
 
-lint-shell: ## Lint shell scripts with shellcheck
+lint-shell: ## Lint shell scripts with shellcheck + shfmt
 	@command -v shellcheck >/dev/null 2>&1 || { echo "shellcheck not installed"; exit 1; }
+	@command -v shfmt >/dev/null 2>&1 || { echo "shfmt not installed"; exit 1; }
 	find plugins scripts -name '*.sh' -exec shellcheck {} +
+	find plugins scripts -name '*.sh' -exec shfmt -i 0 -d {} +
+	@# Check non-.sh shell scripts (pre-commit, release-tag)
+	shfmt -i 0 -d scripts/pre-commit scripts/release-tag
 
 lint-markdown: ## Lint Markdown files
 	@command -v markdownlint-cli2 >/dev/null 2>&1 || { echo "markdownlint-cli2 not installed — skipping"; exit 0; }
@@ -25,8 +29,8 @@ test: ## Run pytest
 
 # --- Validate ---
 
-.PHONY: validate validate-config validate-flat
-validate: validate-config validate-flat ## Run all validation checks
+.PHONY: validate validate-config validate-flat validate-executables
+validate: validate-config validate-flat validate-executables ## Run all validation checks
 
 validate-config: ## Validate plugin configs and frontmatter
 	uv run python scripts/validate-config.py
@@ -34,12 +38,21 @@ validate-config: ## Validate plugin configs and frontmatter
 validate-flat: ## Check flat/ symlinks are in sync
 	bash scripts/generate-flat.sh --check
 
+validate-executables: ## Check shell scripts have executable bit
+	@fail=0; \
+	for f in $$(find plugins scripts -name '*.sh') scripts/pre-commit scripts/release-tag; do \
+		[ -x "$$f" ] || { echo "ERROR: $$f is not executable"; fail=1; }; \
+	done; \
+	[ $$fail -eq 0 ] || exit 1
+
 # --- Format ---
 
 .PHONY: fmt
-fmt: ## Auto-format Python files
+fmt: ## Auto-format Python and shell files
 	uv run ruff check --fix .
 	uv run ruff format .
+	find plugins scripts -name '*.sh' -exec shfmt -i 0 -w {} +
+	shfmt -i 0 -w scripts/pre-commit scripts/release-tag
 
 # --- Flat ---
 
