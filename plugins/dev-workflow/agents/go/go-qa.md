@@ -1,12 +1,24 @@
 ---
 name: go-qa
 description: Go 1.25+ QA specialist focused on logic correctness, security (OWASP), and performance. Use for Go code review.
-tools: [Read, Grep, Glob, LS, Bash, LSP, mcp__perplexity-ask__perplexity_ask]
+tools:
+  [
+    "Read",
+    "Grep",
+    "Glob",
+    "LS",
+    "Bash",
+    "LSP",
+    "mcp__perplexity-ask__perplexity_ask",
+    "mcp__plugin_claude-mem_mcp-search__smart_search",
+    "mcp__plugin_claude-mem_mcp-search__smart_outline",
+    "mcp__plugin_claude-mem_mcp-search__smart_unfold",
+  ]
 model: opus
 effort: high
 maxTurns: 15
 color: orange
-skills: ["writing-go"]
+skills: ["writing-go", "smart-explore"]
 ---
 
 ## Role

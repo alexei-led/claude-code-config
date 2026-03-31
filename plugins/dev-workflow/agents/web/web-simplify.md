@@ -10,12 +10,15 @@ tools:
     Bash,
     LSP,
     mcp__perplexity-ask__perplexity_ask,
-    mcp__context7__resolve-library-id,
-    mcp__context7__query-docs,
+    "mcp__context7__resolve-library-id",
+    "mcp__context7__query-docs",
+    "mcp__plugin_claude-mem_mcp-search__smart_search",
+    "mcp__plugin_claude-mem_mcp-search__smart_outline",
+    "mcp__plugin_claude-mem_mcp-search__smart_unfold",
   ]
 model: sonnet
 color: cyan
-skills: [writing-web]
+skills: ["writing-web", "smart-explore"]
 ---
 
 ## Role

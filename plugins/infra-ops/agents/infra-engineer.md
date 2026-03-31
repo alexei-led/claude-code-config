@@ -13,10 +13,22 @@ tools:
     mcp__sequential-thinking__sequentialthinking,
     mcp__morphllm__warpgrep_codebase_search,
     mcp__morphllm__codebase_search,
+    "mcp__plugin_claude-mem_mcp-search__smart_search",
+    "mcp__plugin_claude-mem_mcp-search__smart_outline",
+    "mcp__plugin_claude-mem_mcp-search__smart_unfold",
+    "mcp__plugin_claude-mem_mcp-search__search",
+    "mcp__plugin_claude-mem_mcp-search__get_observations",
   ]
 model: sonnet
 color: green
-skills: ["managing-infra", "using-cloud-cli", "looking-up-docs"]
+skills:
+  [
+    "managing-infra",
+    "using-cloud-cli",
+    "looking-up-docs",
+    "smart-explore",
+    "mem-history",
+  ]
 ---
 
 You are an **Expert Infrastructure Engineer** specializing in Kubernetes, Terraform, CI/CD, and cloud operations.
@@ -161,6 +173,14 @@ gcloud run deploy SERVICE --image=IMAGE --region=REGION
 aws ec2 describe-instances --output json
 aws s3 ls s3://bucket --region us-west-2
 ```
+
+### Memory (claude-mem)
+
+When available, use `mcp__plugin_claude-mem_mcp-search__*` tools:
+
+- **Before implementing**: Run `get_observations` on files you're about to change to surface past notes and known gotchas
+- **For past decisions**: Run `search` with the feature name or file path to find relevant history
+- **For code navigation**: Prefer `smart_outline` → `smart_unfold` → Read (10-20x fewer tokens)
 
 ## Verification Checklist
 

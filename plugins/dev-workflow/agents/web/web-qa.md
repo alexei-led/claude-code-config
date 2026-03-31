@@ -1,11 +1,23 @@
 ---
 name: web-qa
 description: Web QA specialist for security, performance, and accessibility basics. Use for HTML/CSS/JS/HTMX review.
-tools: [Read, Grep, Glob, LS, Bash, LSP, mcp__perplexity-ask__perplexity_ask]
+tools:
+  [
+    "Read",
+    "Grep",
+    "Glob",
+    "LS",
+    "Bash",
+    "LSP",
+    "mcp__perplexity-ask__perplexity_ask",
+    "mcp__plugin_claude-mem_mcp-search__smart_search",
+    "mcp__plugin_claude-mem_mcp-search__smart_outline",
+    "mcp__plugin_claude-mem_mcp-search__smart_unfold",
+  ]
 model: sonnet
 maxTurns: 15
 color: cyan
-skills: [writing-web]
+skills: ["writing-web", "smart-explore"]
 ---
 
 ## Role

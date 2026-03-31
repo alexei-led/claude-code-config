@@ -10,10 +10,15 @@ tools:
     LS,
     mcp__context7__resolve-library-id,
     mcp__context7__query-docs,
+    mcp__plugin_claude-mem_mcp-search__smart_search,
+    mcp__plugin_claude-mem_mcp-search__smart_outline,
+    mcp__plugin_claude-mem_mcp-search__smart_unfold,
+    mcp__plugin_claude-mem_mcp-search__search,
+    mcp__plugin_claude-mem_mcp-search__get_observations,
   ]
 model: sonnet
 color: cyan
-skills: [writing-web, looking-up-docs]
+skills: [writing-web, looking-up-docs, smart-explore, mem-history]
 ---
 
 ## Role
@@ -142,6 +147,14 @@ document.addEventListener("DOMContentLoaded", () => {
 **Change**: Description
 **Why**: Reason
 ```
+
+### Memory (claude-mem)
+
+When available, use `mcp__plugin_claude-mem_mcp-search__*` tools:
+
+- **Before implementing**: Run `get_observations` on files you're about to change to surface past notes and known gotchas
+- **For past decisions**: Run `search` with the feature name or file path to find relevant history
+- **For code navigation**: Prefer `smart_outline` → `smart_unfold` → Read (10-20x fewer tokens)
 
 ## Workflow
 

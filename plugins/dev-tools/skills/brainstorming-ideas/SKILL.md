@@ -11,6 +11,8 @@ allowed-tools:
   - Glob
   - Write
   - mcp__perplexity-ask__perplexity_ask
+  - mcp__plugin_claude-mem_mcp-search__timeline
+  - mcp__plugin_claude-mem_mcp-search__search
   - WebFetch
   - Bash(git *)
 argument-hint: "[<topic>]"
@@ -114,9 +116,9 @@ If "Not sure": flag risky assumptions for verification in Phase 4.
 
 After understanding requirements, **ask before spawning any agents**:
 
-| Header    | Question               | Options                                                                                                                                                                                                       |
-| --------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Next step | How should we proceed? | 1. **Explore codebase** - Check existing patterns and tech stack 2. **Research solutions** - Look up how others solve this 3. **Both** - Explore then research 4. **Skip to approaches** - I know what I want |
+| Header    | Question               | Options                                                                                                                                                                                                                                                                                      |
+| --------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Next step | How should we proceed? | 1. **Explore codebase** - Check existing patterns and tech stack 2. **Research solutions** - Look up how others solve this 3. **Check project history** - Query past decisions on this topic (claude-mem) 4. **Both** - Explore then research 5. **Skip to approaches** - I know what I want |
 
 ### If user chooses "Explore codebase":
 
@@ -129,6 +131,17 @@ Task(
 ```
 
 Then summarize findings and ask: "Based on this, should we also research external solutions?"
+
+### If user chooses "Check project history":
+
+If claude-mem tools are available:
+
+```
+search({ query: "[topic keywords]", limit: 10 })
+timeline({ query: "[topic keywords]", depth_before: 5, depth_after: 5 })
+```
+
+Summarize past decisions, known issues, and relevant context. Then ask if they want to also explore or research.
 
 ### If user chooses "Research solutions":
 

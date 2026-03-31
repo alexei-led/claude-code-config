@@ -1,11 +1,22 @@
 ---
 name: py-docs
 description: Python 3.12+ documentation specialist focused on docstrings, README accuracy, and type hints for documentation. Use for Python code review.
-tools: ["Read", "Grep", "Glob", "LS", "Bash", "LSP"]
+tools:
+  [
+    "Read",
+    "Grep",
+    "Glob",
+    "LS",
+    "Bash",
+    "LSP",
+    "mcp__plugin_claude-mem_mcp-search__smart_search",
+    "mcp__plugin_claude-mem_mcp-search__smart_outline",
+    "mcp__plugin_claude-mem_mcp-search__smart_unfold",
+  ]
 model: haiku
 maxTurns: 10
 color: yellow
-skills: ["writing-python"]
+skills: ["writing-python", "smart-explore"]
 ---
 
 ## Role

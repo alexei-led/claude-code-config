@@ -16,6 +16,8 @@ allowed-tools:
   - Bash(npm *)
   - Bash(bun *)
   - Bash(bunx *)
+  - mcp__plugin_claude-mem_mcp-search__search
+  - mcp__plugin_claude-mem_mcp-search__get_observations
 ---
 
 # Fix All Issues
@@ -53,6 +55,18 @@ No Makefile? Detect language and run:
 - **Web (HTML/CSS/JS)**: `bunx html-validate "**/*.html" 2>&1 | head -50 && bunx stylelint "**/*.css" 2>&1 | head -50 && bunx eslint "**/*.js" 2>&1 | head -50`
 
 **If all pass**: Report "All checks pass" → stop.
+
+---
+
+## Pre-Phase 2: Check History (if claude-mem available)
+
+If `mcp__plugin_claude-mem_mcp-search__search` is available, query for known issues on failing files:
+
+```
+search({ query: "<failing file paths>", type: "gotcha OR problem-solution", limit: 5 })
+```
+
+If relevant past observations exist, fetch with `get_observations` and attach findings to Phase 2 agent prompts. Skip silently if unavailable.
 
 ---
 

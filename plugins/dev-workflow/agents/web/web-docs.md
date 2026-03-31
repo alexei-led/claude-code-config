@@ -1,11 +1,22 @@
 ---
 name: web-docs
 description: Web documentation specialist for comments and ARIA labels. Use for HTML/CSS/JS review.
-tools: [Read, Grep, Glob, LS, Bash, LSP]
+tools:
+  [
+    "Read",
+    "Grep",
+    "Glob",
+    "LS",
+    "Bash",
+    "LSP",
+    "mcp__plugin_claude-mem_mcp-search__smart_search",
+    "mcp__plugin_claude-mem_mcp-search__smart_outline",
+    "mcp__plugin_claude-mem_mcp-search__smart_unfold",
+  ]
 model: haiku
 maxTurns: 10
 color: cyan
-skills: [writing-web]
+skills: ["writing-web", "smart-explore"]
 ---
 
 ## Role

@@ -5,6 +5,9 @@ user-invocable: false
 allowed-tools:
   - mcp__morphllm__warpgrep_codebase_search
   - mcp__morphllm__codebase_search
+  - mcp__plugin_claude-mem_mcp-search__smart_search
+  - mcp__plugin_claude-mem_mcp-search__smart_outline
+  - mcp__plugin_claude-mem_mcp-search__smart_unfold
   - Read
   - Grep
   - Glob
@@ -20,15 +23,17 @@ WarpGrep is an RL-trained search agent that reasons about code, not just pattern
 - **4 reasoning turns** (follows causal chains across files)
 - **F1=0.73** in ~3.8 steps (vs 12.4 for standard search)
 
-## When to Use WarpGrep
+## When to Use Which Tool
 
-| Use WarpGrep                | Use Built-in Grep        |
-| --------------------------- | ------------------------ |
-| "How does auth flow work?"  | "Find class UserService" |
-| "Trace data from API to DB" | Simple regex patterns    |
-| "Find all error handling"   | "Where is X defined?"    |
-| Large repos (1000+ files)   | Known file patterns      |
-| Before major refactoring    | Quick needle lookups     |
+| Use WarpGrep                | Use Smart Explore (claude-mem)     | Use Built-in Grep        |
+| --------------------------- | ---------------------------------- | ------------------------ |
+| "How does auth flow work?"  | "What functions are in this file?" | "Find class UserService" |
+| "Trace data from API to DB" | "Show me this function's source"   | Simple regex patterns    |
+| "Find all error handling"   | "Find all types matching X"        | "Where is X defined?"    |
+| Large repos (1000+ files)   | File structure at a glance         | Known file patterns      |
+| Before major refactoring    | Targeted function extraction       | Quick needle lookups     |
+
+**When available**, prefer Smart Explore for structural queries (10-20x fewer tokens). Use WarpGrep for semantic/reasoning queries across files.
 
 ## Query Formulation
 

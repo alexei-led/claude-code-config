@@ -1,11 +1,22 @@
 ---
 name: py-impl
 description: Python 3.12+ implementation specialist focused on requirements match, dependency injection wiring, and edge cases. Use for Python code review.
-tools: ["Read", "Grep", "Glob", "LS", "Bash", "LSP"]
+tools:
+  [
+    "Read",
+    "Grep",
+    "Glob",
+    "LS",
+    "Bash",
+    "LSP",
+    "mcp__plugin_claude-mem_mcp-search__smart_search",
+    "mcp__plugin_claude-mem_mcp-search__smart_outline",
+    "mcp__plugin_claude-mem_mcp-search__smart_unfold",
+  ]
 model: opus
 effort: high
 color: yellow
-skills: ["writing-python"]
+skills: ["writing-python", "smart-explore"]
 ---
 
 ## Role

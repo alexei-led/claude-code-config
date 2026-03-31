@@ -5,9 +5,9 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-plugin_marketplace-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
 [![Plugins](https://img.shields.io/badge/plugins-9-green)](plugins/)
-[![Skills](https://img.shields.io/badge/skills-27-green)](plugins/)
+[![Skills](https://img.shields.io/badge/skills-29-green)](plugins/)
 
-A battle-tested Claude Code plugin marketplace — 27 skills, 34 agents, 9 hooks, and 9 commands built over 6+ months of daily use and continuous refinement.
+A battle-tested Claude Code plugin marketplace — 29 skills, 34 agents, 9 hooks, and 9 commands built over 6+ months of daily use and continuous refinement.
 
 ## Why This Exists
 
@@ -50,6 +50,27 @@ Some plugins use MCP servers for enhanced capabilities. These are optional — p
 | [Sequential Thinking](https://github.com/modelcontextprotocol/servers/tree/main/src/sequentialthinking) | Step-by-step reasoning for complex planning | go-dev, python-dev, typescript-dev, infra-ops, spec-system               |
 | [MorphLLM](https://github.com/morphllm/morph-claude-code)                                               | Fast codebase search and batch file editing | dev-workflow, go-dev, python-dev, typescript-dev, infra-ops, spec-system |
 
+### Claude-Mem Integration
+
+All agents and several skills optionally integrate with [claude-mem](https://github.com/thedotmack/claude-mem) for cross-session memory and AST-based code navigation. Install with:
+
+```bash
+/plugin marketplace add thedotmack/claude-mem
+/plugin install claude-mem@thedotmack
+```
+
+**What this enables:**
+
+| Capability                    | Tools Used                                      | Benefit                                            |
+| ----------------------------- | ----------------------------------------------- | -------------------------------------------------- |
+| AST code navigation           | `smart_search`, `smart_outline`, `smart_unfold` | 10-20x fewer tokens than reading full files        |
+| Cross-session memory          | `search`, `get_observations`, `timeline`        | Find past decisions, known gotchas, recurring bugs |
+| Historical context in reviews | `search` + `get_observations`                   | Review agents check past findings before starting  |
+
+**Graceful degradation**: All plugins work without claude-mem. When it's not installed, MCP tools are silently absent — agents fall back to Read/Grep/Glob, and skills skip history checks. No errors, no configuration needed.
+
+**How it works**: Agent frontmatter lists claude-mem MCP tools alongside standard tools. Claude Code silently omits unavailable tools at runtime, so agents always have their core tools (Read, Grep, Glob, LSP) and gain smart_explore/memory tools when claude-mem is present. Skill instructions use "when available" / "if claude-mem available" phrasing to guide Claude's behavior.
+
 ## Plugins
 
 | Plugin                                                 | Skills | Agents | Description                                                                        |
@@ -60,11 +81,11 @@ Some plugins use MCP servers for enhanced capabilities. These are optional — p
 | [**typescript-dev**](plugins/typescript-dev/README.md) | 1      | 1      | TypeScript with strict typing, React patterns, and modern tooling                  |
 | [**web-dev**](plugins/web-dev/README.md)               | 1      | 1      | Web frontend with vanilla HTML, CSS, JavaScript, and HTMX                          |
 | [**infra-ops**](plugins/infra-ops/README.md)           | 3      | 1      | Kubernetes, Terraform, Helm, GitHub Actions, AWS, GCP                              |
-| [**dev-tools**](plugins/dev-tools/README.md)           | 11     | 2      | Modern CLI, git worktrees, docs lookup, web research, brainstorming, Gemini        |
+| [**dev-tools**](plugins/dev-tools/README.md)           | 13     | 2      | Modern CLI, git worktrees, docs lookup, web research, brainstorming, Gemini        |
 | [**spec-system**](plugins/spec-system/README.md)       | 0      | 1      | Spec-driven development: requirements, tasks, and planning workflows               |
 | [**testing-e2e**](plugins/testing-e2e/README.md)       | 2      | 1      | E2E testing with Playwright: browser automation and test generation                |
 
-**Totals**: 27 skills, 34 agents, 9 hooks, 9 commands
+**Totals**: 29 skills, 34 agents, 9 hooks, 9 commands
 
 ## Skills
 
@@ -74,39 +95,41 @@ Skills teach Claude domain-specific knowledge and workflows. The `skill-enforcer
 
 Invoke as `/skill-name` or let the skill enforcer suggest them.
 
-| Skill                 | What It Does                                     | Example Trigger                |
-| --------------------- | ------------------------------------------------ | ------------------------------ |
-| `brainstorming-ideas` | Collaborative design dialogue before coding      | "brainstorm", "design"         |
-| `committing-code`     | Smart git commits with logical grouping          | "commit", "save changes"       |
-| `debating-ideas`      | Dialectic agents stress-test design decisions    | "debate", "pros and cons"      |
-| `deploying-infra`     | Validate + deploy K8s/Terraform/Helm             | "deploy to staging", "rollout" |
-| `documenting-code`    | Update docs based on recent changes              | "update docs", "document"      |
-| `evolving-config`     | Audit config against latest Claude Code features | "evolve", "audit config"       |
-| `fixing-code`         | Parallel agents fix all issues, zero tolerance   | "fix errors", "make it pass"   |
-| `improving-tests`     | Refactor tests: combine to tabular, fill gaps    | "improve tests", "coverage"    |
-| `looking-up-docs`     | Library documentation via Context7               | "look up docs", "API ref"      |
-| `researching-web`     | Web research via Perplexity AI                   | "research", "X vs Y"           |
-| `reviewing-code`      | Multi-agent review (security, quality, idioms)   | "review code", "check this"    |
-| `testing-e2e`         | Playwright browser automation and test gen       | "e2e test", "playwright"       |
-| `using-gemini`        | Consult Gemini CLI for second opinions           | "ask gemini", "gemini search"  |
+| Skill                 | What It Does                                     | Example Trigger                 |
+| --------------------- | ------------------------------------------------ | ------------------------------- |
+| `brainstorming-ideas` | Collaborative design dialogue before coding      | "brainstorm", "design"          |
+| `committing-code`     | Smart git commits with logical grouping          | "commit", "save changes"        |
+| `debating-ideas`      | Dialectic agents stress-test design decisions    | "debate", "pros and cons"       |
+| `deploying-infra`     | Validate + deploy K8s/Terraform/Helm             | "deploy to staging", "rollout"  |
+| `documenting-code`    | Update docs based on recent changes              | "update docs", "document"       |
+| `evolving-config`     | Audit config against latest Claude Code features | "evolve", "audit config"        |
+| `fixing-code`         | Parallel agents fix all issues, zero tolerance   | "fix errors", "make it pass"    |
+| `improving-tests`     | Refactor tests: combine to tabular, fill gaps    | "improve tests", "coverage"     |
+| `looking-up-docs`     | Library documentation via Context7               | "look up docs", "API ref"       |
+| `mem-history`         | Query past sessions and decisions (claude-mem)   | "last session", "what happened" |
+| `researching-web`     | Web research via Perplexity AI                   | "research", "X vs Y"            |
+| `reviewing-code`      | Multi-agent review (security, quality, idioms)   | "review code", "check this"     |
+| `testing-e2e`         | Playwright browser automation and test gen       | "e2e test", "playwright"        |
+| `using-gemini`        | Consult Gemini CLI for second opinions           | "ask gemini", "gemini search"   |
 
 ### Auto-Activated
 
 These activate silently when the skill enforcer detects matching patterns.
 
-| Skill                 | Activates When                                 |
-| --------------------- | ---------------------------------------------- |
-| `learning-patterns`   | "learn from session", extract learnings        |
-| `managing-infra`      | K8s resources, Terraform, Helm, GitHub Actions |
-| `refactoring-code`    | Multi-file batch changes, rename everywhere    |
-| `searching-code`      | "how does X work", trace flow, find all uses   |
-| `using-cloud-cli`     | bq queries, gcloud/aws commands                |
-| `using-git-worktrees` | Starting feature work needing isolation        |
-| `using-modern-cli`    | rg, fd, bat, eza, sd instead of legacy tools   |
-| `writing-go`          | Go files, go commands, Go-specific terms       |
-| `writing-python`      | Python files, pytest, pip, frameworks          |
-| `writing-typescript`  | TS/TSX files, npm/bun, React, Node.js          |
-| `writing-web`         | HTML/CSS/JS/HTMX templates                     |
+| Skill                 | Activates When                                      |
+| --------------------- | --------------------------------------------------- |
+| `learning-patterns`   | "learn from session", extract learnings             |
+| `managing-infra`      | K8s resources, Terraform, Helm, GitHub Actions      |
+| `refactoring-code`    | Multi-file batch changes, rename everywhere         |
+| `searching-code`      | "how does X work", trace flow, find all uses        |
+| `smart-explore`       | AST code navigation via claude-mem (10-20x savings) |
+| `using-cloud-cli`     | bq queries, gcloud/aws commands                     |
+| `using-git-worktrees` | Starting feature work needing isolation             |
+| `using-modern-cli`    | rg, fd, bat, eza, sd instead of legacy tools        |
+| `writing-go`          | Go files, go commands, Go-specific terms            |
+| `writing-python`      | Python files, pytest, pip, frameworks               |
+| `writing-typescript`  | TS/TSX files, npm/bun, React, Node.js               |
+| `writing-web`         | HTML/CSS/JS/HTMX templates                          |
 
 ## Agents
 
