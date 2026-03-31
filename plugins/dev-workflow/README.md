@@ -1,0 +1,47 @@
+# dev-workflow
+
+Core development loop: code review, fixes, commits, linting hooks, and 24 language-specific review agents.
+
+## Skills (7)
+
+| Skill              | Invocable | What It Does                                   |
+| ------------------ | --------- | ---------------------------------------------- |
+| `committing-code`  | yes       | Smart git commits with logical grouping        |
+| `reviewing-code`   | yes       | Multi-agent review (security, quality, idioms) |
+| `fixing-code`      | yes       | Parallel agents fix all issues, zero tolerance |
+| `documenting-code` | yes       | Update docs based on recent changes            |
+| `improving-tests`  | yes       | Refactor tests: combine to tabular, fill gaps  |
+| `refactoring-code` | auto      | Multi-file batch changes via MorphLLM          |
+| `searching-code`   | auto      | Intelligent codebase search via WarpGrep       |
+
+## Agents (25)
+
+- `docs-keeper` — documentation updates
+- 6 Go review agents: `go-qa`, `go-tests`, `go-idioms`, `go-impl`, `go-simplify`, `go-docs`
+- 6 Python review agents: `py-qa`, `py-tests`, `py-idioms`, `py-impl`, `py-simplify`, `py-docs`
+- 6 TypeScript review agents: `ts-qa`, `ts-tests`, `ts-idioms`, `ts-impl`, `ts-simplify`, `ts-docs`
+- 6 Web review agents: `web-qa`, `web-tests`, `web-idioms`, `web-impl`, `web-simplify`, `web-docs`
+
+## Hooks (7)
+
+| Hook                     | Event            | What It Does                                 |
+| ------------------------ | ---------------- | -------------------------------------------- |
+| `skill-enforcer.sh`      | UserPromptSubmit | Pattern-matches prompt and suggests skills   |
+| `file-protector.sh`      | PreToolUse       | Blocks edits to settings.json, secrets       |
+| `smart-lint.sh`          | PostToolUse      | Auto-runs linter after file edits            |
+| `test-runner.sh`         | PostToolUse      | Auto-runs tests after implementation changes |
+| `session-start.sh`       | SessionStart     | Shows git branch, last commit, file context  |
+| `notify.sh`              | Notification     | Desktop notifications for long operations    |
+| `performance-monitor.sh` | PostCompact      | Tracks context compaction metrics            |
+
+### Hook Configuration
+
+`smart-lint.sh` sources `.claude-hooks-config.sh` from the project root if present, allowing per-project overrides for linter settings, language toggles, and quality thresholds.
+
+## MCP Servers
+
+| Server     | Used For                                    |
+| ---------- | ------------------------------------------- |
+| Context7   | Doc lookup in review agents                 |
+| Perplexity | QA and simplify agents check best practices |
+| MorphLLM   | searching-code, refactoring-code            |
