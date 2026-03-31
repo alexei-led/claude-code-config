@@ -48,5 +48,11 @@ projects/
 # === System skills (managed externally) ===
 skills/.system/
 
+# === User-specific config (not part of marketplace) ===
+claude-powerline.json
+MCP_Sequential.md
+.claude-hooks-config.sh
+.claude-hooks-ignore
+
 # === OS artifacts ===
 .DS_Store
