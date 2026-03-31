@@ -1,10 +1,21 @@
 ---
 name: ts-tests
 description: TypeScript testing specialist focused on Vitest, test.each patterns, React Testing Library, and test design quality. Identifies pointless/duplicate tests and recommends combining with test.each.
-tools: ["Read", "Grep", "Glob", "LS", "Bash", "LSP"]
+tools:
+  [
+    "Read",
+    "Grep",
+    "Glob",
+    "LS",
+    "Bash",
+    "LSP",
+    "mcp__plugin_claude-mem_mcp-search__smart_search",
+    "mcp__plugin_claude-mem_mcp-search__smart_outline",
+    "mcp__plugin_claude-mem_mcp-search__smart_unfold",
+  ]
 model: sonnet
 color: blue
-skills: ["writing-typescript", "testing-e2e"]
+skills: ["writing-typescript", "testing-e2e", "smart-explore"]
 ---
 
 ## Role

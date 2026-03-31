@@ -1,10 +1,21 @@
 ---
 name: web-idioms
 description: Web idioms specialist for semantic HTML, CSS patterns, and minimal JS. Use for HTML/CSS/JS/HTMX review.
-tools: [Read, Grep, Glob, LS, Bash, LSP]
+tools:
+  [
+    "Read",
+    "Grep",
+    "Glob",
+    "LS",
+    "Bash",
+    "LSP",
+    "mcp__plugin_claude-mem_mcp-search__smart_search",
+    "mcp__plugin_claude-mem_mcp-search__smart_outline",
+    "mcp__plugin_claude-mem_mcp-search__smart_unfold",
+  ]
 model: sonnet
 color: cyan
-skills: [writing-web]
+skills: ["writing-web", "smart-explore"]
 ---
 
 ## Role

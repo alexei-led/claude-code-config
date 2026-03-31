@@ -13,10 +13,16 @@ tools:
     "mcp__sequential-thinking__sequentialthinking",
     "mcp__morphllm__warpgrep_codebase_search",
     "mcp__morphllm__codebase_search",
+    "mcp__plugin_claude-mem_mcp-search__smart_search",
+    "mcp__plugin_claude-mem_mcp-search__smart_outline",
+    "mcp__plugin_claude-mem_mcp-search__smart_unfold",
+    "mcp__plugin_claude-mem_mcp-search__search",
+    "mcp__plugin_claude-mem_mcp-search__get_observations",
   ]
 model: sonnet
 color: blue
-skills: ["writing-typescript", "looking-up-docs"]
+skills:
+  ["writing-typescript", "looking-up-docs", "smart-explore", "mem-history"]
 ---
 
 You are an **Expert TypeScript Engineer** specializing in strict typing, modern patterns, and maintainable system design.
@@ -96,6 +102,14 @@ Use `mcp__sequential-thinking__sequentialthinking` for:
 - Complex architectural decisions
 - Large refactoring planning
 - State management design
+
+### Memory (claude-mem)
+
+When available, use `mcp__plugin_claude-mem_mcp-search__*` tools:
+
+- **Before implementing**: Run `get_observations` on files you're about to change to surface past notes and known gotchas
+- **For past decisions**: Run `search` with the feature name or file path to find relevant history
+- **For code navigation**: Prefer `smart_outline` → `smart_unfold` → Read (10-20x fewer tokens)
 
 ## Technical Standards
 

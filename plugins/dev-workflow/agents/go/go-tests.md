@@ -1,10 +1,21 @@
 ---
 name: go-tests
 description: Go testing specialist focused on idiomatic table-driven tests, testify assert/require, mockery EXPECT patterns, and test design quality. Identifies pointless/duplicate tests and recommends implementation refactoring when complex setup signals design problems.
-tools: ["Read", "Grep", "Glob", "LS", "Bash", "LSP"]
+tools:
+  [
+    "Read",
+    "Grep",
+    "Glob",
+    "LS",
+    "Bash",
+    "LSP",
+    "mcp__plugin_claude-mem_mcp-search__smart_search",
+    "mcp__plugin_claude-mem_mcp-search__smart_outline",
+    "mcp__plugin_claude-mem_mcp-search__smart_unfold",
+  ]
 model: sonnet
 color: orange
-skills: ["writing-go"]
+skills: ["writing-go", "smart-explore"]
 ---
 
 ## Role

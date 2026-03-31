@@ -1,12 +1,24 @@
 ---
 name: py-qa
 description: Python 3.12+ QA specialist focused on logic correctness, security vulnerabilities, and performance issues. Use for Python code review.
-tools: [Read, Grep, Glob, LS, Bash, LSP, mcp__perplexity-ask__perplexity_ask]
+tools:
+  [
+    "Read",
+    "Grep",
+    "Glob",
+    "LS",
+    "Bash",
+    "LSP",
+    "mcp__perplexity-ask__perplexity_ask",
+    "mcp__plugin_claude-mem_mcp-search__smart_search",
+    "mcp__plugin_claude-mem_mcp-search__smart_outline",
+    "mcp__plugin_claude-mem_mcp-search__smart_unfold",
+  ]
 model: opus
 effort: high
 maxTurns: 15
 color: yellow
-skills: ["writing-python"]
+skills: ["writing-python", "smart-explore"]
 ---
 
 ## Role

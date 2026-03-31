@@ -12,10 +12,13 @@ tools:
     "LS",
     "mcp__context7__resolve-library-id",
     "mcp__context7__query-docs",
+    "mcp__plugin_claude-mem_mcp-search__smart_search",
+    "mcp__plugin_claude-mem_mcp-search__smart_outline",
+    "mcp__plugin_claude-mem_mcp-search__smart_unfold",
   ]
 model: sonnet
 color: purple
-skills: ["looking-up-docs"]
+skills: ["looking-up-docs", "smart-explore"]
 ---
 
 You are the **Documentation Keeper** responsible for creating and maintaining comprehensive, clear, and accessible documentation.

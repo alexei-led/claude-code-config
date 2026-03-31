@@ -188,6 +188,18 @@ if echo "$PROMPT_LOWER" | grep -qE '\bask\s*gemini\b|\bgemini\s*(search|opinion|
 	skills+="using-gemini "
 fi
 
+# smart-explore: AST-based code navigation via claude-mem
+# Triggers: code structure, file outline, structural exploration
+if echo "$PROMPT_LOWER" | grep -qE '\b(code|file)\s*structure\b|\boutline\b.*\b(file|code|class|module)\b|\bstructural\s*(view|map|overview)\b|\bwhat.?s\s*in\s*this\s*file\b|\bexplore\s*(the\s*)?(code|codebase)\s*(structure)?\b|\bshow\s*(me\s*)?(the\s*)?(file|code)\s*structure\b|\bast\s*(pars|view|explor)\b|\bsmart[\s_-]?explore\b'; then
+	skills+="smart-explore "
+fi
+
+# mem-history: Query project history via claude-mem
+# Triggers: past sessions, previous decisions, project timeline, memory search
+if echo "$PROMPT_LOWER" | grep -qE '\blast\s*session\b|\bdid\s*we\s*already\b|\bprevious\s*session\b|\bremember\s*when\b|\bwhat\s*did\s*we\s*decide\b|\bpast\s*(issue|bug|decision|fix)\b|\brecurring\s*bug\b|\bproject\s*(history|timeline)\b|\btimeline\b.*\b(project|feature|change)\b|\bwhat\s*happened\s*with\b|\bmem[\s-]?history\b|\bmem[\s-]?search\b|\bclaude[\s-]?mem\b'; then
+	skills+="mem-history "
+fi
+
 # Output only if skills detected (silent when no match)
 if [[ -n "$skills" ]]; then
 	skills="${skills% }"

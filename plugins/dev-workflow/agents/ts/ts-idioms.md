@@ -1,10 +1,21 @@
 ---
 name: ts-idioms
 description: TypeScript 5.x idioms specialist focused on strict typing, discriminated unions, modern patterns (satisfies, as const), and composition. Use for TypeScript code review.
-tools: ["Read", "Grep", "Glob", "LS", "Bash", "LSP"]
+tools:
+  [
+    "Read",
+    "Grep",
+    "Glob",
+    "LS",
+    "Bash",
+    "LSP",
+    "mcp__plugin_claude-mem_mcp-search__smart_search",
+    "mcp__plugin_claude-mem_mcp-search__smart_outline",
+    "mcp__plugin_claude-mem_mcp-search__smart_unfold",
+  ]
 model: sonnet
 color: blue
-skills: ["writing-typescript"]
+skills: ["writing-typescript", "smart-explore"]
 ---
 
 ## Role

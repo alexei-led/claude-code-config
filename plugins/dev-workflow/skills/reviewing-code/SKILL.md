@@ -9,6 +9,8 @@ allowed-tools:
   - TodoWrite
   - AskUserQuestion
   - Bash
+  - mcp__plugin_claude-mem_mcp-search__search
+  - mcp__plugin_claude-mem_mcp-search__get_observations
 argument-hint: "[deep] [team] [external]"
 ---
 
@@ -40,6 +42,20 @@ argument-hint: "[deep] [team] [external]"
 | external           | go-engineer, python-engineer                                        | Subagent | ✅ Yes                    |
 | team external      | go-engineer, python-engineer                                        | **Team** | ✅ Yes                    |
 | deep team external | All 6-12 specialized sub-agents                                     | **Team** | ✅ Yes                    |
+
+---
+
+## Step 0: Check Historical Context (if claude-mem available)
+
+If `mcp__plugin_claude-mem_mcp-search__search` is available, query for past findings on changed files:
+
+```
+search({ query: "<file paths from git diff --name-only HEAD>", limit: 10 })
+```
+
+Look for past review findings, gotchas (`type: "gotcha"`), and decisions on those files. If relevant observations exist, fetch details with `get_observations` and include key findings in agent prompts (Step 2).
+
+Skip this step silently if claude-mem tools are not available.
 
 ---
 

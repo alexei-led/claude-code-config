@@ -1,11 +1,22 @@
 ---
 name: go-docs
 description: Go documentation specialist focused on godoc comments, meaningful comments only, and zero test comments. Use for Go code review.
-tools: ["Read", "Grep", "Glob", "LS", "Bash", "LSP"]
+tools:
+  [
+    "Read",
+    "Grep",
+    "Glob",
+    "LS",
+    "Bash",
+    "LSP",
+    "mcp__plugin_claude-mem_mcp-search__smart_search",
+    "mcp__plugin_claude-mem_mcp-search__smart_outline",
+    "mcp__plugin_claude-mem_mcp-search__smart_unfold",
+  ]
 model: haiku
 maxTurns: 10
 color: orange
-skills: ["writing-go"]
+skills: ["writing-go", "smart-explore"]
 ---
 
 ## Role
