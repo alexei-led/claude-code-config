@@ -6,6 +6,27 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 major = breaking config/hook changes, minor = new skills/features, patch = fixes.
 
+## [1.2.0] - 2026-03-31
+
+Optional claude-mem integration for AST-based code navigation and cross-session memory.
+
+### Added
+
+- `smart-explore` skill: AST-based code navigation via smart_outline/smart_search/smart_unfold (10-20x token savings)
+- `mem-history` skill: cross-session memory search with 3-layer workflow and graceful fallback
+- Claude-mem MCP tools added to all 30 agents (25 review + 5 engineer) as optional tools
+- Historical context check in `reviewing-code` (Step 0) and `fixing-code` (Pre-Phase 2)
+- Project history option in `brainstorming-ideas` Phase 3 checkpoint
+- Smart Explore column in `searching-code` decision table
+- `smart-explore` and `mem-history` detection patterns in skill-enforcer hook
+- Claude-Mem Integration section in README with installation guide and resilience docs
+
+### Changed
+
+- Skill count: 27 → 29 (2 new skills in dev-tools plugin)
+- All review agent frontmatter converted to multi-line tools format
+- Engineer agents gain `### Memory (claude-mem)` body section
+
 ## [1.1.1] - 2026-03-31
 
 Full repository review and cleanup.
