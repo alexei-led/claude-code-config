@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# Pre-commit hook: run lints, tests, validation, and secret scan
+# Install: cp scripts/pre-commit .git/hooks/pre-commit
+set -euo pipefail
+
+echo "=== Pre-commit checks ==="
+
+# Python lint
+echo "→ ruff check"
+uv run ruff check . || { echo "FAIL: ruff check"; exit 1; }
+echo "→ ruff format"
+uv run ruff format --check . || { echo "FAIL: ruff format"; exit 1; }
+
+# Config validation
+echo "→ validate-config"
+uv run python scripts/validate-config.py || { echo "FAIL: validate-config"; exit 1; }
+
+# Tests
+echo "→ pytest"
+uv run --extra test python -m pytest tests/ -q || { echo "FAIL: pytest"; exit 1; }
+
+# Flat sync check
+echo "→ flat/ sync"
+bash scripts/generate-flat.sh --check || { echo "FAIL: flat/ out of sync"; exit 1; }
+
+# Secret scan
+if command -v gitleaks &>/dev/null; then
+    echo "→ gitleaks"
+    gitleaks git --pre-commit --staged --verbose || { echo "FAIL: gitleaks"; exit 1; }
+else
+    echo "→ gitleaks not installed — skipping"
+fi
+
+echo "=== All pre-commit checks passed ==="
