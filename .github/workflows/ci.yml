@@ -83,6 +83,7 @@ jobs:
           enable-caching: true
           cache-dependency-glob: uv.lock
       - run: uv run python scripts/validate-config.py
+      - run: bash scripts/generate-flat.sh --check
   test:
     name: Tests
     needs: changes
