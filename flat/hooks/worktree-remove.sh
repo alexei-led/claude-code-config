@@ -1,0 +1,1 @@
+../../plugins/dev-tools/hooks/worktree-remove.sh

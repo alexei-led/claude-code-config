@@ -1,0 +1,1 @@
+../../plugins/dev-tools/agents/perplexity-researcher.md

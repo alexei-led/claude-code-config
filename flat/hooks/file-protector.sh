@@ -1,0 +1,1 @@
+../../plugins/dev-workflow/hooks/file-protector.sh

@@ -1,0 +1,1 @@
+../../plugins/dev-workflow/hooks/performance-monitor.sh

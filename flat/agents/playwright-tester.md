@@ -1,0 +1,1 @@
+../../plugins/testing-e2e/agents/playwright-tester.md

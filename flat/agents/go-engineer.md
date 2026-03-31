@@ -1,0 +1,1 @@
+../../plugins/go-dev/agents/go-engineer.md
