@@ -1,8 +1,25 @@
 # cc-thingz
 
 [![CI](https://github.com/alexei-led/cc-thingz/actions/workflows/ci.yml/badge.svg)](https://github.com/alexei-led/cc-thingz/actions/workflows/ci.yml)
+[![GitHub tag](https://img.shields.io/github/v/tag/alexei-led/cc-thingz?label=version&sort=semver)](https://github.com/alexei-led/cc-thingz/tags)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Claude Code](https://img.shields.io/badge/Claude_Code-plugin_marketplace-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
+[![Plugins](https://img.shields.io/badge/plugins-9-green)](plugins/)
+[![Skills](https://img.shields.io/badge/skills-27-green)](plugins/)
 
-A Claude Code plugin marketplace with 9 installable plugins for development workflows, language-specific tooling, infrastructure ops, and more.
+A battle-tested Claude Code plugin marketplace — 27 skills, 34 agents, 9 hooks, and 9 commands built over 6+ months of daily use and continuous refinement.
+
+## Why This Exists
+
+Claude Code is powerful out of the box, but specialized workflows need specialized prompts. After months of iterating on skills, agents, and hooks across Go, Python, TypeScript, infrastructure, and planning workflows, these plugins encode hard-won patterns that make Claude Code dramatically more effective:
+
+- **Code review** that spawns 6 parallel agents per language (QA, tests, idioms, implementation, simplification, docs)
+- **Smart hooks** that auto-suggest skills, lint after edits, protect secrets, and run tests
+- **Spec-driven development** with structured requirements, tasks, and a CLI for project management
+- **Infrastructure ops** with validated K8s, Terraform, and Helm deployments
+- **Developer utilities** including worktree isolation, codebase search, web research, and brainstorming
+
+Every skill and agent has been manually crafted and refined through real-world use — not generated boilerplate.
 
 ## Installation
 
