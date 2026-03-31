@@ -5,14 +5,20 @@ set -euo pipefail
 
 echo "=== Pre-commit checks ==="
 
-make ci || { echo "FAIL: make ci"; exit 1; }
+make ci || {
+	echo "FAIL: make ci"
+	exit 1
+}
 
 # Secret scan (not in Makefile — only relevant for commits)
 if command -v gitleaks &>/dev/null; then
-    echo "→ gitleaks"
-    gitleaks git --pre-commit --staged --verbose || { echo "FAIL: gitleaks"; exit 1; }
+	echo "→ gitleaks"
+	gitleaks git --pre-commit --staged --verbose || {
+		echo "FAIL: gitleaks"
+		exit 1
+	}
 else
-    echo "→ gitleaks not installed — skipping"
+	echo "→ gitleaks not installed — skipping"
 fi
 
 echo "=== All pre-commit checks passed ==="

@@ -11,7 +11,7 @@ lint-python: ## Lint Python files with ruff
 
 lint-shell: ## Lint shell scripts with shellcheck
 	@command -v shellcheck >/dev/null 2>&1 || { echo "shellcheck not installed"; exit 1; }
-	find plugins scripts -name '*.sh' -exec shellcheck -e SC1090 -e SC1091 {} +
+	find plugins scripts -name '*.sh' -exec shellcheck {} +
 
 lint-markdown: ## Lint Markdown files
 	@command -v markdownlint-cli2 >/dev/null 2>&1 || { echo "markdownlint-cli2 not installed — skipping"; exit 0; }
