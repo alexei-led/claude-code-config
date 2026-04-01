@@ -6,6 +6,37 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 major = breaking config/hook changes, minor = new skills/features, patch = fixes.
 
+## [1.2.1] - 2026-04-01
+
+System card-derived instruction hardening for all agents and skills.
+
+### Added
+
+- `linting-instructions` skill: model-based prompt review against system card rules
+- `scripts/lint-instructions.py`: advisory regex linter with uv inline deps
+- `docs/instruction-lint-rules.md`: 12 rules (6 universal, 3 opus, 3 sonnet) with citations
+- `make lint-instructions` target (advisory, doesn't fail CI)
+- Skill-enforcer trigger for linting-instructions
+
+### Fixed
+
+- Opus agents (6): add efficiency constraints, tool failure handling, grounding, read-only clauses
+- Sonnet agents (24): add anti-eagerness clauses, scope locks for review agents
+- `infra-engineer`: add destructive action safety for cloud CLI commands
+- `docs-keeper`: add write scope ceiling for Edit/Write/MultiEdit tools
+- `web-engineer`: add scope boundaries, failure handling, workflow structure
+- `web-docs`: add "Run Tooling First" section (was only doc agent missing it)
+- `managing-infra`: add mandatory dry-run before terraform/kubectl/helm apply
+- Writing skills (4): add verify-after-generate with build/lint commands
+- `committing-code`: add secrets detection guard for .env/pem/credentials
+- `documenting-code`, `improving-tests`, `debating-ideas`: add failure handling
+- `mem-history`: add scope description and output format template
+
+### Changed
+
+- Skill count: 29 → 30 (new linting-instructions in dev-tools)
+- All instruction fixes derived from Claude Opus 4.6 and Sonnet 4.6 system cards
+
 ## [1.2.0] - 2026-03-31
 
 Optional claude-mem integration for AST-based code navigation and cross-session memory.

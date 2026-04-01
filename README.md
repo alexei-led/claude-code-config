@@ -5,9 +5,9 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-plugin_marketplace-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
 [![Plugins](https://img.shields.io/badge/plugins-9-green)](plugins/)
-[![Skills](https://img.shields.io/badge/skills-29-green)](plugins/)
+[![Skills](https://img.shields.io/badge/skills-30-green)](plugins/)
 
-A battle-tested Claude Code plugin marketplace — 29 skills, 34 agents, 9 hooks, and 9 commands built over 6+ months of daily use and continuous refinement.
+A battle-tested Claude Code plugin marketplace — 30 skills, 34 agents, 9 hooks, and 9 commands built over 6+ months of daily use and continuous refinement.
 
 ## Why This Exists
 
@@ -85,7 +85,7 @@ All agents and several skills optionally integrate with [claude-mem](https://git
 | [**spec-system**](plugins/spec-system/README.md)       | 0      | 1      | Spec-driven development: requirements, tasks, and planning workflows               |
 | [**testing-e2e**](plugins/testing-e2e/README.md)       | 2      | 1      | E2E testing with Playwright: browser automation and test generation                |
 
-**Totals**: 29 skills, 34 agents, 9 hooks, 9 commands
+**Totals**: 30 skills, 34 agents, 9 hooks, 9 commands
 
 ## Skills
 
