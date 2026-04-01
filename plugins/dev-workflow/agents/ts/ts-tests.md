@@ -182,6 +182,8 @@ const mock = vi.fn(); // Should use vi.mocked(realFn)
 - **Async errors**: Missing tests for failed async operations
 - **Component states**: Missing loading, error, empty states
 
+Review only the focus areas listed above. Do not expand scope to other concerns.
+
 ## Output Format
 
 ### FINDINGS

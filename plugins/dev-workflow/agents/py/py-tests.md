@@ -160,6 +160,8 @@ mock_repo.nonexistent_method()  # Silently passes!
 - **Async coverage**: Sync tests for async code
 - **Thread safety tests**: Missing concurrent access tests for shared state
 
+Review only the focus areas listed above. Do not expand scope to other concerns.
+
 ## Output Format
 
 ### FINDINGS

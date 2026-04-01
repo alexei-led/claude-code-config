@@ -47,7 +47,11 @@ go test -race -short -timeout=5m ./... 2>&1
 - `incomingCalls` - trace who calls a function (input validation checks)
 - `goToImplementation` - find concrete implementations of interfaces
 
+After collecting tool output, focus review on files flagged by tools plus direct callers found via LSP. Do not scan the entire codebase manually.
+
 Include tool output in findings. If tools report issues, those are your primary findings.
+
+Do not modify, delete, or execute application code. Run only the diagnostic commands listed above.
 
 **If golangci-lint fails**, explore the tool to debug:
 

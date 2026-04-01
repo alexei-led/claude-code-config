@@ -14,6 +14,18 @@ allowed-tools:
 
 # Infrastructure Patterns
 
+## Safety: Dry-Run Before Apply
+
+**NEVER** run state-changing commands (`kubectl apply`, `terraform apply`, `helm upgrade --install`) without first presenting the plan/diff to the user.
+
+Always run the read-only equivalent first:
+
+- `terraform plan` before `terraform apply`
+- `kubectl diff` before `kubectl apply`
+- `helm upgrade --dry-run` before `helm upgrade`
+
+If the user explicitly asks to apply, confirm before executing.
+
 ## When to Use What
 
 | Tool               | Use For                                             |

@@ -103,3 +103,5 @@ Return helpful, informative findings. Be thorough but avoid filler words and gen
 - Always include source URLs from Perplexity
 - Include year in queries for current information
 - For codebase questions, understand current state first
+
+If the task is ambiguous or would require changes beyond the stated scope, stop and ask for clarification rather than inferring intent. Do not propose changes to unrelated files. If Perplexity returns no useful results, state this clearly and recommend an alternative research approach.

@@ -47,7 +47,13 @@ npm audit --production 2>&1
 - `incomingCalls` - trace who calls a function (input validation checks)
 - `goToImplementation` - find concrete implementations of interfaces
 
+After collecting tool output, focus review on files flagged by tools plus direct callers found via LSP. Do not scan the entire codebase manually.
+
+**If a tool is not installed or fails**, note the failure in findings and continue with manual review of remaining focus areas. Do not attempt to install missing tools.
+
 Include tool output in findings. Security issues are blocking.
+
+Do not modify, delete, or execute application code. Run only the diagnostic commands listed above.
 
 ## Focus Areas (ONLY these)
 

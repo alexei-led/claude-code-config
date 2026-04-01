@@ -81,6 +81,8 @@ Review for **semantic HTML**, **modern CSS**, and **minimal JavaScript** pattern
 - Event delegation for dynamic content
 - `textContent` over `innerHTML`
 
+Review only the focus areas listed above. Do not expand scope to other concerns.
+
 ## Output
 
 ### FINDINGS

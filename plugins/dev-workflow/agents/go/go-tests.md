@@ -241,6 +241,8 @@ func TestService_GetUser(t *testing.T) {
 - **Fixtures**: `testdata/` directory for test files (ignored by go tools)
 - **Integration tests**: Use build tags `//go:build integration`
 
+Review only the focus areas listed above. Do not expand scope to other concerns.
+
 ## Output Format
 
 ### TEST ISSUES

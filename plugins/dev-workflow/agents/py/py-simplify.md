@@ -131,6 +131,8 @@ match role:
 - **Micro-optimizations**: Optimizing hot loops without profiler data
 - **Complex algorithms**: Using advanced algorithm when simple works
 
+Review only the focus areas listed above. Do not expand scope to other concerns.
+
 ## Output Format
 
 ### FINDINGS

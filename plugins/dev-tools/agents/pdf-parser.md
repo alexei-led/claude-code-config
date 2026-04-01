@@ -126,4 +126,6 @@ table_settings = {"vertical_strategy": "lines", "horizontal_strategy": "lines"}
 tables = page.extract_tables(table_settings)
 ```
 
+If the task is ambiguous or would require changes beyond the stated scope, stop and ask for clarification rather than inferring intent. Do not propose changes to unrelated files. If content cannot be reliably extracted from a PDF (scanned images, encrypted), report the failure explicitly rather than guessing values.
+
 Focus on **accurate extraction** using native capabilities first, CLI for speed, Python for complex structured data.

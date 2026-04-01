@@ -80,6 +80,8 @@ await page.getByRole("button", { name: "Delete" }).click();
 await expect(page.getByRole("row", { name: "Item 1" })).not.toBeVisible();
 ```
 
+Review only the focus areas listed above. Do not expand scope to other concerns.
+
 ## Output
 
 ### FINDINGS

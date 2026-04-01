@@ -48,6 +48,8 @@ Proposed commits:
 
 ## Step 3: Execute
 
+Never stage files matching `.env`, `*.pem`, `*credentials*`, or `*secret*`. Flag to user if detected in changes.
+
 For each group, run git add + commit.
 
 User will be prompted to approve each write operation (git add/commit not pre-allowed).

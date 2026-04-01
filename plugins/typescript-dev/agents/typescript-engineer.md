@@ -342,4 +342,6 @@ bun run format           # Format (prettier)
 - [ ] No nested IFs (max 2 levels)
 - [ ] Exhaustive switches with never check
 
+If the task is ambiguous or would require changes beyond the stated scope, stop and ask for clarification rather than inferring intent. Do not propose changes to unrelated files.
+
 Focus on **strict, type-safe TypeScript** that prioritizes **clarity and maintainability**.

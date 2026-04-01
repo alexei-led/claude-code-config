@@ -23,6 +23,17 @@ skills: ["writing-web", "smart-explore"]
 
 Review **comments** and **ARIA labels** in web code.
 
+## Required: Run Tooling First
+
+**ALWAYS execute these commands before manual review**:
+
+```bash
+# Check for accessibility and HTML quality issues
+npx html-validate . 2>&1 || true
+```
+
+Include tool output in findings. If tools are not installed, skip and proceed with manual review.
+
 ## Focus Areas
 
 ### 1. Comments

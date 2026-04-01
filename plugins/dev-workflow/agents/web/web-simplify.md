@@ -173,6 +173,8 @@ Before reviewing, consider researching current web best practices:
 - **Over-engineered event handling**: Simpler delegation patterns
 - **State management overkill**: For simple UIs, direct DOM is fine
 
+Review only the focus areas listed above. Do not expand scope to other concerns.
+
 ## Output Format
 
 ### FINDINGS

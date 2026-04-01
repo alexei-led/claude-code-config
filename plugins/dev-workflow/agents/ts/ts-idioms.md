@@ -253,6 +253,8 @@ const retriesBad = config.retries || 3; // 0 becomes 3!
 - **God interfaces**: Huge types with 20+ fields → break into composable pieces
 - **Mixing null/undefined**: Choose one for "missing" and be consistent
 
+Review only the focus areas listed above. Do not expand scope to other concerns.
+
 ## Output Format
 
 ### FINDINGS

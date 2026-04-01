@@ -73,6 +73,8 @@ Review for **requirements match** and **responsive design** in simple web apps.
 </button>
 ```
 
+Review only the focus areas listed above. Do not expand scope to other concerns.
+
 ## Output
 
 ### FINDINGS

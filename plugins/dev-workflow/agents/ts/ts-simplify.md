@@ -219,6 +219,8 @@ const result = useMemo(() => items.filter((x) => x.active), [items]);
 // If profiler shows this is a bottleneck, then memoize
 ```
 
+Review only the focus areas listed above. Do not expand scope to other concerns.
+
 ## Output Format
 
 ### FINDINGS

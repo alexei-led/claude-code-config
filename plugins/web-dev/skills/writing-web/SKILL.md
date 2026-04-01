@@ -99,3 +99,11 @@ document.body.addEventListener("click", (e) => {
 - Fetch when HTMX works
 - Deep selector nesting
 - Wrapper div soup
+
+## Verify Generated Code
+
+After generating code, validate HTML and check for issues:
+
+```bash
+npx html-validate . 2>&1 || true
+```

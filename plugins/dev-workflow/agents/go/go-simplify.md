@@ -175,6 +175,8 @@ func NewService(repo userRepo) *Service { return &Service{repo: repo} }
 - **Complex conditionals**: 3+ boolean terms → extract to named function
 - **Magic numbers**: Inline literals → named constants
 
+Review only the focus areas listed above. Do not expand scope to other concerns.
+
 ## Output Format
 
 ### FINDINGS

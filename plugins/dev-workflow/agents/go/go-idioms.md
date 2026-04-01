@@ -201,6 +201,8 @@ func (s *Service) GetUser(ctx context.Context, id string) (*User, error) {
 }
 ```
 
+Review only the focus areas listed above. Do not expand scope to other concerns.
+
 ## Output Format
 
 ### FINDINGS

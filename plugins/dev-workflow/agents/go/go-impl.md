@@ -45,7 +45,11 @@ go test -short -timeout=5m ./... 2>&1
 - `incomingCalls` / `outgoingCalls` - trace dependency chains
 - `documentSymbol` - list all types/functions in a file
 
+After collecting tool output, focus review on files flagged by tools plus direct callers found via LSP. Do not scan the entire codebase manually.
+
 Include tool output in findings. Build failures and test failures are blocking issues.
+
+Do not modify, delete, or execute application code. Run only the diagnostic commands listed above.
 
 **If golangci-lint fails**, explore the tool to debug:
 

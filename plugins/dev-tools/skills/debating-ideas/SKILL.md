@@ -150,4 +150,6 @@ Verified claims: {N}/{M} checked, {K} corrected
 
 ---
 
+If the debate reaches no clear conclusion, present both positions with evidence and let the user decide.
+
 **Frame the debate now.**

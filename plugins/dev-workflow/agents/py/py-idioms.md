@@ -94,6 +94,8 @@ pyright src/
 - **Structural typing**: Use Protocol for duck typing with type hints
 - **Runtime checks**: Only use ABC when `isinstance()` checks needed at runtime
 
+Review only the focus areas listed above. Do not expand scope to other concerns.
+
 ## Output Format
 
 ### FINDINGS

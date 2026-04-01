@@ -162,3 +162,11 @@ go test -race ./...      # Test with race detector
 golangci-lint run        # Lint
 mockery --all            # Generate mocks
 ```
+
+## Verify Generated Code
+
+After generating code, always verify it compiles and passes lint:
+
+```bash
+go build ./... && go vet ./... && golangci-lint run ./...
+```

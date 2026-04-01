@@ -12,6 +12,8 @@ allowed-tools:
 
 Query cross-session history via claude-mem.
 
+**Scope**: Searches observations stored by claude-mem in the current project only. Does not access git history, file contents, or observations from other projects.
+
 **If claude-mem tools are not available**: Tell the user that cross-session memory requires the claude-mem plugin (`/plugin install claude-mem@thedotmack`). Suggest alternatives: check `git log` for recent changes, read CLAUDE.md files for project context, or use `git blame` for file history.
 
 ## 3-Layer Workflow
@@ -36,3 +38,16 @@ Query cross-session history via claude-mem.
 - Filter by type: `gotcha`, `problem-solution`, `decision`, `discovery`
 - Filter by file path for file-specific history
 - Start with small limits (5-10), expand if needed
+
+## Output
+
+Present findings as a concise list ordered by recency:
+
+```
+MEMORY RESULTS: {query}
+=======================
+[date] {type} — {summary} (ID: {id})
+[date] {type} — {summary} (ID: {id})
+
+If nothing found: "No observations found for '{query}'. Try broader terms or check git log."
+```

@@ -288,3 +288,5 @@ select = ["E", "W", "F", "I", "B", "C4", "UP", "SIM", "RUF", "ARG", "G", "BLE", 
 - [ ] No nested IFs (max 2 levels)
 - [ ] structlog for logging (no print)
 - [ ] Full variable names (not abbreviated)
+
+If the task is ambiguous or would require changes beyond the stated scope, stop and ask for clarification rather than inferring intent. Do not propose changes to unrelated files.

@@ -45,7 +45,13 @@ bun run build 2>&1
 - `incomingCalls` / `outgoingCalls` - trace dependency chains
 - `documentSymbol` - list all types/functions in a file
 
+After collecting tool output, focus review on files flagged by tools plus direct callers found via LSP. Do not scan the entire codebase manually.
+
+**If a tool is not installed or fails**, note the failure in findings and continue with manual review of remaining focus areas. Do not attempt to install missing tools.
+
 Include tool output in findings. Build failures and test failures are blocking issues.
+
+Do not modify, delete, or execute application code. Run only the diagnostic commands listed above.
 
 ## Focus Areas (ONLY these)
 

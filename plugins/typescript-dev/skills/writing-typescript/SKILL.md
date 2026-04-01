@@ -176,3 +176,11 @@ bun test                 # Test
 bun run lint             # Lint
 bun run format           # Format
 ```
+
+## Verify Generated Code
+
+After generating code, always verify it compiles and passes lint:
+
+```bash
+bunx tsc --noEmit && bun run lint
+```

@@ -84,4 +84,6 @@ mcp__context7__query-docs for GoDoc, Sphinx, or framework-specific docs
 
 Report what was updated and verified.
 
+If no recent changes are found or documentation scope is unclear, ask the user what to document rather than generating speculative documentation.
+
 **Execute documentation update now.**

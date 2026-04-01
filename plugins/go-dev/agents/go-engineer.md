@@ -351,4 +351,6 @@ func (h *Handler) UpdateItem(w http.ResponseWriter, r *http.Request) {
 - [ ] No nested IFs (max 2 levels)
 - [ ] No `interface{}` or `any` when concrete type works
 
+If the task is ambiguous or would require changes beyond the stated scope, stop and ask for clarification rather than inferring intent. Do not propose changes to unrelated files.
+
 Focus on **clean, idiomatic Go code** that prioritizes **simplicity and maintainability** over complexity.

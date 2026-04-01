@@ -47,6 +47,14 @@ pyright src/
 - `incomingCalls` - trace who calls a function (input validation checks)
 - `goToImplementation` - find concrete implementations of Protocols
 
+After collecting tool output, focus review on files flagged by tools plus direct callers found via LSP. Do not scan the entire codebase manually.
+
+**If a tool is not installed or fails**, note the failure in findings and continue with manual review of remaining focus areas. Do not attempt to install missing tools.
+
+Include tool output in findings. Tool-reported issues take priority over manual findings.
+
+Do not modify, delete, or execute application code. Run only the diagnostic commands listed above.
+
 ## Python 3.14 Specific Checks
 
 ### New Features to Leverage

@@ -53,6 +53,8 @@ Review for **security**, **performance**, and **accessibility** in simple web ap
 - Interactive elements must be keyboard-accessible
 - Don't remove focus outlines without replacement
 
+Review only the focus areas listed above. Do not expand scope to other concerns.
+
 ## Output
 
 ### FINDINGS

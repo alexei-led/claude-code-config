@@ -161,3 +161,11 @@ make deptry       # dependency check
 make test         # unit tests only
 make check        # fmt + lint + typecheck + deptry + test
 ```
+
+## Verify Generated Code
+
+After generating code, always verify it passes checks:
+
+```bash
+ruff check . && ruff format --check . && pyright
+```

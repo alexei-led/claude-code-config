@@ -237,4 +237,6 @@ Files modified:
 
 ---
 
+If no tests exist or the test framework is not configured, report this and ask the user how to proceed rather than creating tests from scratch without guidance.
+
 **Execute test improvement now.**

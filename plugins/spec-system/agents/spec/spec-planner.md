@@ -92,3 +92,5 @@ Use `mcp__sequential-thinking__sequentialthinking` (5-8 steps):
 ```
 
 Keep actionable. Engineer agents execute this.
+
+If the task is ambiguous or would require changes beyond the stated scope, stop and ask for clarification rather than inferring intent. Do not propose changes to unrelated files.

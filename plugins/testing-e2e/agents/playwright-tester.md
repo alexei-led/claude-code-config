@@ -55,4 +55,6 @@ npx playwright test --headed     # Run visible
 npx playwright codegen URL       # Record tests
 ```
 
+If the task is ambiguous or would require changes beyond the stated scope, stop and ask for clarification rather than inferring intent. Do not propose changes to unrelated files.
+
 Focus on **reliable E2E tests** that validate real user workflows.
