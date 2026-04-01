@@ -29,7 +29,7 @@ test: ## Run pytest
 
 # --- Validate ---
 
-.PHONY: validate validate-config validate-flat validate-executables
+.PHONY: validate validate-config validate-flat validate-executables lint-instructions
 validate: validate-config validate-flat validate-executables ## Run all validation checks
 
 validate-config: ## Validate plugin configs and frontmatter
@@ -37,6 +37,9 @@ validate-config: ## Validate plugin configs and frontmatter
 
 validate-flat: ## Check flat/ symlinks are in sync
 	bash scripts/generate-flat.sh --check
+
+lint-instructions: ## Lint agent/skill instructions (advisory)
+	@uv run python scripts/lint-instructions.py
 
 validate-executables: ## Check shell scripts have executable bit
 	@fail=0; \

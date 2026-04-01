@@ -194,6 +194,12 @@ if echo "$PROMPT_LOWER" | grep -qE '\b(code|file)\s*structure\b|\boutline\b.*\b(
 	skills+="smart-explore "
 fi
 
+# linting-instructions: Lint agent/skill instructions against system card rules
+# Triggers: lint instructions, review prompts, check agents, instruction quality, audit prompts
+if echo "$PROMPT_LOWER" | grep -qE '\blint\s*(the|my|all)?\s*instructions?\b|\breview\s*(the|my|all)?\s*(prompts?|instructions?|agents?)\b|\bcheck\s*(the|my|all)?\s*agents?\b|\binstruction\s*quality\b|\baudit\s*(the|my)?\s*(prompts?|instructions?)\b|\bprompt\s*quality\b|\bsystem\s*card\s*(lint|review|check)\b'; then
+	skills+="linting-instructions "
+fi
+
 # mem-history: Query project history via claude-mem
 # Triggers: past sessions, previous decisions, project timeline, memory search
 if echo "$PROMPT_LOWER" | grep -qE '\blast\s*session\b|\bdid\s*we\s*already\b|\bprevious\s*session\b|\bremember\s*when\b|\bwhat\s*did\s*we\s*decide\b|\bpast\s*(issue|bug|decision|fix)\b|\brecurring\s*bug\b|\bproject\s*(history|timeline)\b|\btimeline\b.*\b(project|feature|change)\b|\bwhat\s*happened\s*with\b|\bmem[\s-]?history\b|\bmem[\s-]?search\b|\bclaude[\s-]?mem\b'; then
