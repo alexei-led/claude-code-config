@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "A curated collection of Claude Code plugins for development workflows, language-specific tooling, infrastructure ops, and more",
-    "version": "1.2.1"
+    "version": "1.2.2"
   },
   "plugins": [
     {

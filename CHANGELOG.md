@@ -6,6 +6,20 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 major = breaking config/hook changes, minor = new skills/features, patch = fixes.
 
+## [1.2.2] - 2026-04-01
+
+Documentation accuracy fixes for README.
+
+### Fixed
+
+- Agent model table: engineers were listed as opus but are actually sonnet
+- Add 4 missing skills to user-invocable table (analyzing-usage, learning-patterns, linting-instructions, using-git-worktrees)
+- Move learning-patterns and using-git-worktrees from auto-activated to user-invocable
+- Add playwright-skill to auto-activated table, pdf-parser to agents table
+- Update dev-tools skill count: 13 → 14
+- Narrow linting-instructions enforcer triggers to skill/agent authoring context
+- Clarify linting-instructions description: references Anthropic model cards
+
 ## [1.2.1] - 2026-04-01
 
 System card-derived instruction hardening for all agents and skills.
