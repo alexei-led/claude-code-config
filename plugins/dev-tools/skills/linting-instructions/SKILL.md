@@ -1,6 +1,6 @@
 ---
 name: linting-instructions
-description: Lint agent and skill instructions against system card-derived rules for efficiency and instruction following. Use when user says "lint instructions", "review prompts", "check agents", "instruction quality", or wants to audit plugin prompt quality.
+description: Lint plugin agent/skill prompts against rules derived from Anthropic model cards (Opus 4.6, Sonnet 4.6). Use when authoring or reviewing skills and agents — "lint instructions", "audit prompts", "model card rules".
 user-invocable: true
 context: fork
 model: opus

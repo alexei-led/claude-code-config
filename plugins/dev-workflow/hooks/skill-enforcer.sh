@@ -194,9 +194,9 @@ if echo "$PROMPT_LOWER" | grep -qE '\b(code|file)\s*structure\b|\boutline\b.*\b(
 	skills+="smart-explore "
 fi
 
-# linting-instructions: Lint agent/skill instructions against system card rules
-# Triggers: lint instructions, review prompts, check agents, instruction quality, audit prompts
-if echo "$PROMPT_LOWER" | grep -qE '\blint\s*(the|my|all)?\s*instructions?\b|\breview\s*(the|my|all)?\s*(prompts?|instructions?|agents?)\b|\bcheck\s*(the|my|all)?\s*agents?\b|\binstruction\s*quality\b|\baudit\s*(the|my)?\s*(prompts?|instructions?)\b|\bprompt\s*quality\b|\bsystem\s*card\s*(lint|review|check)\b'; then
+# linting-instructions: Lint plugin prompts against Anthropic model cards
+# Triggers: only when working on skills/agents/plugins — lint prompts, audit instructions, model card review
+if echo "$PROMPT_LOWER" | grep -qE '\blint\s*(the|my|all)?\s*(skill|agent|plugin)?\s*instructions?\b|\breview\s*(the|my|all)?\s*(skill|agent|plugin)\s*(prompts?|instructions?)\b|\baudit\s*(the|my)?\s*(skill|agent|plugin)\s*(prompts?|instructions?)\b|\binstruction\s*quality\b|\bprompt\s*quality\b|\bmodel\s*card\s*(lint|review|check|rules?)\b|\bsystem\s*card\s*(lint|review|check|rules?)\b'; then
 	skills+="linting-instructions "
 fi
 
