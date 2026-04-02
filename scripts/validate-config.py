@@ -63,6 +63,9 @@ CODEX_MARKETPLACE_REQUIRED = ["name", "plugins"]
 CODEX_MARKETPLACE_PLUGIN_REQUIRED = ["name", "source"]
 CODEX_PLUGIN_JSON_REQUIRED = ["name", "version", "description"]
 
+# Gemini CLI extension validation constants
+GEMINI_EXT_REQUIRED = ["name", "version", "description"]
+
 
 def validate_marketplace_json() -> tuple[list[str], list[str]]:
     """Validate .claude-plugin/marketplace.json structure."""
@@ -204,8 +207,9 @@ def validate_frontmatter(config_type: str, spec: dict) -> list[str]:
     for path in files:
         rel = path.relative_to(ROOT)
 
-        # Skip .system/ skills (third-party)
-        if ".system" in str(rel):
+        # Skip .system/ skills (third-party) and build outputs
+        rel_str = str(rel)
+        if ".system" in rel_str or "skills-codex" in rel_str:
             continue
 
         try:
@@ -498,6 +502,59 @@ def validate_codex_plugin_jsons() -> tuple[list[str], list[str]]:
     return errors, warnings
 
 
+def validate_gemini_extensions() -> tuple[list[str], list[str]]:
+    """Validate gemini-extension.json files."""
+    errors: list[str] = []
+    warnings: list[str] = []
+
+    # Root-level extension
+    root_ext = ROOT / "gemini-extension.json"
+    if root_ext.exists():
+        try:
+            data = json.loads(root_ext.read_text())
+            for field in GEMINI_EXT_REQUIRED:
+                if field not in data:
+                    errors.append(f"ERROR: gemini-extension.json: missing '{field}'")
+        except json.JSONDecodeError as e:
+            errors.append(f"ERROR: gemini-extension.json: invalid JSON: {e}")
+
+    # Per-plugin extensions
+    plugins_dir = ROOT / "plugins"
+    if not plugins_dir.is_dir():
+        return errors, warnings
+
+    for plugin_dir in sorted(plugins_dir.iterdir()):
+        if not plugin_dir.is_dir() or plugin_dir.name.startswith("."):
+            continue
+        gext = plugin_dir / "gemini-extension.json"
+        if not gext.exists():
+            warnings.append(
+                f"WARNING: plugins/{plugin_dir.name}/gemini-extension.json not found"
+            )
+            continue
+
+        rel = gext.relative_to(ROOT)
+        try:
+            data = json.loads(gext.read_text())
+        except json.JSONDecodeError as e:
+            errors.append(f"ERROR: {rel}: invalid JSON: {e}")
+            continue
+
+        for field in GEMINI_EXT_REQUIRED:
+            if field not in data:
+                errors.append(f"ERROR: {rel}: missing '{field}'")
+
+        gname = data.get("name", "")
+        if gname and gname != plugin_dir.name:
+            warnings.append(
+                f"WARNING: {rel}: name '{gname}' "
+                f"doesn't match directory "
+                f"'{plugin_dir.name}'"
+            )
+
+    return errors, warnings
+
+
 def main() -> int:
     all_errors: list[str] = []
     all_warnings: list[str] = []
@@ -521,6 +578,11 @@ def main() -> int:
     codex_pj_errors, codex_pj_warnings = validate_codex_plugin_jsons()
     all_errors.extend(codex_pj_errors)
     all_warnings.extend(codex_pj_warnings)
+
+    # Gemini extension validation
+    gemini_errors, gemini_warnings = validate_gemini_extensions()
+    all_errors.extend(gemini_errors)
+    all_warnings.extend(gemini_warnings)
 
     # Frontmatter validation
     for config_type, spec in REQUIRED_FIELDS.items():

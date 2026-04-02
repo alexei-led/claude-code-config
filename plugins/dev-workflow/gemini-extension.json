@@ -1,0 +1,5 @@
+{
+  "name": "dev-workflow",
+  "version": "1.2.2",
+  "description": "Code review, fixes, commits, and linting for development workflows"
+}
