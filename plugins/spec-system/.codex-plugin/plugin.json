@@ -14,7 +14,7 @@
     "tasks",
     "project-management"
   ],
-  "skills": "./skills/",
+  "skills": "./skills-codex/",
   "interface": {
     "displayName": "Spec System",
     "shortDescription": "Spec-driven development with structured requirements and planning",

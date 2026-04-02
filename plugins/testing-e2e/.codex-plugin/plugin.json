@@ -13,7 +13,7 @@
     "testing",
     "browser-automation"
   ],
-  "skills": "./skills/",
+  "skills": "./skills-codex/",
   "interface": {
     "displayName": "E2E Testing",
     "shortDescription": "End-to-end testing with Playwright for browser automation and UI testing",

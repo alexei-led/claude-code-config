@@ -12,7 +12,7 @@
     "golang",
     "development"
   ],
-  "skills": "./skills/",
+  "skills": "./skills-codex/",
   "interface": {
     "displayName": "Go Development",
     "shortDescription": "Idiomatic Go 1.25+ development with stdlib-first patterns",

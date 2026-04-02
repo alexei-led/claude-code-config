@@ -14,7 +14,7 @@
     "htmx",
     "web"
   ],
-  "skills": "./skills/",
+  "skills": "./skills-codex/",
   "interface": {
     "displayName": "Web Development",
     "shortDescription": "Web frontend with vanilla HTML, CSS, JavaScript, and HTMX",

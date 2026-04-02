@@ -13,7 +13,7 @@
     "ruff",
     "development"
   ],
-  "skills": "./skills/",
+  "skills": "./skills-codex/",
   "interface": {
     "displayName": "Python Development",
     "shortDescription": "Python 3.12+ with uv/ruff/pyright toolchain and modern patterns",

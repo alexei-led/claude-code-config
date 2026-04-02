@@ -16,7 +16,7 @@
     "gcp",
     "infrastructure"
   ],
-  "skills": "./skills/",
+  "skills": "./skills-codex/",
   "interface": {
     "displayName": "Infrastructure & Ops",
     "shortDescription": "Kubernetes, Terraform, Helm, GitHub Actions, AWS, and GCP operations",

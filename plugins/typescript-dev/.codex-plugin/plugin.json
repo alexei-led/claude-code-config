@@ -13,7 +13,7 @@
     "nodejs",
     "development"
   ],
-  "skills": "./skills/",
+  "skills": "./skills-codex/",
   "interface": {
     "displayName": "TypeScript Development",
     "shortDescription": "TypeScript with strict typing, React patterns, and modern tooling",

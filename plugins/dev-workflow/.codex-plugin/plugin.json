@@ -14,7 +14,7 @@
     "workflow",
     "hooks"
   ],
-  "skills": "./skills/",
+  "skills": "./skills-codex/",
   "interface": {
     "displayName": "Dev Workflow",
     "shortDescription": "Code review, fixes, commits, and linting for development workflows",

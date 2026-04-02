@@ -14,7 +14,7 @@
     "documentation",
     "utilities"
   ],
-  "skills": "./skills/",
+  "skills": "./skills-codex/",
   "interface": {
     "displayName": "Developer Tools",
     "shortDescription": "Modern CLI tools, git worktrees, docs lookup, research, and brainstorming",
