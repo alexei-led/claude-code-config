@@ -2,12 +2,13 @@
 
 A Claude Code plugin suite with portable skill export for Codex CLI, Gemini CLI, and AGENTS.md-compatible tools.
 
-29 skills across 8 plugins — code review, language tooling, infrastructure, testing, and developer utilities.
+30 skills across 8 plugins — code review, language tooling, infrastructure, testing, and developer utilities.
 
 ## Development Workflow
 
 | Skill | Description |
 |-------|-------------|
+| ccgram-messaging | Inter-agent messaging via ccgram swarm |
 | committing-code | Smart git commits with logical grouping |
 | documenting-code | Update project documentation based on recent changes |
 | fixing-code | Sequential fix workflow |

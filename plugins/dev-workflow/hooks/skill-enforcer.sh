@@ -200,6 +200,12 @@ if echo "$PROMPT_LOWER" | grep -qE '\blint\s*(the|my|all)?\s*(skill|agent|plugin
 	skills+="linting-instructions "
 fi
 
+# ccgram-messaging: Inter-agent messaging via ccgram swarm
+# Triggers: ccgram commands, peer messaging, inbox, broadcast, swarm collaboration, agent-to-agent
+if echo "$PROMPT_LOWER" | grep -qE '\bccgram\b|\binbox\b.*\b(message|agent|peer)\b|\bmessage\s*(other|another|peer|agent|window)\b|\bbroadcast\b.*\b(agent|peer|team|status)\b|\bswarm\b|\blist[\s-]?peers\b|\bpeer\s*(message|discovery|status)\b|\binter[\s-]?agent\b|\bagent[\s-]?to[\s-]?agent\b|\bsend\s*(a\s*)?(message|msg)\s*(to)?\s*(agent|peer|window|@)\b|\bask\s*(another|other|the)\s*agent\b|\breply\s*(to)?\s*(the)?\s*(message|msg|agent)\b|\bspawn\s*(a\s*)?(new\s*)?(agent|window)\b|\bagent\s*(collaborat|communicat|coordinat)\b|\btmux\s*messag\b|\bcheck\s*(my|the)?\s*inbox\b'; then
+	skills+="ccgram-messaging "
+fi
+
 # mem-history: Query project history via claude-mem
 # Triggers: past sessions, previous decisions, project timeline, memory search
 if echo "$PROMPT_LOWER" | grep -qE '\blast\s*session\b|\bdid\s*we\s*already\b|\bprevious\s*session\b|\bremember\s*when\b|\bwhat\s*did\s*we\s*decide\b|\bpast\s*(issue|bug|decision|fix)\b|\brecurring\s*bug\b|\bproject\s*(history|timeline)\b|\btimeline\b.*\b(project|feature|change)\b|\bwhat\s*happened\s*with\b|\bmem[\s-]?history\b|\bmem[\s-]?search\b|\bclaude[\s-]?mem\b'; then
