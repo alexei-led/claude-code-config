@@ -5,6 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-plugin_marketplace-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
 [![Codex CLI](https://img.shields.io/badge/Codex_CLI-plugin_compatible-10A37F)](https://developers.openai.com/codex/plugins)
+[![Gemini CLI](https://img.shields.io/badge/Gemini_CLI-extension_compatible-4285F4)](https://geminicli.com/docs/extensions)
 [![Plugins](https://img.shields.io/badge/plugins-9-green)](plugins/)
 [![Skills](https://img.shields.io/badge/skills-30-green)](plugins/)
 
@@ -193,11 +194,21 @@ plugins/
 
 ## Codex CLI Support
 
-All 9 plugins are also packaged for [OpenAI Codex CLI](https://developers.openai.com/codex/plugins) via `.codex-plugin/` manifests and a Codex marketplace at `.agents/plugins/marketplace.json`.
+All 9 plugins include platform-optimized skill variants via a build system that produces `skills-codex/` directories alongside the Claude Code `skills/` source.
 
-**What works in Codex**: All 30 skills (SKILL.md files are cross-compatible). Skills use identical YAML frontmatter + markdown format on both platforms. Codex ignores Claude Code-specific frontmatter fields (`user-invocable`, `context`, `agent`, `allowed-tools`).
+### Platform-Aware Skill Delivery
 
-**What doesn't port**: Agents (no Codex equivalent), hooks (platform-level in Codex), and commands. Skills that reference Claude Code's `Task(subagent_type=...)` orchestration provide useful guidance but the specific tool calls won't execute in Codex.
+Skills are classified into three tiers:
+
+| Tier       | Count | Strategy                                                                   | Example                              |
+| ---------- | ----- | -------------------------------------------------------------------------- | ------------------------------------ |
+| **GREEN**  | 15    | Shared — identical SKILL.md, symlinked                                     | `writing-go`, `using-modern-cli`     |
+| **YELLOW** | 8     | Auto-stripped — CC frontmatter + CC-ONLY body blocks removed               | `looking-up-docs`, `evolving-config` |
+| **RED**    | 6     | Hand-authored — full `SKILL.codex.md` replacement optimized for o3/codex-1 | `reviewing-code`, `fixing-code`      |
+
+**What ports**: All 29 skills (optimized per platform). Skills use sequential workflows and concise instructions tuned for literal instruction-following models.
+
+**What doesn't port**: Agents (no Codex equivalent), hooks (platform-level in Codex), and commands.
 
 ### Installation (Codex CLI)
 
@@ -210,7 +221,23 @@ codex plugin list
 codex plugin install go-dev
 ```
 
-Or copy `plugins/<name>/` to `~/.codex/plugins/` and reference in `~/.agents/plugins/marketplace.json`.
+### Gemini CLI
+
+The repo is also a [Gemini CLI extension](https://geminicli.com/docs/extensions) with `gemini-extension.json` at root. Install all skills:
+
+```bash
+gemini extensions install https://github.com/alexei-led/cc-thingz
+# Or for local development:
+gemini extensions install --path=./
+```
+
+Individual plugins can also be installed as standalone extensions (each has its own `gemini-extension.json`):
+
+```bash
+gemini extensions install --path=./plugins/go-dev
+```
+
+Skills are served from `skills/` (symlink to `flat/skills-codex/`) with platform-optimized content. The `GEMINI.md` context file provides session-wide skill loading.
 
 ## Flat Directory
 

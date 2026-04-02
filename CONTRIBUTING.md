@@ -37,32 +37,46 @@ make setup    # Install pre-commit hook + dev dependencies
    }
    ```
 
-4. Add skills, agents, hooks, or commands in their respective directories
-5. Register the plugin in both marketplaces:
+4. Add `gemini-extension.json` (Gemini CLI manifest):
+
+   ```json
+   {
+     "name": "your-plugin",
+     "version": "1.2.2",
+     "description": "What it does"
+   }
+   ```
+
+5. Add skills, agents, hooks, or commands in their respective directories
+6. Register the plugin in both marketplaces:
    - `.claude-plugin/marketplace.json` (Claude Code)
    - `.agents/plugins/marketplace.json` (Codex CLI)
-6. Run `make flat` to sync symlinks
+7. Run `make flat` to sync symlinks
 
 ## Directory Structure
 
 ```
 plugins/your-plugin/
 ├── .claude-plugin/
-│   └── plugin.json        # Claude Code manifest
+│   └── plugin.json           # Claude Code manifest
 ├── .codex-plugin/
-│   └── plugin.json        # Codex CLI manifest
+│   └── plugin.json           # Codex CLI manifest
+├── gemini-extension.json     # Gemini CLI manifest
 ├── skills/
 │   └── your-skill/
-│       └── SKILL.md       # Requires name + description frontmatter (shared by both platforms)
+│       └── SKILL.md          # CC source (name + description frontmatter)
+├── skills-codex/             # Build output — platform-optimized for Codex/Gemini
+│   └── your-skill/
+│       └── SKILL.md
 ├── agents/
-│   └── your-agent.md      # Claude Code only (name + description + tools frontmatter)
+│   └── your-agent.md         # Claude Code only
 ├── hooks/
-│   └── your-hook.sh       # Claude Code only
+│   └── your-hook.sh          # Claude Code only
 └── commands/
-    └── your-command.md    # Claude Code only (description frontmatter)
+    └── your-command.md       # Claude Code only
 ```
 
-> **Note**: Skills are cross-compatible between Claude Code and Codex CLI. Agents, hooks, and commands are Claude Code-only — Codex has no equivalent.
+> **Note**: Skills are cross-compatible across Claude Code, Codex CLI, and Gemini CLI. Platform-specific optimizations are handled by the build system (`scripts/generate-overlays.py`). Agents, hooks, and commands are Claude Code-only.
 
 ## Available Commands
 
