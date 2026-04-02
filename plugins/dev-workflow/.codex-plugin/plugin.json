@@ -1,0 +1,24 @@
+{
+  "name": "dev-workflow",
+  "version": "1.2.2",
+  "description": "Core development loop: code review, fixes, commits, linting hooks, and language-specific review skills",
+  "author": {
+    "name": "Alexei Ledenev"
+  },
+  "repository": "https://github.com/alexei-led/cc-thingz",
+  "license": "MIT",
+  "keywords": [
+    "code-review",
+    "linting",
+    "commit",
+    "workflow",
+    "hooks"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Dev Workflow",
+    "shortDescription": "Code review, fixes, commits, and linting for development workflows",
+    "developerName": "Alexei Ledenev",
+    "category": "Productivity"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "name": "web-dev",
+  "version": "1.2.2",
+  "description": "Web frontend development with vanilla HTML, CSS, JavaScript, and HTMX",
+  "author": {
+    "name": "Alexei Ledenev"
+  },
+  "repository": "https://github.com/alexei-led/cc-thingz",
+  "license": "MIT",
+  "keywords": [
+    "html",
+    "css",
+    "javascript",
+    "htmx",
+    "web"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Web Development",
+    "shortDescription": "Web frontend with vanilla HTML, CSS, JavaScript, and HTMX",
+    "developerName": "Alexei Ledenev",
+    "category": "Development"
+  }
+}

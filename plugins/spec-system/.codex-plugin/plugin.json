@@ -1,0 +1,24 @@
+{
+  "name": "spec-system",
+  "version": "1.2.2",
+  "description": "Spec-driven development: structured requirements, tasks, and planning workflows",
+  "author": {
+    "name": "Alexei Ledenev"
+  },
+  "repository": "https://github.com/alexei-led/cc-thingz",
+  "license": "MIT",
+  "keywords": [
+    "spec",
+    "planning",
+    "requirements",
+    "tasks",
+    "project-management"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Spec System",
+    "shortDescription": "Spec-driven development with structured requirements and planning",
+    "developerName": "Alexei Ledenev",
+    "category": "Productivity"
+  }
+}

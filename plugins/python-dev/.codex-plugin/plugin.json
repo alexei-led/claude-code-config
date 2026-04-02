@@ -1,0 +1,23 @@
+{
+  "name": "python-dev",
+  "version": "1.2.2",
+  "description": "Python 3.12+ development with uv/ruff/pyright toolchain and modern patterns",
+  "author": {
+    "name": "Alexei Ledenev"
+  },
+  "repository": "https://github.com/alexei-led/cc-thingz",
+  "license": "MIT",
+  "keywords": [
+    "python",
+    "uv",
+    "ruff",
+    "development"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Python Development",
+    "shortDescription": "Python 3.12+ with uv/ruff/pyright toolchain and modern patterns",
+    "developerName": "Alexei Ledenev",
+    "category": "Development"
+  }
+}
