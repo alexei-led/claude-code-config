@@ -22,7 +22,11 @@ Stress-test ideas by spawning competing perspectives, then synthesize and ground
 
 If no argument provided, ask the user what they want to evaluate.
 
+<!-- CC-ONLY: begin -->
+
 **Use TodoWrite** to track these 4 phases:
+
+<!-- CC-ONLY: end -->
 
 1. Frame the debate
 2. Spawn thesis + antithesis agents
@@ -50,6 +54,8 @@ Frame as a clear binary or spectrum question. Examples:
 ## Phase 2: Spawn Thesis + Antithesis (Parallel)
 
 Spawn two Explore agents in a single message:
+
+<!-- CC-ONLY: begin -->
 
 ```
 Task(
@@ -87,16 +93,22 @@ Task(
 )
 ```
 
+<!-- CC-ONLY: end -->
+
 ---
 
 ## Phase 3: Synthesize
 
 Collect both results:
 
+<!-- CC-ONLY: begin -->
+
 ```
 TaskOutput(task_id=<thesis_id>, block=true)
 TaskOutput(task_id=<antithesis_id>, block=true)
 ```
+
+<!-- CC-ONLY: end -->
 
 Synthesize into a structured verdict:
 

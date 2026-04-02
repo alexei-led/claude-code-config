@@ -16,7 +16,7 @@ MODE="${1:-sync}"
 # Build desired symlink map: flat_path -> target
 declare -A desired
 
-for component in skills agents hooks commands scripts; do
+for component in skills skills-codex agents hooks commands scripts; do
 	for src in plugins/*/"$component"; do
 		[ -d "$src" ] || continue
 		plugin_rel="../../$src"

@@ -28,7 +28,11 @@ argument-hint: "[--dry-run]"
 
 Audit Claude Code config against latest capabilities. Conservative by default — says "no changes needed" when that's true.
 
+<!-- CC-ONLY: begin -->
+
 **Use TaskCreate** to track these 6 phases:
+
+<!-- CC-ONLY: end -->
 
 1. Snapshot current configuration
 2. Fetch latest capabilities
@@ -186,11 +190,17 @@ Format the report:
 - {Z} items informational
 ```
 
-**STOP here.** Use `AskUserQuestion`:
+**STOP here.**
+
+<!-- CC-ONLY: begin -->
+
+Use `AskUserQuestion`:
 
 | Header | Question                                      | Options                                                                                                      |
 | ------ | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | Action | How should we proceed with the audit results? | Apply all recommended (Recommended) / Select items to apply / Dry run only (show diffs) / Skip (report only) |
+
+<!-- CC-ONLY: end -->
 
 If `$ARGUMENTS` contains `--dry-run`: Skip the question, show diffs only, do not apply.
 

@@ -1,0 +1,23 @@
+{
+  "name": "typescript-dev",
+  "version": "1.2.2",
+  "description": "TypeScript development with strict typing, React patterns, and modern tooling",
+  "author": {
+    "name": "Alexei Ledenev"
+  },
+  "repository": "https://github.com/alexei-led/cc-thingz",
+  "license": "MIT",
+  "keywords": [
+    "typescript",
+    "react",
+    "nodejs",
+    "development"
+  ],
+  "skills": "./skills-codex/",
+  "interface": {
+    "displayName": "TypeScript Development",
+    "shortDescription": "TypeScript with strict typing, React patterns, and modern tooling",
+    "developerName": "Alexei Ledenev",
+    "category": "Development"
+  }
+}

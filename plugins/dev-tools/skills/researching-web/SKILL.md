@@ -45,9 +45,13 @@ Trigger phrases that warrant agent:
 - "is my implementation following standards"
 - "research and show how my code differs"
 
+<!-- CC-ONLY: begin -->
+
 ```
 Task(subagent_type="perplexity-researcher", prompt="Research: <topic>", run_in_background=true)
 ```
+
+<!-- CC-ONLY: end -->
 
 **DO NOT use agent for:**
 

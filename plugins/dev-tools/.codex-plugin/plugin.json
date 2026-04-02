@@ -1,0 +1,24 @@
+{
+  "name": "dev-tools",
+  "version": "1.2.2",
+  "description": "Developer utilities: modern CLI tools, git worktrees, docs lookup, web research, brainstorming",
+  "author": {
+    "name": "Alexei Ledenev"
+  },
+  "repository": "https://github.com/alexei-led/cc-thingz",
+  "license": "MIT",
+  "keywords": [
+    "cli",
+    "worktrees",
+    "research",
+    "documentation",
+    "utilities"
+  ],
+  "skills": "./skills-codex/",
+  "interface": {
+    "displayName": "Developer Tools",
+    "shortDescription": "Modern CLI tools, git worktrees, docs lookup, research, and brainstorming",
+    "developerName": "Alexei Ledenev",
+    "category": "Productivity"
+  }
+}

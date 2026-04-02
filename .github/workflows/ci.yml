@@ -81,7 +81,7 @@ jobs:
         with:
           enable-caching: true
           cache-dependency-glob: uv.lock
-      - run: make validate
+      - run: make overlays validate
   test:
     name: Tests
     needs: changes

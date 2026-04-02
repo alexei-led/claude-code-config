@@ -1,6 +1,6 @@
 # dev-tools
 
-Developer utilities: modern CLI tools, git worktrees, docs lookup, web research, brainstorming, and more.
+Developer utilities: modern CLI tools, git worktrees, docs lookup, web research, brainstorming, and more. Skills available for both Claude Code and Codex CLI; agents and hooks are Claude Code-only.
 
 ## Skills (11)
 

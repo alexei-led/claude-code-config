@@ -1,0 +1,22 @@
+{
+  "name": "go-dev",
+  "version": "1.2.2",
+  "description": "Idiomatic Go development with stdlib-first patterns, testing, and CLI tooling",
+  "author": {
+    "name": "Alexei Ledenev"
+  },
+  "repository": "https://github.com/alexei-led/cc-thingz",
+  "license": "MIT",
+  "keywords": [
+    "go",
+    "golang",
+    "development"
+  ],
+  "skills": "./skills-codex/",
+  "interface": {
+    "displayName": "Go Development",
+    "shortDescription": "Idiomatic Go 1.25+ development with stdlib-first patterns",
+    "developerName": "Alexei Ledenev",
+    "category": "Development"
+  }
+}

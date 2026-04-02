@@ -24,8 +24,11 @@ Context7 provides up-to-date, version-specific documentation and code examples d
 
 ## Workflow
 
+<!-- CC-ONLY: begin -->
+
 1. **Resolve library ID**: `mcp__context7__resolve-library-id` with `libraryName`
 2. **Get documentation**: `mcp__context7__query-docs` with `context7CompatibleLibraryID` and `topic`
+<!-- CC-ONLY: end -->
 
 ## Modes
 
@@ -122,9 +125,11 @@ Context7 query returns empty?
    ```
 
 4. **Perplexity for recent/niche libraries**:
+   <!-- CC-ONLY: begin -->
    ```
    mcp__perplexity-ask__perplexity_ask: "How to use <feature> in <library> 2024"
    ```
+   <!-- CC-ONLY: end -->
 
 ### Libraries Commonly Not in Context7
 

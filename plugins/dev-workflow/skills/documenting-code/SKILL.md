@@ -15,7 +15,11 @@ allowed-tools:
 
 Update project documentation to reflect current code state.
 
+<!-- CC-ONLY: begin -->
+
 **Use TodoWrite** to track these 5 phases:
+
+<!-- CC-ONLY: end -->
 
 1. Determine documentation scope
 2. Analyze recent changes
@@ -36,6 +40,8 @@ Use AskUserQuestion:
 ## Phase 2-4: Spawn docs-keeper Agent
 
 Spawn **docs-keeper** agent with documentation prompt:
+
+<!-- CC-ONLY: begin -->
 
 ```
 Task with docs-keeper agent:
@@ -71,6 +77,8 @@ Updated:
 
 Verified: All links valid, examples compile"
 ```
+
+<!-- CC-ONLY: end -->
 
 ## Phase 4: Research Best Practices (If Needed)
 

@@ -114,9 +114,12 @@ Then at the end, output a summary:
 
 ### Batching strategy
 
+<!-- CC-ONLY: begin -->
+
 - Batch files by plugin (one agent per plugin)
 - Launch agents in parallel where possible (up to 3 concurrent)
 - Each agent reads its batch of files using Read tool
+<!-- CC-ONLY: end -->
 
 ---
 

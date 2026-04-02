@@ -1,6 +1,6 @@
 # typescript-dev
 
-TypeScript development with strict typing, React patterns, and modern tooling.
+TypeScript development with strict typing, React patterns, and modern tooling. Available for both Claude Code and Codex CLI.
 
 ## Skills (1)
 
@@ -10,7 +10,7 @@ Includes supplementary docs: `PATTERNS.md`, `REACT.md`, `TESTING.md`.
 
 ## Agents (1)
 
-- `typescript-engineer` (opus) — TypeScript implementation, React apps, Node.js services
+- `typescript-engineer` (sonnet) — TypeScript implementation, React apps, Node.js services (Claude Code only)
 
 ## MCP Servers
 
