@@ -4,20 +4,21 @@
 [![GitHub tag](https://img.shields.io/github/v/tag/alexei-led/cc-thingz?label=version&sort=semver)](https://github.com/alexei-led/cc-thingz/tags)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-plugin_marketplace-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
-[![Codex CLI](https://img.shields.io/badge/Codex_CLI-plugin_compatible-10A37F)](https://developers.openai.com/codex/plugins)
-[![Gemini CLI](https://img.shields.io/badge/Gemini_CLI-extension_compatible-4285F4)](https://geminicli.com/docs/extensions)
+[![AGENTS.md](https://img.shields.io/badge/AGENTS.md-standard-000000)](https://agents.md)
+[![Codex CLI](https://img.shields.io/badge/Codex_CLI-skill_export-10A37F)](https://developers.openai.com/codex/plugins)
+[![Gemini CLI](https://img.shields.io/badge/Gemini_CLI-skill_export-4285F4)](https://geminicli.com/docs/extensions)
 [![Plugins](https://img.shields.io/badge/plugins-9-green)](plugins/)
 [![Skills](https://img.shields.io/badge/skills-30-green)](plugins/)
 
-A cross-platform collection of AI coding skills and plugins for **Claude Code**, **OpenAI Codex CLI**, and **Google Gemini CLI** — 30 skills, 34 agents, 9 hooks, and 9 commands built over 6+ months of daily use and continuous refinement.
+A **Claude Code** plugin suite — 30 skills, 34 agents, 9 hooks, and 9 commands — with portable skill export for Codex CLI, Gemini CLI, and [AGENTS.md](https://agents.md)-compatible tools. Built over 6+ months of daily use and continuous refinement.
 
-Originally developed for Claude Code, all skills are now served with platform-optimized instructions tuned for each model family (Claude, o3/codex-1, Gemini).
+Built for Claude Code, with all 29 skills exported as platform-optimized instructions for Codex CLI, Gemini CLI, and any tool supporting the AGENTS.md standard.
 
 ## Why This Exists
 
 AI coding tools are powerful out of the box, but specialized workflows need specialized prompts. After months of iterating on skills, agents, and hooks across Go, Python, TypeScript, infrastructure, and planning workflows, these plugins encode hard-won patterns:
 
-- **Code review** with parallel multi-agent review (Claude Code) or sequential lint-and-check workflows (Codex/Gemini)
+- **Code review** with parallel multi-agent review and sequential lint-and-check workflows
 - **Smart hooks** that auto-suggest skills, lint after edits, protect secrets, and run tests (Claude Code)
 - **Spec-driven development** with structured requirements, tasks, and a CLI for project management
 - **Infrastructure ops** with validated K8s, Terraform, and Helm deployments
@@ -58,9 +59,13 @@ Individual plugins can also be installed as standalone extensions:
 gemini extensions install --path=./plugins/go-dev
 ```
 
+### Other AGENTS.md-Compatible Tools
+
+The `AGENTS.md` at the repo root provides a skill catalog readable by any tool supporting the [AGENTS.md standard](https://agents.md) (GitHub Copilot, Cursor, Windsurf, Devin, and others).
+
 ## Prerequisites
 
-Some plugins use MCP servers for enhanced capabilities. These are optional — plugins degrade gracefully without them. MCP servers work across all three platforms (Claude Code, Codex CLI, Gemini CLI).
+Some plugins use MCP servers for enhanced capabilities. These are optional — plugins degrade gracefully without them.
 
 | MCP Server                                                                                              | Purpose                                     | Used By                                                                  |
 | ------------------------------------------------------------------------------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------ |
@@ -108,7 +113,7 @@ All agents and several skills optionally integrate with [claude-mem](https://git
 
 ## Skills
 
-Skills teach the AI model domain-specific knowledge and workflows. All 30 skills work across Claude Code, Codex CLI, and Gemini CLI with platform-optimized instructions. On Claude Code, the `skill-enforcer` hook auto-suggests relevant skills based on your prompt.
+Skills teach the AI model domain-specific knowledge and workflows. All skills are authored for Claude Code and exported with platform-optimized instructions for Codex CLI, Gemini CLI, and [AGENTS.md](https://agents.md)-compatible tools. On Claude Code, the `skill-enforcer` hook auto-suggests relevant skills based on your prompt.
 
 ### User-Invocable
 
@@ -186,18 +191,18 @@ These activate silently when relevant patterns are detected — no `/skill-name`
 | `worktree-create.sh`     | WorktreeCreate   | Sets up isolated git worktree environment    |
 | `worktree-remove.sh`     | WorktreeRemove   | Cleans up worktree on exit                   |
 
-## Cross-Platform Architecture
+## Skill Export Architecture
 
-All 30 skills work across Claude Code, Codex CLI, and Gemini CLI. A build system (`scripts/generate-overlays.py`) produces platform-optimized `skills-codex/` directories alongside the Claude Code `skills/` source.
+All skills are authored for Claude Code and exported via a build system (`scripts/generate-overlays.py`) that produces platform-optimized `skills-codex/` directories. An `AGENTS.md` file is generated from these overlays for broad tool compatibility.
 
 ### Platform Support
 
-| Component        | Claude Code                                   | Codex CLI                                           | Gemini CLI                |
-| ---------------- | --------------------------------------------- | --------------------------------------------------- | ------------------------- |
-| **Skills** (30)  | Full — CC source with orchestration           | Optimized — stripped frontmatter + agentic preamble | Optimized — same as Codex |
-| **Agents** (34)  | Full — multi-agent review, parallel execution | Not supported                                       | Not supported             |
-| **Hooks** (9)    | Full — lint, test, protect, suggest           | Not supported                                       | Not supported             |
-| **Commands** (9) | Full — spec-driven development                | Not supported                                       | Not supported             |
+| Component        | Claude Code                                   | Skill Export (Codex, Gemini, AGENTS.md)             |
+| ---------------- | --------------------------------------------- | --------------------------------------------------- |
+| **Skills** (29)  | Full — CC source with orchestration           | Optimized — stripped frontmatter + agentic preamble |
+| **Agents** (34)  | Full — multi-agent review, parallel execution | Claude Code only                                    |
+| **Hooks** (9)    | Full — lint, test, protect, suggest           | Claude Code only                                    |
+| **Commands** (9) | Full — spec-driven development                | Claude Code only                                    |
 
 ### Skill Tiers
 
@@ -212,6 +217,7 @@ Skills are classified by how much adaptation they need:
 ### Structure
 
 ```
+AGENTS.md                            # AGENTS.md standard (generated)
 .claude-plugin/marketplace.json      # Claude Code marketplace
 .agents/plugins/marketplace.json     # Codex CLI marketplace
 gemini-extension.json                # Gemini CLI extension manifest
@@ -237,7 +243,7 @@ plugins/
 
 ## Flat Directory
 
-`flat/` provides a unified symlink view of all plugin components for tools that need flat directory access (chezmoi, Codex CLI, Gemini CLI). Regenerate with:
+`flat/` provides a unified symlink view of all plugin components for tools that need flat directory access (chezmoi, Codex CLI, Gemini CLI). `AGENTS.md` is generated from `flat/skills-codex/`. Regenerate with:
 
 ```bash
 scripts/generate-flat.sh

@@ -32,10 +32,16 @@ These skills provide domain-specific knowledge and workflows. They are optimized
 
 ## Developer Tools
 
+@flat/skills-codex/analyzing-usage/SKILL.md
 @flat/skills-codex/brainstorming-ideas/SKILL.md
 @flat/skills-codex/debating-ideas/SKILL.md
+@flat/skills-codex/evolving-config/SKILL.md
+@flat/skills-codex/learning-patterns/SKILL.md
+@flat/skills-codex/linting-instructions/SKILL.md
 @flat/skills-codex/looking-up-docs/SKILL.md
+@flat/skills-codex/mem-history/SKILL.md
 @flat/skills-codex/researching-web/SKILL.md
-@flat/skills-codex/using-modern-cli/SKILL.md
+@flat/skills-codex/smart-explore/SKILL.md
+@flat/skills-codex/using-gemini/SKILL.md
 @flat/skills-codex/using-git-worktrees/SKILL.md
-@flat/skills-codex/analyzing-usage/SKILL.md
+@flat/skills-codex/using-modern-cli/SKILL.md
