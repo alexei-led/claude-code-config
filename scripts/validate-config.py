@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate Claude Code plugin marketplace structure.
+"""Validate Claude Code and Codex CLI plugin marketplace structure.
 
 Checks:
 - marketplace.json: required fields, valid structure, source paths exist
@@ -9,6 +9,9 @@ Checks:
 - User-invocable skills appear in skill-enforcer.sh (warning)
 - Config files (JSON, TOML) are valid
 - allowed-tools in commands uses list format
+- Codex: .agents/plugins/marketplace.json structure
+- Codex: .codex-plugin/plugin.json per plugin
+- Codex: version consistency between CC and Codex manifests
 """
 
 from __future__ import annotations
@@ -54,6 +57,11 @@ REQUIRED_FIELDS: dict[str, dict[str, str | list[str]]] = {
 EXPECTED_JSON_KEYS = {
     "hook-config.json": ["file-protector", "smart-lint"],
 }
+
+# Codex CLI plugin validation constants
+CODEX_MARKETPLACE_REQUIRED = ["name", "plugins"]
+CODEX_MARKETPLACE_PLUGIN_REQUIRED = ["name", "source"]
+CODEX_PLUGIN_JSON_REQUIRED = ["name", "version", "description"]
 
 
 def validate_marketplace_json() -> tuple[list[str], list[str]]:
@@ -283,7 +291,7 @@ def validate_enforcer_coverage() -> list[str]:
                 continue
 
             try:
-                post = frontmatter.load(skill_md)
+                post = frontmatter.load(str(skill_md))
             except Exception:
                 continue
 
@@ -318,7 +326,7 @@ def validate_command_tools_format() -> list[str]:
         for path in sorted(commands_dir.rglob("*.md")):
             rel = path.relative_to(ROOT)
             try:
-                post = frontmatter.load(path)
+                post = frontmatter.load(str(path))
             except Exception:
                 continue
 
@@ -378,19 +386,141 @@ def validate_toml_files() -> list[str]:
     return errors
 
 
+def validate_codex_marketplace() -> tuple[list[str], list[str]]:
+    """Validate .agents/plugins/marketplace.json for Codex CLI."""
+    errors: list[str] = []
+    warnings: list[str] = []
+    mp_path = ROOT / ".agents" / "plugins" / "marketplace.json"
+
+    if not mp_path.exists():
+        warnings.append("WARNING: .agents/plugins/marketplace.json not found (Codex)")
+        return errors, warnings
+
+    try:
+        data = json.loads(mp_path.read_text())
+    except json.JSONDecodeError as e:
+        errors.append(f"ERROR: .agents/plugins/marketplace.json: invalid JSON: {e}")
+        return errors, warnings
+
+    for field in CODEX_MARKETPLACE_REQUIRED:
+        if field not in data:
+            errors.append(f"ERROR: .agents/plugins/marketplace.json: missing '{field}'")
+
+    plugins = data.get("plugins", [])
+    if not plugins:
+        warnings.append("WARNING: .agents/plugins/marketplace.json: no plugins")
+
+    seen_names: set[str] = set()
+    for i, plugin in enumerate(plugins):
+        prefix = f".agents/plugins/marketplace.json: plugins[{i}]"
+
+        for field in CODEX_MARKETPLACE_PLUGIN_REQUIRED:
+            if field not in plugin:
+                errors.append(f"ERROR: {prefix}: missing '{field}'")
+
+        pname = plugin.get("name", "")
+        if pname:
+            if not KEBAB_CASE_RE.match(pname):
+                errors.append(f"ERROR: {prefix}: name '{pname}' not kebab-case")
+            if pname in seen_names:
+                errors.append(f"ERROR: {prefix}: duplicate name '{pname}'")
+            seen_names.add(pname)
+
+        source = plugin.get("source", {})
+        if isinstance(source, dict):
+            spath = source.get("path", "")
+            if spath and spath.startswith("./"):
+                if not (ROOT / spath).is_dir():
+                    errors.append(f"ERROR: {prefix}: source path '{spath}' not found")
+        else:
+            errors.append(f"ERROR: {prefix}: source must be an object")
+
+    return errors, warnings
+
+
+def validate_codex_plugin_jsons() -> tuple[list[str], list[str]]:
+    """Validate .codex-plugin/plugin.json files under plugins/."""
+    errors: list[str] = []
+    warnings: list[str] = []
+    plugins_dir = ROOT / "plugins"
+
+    if not plugins_dir.is_dir():
+        return errors, warnings
+
+    for plugin_dir in sorted(plugins_dir.iterdir()):
+        if not plugin_dir.is_dir() or plugin_dir.name.startswith("."):
+            continue
+
+        codex_pj = plugin_dir / ".codex-plugin" / "plugin.json"
+        cc_pj = plugin_dir / ".claude-plugin" / "plugin.json"
+
+        if not codex_pj.exists():
+            warnings.append(
+                f"WARNING: plugins/{plugin_dir.name}/.codex-plugin/plugin.json "
+                f"not found"
+            )
+            continue
+
+        rel = codex_pj.relative_to(ROOT)
+        try:
+            codex_data = json.loads(codex_pj.read_text())
+        except json.JSONDecodeError as e:
+            errors.append(f"ERROR: {rel}: invalid JSON: {e}")
+            continue
+
+        for field in CODEX_PLUGIN_JSON_REQUIRED:
+            if field not in codex_data:
+                errors.append(f"ERROR: {rel}: missing required field '{field}'")
+
+        codex_name = codex_data.get("name", "")
+        if codex_name and not KEBAB_CASE_RE.match(codex_name):
+            errors.append(f"ERROR: {rel}: name '{codex_name}' not kebab-case")
+        if codex_name and codex_name != plugin_dir.name:
+            warnings.append(
+                f"WARNING: {rel}: name '{codex_name}' doesn't match "
+                f"directory '{plugin_dir.name}'"
+            )
+
+        # Version consistency: Codex plugin.json should match CC plugin.json
+        if cc_pj.exists():
+            try:
+                cc_data = json.loads(cc_pj.read_text())
+                cc_ver = cc_data.get("version", "")
+                codex_ver = codex_data.get("version", "")
+                if cc_ver and codex_ver and cc_ver != codex_ver:
+                    warnings.append(
+                        f"WARNING: {rel}: version '{codex_ver}' differs from "
+                        f"CC version '{cc_ver}'"
+                    )
+            except json.JSONDecodeError:
+                pass
+
+    return errors, warnings
+
+
 def main() -> int:
     all_errors: list[str] = []
     all_warnings: list[str] = []
 
-    # Marketplace validation
+    # Claude Code marketplace validation
     mp_errors, mp_warnings = validate_marketplace_json()
     all_errors.extend(mp_errors)
     all_warnings.extend(mp_warnings)
 
-    # Plugin.json validation
+    # Claude Code plugin.json validation
     pj_errors, pj_warnings = validate_plugin_jsons()
     all_errors.extend(pj_errors)
     all_warnings.extend(pj_warnings)
+
+    # Codex marketplace validation
+    codex_mp_errors, codex_mp_warnings = validate_codex_marketplace()
+    all_errors.extend(codex_mp_errors)
+    all_warnings.extend(codex_mp_warnings)
+
+    # Codex plugin.json validation
+    codex_pj_errors, codex_pj_warnings = validate_codex_plugin_jsons()
+    all_errors.extend(codex_pj_errors)
+    all_warnings.extend(codex_pj_warnings)
 
     # Frontmatter validation
     for config_type, spec in REQUIRED_FIELDS.items():
