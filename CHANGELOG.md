@@ -6,6 +6,31 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 major = breaking config/hook changes, minor = new skills/features, patch = fixes.
 
+## [1.4.0] - 2026-04-02
+
+AGENTS.md adoption and CC-first rebrand.
+
+### Added
+
+- **AGENTS.md generation**: `scripts/generate-agents-md.py` builds `AGENTS.md` from `flat/skills-codex/` with categorized skill tables — compatible with 20+ AI coding tools via the Linux Foundation AGENTS.md standard
+- `make agents-md` and `make validate-agents-md` targets
+- AGENTS.md badge in README
+- Installation section for AGENTS.md-compatible tools (GitHub Copilot, Cursor, Windsurf, Devin)
+- Tests for AGENTS.md generator (16 tests)
+
+### Changed
+
+- **Rebranded** from "cross-platform collection" to "Claude Code plugin suite with portable skill export"
+- README tagline, badges, section headers, and Platform Support table updated to CC-first framing
+- "Cross-Platform Architecture" section renamed to "Skill Export Architecture"
+- Codex/Gemini badges changed from "compatible" to "skill_export"
+- `.claude-plugin/marketplace.json` description updated
+- `gemini-extension.json` description updated
+
+### Fixed
+
+- GEMINI.md skill drift: added 6 missing skills (`evolving-config`, `learning-patterns`, `linting-instructions`, `mem-history`, `smart-explore`, `using-gemini`) — now lists all 29 skills
+
 ## [1.3.0] - 2026-04-02
 
 Cross-platform plugin support for OpenAI Codex CLI and Google Gemini CLI.
