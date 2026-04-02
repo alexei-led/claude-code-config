@@ -21,7 +21,11 @@ argument-hint: "[topic] [--dry-run]"
 
 Extract actionable learnings and generate project-specific customizations. Adapts Claude Code to project patterns over time.
 
+<!-- CC-ONLY: begin -->
+
 **Use TaskCreate** to track these 8 phases:
+
+<!-- CC-ONLY: end -->
 
 1. Discover existing customizations
 2. Extract learnings from conversation
@@ -280,11 +284,17 @@ Lines: X/200
 Rollback: `git checkout .claude/`
 ```
 
-**STOP**: Use `AskUserQuestion`:
+**STOP**:
+
+<!-- CC-ONLY: begin -->
+
+Use `AskUserQuestion`:
 
 | Header | Question                    | Options                                    |
 | ------ | --------------------------- | ------------------------------------------ |
 | Action | Apply these customizations? | Apply all / Select items / Edit first / No |
+
+<!-- CC-ONLY: end -->
 
 If "Select items": Show multi-select for each category.
 
