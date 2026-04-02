@@ -29,14 +29,17 @@ test: ## Run pytest
 
 # --- Validate ---
 
-.PHONY: validate validate-config validate-flat validate-executables lint-instructions
-validate: validate-config validate-flat validate-executables ## Run all validation checks
+.PHONY: validate validate-config validate-flat validate-overlays validate-executables lint-instructions
+validate: validate-config validate-flat validate-overlays validate-executables ## Run all validation checks
 
 validate-config: ## Validate plugin configs and frontmatter
 	uv run python scripts/validate-config.py
 
 validate-flat: ## Check flat/ symlinks are in sync
 	bash scripts/generate-flat.sh --check
+
+validate-overlays: ## Check skills-codex/ overlays are in sync
+	uv run python scripts/generate-overlays.py --check
 
 lint-instructions: ## Lint agent/skill instructions (advisory)
 	@uv run python scripts/lint-instructions.py
@@ -63,10 +66,16 @@ fmt: ## Auto-format Python and shell files
 flat: ## Sync flat/ symlinks with plugin contents
 	bash scripts/generate-flat.sh
 
+# --- Overlays ---
+
+.PHONY: overlays
+overlays: ## Build platform-specific skill overlays (skills-codex/)
+	uv run python scripts/generate-overlays.py
+
 # --- CI (runs everything) ---
 
 .PHONY: ci
-ci: lint validate test ## Run full CI pipeline locally
+ci: lint overlays validate test ## Run full CI pipeline locally
 
 # --- Setup ---
 
