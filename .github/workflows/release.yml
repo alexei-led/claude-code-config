@@ -5,25 +5,27 @@ on:
       - v*.*.*
 permissions:
   contents: write
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 jobs:
   validate:
     name: Validate
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - uses: astral-sh/setup-uv@v5
         with:
-          enable-caching: true
+          enable-cache: true
           cache-dependency-glob: uv.lock
-      - run: make validate test
+      - run: make overlays validate test
   release:
     name: Create Release
     needs: validate
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
       # TODO: Consider replacing git-log grep with GitHub's generate_release_notes API

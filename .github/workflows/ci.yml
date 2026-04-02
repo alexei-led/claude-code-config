@@ -6,6 +6,8 @@ on:
     tags-ignore:
       - v*
   pull_request:
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 jobs:
   changes:
     name: Detect Changes
@@ -18,7 +20,7 @@ jobs:
       markdown: ${{ steps.filter.outputs.markdown }}
       config: ${{ steps.filter.outputs.config }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: dorny/paths-filter@v3
         id: filter
         with:
@@ -43,7 +45,7 @@ jobs:
     if: needs.changes.outputs.python == 'true' || github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: astral-sh/ruff-action@v3
         with:
           args: check --output-format=github
@@ -56,7 +58,7 @@ jobs:
     if: needs.changes.outputs.shell == 'true' || github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: luizm/action-sh-checker@v0.9.0
         env:
           SHFMT_OPTS: -i 0
@@ -66,7 +68,7 @@ jobs:
     if: needs.changes.outputs.markdown == 'true' || github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: DavidAnson/markdownlint-cli2-action@v20
         with:
           globs: '**/*.md'
@@ -76,10 +78,10 @@ jobs:
     if: needs.changes.outputs.config == 'true' || needs.changes.outputs.python == 'true' || github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: astral-sh/setup-uv@v5
         with:
-          enable-caching: true
+          enable-cache: true
           cache-dependency-glob: uv.lock
       - run: make overlays validate
   test:
@@ -88,17 +90,17 @@ jobs:
     if: needs.changes.outputs.config == 'true' || needs.changes.outputs.python == 'true' || github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: astral-sh/setup-uv@v5
         with:
-          enable-caching: true
+          enable-cache: true
           cache-dependency-glob: uv.lock
       - run: make test
   secrets:
     name: Secret Scan
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - uses: gitleaks/gitleaks-action@v2
