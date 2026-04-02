@@ -480,13 +480,15 @@ lint_markdown() {
 		return 0
 	fi
 
-	# Filter out slides.md files (Slidev presentation format)
+	# Filter out slides.md and symlinks (prettier errors on symlinks)
 	local filtered_files=()
 	for file in "${files[@]}"; do
-		if [[ "$(basename "$file")" != "slides.md" ]]; then
-			filtered_files+=("$file")
-		else
+		if [[ -L "$file" ]]; then
+			log_debug "Skipping symlink: $file"
+		elif [[ "$(basename "$file")" == "slides.md" ]]; then
 			log_debug "Skipping Slidev file: $file"
+		else
+			filtered_files+=("$file")
 		fi
 	done
 
