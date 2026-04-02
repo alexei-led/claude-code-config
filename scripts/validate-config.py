@@ -555,6 +555,15 @@ def validate_gemini_extensions() -> tuple[list[str], list[str]]:
     return errors, warnings
 
 
+def validate_agents_md() -> list[str]:
+    """Check AGENTS.md exists at repo root."""
+    warnings: list[str] = []
+    agents_md = ROOT / "AGENTS.md"
+    if not agents_md.exists():
+        warnings.append("WARNING: AGENTS.md not found (run: make agents-md)")
+    return warnings
+
+
 def main() -> int:
     all_errors: list[str] = []
     all_warnings: list[str] = []
@@ -612,6 +621,9 @@ def main() -> int:
 
     # TOML validation
     all_errors.extend(validate_toml_files())
+
+    # AGENTS.md validation
+    all_warnings.extend(validate_agents_md())
 
     # Report
     if all_warnings:

@@ -29,8 +29,8 @@ test: ## Run pytest
 
 # --- Validate ---
 
-.PHONY: validate validate-config validate-flat validate-overlays validate-executables lint-instructions
-validate: validate-config validate-flat validate-overlays validate-executables ## Run all validation checks
+.PHONY: validate validate-config validate-flat validate-overlays validate-agents-md validate-executables lint-instructions
+validate: validate-config validate-flat validate-overlays validate-agents-md validate-executables ## Run all validation checks
 
 validate-config: ## Validate plugin configs and frontmatter
 	uv run python scripts/validate-config.py
@@ -40,6 +40,9 @@ validate-flat: ## Check flat/ symlinks are in sync
 
 validate-overlays: ## Check skills-codex/ overlays are in sync
 	uv run python scripts/generate-overlays.py --check
+
+validate-agents-md: ## Check AGENTS.md is in sync with skills
+	uv run python scripts/generate-agents-md.py --check
 
 lint-instructions: ## Lint agent/skill instructions (advisory)
 	@uv run python scripts/lint-instructions.py
@@ -72,10 +75,16 @@ flat: ## Sync flat/ symlinks with plugin contents
 overlays: ## Build platform-specific skill overlays (skills-codex/)
 	uv run python scripts/generate-overlays.py
 
+# --- AGENTS.md ---
+
+.PHONY: agents-md
+agents-md: ## Generate AGENTS.md from skill overlays
+	uv run python scripts/generate-agents-md.py
+
 # --- CI (runs everything) ---
 
 .PHONY: ci
-ci: lint overlays validate test ## Run full CI pipeline locally
+ci: lint overlays agents-md validate test ## Run full CI pipeline locally
 
 # --- Setup ---
 
