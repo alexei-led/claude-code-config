@@ -1,11 +1,10 @@
 ---
 allowed-tools:
-  - Read
-  - Bash
-  - Grep
-  - Glob
-description:
-  Idiomatic Go 1.25+ development. Use when writing Go code, designing APIs,
+- Read
+- Bash
+- Grep
+- Glob
+description: Idiomatic Go 1.25+ development. Use when writing Go code, designing APIs,
   discussing Go patterns, or reviewing Go implementations. Emphasizes stdlib, concrete
   types, simple error handling, and minimal dependencies.
 name: writing-go

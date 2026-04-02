@@ -6,6 +6,40 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 major = breaking config/hook changes, minor = new skills/features, patch = fixes.
 
+## [1.3.0] - 2026-04-02
+
+Cross-platform plugin support for OpenAI Codex CLI and Google Gemini CLI.
+
+### Added
+
+- **Codex CLI support**: `.codex-plugin/plugin.json` manifests for all 9 plugins, `.agents/plugins/marketplace.json` Codex marketplace
+- **Gemini CLI support**: `gemini-extension.json` at repo root and per-plugin, `GEMINI.md` context file, `skills/` symlink for Gemini skill discovery
+- **Platform-aware skill overlay system** (`scripts/generate-overlays.py`):
+  - Three-tier skill classification: GREEN (15 shared), YELLOW (8 auto-stripped), RED (6 hand-authored)
+  - CC-specific frontmatter stripping for all non-Claude platforms
+  - `<!-- CC-ONLY: begin/end -->` body sentinel markers for section stripping
+  - Platform preamble injection with agentic anchors for o3/codex-1 and Gemini models
+- 6 hand-crafted `SKILL.codex.md` overlays optimized for o3/codex-1 instruction following: reviewing-code, fixing-code, improving-tests, brainstorming-ideas, deploying-infra, testing-e2e
+- `skills-codex/` build output directories in all 9 plugins (29 platform-optimized skills)
+- `flat/skills-codex/` symlinks for cross-tool access
+- `make overlays` and `make validate-overlays` targets
+- Codex CLI and Gemini CLI badges in README
+- Installation guides for all 3 platforms in README
+- Multi-platform manifest templates in CONTRIBUTING
+
+### Fixed
+
+- smart-lint.sh: skip symlinks in markdown formatting (prettier errors on symlinked .md files)
+- CI: run overlay build before validation to handle cross-Python serialization
+- CC plugin versions synced from 1.2.0 to 1.2.2
+
+### Changed
+
+- All 9 `.codex-plugin/plugin.json` skills pointer: `./skills/` → `./skills-codex/`
+- Codex and Gemini get platform-optimized skills instead of CC source
+- README structure diagram expanded to show dual-manifest layout
+- CONTRIBUTING directory structure shows all 3 platform manifests
+
 ## [1.2.2] - 2026-04-01
 
 Documentation accuracy fixes for README.

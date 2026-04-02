@@ -1,15 +1,14 @@
 ---
 allowed-tools:
-  - Read
-  - Grep
-  - Glob
-  - WebFetch
-  - WebSearch
-  - mcp__perplexity-ask__perplexity_ask
-  - mcp__context7__resolve-library-id
-  - mcp__context7__query-docs
-description:
-  Library documentation via Context7. Use for API references, code examples,
+- Read
+- Grep
+- Glob
+- WebFetch
+- WebSearch
+- mcp__perplexity-ask__perplexity_ask
+- mcp__context7__resolve-library-id
+- mcp__context7__query-docs
+description: Library documentation via Context7. Use for API references, code examples,
   framework docs.
 name: looking-up-docs
 ---
@@ -32,6 +31,7 @@ Context7 provides up-to-date, version-specific documentation and code examples d
 - **Code examples**: Real, working code from actual documentation
 
 ## Workflow
+
 
 ## Modes
 

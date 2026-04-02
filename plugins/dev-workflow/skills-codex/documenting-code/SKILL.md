@@ -1,9 +1,8 @@
 ---
 allowed-tools:
-  - mcp__context7__resolve-library-id
-  - mcp__context7__query-docs
-description:
-  Update project documentation based on recent changes. Use when user says
+- mcp__context7__resolve-library-id
+- mcp__context7__query-docs
+description: Update project documentation based on recent changes. Use when user says
   "update docs", "document", "add documentation", "update readme", "write docs", or
   wants to improve documentation.
 name: documenting-code
@@ -19,6 +18,7 @@ name: documenting-code
 # Documentation Update
 
 Update project documentation to reflect current code state.
+
 
 1. Determine documentation scope
 2. Analyze recent changes
@@ -39,6 +39,7 @@ Use AskUserQuestion:
 ## Phase 2-4: Spawn docs-keeper Agent
 
 Spawn **docs-keeper** agent with documentation prompt:
+
 
 ## Phase 4: Research Best Practices (If Needed)
 

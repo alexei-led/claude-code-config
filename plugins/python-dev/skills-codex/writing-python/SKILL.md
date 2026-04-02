@@ -1,11 +1,10 @@
 ---
 allowed-tools:
-  - Read
-  - Bash
-  - Grep
-  - Glob
-description:
-  Idiomatic Python 3.12+ development. Use when writing Python code, CLI
+- Read
+- Bash
+- Grep
+- Glob
+description: Idiomatic Python 3.12+ development. Use when writing Python code, CLI
   tools, scripts, or services. Emphasizes stdlib, type hints, uv/ruff/pyright toolchain,
   and minimal dependencies.
 name: writing-python

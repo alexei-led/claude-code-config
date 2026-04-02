@@ -1,6 +1,5 @@
 ---
-description:
-  Query project history, past decisions, and known gotchas from claude-mem
+description: Query project history, past decisions, and known gotchas from claude-mem
   observations. Use when user asks "last session", "did we already", "what did we
   decide", "project history", "timeline", or "what happened with".
 name: mem-history

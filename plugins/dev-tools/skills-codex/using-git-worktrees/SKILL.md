@@ -1,11 +1,10 @@
 ---
 allowed-tools:
-  - Read
-  - Bash
-  - Grep
-  - Glob
-description:
-  Creates isolated git worktrees for parallel development. Use when starting
+- Read
+- Bash
+- Grep
+- Glob
+description: Creates isolated git worktrees for parallel development. Use when starting
   feature work needing isolation or working on multiple branches simultaneously. Not
   for simple branch switching or basic git operations.
 name: using-git-worktrees

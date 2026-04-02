@@ -1,10 +1,9 @@
 ---
 allowed-tools:
-  - Read
-  - Grep
-  - Glob
-description:
-  Batch refactoring via MorphLLM edit_file. Use for "refactor across files",
+- Read
+- Grep
+- Glob
+description: Batch refactoring via MorphLLM edit_file. Use for "refactor across files",
   "batch rename", "update pattern everywhere", large files (500+ lines), or 5+ edits
   in same file.
 name: refactoring-code

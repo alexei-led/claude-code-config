@@ -1,14 +1,12 @@
 ---
 allowed-tools:
-  - Bash
-  - Read
-  - Grep
-  - Glob
-argument-hint:
-  "[work|personal] [daily|weekly|monthly|session] [--since YYYYMMDD]
-  [--until YYYYMMDD] [--today] [--compare]"
-description:
-  Analyze Claude Code usage, cost, efficiency, and burn rate using ccusage
+- Bash
+- Read
+- Grep
+- Glob
+argument-hint: '[work|personal] [daily|weekly|monthly|session] [--since YYYYMMDD]
+  [--until YYYYMMDD] [--today] [--compare]'
+description: Analyze Claude Code usage, cost, efficiency, and burn rate using ccusage
   and termgraph. Use when user says "usage", "cost", "spending", "tokens", "analyze
   usage", "how much did I spend", "usage report", "budget", "burn rate", "efficiency",
   "cache hits", "ccusage", "ccw", "ccp".

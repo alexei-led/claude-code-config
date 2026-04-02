@@ -1,11 +1,10 @@
 ---
 allowed-tools:
-  - Read
-  - Glob
-  - Grep
-  - Bash(uv run python scripts/lint-instructions.py*)
-description:
-  Lint plugin agent/skill prompts against rules derived from Anthropic
+- Read
+- Glob
+- Grep
+- Bash(uv run python scripts/lint-instructions.py*)
+description: Lint plugin agent/skill prompts against rules derived from Anthropic
   model cards (Opus 4.6, Sonnet 4.6). Use when authoring or reviewing skills and agents
   — "lint instructions", "audit prompts", "model card rules".
 name: linting-instructions
@@ -118,6 +117,7 @@ Then at the end, output a summary:
 ```
 
 ### Batching strategy
+
 
 ---
 

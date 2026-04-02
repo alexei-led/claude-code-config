@@ -1,13 +1,12 @@
 ---
 allowed-tools:
-  - Read
-  - Edit
-  - Write
-  - Grep
-  - Glob
-argument-hint: "[topic] [--dry-run]"
-description:
-  Extract learnings and generate project-specific customizations (CLAUDE.md,
+- Read
+- Edit
+- Write
+- Grep
+- Glob
+argument-hint: '[topic] [--dry-run]'
+description: Extract learnings and generate project-specific customizations (CLAUDE.md,
   commands, skills, hooks). Use when user says "learn", "extract learnings", "what
   did we learn", "save learnings", "adapt config", or wants to improve Claude Code
   based on conversation patterns.
@@ -24,6 +23,7 @@ name: learning-patterns
 # Learn from Session
 
 Extract actionable learnings and generate project-specific customizations. Adapts Claude Code to project patterns over time.
+
 
 1. Discover existing customizations
 2. Extract learnings from conversation
@@ -283,6 +283,7 @@ Rollback: `git checkout .claude/`
 ```
 
 **STOP**:
+
 
 If "Select items": Show multi-select for each category.
 

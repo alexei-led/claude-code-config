@@ -1,15 +1,14 @@
 ---
 allowed-tools:
-  - Read
-  - Edit
-  - Write
-  - Grep
-  - Glob
-  - WebFetch
-  - mcp__perplexity-ask__perplexity_ask
-argument-hint: "[--dry-run]"
-description:
-  Audit Claude Code configuration against latest features and best practices.
+- Read
+- Edit
+- Write
+- Grep
+- Glob
+- WebFetch
+- mcp__perplexity-ask__perplexity_ask
+argument-hint: '[--dry-run]'
+description: Audit Claude Code configuration against latest features and best practices.
   Use when user says "evolve", "self-improve", "audit config", "what's new in claude
   code", "upgrade configuration", "check for improvements", "are we up to date".
 name: evolving-config
@@ -25,6 +24,7 @@ name: evolving-config
 # Evolve Configuration
 
 Audit Claude Code config against latest capabilities. Conservative by default — says "no changes needed" when that's true.
+
 
 1. Snapshot current configuration
 2. Fetch latest capabilities
@@ -183,6 +183,7 @@ Format the report:
 ```
 
 **STOP here.**
+
 
 If `$ARGUMENTS` contains `--dry-run`: Skip the question, show diffs only, do not apply.
 

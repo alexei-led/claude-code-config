@@ -1,12 +1,11 @@
 ---
 allowed-tools:
-  - Bash(gemini *)
-  - Read
-  - Grep
-  - Glob
-argument-hint: "[question or topic]"
-description:
-  Consult Gemini for second opinions, brainstorming, or web search. Use
+- Bash(gemini *)
+- Read
+- Grep
+- Glob
+argument-hint: '[question or topic]'
+description: Consult Gemini for second opinions, brainstorming, or web search. Use
   when user says "ask gemini", "gemini search", "get gemini opinion", or wants a second
   AI perspective.
 name: using-gemini

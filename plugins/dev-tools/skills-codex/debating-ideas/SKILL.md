@@ -1,11 +1,10 @@
 ---
 allowed-tools:
-  - Read
-  - Grep
-  - Glob
+- Read
+- Grep
+- Glob
 argument-hint: <question or topic>
-description:
-  Dialectic thinking — spawn thesis and antithesis agents to stress-test
+description: Dialectic thinking — spawn thesis and antithesis agents to stress-test
   ideas, then synthesize and verify against code. Use when user says "debate", "argue
   both sides", "devil's advocate", "stress test this idea", "pros and cons of approach",
   or wants rigorous evaluation of a design decision.
@@ -26,6 +25,7 @@ Stress-test ideas by spawning competing perspectives, then synthesize and ground
 **`$ARGUMENTS` is the question or topic to debate.**
 
 If no argument provided, ask the user what they want to evaluate.
+
 
 1. Frame the debate
 2. Spawn thesis + antithesis agents
@@ -54,11 +54,13 @@ Frame as a clear binary or spectrum question. Examples:
 
 Spawn two Explore agents in a single message:
 
+
 ---
 
 ## Phase 3: Synthesize
 
 Collect both results:
+
 
 Synthesize into a structured verdict:
 

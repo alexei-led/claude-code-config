@@ -1,12 +1,11 @@
 ---
 allowed-tools:
-  - Bash(git status *)
-  - Bash(git diff *)
-  - Bash(git log *)
-  - Bash(git show *)
-  - Bash(git branch *)
-description:
-  Smart git commits with logical grouping. Use when user says "commit",
+- Bash(git status *)
+- Bash(git diff *)
+- Bash(git log *)
+- Bash(git show *)
+- Bash(git branch *)
+description: Smart git commits with logical grouping. Use when user says "commit",
   "commit changes", "save changes", "create commit", "bundle commits", "git commit",
   or wants to commit their work.
 name: committing-code
