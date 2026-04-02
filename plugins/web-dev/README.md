@@ -1,6 +1,6 @@
 # web-dev
 
-Web frontend development with vanilla HTML, CSS, JavaScript, and HTMX.
+Web frontend development with vanilla HTML, CSS, JavaScript, and HTMX. Available for both Claude Code and Codex CLI.
 
 ## Skills (1)
 
@@ -8,7 +8,7 @@ Web frontend development with vanilla HTML, CSS, JavaScript, and HTMX.
 
 ## Agents (1)
 
-- `web-engineer` (opus) — Web frontend implementation
+- `web-engineer` (sonnet) — Web frontend implementation (Claude Code only)
 
 ## MCP Servers
 

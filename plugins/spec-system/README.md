@@ -1,6 +1,6 @@
 # spec-system
 
-Spec-driven development: structured requirements, tasks, and planning workflows.
+Spec-driven development: structured requirements, tasks, and planning workflows. Agent and commands are Claude Code-only; Codex CLI users get the spec-planner agent's knowledge via skills.
 
 ## Commands (8)
 

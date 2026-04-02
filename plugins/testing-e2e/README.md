@@ -1,6 +1,6 @@
 # testing-e2e
 
-End-to-end testing with Playwright: browser automation, test generation, and UI testing.
+End-to-end testing with Playwright: browser automation, test generation, and UI testing. Available for both Claude Code and Codex CLI.
 
 ## Skills (2)
 
@@ -11,7 +11,7 @@ End-to-end testing with Playwright: browser automation, test generation, and UI 
 
 ## Agents (1)
 
-- `playwright-tester` (opus) — browser automation and test generation
+- `playwright-tester` (sonnet) — browser automation and test generation (Claude Code only)
 
 ## MCP Servers
 

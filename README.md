@@ -4,6 +4,7 @@
 [![GitHub tag](https://img.shields.io/github/v/tag/alexei-led/cc-thingz?label=version&sort=semver)](https://github.com/alexei-led/cc-thingz/tags)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-plugin_marketplace-blueviolet)](https://docs.anthropic.com/en/docs/claude-code)
+[![Codex CLI](https://img.shields.io/badge/Codex_CLI-plugin_compatible-10A37F)](https://developers.openai.com/codex/plugins)
 [![Plugins](https://img.shields.io/badge/plugins-9-green)](plugins/)
 [![Skills](https://img.shields.io/badge/skills-30-green)](plugins/)
 
@@ -170,9 +171,16 @@ These activate silently when relevant patterns are detected — no `/skill-name`
 ## Structure
 
 ```
-.claude-plugin/marketplace.json
+.claude-plugin/marketplace.json      # Claude Code marketplace
+.agents/plugins/marketplace.json     # Codex CLI marketplace
 plugins/
-├── dev-workflow/    # Core dev loop + review agents + hooks
+├── dev-workflow/                     # Core dev loop + review agents + hooks
+│   ├── .claude-plugin/plugin.json   # Claude Code manifest
+│   ├── .codex-plugin/plugin.json    # Codex CLI manifest
+│   ├── skills/                      # Shared skills (both platforms)
+│   ├── agents/                      # Claude Code agents
+│   ├── hooks/                       # Claude Code hooks
+│   └── commands/                    # Claude Code commands
 ├── go-dev/          # Go development
 ├── python-dev/      # Python development
 ├── typescript-dev/  # TypeScript development
@@ -182,6 +190,27 @@ plugins/
 ├── spec-system/     # Spec-driven development
 └── testing-e2e/     # E2E testing with Playwright
 ```
+
+## Codex CLI Support
+
+All 9 plugins are also packaged for [OpenAI Codex CLI](https://developers.openai.com/codex/plugins) via `.codex-plugin/` manifests and a Codex marketplace at `.agents/plugins/marketplace.json`.
+
+**What works in Codex**: All 30 skills (SKILL.md files are cross-compatible). Skills use identical YAML frontmatter + markdown format on both platforms. Codex ignores Claude Code-specific frontmatter fields (`user-invocable`, `context`, `agent`, `allowed-tools`).
+
+**What doesn't port**: Agents (no Codex equivalent), hooks (platform-level in Codex), and commands. Skills that reference Claude Code's `Task(subagent_type=...)` orchestration provide useful guidance but the specific tool calls won't execute in Codex.
+
+### Installation (Codex CLI)
+
+Clone the repo and point Codex at the marketplace:
+
+```bash
+git clone https://github.com/alexei-led/cc-thingz.git
+# Codex discovers plugins via .agents/plugins/marketplace.json
+codex plugin list
+codex plugin install go-dev
+```
+
+Or copy `plugins/<name>/` to `~/.codex/plugins/` and reference in `~/.agents/plugins/marketplace.json`.
 
 ## Flat Directory
 

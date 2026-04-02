@@ -1,6 +1,6 @@
 # go-dev
 
-Idiomatic Go development with stdlib-first patterns, testing, and CLI tooling.
+Idiomatic Go development with stdlib-first patterns, testing, and CLI tooling. Available for both Claude Code and Codex CLI.
 
 ## Skills (1)
 
@@ -10,7 +10,7 @@ Includes supplementary docs: `CLI.md`, `PATTERNS.md`, `TESTING.md`.
 
 ## Agents (1)
 
-- `go-engineer` (opus) — Go implementation, API design, architecture
+- `go-engineer` (sonnet) — Go implementation, API design, architecture (Claude Code only)
 
 ## MCP Servers
 

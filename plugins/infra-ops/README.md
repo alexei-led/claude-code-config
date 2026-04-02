@@ -1,6 +1,6 @@
 # infra-ops
 
-Infrastructure and cloud operations: Kubernetes, Terraform, Helm, GitHub Actions, AWS, GCP.
+Infrastructure and cloud operations: Kubernetes, Terraform, Helm, GitHub Actions, AWS, GCP. Available for both Claude Code and Codex CLI.
 
 ## Skills (3)
 
@@ -14,7 +14,7 @@ Includes supplementary docs: `KUBERNETES.md`, `TERRAFORM.md`, `DOCKERFILE.md`, `
 
 ## Agents (1)
 
-- `infra-engineer` (opus) — infrastructure implementation and validation
+- `infra-engineer` (sonnet) — infrastructure implementation and validation (Claude Code only)
 
 ## MCP Servers
 

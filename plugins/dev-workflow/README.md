@@ -1,6 +1,6 @@
 # dev-workflow
 
-Core development loop: code review, fixes, commits, linting hooks, and 24 language-specific review agents.
+Core development loop: code review, fixes, commits, linting hooks, and 24 language-specific review agents. Skills available for both Claude Code and Codex CLI; agents, hooks, and commands are Claude Code-only.
 
 ## Skills (7)
 
