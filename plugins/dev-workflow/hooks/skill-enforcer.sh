@@ -206,6 +206,12 @@ if echo "$PROMPT_LOWER" | grep -qE '\bccgram\b|\binbox\b.*\b(message|agent|peer)
 	skills+="ccgram-messaging "
 fi
 
+# exploring-repos: Explore public GitHub repos via DeepWiki
+# Triggers: repo architecture, how does repo work, deepwiki, explore repo, codebase patterns
+if echo "$PROMPT_LOWER" | grep -qE '\bdeepwiki\b|\bexplore\s*(the\s*)?(repo|repository|codebase|project)\b|\brepo\s*(architecture|structure|design|patterns?)\b|\bhow\s*does\s*\S+/\S+\s*work\b|\bunderstand\s*(the\s*)?(repo|repository|codebase|project)\b|\bcodebase\s*(overview|architecture|structure|understanding)\b|\bwiki\s*(for|of|about)\s*(the\s*)?(repo|repository)\b|\bexplore\s*\S+/\S+\b|\bdesign\s*patterns?\s*(in|of|used\s*by)\b|\bhow\s*(is|are)\s*\S+\s*(structured|organized|designed|architected)\b'; then
+	skills+="exploring-repos "
+fi
+
 # mem-history: Query project history via claude-mem
 # Triggers: past sessions, previous decisions, project timeline, memory search
 if echo "$PROMPT_LOWER" | grep -qE '\blast\s*session\b|\bdid\s*we\s*already\b|\bprevious\s*session\b|\bremember\s*when\b|\bwhat\s*did\s*we\s*decide\b|\bpast\s*(issue|bug|decision|fix)\b|\brecurring\s*bug\b|\bproject\s*(history|timeline)\b|\btimeline\b.*\b(project|feature|change)\b|\bwhat\s*happened\s*with\b|\bmem[\s-]?history\b|\bmem[\s-]?search\b|\bclaude[\s-]?mem\b'; then
