@@ -6,6 +6,19 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 major = breaking config/hook changes, minor = new skills/features, patch = fixes.
 
+## [1.5.0] - 2026-04-03
+
+New skill: explore public GitHub repositories via DeepWiki AI-generated documentation.
+
+### Added
+
+- **`exploring-repos` skill**: AI-powered exploration of 30,000+ public GitHub repositories via DeepWiki MCP — understand architecture, design patterns, component relationships, and cross-repo comparisons without cloning
+- Three DeepWiki MCP tools: `read_wiki_structure` (topic index), `read_wiki_contents` (full wiki), `ask_question` (semantic Q&A with multi-repo support)
+- GitHub CLI (`gh`) fallback strategy for repos not indexed by DeepWiki — `gh repo view`, `gh api`, `gh search code` work for any public repo
+- Tiered fallback chain: DeepWiki → GitHub CLI → Context7 → Perplexity → local clone
+- Clear DeepWiki vs Context7 decision table (architecture understanding vs API references)
+- Skill-enforcer trigger patterns for "explore repo", "deepwiki", "repo architecture", "how does owner/repo work"
+
 ## [1.4.0] - 2026-04-02
 
 AGENTS.md adoption and CC-first rebrand.

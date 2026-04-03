@@ -10,7 +10,7 @@
 [![Plugins](https://img.shields.io/badge/plugins-9-green)](plugins/)
 [![Skills](https://img.shields.io/badge/skills-30-green)](plugins/)
 
-A **Claude Code** plugin suite — 30 skills, 34 agents, 9 hooks, and 9 commands — with portable skill export for Codex CLI, Gemini CLI, and [AGENTS.md](https://agents.md)-compatible tools. Built over 6+ months of daily use and continuous refinement.
+A **Claude Code** plugin suite — 31 skills, 34 agents, 9 hooks, and 9 commands — with portable skill export for Codex CLI, Gemini CLI, and [AGENTS.md](https://agents.md)-compatible tools. Built over 6+ months of daily use and continuous refinement.
 
 Built for Claude Code, with all 29 skills exported as platform-optimized instructions for Codex CLI, Gemini CLI, and any tool supporting the AGENTS.md standard.
 
@@ -70,6 +70,7 @@ Some plugins use MCP servers for enhanced capabilities. These are optional — p
 | MCP Server                                                                                              | Purpose                                     | Used By                                                                  |
 | ------------------------------------------------------------------------------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------ |
 | [Context7](https://github.com/upstash/context7)                                                         | Library and framework documentation lookup  | All 9 plugins                                                            |
+| [DeepWiki](https://cognition.ai/blog/deepwiki-mcp-server)                                               | AI-generated wiki for public GitHub repos   | dev-tools                                                                |
 | [Perplexity](https://github.com/ppl-ai/modelcontextprotocol)                                            | Web research and technical comparisons      | dev-workflow, dev-tools, infra-ops                                       |
 | [Sequential Thinking](https://github.com/modelcontextprotocol/servers/tree/main/src/sequentialthinking) | Step-by-step reasoning for complex planning | go-dev, python-dev, typescript-dev, infra-ops, spec-system               |
 | [MorphLLM](https://github.com/morphllm/morph-claude-code)                                               | Fast codebase search and batch file editing | dev-workflow, go-dev, python-dev, typescript-dev, infra-ops, spec-system |
@@ -105,11 +106,11 @@ All agents and several skills optionally integrate with [claude-mem](https://git
 | [**typescript-dev**](plugins/typescript-dev/README.md) | 1      | 1      | TypeScript with strict typing, React patterns, and modern tooling                  |
 | [**web-dev**](plugins/web-dev/README.md)               | 1      | 1      | Web frontend with vanilla HTML, CSS, JavaScript, and HTMX                          |
 | [**infra-ops**](plugins/infra-ops/README.md)           | 3      | 1      | Kubernetes, Terraform, Helm, GitHub Actions, AWS, GCP                              |
-| [**dev-tools**](plugins/dev-tools/README.md)           | 14     | 2      | Modern CLI, git worktrees, docs lookup, web research, brainstorming, Gemini        |
+| [**dev-tools**](plugins/dev-tools/README.md)           | 15     | 2      | Modern CLI, git worktrees, docs lookup, web research, brainstorming, Gemini        |
 | [**spec-system**](plugins/spec-system/README.md)       | 0      | 1      | Spec-driven development: requirements, tasks, and planning workflows               |
 | [**testing-e2e**](plugins/testing-e2e/README.md)       | 2      | 1      | E2E testing with Playwright: browser automation and test generation                |
 
-**Totals**: 30 skills, 34 agents, 9 hooks, 9 commands
+**Totals**: 31 skills, 34 agents, 9 hooks, 9 commands
 
 ## Skills
 
@@ -127,6 +128,7 @@ Invoke as `/skill-name` or let the skill enforcer suggest them.
 | `deploying-infra`      | Validate + deploy K8s/Terraform/Helm              | "deploy to staging", "rollout"       |
 | `documenting-code`     | Update docs based on recent changes               | "update docs", "document"            |
 | `evolving-config`      | Audit config against latest Claude Code features  | "evolve", "audit config"             |
+| `exploring-repos`      | Explore GitHub repos via DeepWiki AI wiki         | "explore repo", "deepwiki"           |
 | `fixing-code`          | Parallel agents fix all issues, zero tolerance    | "fix errors", "make it pass"         |
 | `improving-tests`      | Refactor tests: combine to tabular, fill gaps     | "improve tests", "coverage"          |
 | `looking-up-docs`      | Library documentation via Context7                | "look up docs", "API ref"            |
@@ -211,7 +213,7 @@ Skills are classified by how much adaptation they need:
 | Tier       | Count | Strategy                                                      | Example                              |
 | ---------- | ----- | ------------------------------------------------------------- | ------------------------------------ |
 | **GREEN**  | 15    | Shared body, CC frontmatter stripped, platform preamble added | `writing-go`, `using-modern-cli`     |
-| **YELLOW** | 8     | CC-ONLY body sections stripped, frontmatter cleaned           | `looking-up-docs`, `evolving-config` |
+| **YELLOW** | 9     | CC-ONLY body sections stripped, frontmatter cleaned           | `looking-up-docs`, `exploring-repos` |
 | **RED**    | 6     | Hand-authored overlays optimized for o3/codex-1               | `reviewing-code`, `fixing-code`      |
 
 ### Structure
