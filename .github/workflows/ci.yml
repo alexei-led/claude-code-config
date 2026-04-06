@@ -20,8 +20,8 @@ jobs:
       markdown: ${{ steps.filter.outputs.markdown }}
       config: ${{ steps.filter.outputs.config }}
     steps:
-      - uses: actions/checkout@v5
-      - uses: dorny/paths-filter@v3
+      - uses: actions/checkout@v6
+      - uses: dorny/paths-filter@v4
         id: filter
         with:
           filters: |
@@ -45,7 +45,7 @@ jobs:
     if: needs.changes.outputs.python == 'true' || github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: astral-sh/ruff-action@v3
         with:
           args: check --output-format=github
@@ -58,8 +58,8 @@ jobs:
     if: needs.changes.outputs.shell == 'true' || github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: luizm/action-sh-checker@v0.9.0
+      - uses: actions/checkout@v6
+      - uses: luizm/action-sh-checker@v0.10.0
         env:
           SHFMT_OPTS: -i 0
   markdown-lint:
@@ -68,8 +68,8 @@ jobs:
     if: needs.changes.outputs.markdown == 'true' || github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: DavidAnson/markdownlint-cli2-action@v20
+      - uses: actions/checkout@v6
+      - uses: DavidAnson/markdownlint-cli2-action@v23
         with:
           globs: '**/*.md'
   validate:
@@ -78,8 +78,8 @@ jobs:
     if: needs.changes.outputs.config == 'true' || needs.changes.outputs.python == 'true' || github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@v6
+      - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
@@ -90,8 +90,8 @@ jobs:
     if: needs.changes.outputs.config == 'true' || needs.changes.outputs.python == 'true' || github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@v6
+      - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
@@ -100,7 +100,7 @@ jobs:
     name: Secret Scan
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - uses: gitleaks/gitleaks-action@v2
