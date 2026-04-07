@@ -182,6 +182,12 @@ if echo "$PROMPT_LOWER" | grep -qE '\bevolve\b|\bself[\s-]?improv\b|\baudit\s*(m
 	skills+="evolving-config "
 fi
 
+# reviewing-cc-config: Review Claude Code configuration for context efficiency
+# Triggers: review config, config review, context review, review cc config, review my setup, review skills/agents/hooks
+if echo "$PROMPT_LOWER" | grep -qE '\breview\s*(my|the|cc|claude)?\s*(config|configuration|setup)\b|\b(config|configuration|setup)\s*review\b|\bcontext\s*review\b|\breview\s*(my|the)?\s*(skills|agents|hooks)\b|\bconfig(uration)?\s*(quality|health|check)\b'; then
+	skills+="reviewing-cc-config "
+fi
+
 # using-gemini: Consult Gemini CLI for second opinions or web search
 # Triggers: ask gemini, gemini search, gemini opinion, second AI perspective
 if echo "$PROMPT_LOWER" | grep -qE '\bask\s*gemini\b|\bgemini\s*(search|opinion|review|check|consult)\b|\bget\s*gemini\b|\bconsult\s*gemini\b|\bgemini\s*-p\b|\bsecond\s*(ai|opinion|perspective)\b'; then
