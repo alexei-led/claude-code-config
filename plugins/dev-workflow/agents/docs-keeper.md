@@ -1,6 +1,6 @@
 ---
 name: docs-keeper
-description: Documentation specialist for GoDoc, docstrings, README, API specs, and diagrams. Triggers on "update docs", "document this", "add comments", "write documentation", "improve README".
+description: Subagent for documentation creation and maintenance — GoDoc, docstrings, README, API specs, and diagrams. Spawned by the documenting-code skill; not for direct user invocation.
 tools:
   [
     "Read",

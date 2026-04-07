@@ -66,6 +66,8 @@ Return all changes in this format:
 
 For MODIFY actions, include enough context to locate the change precisely.
 
+**Response budget**: Keep total proposal under 1,500 tokens. For large changes, summarize the pattern and show one representative example rather than listing every file.
+
 ## Core Philosophy
 
 1. **Infrastructure as Code First**

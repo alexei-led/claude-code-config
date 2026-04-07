@@ -2,6 +2,7 @@
 name: using-cloud-cli
 description: Cloud CLI patterns for GCP and AWS. Use when running bq queries, gcloud commands, aws commands, or making decisions about cloud services. Covers BigQuery cost optimization and operational best practices.
 user-invocable: false
+context: fork
 allowed-tools:
   - Read
   - Bash

@@ -2,6 +2,7 @@
 name: brainstorming-ideas
 description: Turn ideas into designs through collaborative dialogue. Use when user wants to brainstorm, design features, explore approaches, or think through implementation before coding.
 user-invocable: true
+context: fork
 allowed-tools:
   - AskUserQuestion
   - Task

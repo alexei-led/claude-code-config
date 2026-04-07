@@ -1,6 +1,6 @@
 ---
 name: playwright-tester
-description: E2E testing specialist using Playwright scripts for browser automation and test generation. Triggers on "e2e test", "browser test", "playwright", "UI automation", "accessibility check".
+description: Subagent for E2E test implementation. Use when delegating Playwright test writing to a background agent — not for direct user invocation (use testing-e2e skill instead). Spawned by orchestrator skills that need isolated test generation.
 tools:
   [
     "Read",

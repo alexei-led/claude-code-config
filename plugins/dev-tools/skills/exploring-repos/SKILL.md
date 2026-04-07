@@ -8,6 +8,7 @@ description: >-
   "explore repo", "deepwiki", or needs codebase-level understanding beyond
   API docs.
 user-invocable: true
+context: fork
 model: sonnet
 allowed-tools:
   - Read

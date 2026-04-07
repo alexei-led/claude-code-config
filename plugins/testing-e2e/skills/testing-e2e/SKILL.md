@@ -1,6 +1,6 @@
 ---
 name: testing-e2e
-description: E2E testing with Playwright for browser automation, test generation, and UI testing. Use when discussing E2E tests, Playwright, browser testing, UI automation, visual testing, or accessibility testing. Supports TypeScript tests and Go/HTMX web applications.
+description: E2E testing with Playwright — the primary user-facing skill for writing, running, and generating browser tests. Use when user asks to "write e2e tests", "test this page", "run playwright tests", "generate browser tests", "check accessibility", or "visual regression". Supports TypeScript tests and Go/HTMX web applications.
 user-invocable: true
 context: fork
 argument-hint: "[run|record|generate|verify <feature>]"
