@@ -6,6 +6,16 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 major = breaking config/hook changes, minor = new skills/features, patch = fixes.
 
+## [Unreleased]
+
+### Added
+
+- **`reviewing-cc-config` skill**: Review Claude Code configuration (skills, agents, hooks, CLAUDE.md, commands) for context efficiency, signal density, and anti-patterns — derived from Anthropic's "Effective Context Engineering for AI Agents" and Claude Code best practices documentation
+- Co-located `RUBRIC.md` with 16 review rules across 4 categories: Context Budget (CB-\*), Signal Density (SD-\*), Architecture (AR-\*), Anti-Patterns (AP-\*)
+- Spawns up to 4 parallel review agents per component type with token-capped structured output
+- Skill-enforcer trigger patterns for "review config", "config review", "context review", "review skills/agents/hooks"
+- Skill count: 31 → 32 (dev-tools: 14 → 15)
+
 ## [1.5.0] - 2026-04-03
 
 New skill: explore public GitHub repositories via DeepWiki AI-generated documentation.

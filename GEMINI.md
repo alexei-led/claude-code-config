@@ -44,4 +44,5 @@ These skills provide domain-specific knowledge and workflows. They are optimized
 @flat/skills-codex/smart-explore/SKILL.md
 @flat/skills-codex/using-gemini/SKILL.md
 @flat/skills-codex/using-git-worktrees/SKILL.md
+@flat/skills-codex/reviewing-cc-config/SKILL.md
 @flat/skills-codex/using-modern-cli/SKILL.md

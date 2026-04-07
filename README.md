@@ -8,11 +8,11 @@
 [![Codex CLI](https://img.shields.io/badge/Codex_CLI-skill_export-10A37F)](https://developers.openai.com/codex/plugins)
 [![Gemini CLI](https://img.shields.io/badge/Gemini_CLI-skill_export-4285F4)](https://geminicli.com/docs/extensions)
 [![Plugins](https://img.shields.io/badge/plugins-9-green)](plugins/)
-[![Skills](https://img.shields.io/badge/skills-30-green)](plugins/)
+[![Skills](https://img.shields.io/badge/skills-32-green)](plugins/)
 
-A **Claude Code** plugin suite — 31 skills, 34 agents, 9 hooks, and 9 commands — with portable skill export for Codex CLI, Gemini CLI, and [AGENTS.md](https://agents.md)-compatible tools. Built over 6+ months of daily use and continuous refinement.
+A **Claude Code** plugin suite — 32 skills, 34 agents, 9 hooks, and 9 commands — with portable skill export for Codex CLI, Gemini CLI, and [AGENTS.md](https://agents.md)-compatible tools. Built over 6+ months of daily use and continuous refinement.
 
-Built for Claude Code, with all 29 skills exported as platform-optimized instructions for Codex CLI, Gemini CLI, and any tool supporting the AGENTS.md standard.
+Built for Claude Code, with all 32 skills exported as platform-optimized instructions for Codex CLI, Gemini CLI, and any tool supporting the AGENTS.md standard.
 
 ## Why This Exists
 
@@ -106,11 +106,11 @@ All agents and several skills optionally integrate with [claude-mem](https://git
 | [**typescript-dev**](plugins/typescript-dev/README.md) | 1      | 1      | TypeScript with strict typing, React patterns, and modern tooling                  |
 | [**web-dev**](plugins/web-dev/README.md)               | 1      | 1      | Web frontend with vanilla HTML, CSS, JavaScript, and HTMX                          |
 | [**infra-ops**](plugins/infra-ops/README.md)           | 3      | 1      | Kubernetes, Terraform, Helm, GitHub Actions, AWS, GCP                              |
-| [**dev-tools**](plugins/dev-tools/README.md)           | 15     | 2      | Modern CLI, git worktrees, docs lookup, web research, brainstorming, Gemini        |
+| [**dev-tools**](plugins/dev-tools/README.md)           | 15     | 2      | Modern CLI, git worktrees, docs lookup, web research, config review, brainstorming |
 | [**spec-system**](plugins/spec-system/README.md)       | 0      | 1      | Spec-driven development: requirements, tasks, and planning workflows               |
 | [**testing-e2e**](plugins/testing-e2e/README.md)       | 2      | 1      | E2E testing with Playwright: browser automation and test generation                |
 
-**Totals**: 31 skills, 34 agents, 9 hooks, 9 commands
+**Totals**: 32 skills, 34 agents, 9 hooks, 9 commands
 
 ## Skills
 
@@ -139,6 +139,7 @@ Invoke as `/skill-name` or let the skill enforcer suggest them.
 | `analyzing-usage`      | Analyze Claude Code usage, cost, and efficiency   | "usage", "cost", "spending"          |
 | `learning-patterns`    | Extract learnings and generate customizations     | "learn", "extract learnings"         |
 | `linting-instructions` | Lint plugin prompts against Anthropic model cards | "lint instructions", "audit prompts" |
+| `reviewing-cc-config`  | Review CC config for context efficiency           | "review config", "config review"     |
 | `using-gemini`         | Consult Gemini CLI for second opinions            | "ask gemini", "gemini search"        |
 | `using-git-worktrees`  | Isolated git worktrees for parallel development   | "worktree", "isolate"                |
 
@@ -201,7 +202,7 @@ All skills are authored for Claude Code and exported via a build system (`script
 
 | Component        | Claude Code                                   | Skill Export (Codex, Gemini, AGENTS.md)             |
 | ---------------- | --------------------------------------------- | --------------------------------------------------- |
-| **Skills** (29)  | Full — CC source with orchestration           | Optimized — stripped frontmatter + agentic preamble |
+| **Skills** (32)  | Full — CC source with orchestration           | Optimized — stripped frontmatter + agentic preamble |
 | **Agents** (34)  | Full — multi-agent review, parallel execution | Claude Code only                                    |
 | **Hooks** (9)    | Full — lint, test, protect, suggest           | Claude Code only                                    |
 | **Commands** (9) | Full — spec-driven development                | Claude Code only                                    |

@@ -2,7 +2,7 @@
 
 Developer utilities: modern CLI tools, git worktrees, docs lookup, web research, brainstorming, and more. Skills available for both Claude Code and Codex CLI; agents and hooks are Claude Code-only.
 
-## Skills (11)
+## Skills (15)
 
 | Skill                 | Invocable | What It Does                                     |
 | --------------------- | --------- | ------------------------------------------------ |
@@ -14,10 +14,12 @@ Developer utilities: modern CLI tools, git worktrees, docs lookup, web research,
 | `evolving-config`     | yes       | Audit config against latest Claude Code features |
 | `using-gemini`        | yes       | Consult Gemini CLI for second opinions           |
 | `learning-patterns`   | auto      | Extract learnings and generate customizations    |
+| `reviewing-cc-config` | yes       | Review CC config for context efficiency          |
+| `exploring-repos`     | yes       | Explore GitHub repos via DeepWiki AI wiki        |
+| `smart-explore`       | auto      | AST code navigation via claude-mem               |
+| `mem-history`         | yes       | Query past sessions and decisions (claude-mem)   |
 | `using-git-worktrees` | auto      | Isolated git worktree management                 |
 | `using-modern-cli`    | auto      | rg, fd, bat, eza, sd instead of legacy tools     |
-
-Plus 1 unlisted workflow skill for internal use.
 
 ## Agents (2)
 
