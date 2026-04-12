@@ -88,9 +88,15 @@ Use Context7 for documentation patterns:
 mcp__context7__query-docs for GoDoc, Sphinx, or framework-specific docs
 ```
 
-## Phase 5: Present Summary
+## Phase 5: Verify and Present Summary
 
-Report what was updated and verified.
+**Independent verification** (do not trust the agent's self-report):
+
+1. Run `git diff --stat` to confirm files were actually changed
+2. For each changed file, verify the diff looks correct (no broken links, no placeholder text)
+3. If no files changed, report that docs-keeper made no modifications
+
+Report what was updated, verified diffs, and any issues found.
 
 If no recent changes are found or documentation scope is unclear, ask the user what to document rather than generating speculative documentation.
 

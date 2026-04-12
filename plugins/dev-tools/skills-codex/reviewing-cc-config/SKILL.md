@@ -127,8 +127,8 @@ Find and read the rubric (co-located with this skill):
 Glob("**/skills/reviewing-cc-config/RUBRIC.md")
 ```
 
-Read the first match. If no match found, use the fallback rules table
-at the end of this skill.
+Read the first match. If no match found, **stop and warn the user** that
+RUBRIC.md is missing — do not proceed without the rubric.
 
 **Parse `$ARGUMENTS`:**
 
@@ -142,247 +142,56 @@ at the end of this skill.
 
 ### Spawn review agents (ALL in ONE message)
 
-Spawn up to 4 agents in parallel, one per component type. Skip agents for
-component types not present or not in scope.
+Read `RUBRIC.md` (co-located with this skill) first. Pass relevant rule IDs
+to each agent. Spawn up to 4 agents in parallel, one per component type.
+Skip agents for component types not present or not in scope.
 
-**Agent 1: CLAUDE.md Reviewer**
+Each agent prompt must include:
 
-```
-You are reviewing Claude Code CLAUDE.md files for context efficiency.
+1. The agent's role and component type
+2. The list of files to review
+3. The relevant rules from RUBRIC.md (paste the rule IDs and one-line checks)
+4. The output format specified below
 
-## Rules to apply
+**Agent 1: CLAUDE.md Reviewer** — Rules: SD-CLAUDE-MD, AR-HOOK-DETERMINISTIC,
+AR-SKILL-DEMAND, AP-OVER-SPECIFIED (>150 lines), CB-STARTUP (<3K tokens).
+Output per file: `### path (lines, ~tokens)` + rule/verdict/notes table.
+Keep under 1500 tokens.
 
-### SD-CLAUDE-MD (error): Non-derivable instructions only
-Each line must pass: "Would removing this cause Claude to make mistakes?"
-Flag: standard conventions Claude already knows, self-evident practices,
-file-by-file descriptions, long tutorials, information derivable from code.
+**Agent 2: Skills Reviewer** — Rules: SD-DESCRIPTION, CB-FORK, SD-TOOL-MINIMAL,
+AR-VERIFY, AR-MODEL-MATCH, AP-TRIGGER-OVERLAP, AP-OVER-SPECIFIED (>200 lines),
+CB-PROGRESSIVE. Output per skill: `### name (model, invocable, lines)` +
+rule/verdict/notes table + trigger overlap matrix (conflicts only).
+Keep under 2000 tokens.
 
-### AR-HOOK-DETERMINISTIC (error): Deterministic rules belong in hooks
-Flag: rules requiring 100% enforcement (linting, formatting, file protection)
-that are in CLAUDE.md instead of hooks.
+**Agent 3: Agents & Commands Reviewer** — Rules: AR-ISOLATION, SD-TOOL-MINIMAL,
+SD-RETURN, AP-SCOPE-UNBOUNDED, AR-MODEL-MATCH, AP-OVER-SPECIFIED (>100 lines).
+Output per agent/command: `### name (model, tools, lines)` +
+rule/verdict/notes table. Keep under 1500 tokens.
 
-### AR-SKILL-DEMAND (warning): Domain knowledge belongs in skills
-Flag: domain-specific workflows or specialized knowledge in CLAUDE.md that
-loads every session but is only relevant sometimes.
-
-### AP-OVER-SPECIFIED (warning): Length check
-Flag if >150 lines. Count non-empty, non-comment lines.
-
-### CB-STARTUP (warning): Token budget
-Estimate tokens (words * 1.3). Flag if >3K tokens.
-
-## Files to review
-[list CLAUDE.md file paths]
-
-## Output format
-For each file:
-### `<path>` (<line_count> lines, ~<token_est> tokens)
-| Rule | Verdict | Line(s) | Notes |
-|------|---------|---------|-------|
-
-Then: specific lines to cut, move to hooks, or move to skills.
-Keep output under 1500 tokens.
-```
-
-**Agent 2: Skills Reviewer**
-
-```
-You are reviewing Claude Code skill definitions for context efficiency
-and routing precision.
-
-## Rules to apply
-
-### SD-DESCRIPTION (error): Precise routing signals
-Description must have specific trigger phrases. Flag generic descriptions
-or missing triggers.
-
-### CB-FORK (error): Context isolation
-Skills with Read/Glob/Grep in allowed-tools MUST have `context: fork`.
-Exception: skills reading only 1-2 specific files.
-
-### SD-TOOL-MINIMAL (warning): Minimal tool lists
-Flag tools in allowed-tools that are never referenced in the skill body.
-
-### AR-VERIFY (error): Self-verification
-Skills producing code/config must include a verification step.
-
-### AR-MODEL-MATCH (warning): Model assignment
-opus = complex reasoning. sonnet = standard work. haiku = lightweight.
-Flag mismatches.
-
-### AP-TRIGGER-OVERLAP (error): Trigger uniqueness
-Compare descriptions across ALL skills. Flag any two skills whose trigger
-phrases would match the same user prompt.
-
-### AP-OVER-SPECIFIED (warning): Length check
-Flag skills >200 lines.
-
-### CB-PROGRESSIVE (info): Runtime discovery
-Note skills that hardcode file paths vs using Glob/Grep at runtime.
-
-## Files to review
-[list skill SKILL.md paths]
-
-## Output format
-For each skill:
-### `<name>` (model: <model>, invocable: <bool>, <line_count> lines)
-| Rule | Verdict | Notes |
-|------|---------|-------|
-
-Then: trigger overlap matrix (only conflicts), top 5 improvements.
-Keep output under 2000 tokens.
-```
-
-**Agent 3: Agents & Commands Reviewer**
-
-```
-You are reviewing Claude Code agent and command definitions for
-context efficiency and architectural quality.
-
-## Rules to apply
-
-### AR-ISOLATION (warning): Single responsibility
-Each agent should address one concern. Flag agents mixing multiple
-unrelated responsibilities.
-
-### SD-TOOL-MINIMAL (warning): Minimal tool lists
-Flag tools never referenced in the agent body.
-
-### SD-RETURN (warning): Condensed output format
-Agent must specify expected output format. Flag agents without
-output format section.
-
-### AP-SCOPE-UNBOUNDED (error): Scope boundaries
-Agents must have explicit scope limits. Flag agents without
-"ONLY", "Do not", "exclusively", or clear stopping conditions.
-
-### AR-MODEL-MATCH (warning): Model assignment
-Check model tier matches task complexity.
-
-### AP-OVER-SPECIFIED (warning): Length check
-Flag agents >100 lines.
-
-## Files to review
-[list agent .md and command .md paths]
-
-## Output format
-For each agent/command:
-### `<name>` (model: <model>, tools: <count>, <line_count> lines)
-| Rule | Verdict | Notes |
-|------|---------|-------|
-
-Then: top 5 improvements.
-Keep output under 1500 tokens.
-```
-
-**Agent 4: Hooks Reviewer**
-
-```
-You are reviewing Claude Code hook scripts for correctness and
-architectural fitness.
-
-## Rules to apply
-
-### AR-HOOK-DETERMINISTIC (error): Only deterministic actions
-Hooks must perform deterministic, unconditional actions.
-Flag hooks that contain conditional logic better suited for
-CLAUDE.md advisory instructions.
-
-### Performance: Hooks run on EVERY tool call
-Flag: network calls, slow operations, large file reads.
-Hooks must be fast (<2s).
-
-### Error handling: Exit codes
-Exit 0 = success (output shown as context).
-Exit 2 = blocking (stderr sent to Claude for fixing).
-Other = silent failure.
-Flag: missing exit code handling, swallowed errors.
-
-### Event appropriateness
-Check hook event matches the action:
-- PreToolUse: validation/blocking before action
-- PostToolUse: verification/linting after action
-- SessionStart: environment setup
-- Notification: user alerts
-- PostCompact: metrics/cleanup
-Flag mismatched events.
-
-## Files to review
-[list hook script paths + settings.json hook config]
-
-## Output format
-For each hook:
-### `<name>` (event: <event>, <line_count> lines)
-| Check | Verdict | Notes |
-|-------|---------|-------|
-
-Then: performance concerns, top improvements.
-Keep output under 1000 tokens.
-```
+**Agent 4: Hooks Reviewer** — Rules: AR-HOOK-DETERMINISTIC, plus: performance
+(<2s), exit code discipline (0=context, 2=blocking), event appropriateness
+(PreToolUse=validation, PostToolUse=verification, SessionStart=setup,
+Notification=alerts, PostCompact=metrics). Output per hook:
+`### name (event, lines)` + check/verdict/notes table. Keep under 1000 tokens.
 
 ---
 
-## Phase 4: Aggregate & Present
+## Phase 4: Aggregate, Cross-Check & Present
 
-Collect results from all review agents. Present:
+Collect results from all review agents. **Cross-check**: for each ERROR
+finding that references a specific line number or file path, verify it
+exists by reading the actual file. Agents can hallucinate line numbers —
+drop findings that don't match reality. Present:
 
-```markdown
-## Configuration Review Report
+Report structure:
 
-**Project**: {name}
-**Date**: {date}
-**Rubric**: Context Engineering Review Rubric (16 rules)
-
-### Context Budget
-
-| Component   | Count | Token Est       | Rating                |
-| ----------- | ----- | --------------- | --------------------- |
-| CLAUDE.md   | N     | ~Nt             | LEAN/OK/HEAVY/BLOATED |
-| Skills      | N     | ~Nt (auto only) | —                     |
-| Hooks       | N     | ~Nt (startup)   | —                     |
-| **Startup** | —     | **~Nt**         | **{rating}**          |
-
----
-
-### Findings by Severity
-
-#### ERRORS (Must Fix)
-
-- [{rule}] `component` — Issue. Fix.
-
-#### WARNINGS (Should Fix)
-
-- [{rule}] `component` — Issue. Fix.
-
-#### INFO (Consider)
-
-- [{rule}] `component` — Observation.
-
----
-
-### Cross-Cutting Analysis
-
-- **Trigger overlap matrix**: {any conflicts between skills}
-- **Model routing summary**: {opus/sonnet/haiku distribution and fitness}
-- **Hook vs CLAUDE.md balance**: {deterministic rules in right place?}
-- **Progressive disclosure**: {upfront vs runtime loading ratio}
-
-### Top 5 Highest-Impact Improvements
-
-1. {improvement} — {estimated token savings or quality gain}
-2. ...
-
-### What's Working Well
-
-- {explicit acknowledgment of good patterns}
-```
-
-### Writing Style
-
-- One sentence per finding. No preamble
-- State what IS wrong, not "consider" or "might"
-- Include component names, line numbers, token counts
-- Lead with impact: "Saves ~500 tokens/session" or "Prevents mis-routing"
+1. **Context Budget** table: component / count / token est / rating (LEAN/OK/HEAVY/BLOATED)
+2. **Findings by Severity**: ERRORS (must fix), WARNINGS (should fix), INFO (consider)
+   - One sentence per finding, no preamble. State what IS wrong. Include component names, line numbers, token counts
+3. **Cross-Cutting**: trigger overlap matrix, model routing summary, hook vs CLAUDE.md balance
+4. **Top 5 Highest-Impact Improvements** with estimated savings
+5. **What's Working Well** — explicit acknowledgment of good patterns
 
 ---
 
@@ -402,25 +211,6 @@ After each fix, show the diff. Do NOT make changes beyond what was flagged.
 **Post-fix verification**: After all fixes are applied, re-check modified
 components against the rules that triggered the fix. Confirm each finding
 is resolved. Report any regressions.
-
----
-
-## Fallback Rules (if RUBRIC.md not found)
-
-If the Glob for `RUBRIC.md` returns no results, apply these core rules:
-
-| Rule                  | Severity | Check                                          |
-| --------------------- | -------- | ---------------------------------------------- |
-| CB-STARTUP            | warning  | Startup tokens <4K                             |
-| CB-FORK               | error    | File-reading skills use `context: fork`        |
-| SD-CLAUDE-MD          | error    | CLAUDE.md: only non-derivable instructions     |
-| SD-DESCRIPTION        | error    | Precise trigger phrases in descriptions        |
-| SD-TOOL-MINIMAL       | warning  | No unused tools in allowed-tools               |
-| AR-HOOK-DETERMINISTIC | error    | Deterministic rules in hooks, not CLAUDE.md    |
-| AR-VERIFY             | error    | Code-producing skills have verification        |
-| AP-TRIGGER-OVERLAP    | error    | No ambiguous trigger overlap between skills    |
-| AP-SCOPE-UNBOUNDED    | error    | Agents have explicit scope limits              |
-| AP-OVER-SPECIFIED     | warning  | CLAUDE.md <150 lines, skills <200, agents <100 |
 
 ---
 

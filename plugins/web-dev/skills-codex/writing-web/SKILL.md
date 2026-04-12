@@ -1,11 +1,13 @@
 ---
 allowed-tools:
-- Read
-- Bash
-- Grep
-- Glob
-description: Simple web development with HTML, CSS, JS, and HTMX. Use when writing
-  or reviewing web templates, stylesheets, or scripts.
+  - Read
+  - Bash
+  - Grep
+  - Glob
+description:
+  Simple web development with HTML, CSS, JS, and HTMX. Auto-activates when
+  working with .html, .css, or .htmx files, web templates, stylesheets, or vanilla
+  JS scripts. NOT for React/Vue/Angular (use writing-typescript) or Node.js backends.
 name: writing-web
 ---
 

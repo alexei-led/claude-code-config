@@ -1,13 +1,16 @@
 ---
 allowed-tools:
-- Read
-- Grep
-- Glob
-- WebFetch
-- mcp__perplexity-ask__perplexity_ask
-description: Web research via Perplexity AI. Use for technical comparisons (X vs Y),
-  best practices, industry standards, documentation. Triggers on "research", "compare",
-  "vs", "best practice", "which is better", "pros and cons".
+  - Read
+  - Grep
+  - Glob
+  - WebFetch
+  - mcp__perplexity-ask__perplexity_ask
+description:
+  Web research via Perplexity AI. Use for technical comparisons (X vs Y),
+  best practices, industry standards, recent developments. Triggers on "research",
+  "compare", "vs", "best practice", "which is better", "pros and cons", "what's new in".
+  NOT for API references or library docs (use looking-up-docs for syntax, examples, and
+  framework documentation).
 name: researching-web
 ---
 
@@ -51,7 +54,6 @@ Trigger phrases that warrant agent:
 - "compare my code to best practices"
 - "is my implementation following standards"
 - "research and show how my code differs"
-
 
 **DO NOT use agent for:**
 

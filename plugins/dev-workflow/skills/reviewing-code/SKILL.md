@@ -1,6 +1,11 @@
 ---
 name: reviewing-code
-description: Multi-agent code review for security, quality, and architecture. Use when user says "review", "review code", "check code", "code review", "review my changes", "review this", or wants feedback on their code.
+description: >-
+  Multi-agent code review for security, quality, and architecture. Use when
+  user says "review code", "check code", "code review", "review my changes",
+  "review this PR", or wants feedback on their source code. NOT for Claude
+  Code configuration review (use reviewing-cc-config for skills/agents/hooks/
+  CLAUDE.md review).
 user-invocable: true
 context: fork
 allowed-tools:

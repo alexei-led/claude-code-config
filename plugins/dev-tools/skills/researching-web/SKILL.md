@@ -1,6 +1,11 @@
 ---
 name: researching-web
-description: Web research via Perplexity AI. Use for technical comparisons (X vs Y), best practices, industry standards, documentation. Triggers on "research", "compare", "vs", "best practice", "which is better", "pros and cons".
+description: >-
+  Web research via Perplexity AI. Use for technical comparisons (X vs Y),
+  best practices, industry standards, recent developments. Triggers on
+  "research", "compare", "vs", "best practice", "which is better", "pros
+  and cons", "what's new in". NOT for API references or library docs
+  (use looking-up-docs for syntax, examples, and framework documentation).
 context: fork
 allowed-tools:
   - Task

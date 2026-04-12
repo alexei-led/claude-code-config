@@ -2,6 +2,7 @@
 name: smart-explore
 description: Token-efficient code navigation via AST parsing. Use smart_outline for file structure, smart_search for cross-file discovery, smart_unfold for targeted function extraction. 10-20x fewer tokens than reading full files.
 user-invocable: false
+context: fork
 allowed-tools:
   - mcp__plugin_claude-mem_mcp-search__smart_search
   - mcp__plugin_claude-mem_mcp-search__smart_outline

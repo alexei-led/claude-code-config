@@ -1,6 +1,10 @@
 ---
 name: looking-up-docs
-description: Library documentation via Context7. Use for API references, code examples, framework docs.
+description: >-
+  Library documentation via Context7. Use when user says "look up docs",
+  "how to use", "API for", "syntax for", "examples of", "show me the docs",
+  or needs API references, code examples, framework-specific documentation.
+  NOT for comparisons (use researching-web) or general web search.
 context: fork
 allowed-tools:
   - Read

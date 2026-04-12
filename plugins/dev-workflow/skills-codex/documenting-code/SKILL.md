@@ -1,8 +1,9 @@
 ---
 allowed-tools:
-- mcp__context7__resolve-library-id
-- mcp__context7__query-docs
-description: Update project documentation based on recent changes. Use when user says
+  - mcp__context7__resolve-library-id
+  - mcp__context7__query-docs
+description:
+  Update project documentation based on recent changes. Use when user says
   "update docs", "document", "add documentation", "update readme", "write docs", or
   wants to improve documentation.
 name: documenting-code
@@ -18,7 +19,6 @@ name: documenting-code
 # Documentation Update
 
 Update project documentation to reflect current code state.
-
 
 1. Determine documentation scope
 2. Analyze recent changes
@@ -40,7 +40,6 @@ Use AskUserQuestion:
 
 Spawn **docs-keeper** agent with documentation prompt:
 
-
 ## Phase 4: Research Best Practices (If Needed)
 
 Use Context7 for documentation patterns:
@@ -49,9 +48,15 @@ Use Context7 for documentation patterns:
 mcp__context7__query-docs for GoDoc, Sphinx, or framework-specific docs
 ```
 
-## Phase 5: Present Summary
+## Phase 5: Verify and Present Summary
 
-Report what was updated and verified.
+**Independent verification** (do not trust the agent's self-report):
+
+1. Run `git diff --stat` to confirm files were actually changed
+2. For each changed file, verify the diff looks correct (no broken links, no placeholder text)
+3. If no files changed, report that docs-keeper made no modifications
+
+Report what was updated, verified diffs, and any issues found.
 
 If no recent changes are found or documentation scope is unclear, ask the user what to document rather than generating speculative documentation.
 
