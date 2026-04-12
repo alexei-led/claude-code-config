@@ -7,7 +7,7 @@
 # EXIT CODES
 #   0 - All tests passed
 #   1 - Test failures or errors
-#   2 - No test framework found
+#   2 - Test failures requiring Claude to fix (reserved for actual code issues)
 
 set +e # Don't exit on test failures, we want to report them
 
@@ -60,7 +60,7 @@ case "$PROJECT_TYPE" in
 		EXIT_CODE=$?
 	else
 		echo -e "${YELLOW}[WARN]${NC} No test script found in package.json" >&2
-		EXIT_CODE=2
+		EXIT_CODE=0
 	fi
 	;;
 
@@ -75,7 +75,7 @@ case "$PROJECT_TYPE" in
 		EXIT_CODE=$?
 	else
 		echo -e "${YELLOW}[WARN]${NC} No pytest found" >&2
-		EXIT_CODE=2
+		EXIT_CODE=0
 	fi
 	;;
 
@@ -86,22 +86,20 @@ case "$PROJECT_TYPE" in
 		EXIT_CODE=$?
 	else
 		echo -e "${YELLOW}[WARN]${NC} Cargo not found" >&2
-		EXIT_CODE=2
+		EXIT_CODE=0
 	fi
 	;;
 
 *)
 	echo -e "${YELLOW}[WARN]${NC} Unknown project type, cannot run tests" >&2
-	EXIT_CODE=2
+	EXIT_CODE=0
 	;;
 esac
 
 # Report results
 echo "" >&2
 if [[ $EXIT_CODE -eq 0 ]]; then
-	echo -e "${GREEN}✅ All tests passed!${NC}" >&2
-elif [[ $EXIT_CODE -eq 2 ]]; then
-	echo -e "${YELLOW}⚠️  No test framework found${NC}" >&2
+	echo -e "${GREEN}✅ Tests passed (or no test framework found)${NC}" >&2
 else
 	echo -e "${RED}❌ Tests failed!${NC}" >&2
 fi
