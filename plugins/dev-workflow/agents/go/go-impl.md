@@ -13,7 +13,7 @@ tools:
     "mcp__plugin_claude-mem_mcp-search__smart_outline",
     "mcp__plugin_claude-mem_mcp-search__smart_unfold",
   ]
-model: opus
+model: sonnet
 effort: high
 color: orange
 skills: ["writing-go", "smart-explore"]

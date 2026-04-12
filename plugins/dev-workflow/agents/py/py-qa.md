@@ -14,7 +14,7 @@ tools:
     "mcp__plugin_claude-mem_mcp-search__smart_outline",
     "mcp__plugin_claude-mem_mcp-search__smart_unfold",
   ]
-model: opus
+model: sonnet
 effort: high
 maxTurns: 15
 color: yellow
