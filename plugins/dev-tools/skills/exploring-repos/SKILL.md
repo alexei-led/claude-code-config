@@ -11,9 +11,6 @@ user-invocable: true
 context: fork
 model: sonnet
 allowed-tools:
-  - Read
-  - Grep
-  - Glob
   - Bash(gh repo view *)
   - Bash(gh api *)
   - Bash(gh search *)
