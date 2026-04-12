@@ -1,6 +1,6 @@
 {
   "name": "web-dev",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "description": "Web frontend development with vanilla HTML, CSS, JavaScript, and HTMX",
   "author": {
     "name": "Alexei Ledenev"
