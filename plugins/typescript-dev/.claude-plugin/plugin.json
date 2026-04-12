@@ -1,7 +1,7 @@
 {
   "name": "typescript-dev",
   "description": "TypeScript development with strict typing, React patterns, and modern tooling",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "author": {
     "name": "Alexei Ledenev"
   },
