@@ -6,6 +6,22 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 major = breaking config/hook changes, minor = new skills/features, patch = fixes.
 
+## [1.6.2] - 2026-04-12
+
+### Fixed
+
+- **test-runner.sh**: Exit 0 (informational) instead of exit 2 (blocking) when no test framework found — prevents spurious "Claude must fix" errors for unknown project types, missing pytest, or missing cargo
+- **smart-explore**: Added `context: fork` — file-reading fallback now runs in isolated context
+- **documenting-code**: Phase 5 independently verifies changes via `git diff --stat` instead of trusting agent self-report
+- **reviewing-cc-config**: Slimmed from 447→237 lines (−47%); agents read RUBRIC.md directly instead of inline rules; added cross-check step; RUBRIC.md now required (no silent fallback)
+- **exploring-repos**: Removed unused Read/Grep/Glob from `allowed-tools`
+
+### Changed
+
+- **Model routing** (per Anthropic system cards): `go-impl`, `go-qa`, `py-impl`, `py-qa`, `ts-impl`, `ts-qa` downgraded opus→sonnet (checklist review, 3–5× cost reduction); `go-docs`, `py-docs`, `ts-docs`, `web-docs` upgraded haiku→sonnet (semantic doc quality)
+- **Skill descriptions**: Added trigger phrases and NOT-for exclusions to `looking-up-docs`, `researching-web`, `writing-web`, `reviewing-code` for cleaner routing
+- **skill-enforcer.sh**: Added negative patterns for 3 overlapping pairs (code/config review, docs/research, web/typescript) — all disambiguation tests pass
+
 ## [1.6.0] - 2026-04-07
 
 ### Added
