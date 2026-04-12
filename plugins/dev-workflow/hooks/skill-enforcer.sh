@@ -52,12 +52,17 @@ fi
 
 # looking-up-docs: Library documentation via Context7
 # Triggers: Explicit doc-seeking language, API reference needs
-if echo "$PROMPT_LOWER" | grep -qE '\bdocs\b|\bdocumentation\b|api\s*(reference|docs)|look\s*up.*(docs|api|syntax|usage|reference)|find.*(docs|documentation|reference)|check.*(docs|documentation)|man\s*page|reference.*(guide|manual)|how (to|do|does).*work|official.*(docs|documentation)|library.*docs|version.*specific'; then
-	skills+="looking-up-docs "
+# NOT for comparisons/best-practices (use researching-web)
+if echo "$PROMPT_LOWER" | grep -qE '\bdocs\b|\bdocumentation\b|api\s*(reference|docs)|look\s*up.*(docs|api|syntax|usage|reference|examples)|find.*(docs|documentation|reference)|check.*(docs|documentation)|man\s*page|reference.*(guide|manual)|official.*(docs|documentation)|library.*docs|version.*specific|syntax\s*for|examples\s*of|how\s*to\s*use\s*\w+'; then
+	# Exclude comparison/research patterns — those go to researching-web
+	if ! echo "$PROMPT_LOWER" | grep -qE '\bvs\b|\bcompare\b|\bbest\s*practice\b|\bpros\s*(and|&)\s*cons\b|\bwhich.*(better|should)\b'; then
+		skills+="looking-up-docs "
+	fi
 fi
 
-# researching-web: Web research via Perplexity AI (best practices, comparisons, standards)
+# researching-web: Web research via Perplexity AI (comparisons, best practices, standards)
 # Triggers: Research language, comparisons, best practices, industry standards
+# NOT for API references or library docs (use looking-up-docs)
 if echo "$PROMPT_LOWER" | grep -qE '\bresearch\b|search.*(web|online)|look\s*up.*online|find\s*out.*(about|if|whether)|compare.*(tool|lib|framework|approach|option|technolog)|(\w+)\s+vs\s+(\w+)|pros\s*(and|&)\s*cons|trade[\s-]?off|which.*(better|should|recommend)|latest.*(version|release|update)|current.*(version|best)|what.?s\s*new\s*in|best\s*practice|up[\s-]?to[\s-]?date|2024|2025|2026|industry\s*standard|owasp|recommended\s*(practice|approach|pattern)|perplexity'; then
 	skills+="researching-web "
 fi
@@ -70,7 +75,8 @@ fi
 
 # searching-code: Intelligent codebase search via WarpGrep
 # Triggers: Understanding code flow, tracing, cross-file exploration, large repos
-if echo "$PROMPT_LOWER" | grep -qE 'how\s*does.*work|trace.*(flow|data|request|call)|understand.*(codebase|code|flow|architecture)|find\s*all.*(implementation|usage|call|reference)|cross[\s-]?file|multi[\s-]?hop|where.*implemented|explore.*(codebase|code)|large\s*repo|warpgrep|intelligent\s*search|reason.*about.*code'; then
+# "how does X work" only for THIS codebase — external libs go to looking-up-docs/exploring-repos
+if echo "$PROMPT_LOWER" | grep -qE 'how\s*does.*(this|our|the\s*(code|project|repo|module|function|class|method)).*work|trace.*(flow|data|request|call)|understand.*(codebase|code|flow|architecture)|find\s*all.*(implementation|usage|call|reference)|cross[\s-]?file|multi[\s-]?hop|where.*implemented|explore.*(codebase|code)|large\s*repo|warpgrep|intelligent\s*search|reason.*about.*code'; then
 	skills+="searching-code "
 fi
 
@@ -81,9 +87,13 @@ if echo "$PROMPT_LOWER" | grep -qE 'refactor.*(across|multiple|batch|all|every)|
 fi
 
 # reviewing-code: Multi-agent code review for security, quality, architecture
-# Triggers: review, code review, check code, review changes, feedback on code
+# Triggers: review code, check code, review changes, review PR, feedback on code
+# NOT for config/setup/skills/agents/hooks review (use reviewing-cc-config)
 if echo "$PROMPT_LOWER" | grep -qE '\breview\b.*\b(code|changes|this|my|the)\b|\bcode\s*review\b|\bcheck\s*(this|my|the)?\s*code\b|\bdeep\s*(code\s*)?review\b|\bfeedback\s*(on)?\s*(my|the|this)?\s*code\b|review\s*(my|the|these)?\s*(changes|implementation|pr)\b|critique\s*(my|the|this)?\s*code'; then
-	skills+="reviewing-code "
+	# Exclude config-review patterns — those go to reviewing-cc-config
+	if ! echo "$PROMPT_LOWER" | grep -qE '\b(config|configuration|setup|skills?|agents?|hooks?|claude\.?md)\b'; then
+		skills+="reviewing-code "
+	fi
 fi
 
 # committing-code: Smart git commits with logical grouping
@@ -118,8 +128,12 @@ fi
 
 # writing-web: Simple web development with HTML, CSS, JS, HTMX
 # Triggers: HTML, CSS, JS, web template, stylesheet, HTMX
+# NOT for React/Vue/Angular/Node.js (use writing-typescript)
 if echo "$PROMPT_LOWER" | grep -qE '\bhtml\s*(template|file|page|component)?\b|\bcss\s*(style|file|class)?\b|\bstylesheet\b|\bhtmx\b|\bweb\s*(template|page|component|form)\b|\bhtml\s*and\s*css\b|\bvanilla\s*js\b|\bdom\s*manipulat|\.html\b|\.css\b'; then
-	skills+="writing-web "
+	# Exclude React/Vue/Angular/Node — those go to writing-typescript
+	if ! echo "$PROMPT_LOWER" | grep -qE '\breact\b|\bvue\b|\bangular\b|\bnext\.?js\b|\bnode\.?js\b|\btsx\b'; then
+		skills+="writing-web "
+	fi
 fi
 
 # brainstorming-ideas: Collaborative design dialogue
