@@ -238,6 +238,16 @@ if echo "$PROMPT_LOWER" | grep -qE '\blast\s*session\b|\bdid\s*we\s*already\b|\b
 	skills+="mem-history "
 fi
 
+# coding: Implementation process discipline — surface assumptions, define verifiable goals
+# Triggers: implement, write/create/build/add code constructs in any language
+# Co-fires alongside language-specific skills (writing-go, writing-python, etc.)
+if echo "$PROMPT_LOWER" | grep -qE '\bimplement\b|\bwrite\s+(a\s+)?(function|method|class|module|script|service|handler|middleware|endpoint|api|component|struct|interface|type|trait|enum)\b|\bcreate\s+(a\s+)?(function|method|class|module|script|service|handler|endpoint|component|struct)\b|\badd\s+(a\s+)?(feature|function|method|endpoint|handler|route|command|flag|option|field|property)\b|\bbuild\s+(a\s+)?(feature|module|service|api|system|component|pipeline|cli|tool)\b|\bdevelop\s+(a\s+)?(feature|module|service|component|api)\b|\bcode\s+(this|up|a|the)\b'; then
+	# Exclude review/fix/commit/doc tasks — those have dedicated skills
+	if ! echo "$PROMPT_LOWER" | grep -qE '\breview\b|\bfix\b|\bcommit\b|\bdocument\b|\brefactor\b'; then
+		skills+="coding "
+	fi
+fi
+
 # Output only if skills detected (silent when no match)
 if [[ -n "$skills" ]]; then
 	skills="${skills% }"

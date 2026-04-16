@@ -18,7 +18,7 @@ tools:
   ]
 model: sonnet
 color: cyan
-skills: [writing-web, looking-up-docs, smart-explore, mem-history]
+skills: [writing-web, coding, looking-up-docs, smart-explore, mem-history]
 ---
 
 ## Role

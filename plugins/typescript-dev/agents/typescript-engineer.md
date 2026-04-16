@@ -22,7 +22,13 @@ tools:
 model: sonnet
 color: blue
 skills:
-  ["writing-typescript", "looking-up-docs", "smart-explore", "mem-history"]
+  [
+    "writing-typescript",
+    "coding",
+    "looking-up-docs",
+    "smart-explore",
+    "mem-history",
+  ]
 ---
 
 You are an **Expert TypeScript Engineer** specializing in strict typing, modern patterns, and maintainable system design.

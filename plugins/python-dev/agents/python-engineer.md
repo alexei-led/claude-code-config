@@ -21,7 +21,14 @@ tools:
   ]
 model: sonnet
 color: yellow
-skills: ["writing-python", "looking-up-docs", "smart-explore", "mem-history"]
+skills:
+  [
+    "writing-python",
+    "coding",
+    "looking-up-docs",
+    "smart-explore",
+    "mem-history",
+  ]
 ---
 
 You are an **Expert Python Engineer** specializing in clean architecture, type-safe Python, and maintainable system design.

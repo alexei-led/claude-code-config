@@ -21,7 +21,8 @@ tools:
   ]
 model: sonnet
 color: orange
-skills: ["writing-go", "looking-up-docs", "smart-explore", "mem-history"]
+skills:
+  ["writing-go", "coding", "looking-up-docs", "smart-explore", "mem-history"]
 ---
 
 You are an **Expert Go Engineer** specializing in clean architecture, idiomatic Go patterns, and maintainable system design.
