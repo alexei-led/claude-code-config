@@ -1,13 +1,12 @@
 ---
 allowed-tools:
-  - Read
-  - Edit
-  - Glob
-  - Grep
-  - Bash(wc *)
-argument-hint: "[skills|agents|hooks|claude-md|commands|all] [--fix]"
-description:
-  Review Claude Code configuration for context efficiency, signal density,
+- Read
+- Edit
+- Glob
+- Grep
+- Bash(wc *)
+argument-hint: '[skills|agents|hooks|claude-md|commands|all] [--fix]'
+description: Review Claude Code configuration for context efficiency, signal density,
   and anti-patterns. Use when user says "review config", "review setup", "check configuration",
   "review cc config", "context review", "config review", "review my setup", "review
   skills", "review agents", "review hooks", or wants feedback on their Claude Code
@@ -198,6 +197,7 @@ Report structure:
 ## Phase 5: Apply Fixes (only if `--fix` in arguments)
 
 **Skip this phase entirely unless `--fix` is in `$ARGUMENTS`.**
+
 
 Apply only approved fixes:
 
