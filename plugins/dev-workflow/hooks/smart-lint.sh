@@ -27,6 +27,14 @@ log_debug() { [[ "$CLAUDE_HOOKS_DEBUG" == "1" ]] && echo -e "${CYAN}[DEBUG]${NC}
 log_info() { echo -e "${BLUE}[INFO]${NC} $*" >&2; }
 command_exists() { command -v "$1" &>/dev/null; }
 
+# --- SKIP CHECK ---
+# Skip linting via env var (transient: SKIP_LINT=1 <command>)
+# or via .nolint file in project root (persistent; add to .gitignore)
+if [[ "${SKIP_LINT:-}" == "1" ]] || [[ -f ".nolint" ]]; then
+	echo -e "${CYAN}⏭ Linting skipped${NC}" >&2
+	exit 0
+fi
+
 # --- ERROR & SUMMARY ---
 declare -a ERRORS=()
 add_error() {

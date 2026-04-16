@@ -1,6 +1,6 @@
 {
   "name": "dev-workflow",
-  "version": "1.6.2",
+  "version": "1.6.3",
   "description": "Core development loop: code review, fixes, commits, linting hooks, and language-specific review skills",
   "author": {
     "name": "Alexei Ledenev"
