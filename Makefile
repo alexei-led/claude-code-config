@@ -98,12 +98,9 @@ setup: ## Install pre-commit hook and dev dependencies
 # --- Push ---
 
 .PHONY: push
-push: ## Push master to origin and sync cc-forge private mirror
+push: ## Push master to origin and all private mirrors (CI rewrites manifests)
 	git push origin master
-	git checkout cc-forge-private
-	git rebase master
-	git push cc-forge cc-forge-private:main --force-with-lease
-	git checkout master
+	git push cc-forge master:main --force-with-lease
 
 # --- Release ---
 

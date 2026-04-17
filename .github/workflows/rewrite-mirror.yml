@@ -1,0 +1,28 @@
+name: Rewrite mirror manifests
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+# Only runs on mirror repos — skips the source repo entirely.
+jobs:
+  rewrite:
+    if: github.repository != 'alexei-led/cc-thingz'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Rewrite manifests
+        run: python scripts/rewrite-mirror.py ${{ github.repository }}
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git diff --quiet && echo "No changes." || \
+            git add -A && \
+            git commit -m "chore: apply mirror rewrites [skip ci]" && \
+            git push
