@@ -6,6 +6,18 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 major = breaking config/hook changes, minor = new skills/features, patch = fixes.
 
+## [1.7.0] - 2026-04-17
+
+### Added
+
+- **Private mirror support**: `scripts/rewrite-mirror.py` rewrites plugin manifests (repository URLs, homepage links, plugin names) for private GitHub mirrors — configurable per-mirror name maps in `MIRROR_NAMES`
+- **Mirror sync workflow**: `.github/workflows/rewrite-mirror.yml` auto-rewrites manifests on push to mirror repos; condition-gated on `github.repository` to skip the source repo; commits with `[skip ci]` to prevent trigger loops
+
+### Changed
+
+- **Plugin manifests**: All `plugin.json` and `marketplace.json` files enriched with full metadata — `author.email`, `author.url`, `homepage` URLs, expanded `keywords` arrays across all 9 plugins
+- **`make push`**: Simplified to plain dual-push (`origin` + mirror remotes); CI on mirror repos handles manifest rewrites automatically
+
 ## [1.6.3] - 2026-04-16
 
 ### Added
