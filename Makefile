@@ -95,6 +95,16 @@ setup: ## Install pre-commit hook and dev dependencies
 	uv sync --extra test
 	@echo "Setup complete — pre-commit hook installed"
 
+# --- Push ---
+
+.PHONY: push
+push: ## Push master to origin and sync cc-forge private mirror
+	git push origin master
+	git checkout cc-forge-private
+	git rebase master
+	git push cc-forge cc-forge-private:main --force-with-lease
+	git checkout master
+
 # --- Release ---
 
 .PHONY: release
