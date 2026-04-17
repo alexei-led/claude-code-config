@@ -1,27 +1,10 @@
 ---
 name: exploring-repos
-description: >-
-  Explore public GitHub repositories via DeepWiki AI-generated documentation.
-  Use for understanding architecture, patterns, design decisions, and code
-  organization of popular open-source projects. Use when user asks "how does
-  X repo work", "explain architecture of Y", "what patterns does Z use",
-  "explore repo", "deepwiki", or needs codebase-level understanding beyond
-  API docs.
+description: "Explore public GitHub repositories via DeepWiki AI-generated documentation. Use for understanding architecture, patterns, design decisions, and code organization of popular open-source projects. Use when user asks 'how does X repo work', 'explain architecture of Y', 'what patterns does Z use', 'explore repo', 'deepwiki', or needs codebase-level understanding beyond API docs."
 user-invocable: true
 context: fork
 model: sonnet
-allowed-tools:
-  - Bash(gh repo view *)
-  - Bash(gh api *)
-  - Bash(gh search *)
-  - Bash(gh release *)
-  - Bash(gh issue *)
-  - mcp__deepwiki__read_wiki_structure
-  - mcp__deepwiki__read_wiki_contents
-  - mcp__deepwiki__ask_question
-  - mcp__context7__resolve-library-id
-  - mcp__context7__query-docs
-  - mcp__perplexity-ask__perplexity_ask
+allowed-tools: "Bash(gh repo view *), Bash(gh api *), Bash(gh search *), Bash(gh release *), Bash(gh issue *), mcp__deepwiki__read_wiki_structure, mcp__deepwiki__read_wiki_contents, mcp__deepwiki__ask_question, mcp__context7__resolve-library-id, mcp__context7__query-docs, mcp__perplexity-ask__perplexity_ask"
 ---
 
 # Explore GitHub Repositories with DeepWiki
@@ -49,6 +32,8 @@ Call `mcp__deepwiki__read_wiki_structure` with `repoName` in `owner/repo` format
 ```
 mcp__deepwiki__read_wiki_structure({ "repoName": "langchain-ai/langchain" })
 ```
+
+**If structure is empty or returns an error:** the repo may not be indexed — skip to Fallback section.
 
 ### Step 2 — Read relevant topics
 
@@ -86,27 +71,7 @@ mcp__deepwiki__ask_question({
 
 1. `read_wiki_structure` — scan available topics
 2. `read_wiki_contents` — read the full wiki for an overview
-3. `ask_question` — drill into specifics
-
-**For architecture understanding:**
-
-- "What is the high-level architecture?"
-- "How do the core modules interact?"
-- "What design patterns are used?"
-- "How is error handling structured?"
-
-**For implementation reference:**
-
-- "How does X feature handle Y edge case?"
-- "What is the authentication/authorization flow?"
-- "How are database migrations managed?"
-- "What testing patterns are used?"
-
-**For cross-repo comparison:**
-
-- Pass multiple repos to `ask_question`
-- Ask about specific architectural differences
-- Compare approaches to the same problem
+3. `ask_question` — drill into specifics ("How does X handle Y?", "What patterns are used?")
 
 ## Examples
 

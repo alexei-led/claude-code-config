@@ -4,23 +4,7 @@ description: Validate and deploy Kubernetes, Terraform, Helm, Kustomize, GitHub 
 user-invocable: true
 context: fork
 argument-hint: "[--dry-run | --apply] [environment]"
-allowed-tools:
-  - Task
-  - TaskOutput
-  - TodoWrite
-  - Bash(kubectl *)
-  - Bash(helm *)
-  - Bash(kustomize *)
-  - Bash(terraform *)
-  - Bash(actionlint *)
-  - Bash(docker *)
-  - Bash(git *)
-  - Bash(make *)
-  - Read
-  - Grep
-  - Glob
-  - AskUserQuestion
-  - mcp__perplexity-ask__perplexity_ask
+allowed-tools: "Task, TaskOutput, TodoWrite, Bash(kubectl *), Bash(helm *), Bash(kustomize *), Bash(terraform *), Bash(actionlint *), Bash(docker *), Bash(git *), Bash(make *), Read, Grep, Glob, AskUserQuestion, mcp__perplexity-ask__perplexity_ask"
 ---
 
 # Deploy Infrastructure

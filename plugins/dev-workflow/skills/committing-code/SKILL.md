@@ -1,14 +1,9 @@
 ---
 name: committing-code
-description: Smart git commits with logical grouping. Use when user says "commit", "commit changes", "save changes", "create commit", "bundle commits", "git commit", or wants to commit their work.
+description: "Analyze staged changes, group related modifications into logical atomic commits, and generate descriptive commit messages following project conventions. Use when user says 'commit', 'commit changes', 'save changes', 'create commit', 'bundle commits', 'git commit', or wants to commit their work."
 user-invocable: true
 context: fork
-allowed-tools:
-  - Bash(git status *)
-  - Bash(git diff *)
-  - Bash(git log *)
-  - Bash(git show *)
-  - Bash(git branch *)
+allowed-tools: "Bash(git status *), Bash(git diff *), Bash(git log *), Bash(git show *), Bash(git branch *)"
 ---
 
 # Smart Commit

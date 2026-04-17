@@ -4,19 +4,7 @@ description: E2E testing with Playwright — the primary user-facing skill for w
 user-invocable: true
 context: fork
 argument-hint: "[run|record|generate|verify <feature>]"
-allowed-tools:
-  - Task
-  - TaskOutput
-  - TodoWrite
-  - Bash(npx playwright *)
-  - Bash(npm *)
-  - Bash(bun *)
-  - Bash(node *)
-  - Read
-  - Grep
-  - Glob
-  - LS
-  - AskUserQuestion
+allowed-tools: "Task, TaskOutput, TodoWrite, Bash(npx playwright *), Bash(npm *), Bash(bun *), Bash(node *), Read, Grep, Glob, LS, AskUserQuestion"
 ---
 
 # E2E Testing with Playwright
@@ -123,11 +111,21 @@ Task(
 
 ## Phase 3: Verify Results
 
+Run the test suite and validate:
+
 ```bash
 npx playwright test --headed
 ```
 
-If tests fail, review output and fix issues.
+**Pass criteria:** All tests green, no flaky failures on re-run.
+
+**If tests fail:**
+
+1. Read the Playwright error output — identify failing locator or assertion
+2. Fix the test or application code
+3. Re-run: `npx playwright test <failed-spec> --headed`
+4. Repeat until all tests pass
+5. Run full suite once more to confirm no regressions: `npx playwright test`
 
 ---
 
@@ -168,89 +166,16 @@ The executor handles module resolution, auto-installs Chromium if needed, and pr
 - Verify `HX-*` response headers in network requests
 - Assert partial page updates without full reload
 
-## Error Scenarios & Handling
+## Troubleshooting
 
-### Element Not Found
+| Problem            | Diagnosis                        | Fix                                                 |
+| ------------------ | -------------------------------- | --------------------------------------------------- |
+| Element not found  | Selector changed or not rendered | Use `getByRole`/`getByText` instead of CSS selectors |
+| Timeout            | Slow load or not interactable    | `waitForLoadState("networkidle")`, increase timeout  |
+| Flaky failures     | Timing or animation dependency   | Replace `waitForTimeout` with `waitForSelector`      |
+| Network errors     | API dependency                   | Mock with `page.route()` for isolation               |
 
-```typescript
-// BAD: Immediate failure
-await page.click("#submit-btn");
-
-// GOOD: Wait with timeout + fallback
-const btn = page.locator("#submit-btn");
-if ((await btn.count()) === 0) {
-  // Try alternative selector
-  await page.click('button[type="submit"]');
-} else {
-  await btn.click();
-}
-```
-
-**Recovery strategies:**
-
-1. Use `browser_snapshot` to inspect current DOM state
-2. Try alternative locators (text, role, data-testid)
-3. Check if element is in iframe/shadow DOM
-4. Verify page loaded correctly (check URL, title)
-
-### Timeout Errors
-
-| Error              | Cause                    | Solution                          |
-| ------------------ | ------------------------ | --------------------------------- |
-| Navigation timeout | Slow page load           | Increase timeout, check network   |
-| Action timeout     | Element not interactable | Wait for visibility/enabled state |
-| Expect timeout     | Assertion failed         | Verify DOM state with snapshot    |
-
-```typescript
-// Configure timeouts
-test.setTimeout(60000); // Test timeout
-page.setDefaultTimeout(30000); // Action timeout
-
-// Or per-action
-await page.click("#btn", { timeout: 10000 });
-```
-
-### Network Issues
-
-```typescript
-// Wait for network idle
-await page.waitForLoadState("networkidle");
-
-// Mock failing endpoints
-await page.route("**/api/**", (route) => {
-  route.fulfill({ status: 500, body: "Server Error" });
-});
-```
-
-### Flaky Test Patterns
-
-**Avoid:**
-
-- Fixed `page.waitForTimeout(1000)` delays
-- Brittle selectors like `.btn-23`
-- Tests depending on animation timing
-
-**Prefer:**
-
-- `waitForSelector`, `waitForLoadState`
-- Role/text-based selectors: `getByRole('button', { name: 'Submit' })`
-- Retry patterns for known flaky operations
-
-### Debugging Failed Tests
-
-1. **Get snapshot**: `browser_snapshot` shows accessibility tree
-2. **Screenshot**: Capture current visual state
-3. **Console logs**: Check browser console for JS errors
-4. **Network tab**: Verify API calls succeeded
-5. **Trace**: Enable Playwright trace for post-mortem
-
-```bash
-# Run with trace
-npx playwright test --trace on
-
-# View trace
-npx playwright show-trace trace.zip
-```
+**Debug:** Run `npx playwright test --trace on`, then `npx playwright show-trace trace.zip`.
 
 ---
 
