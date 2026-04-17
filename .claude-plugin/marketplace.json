@@ -5,8 +5,11 @@
     "email": "alexei.led@gmail.com"
   },
   "metadata": {
-    "description": "A Claude Code plugin suite for development workflows, language tooling, infrastructure ops, and more — with portable skill export for Codex CLI and Gemini CLI",
-    "version": "1.6.2"
+    "description": "A Claude Code plugin suite for development workflows, language tooling, infrastructure ops, and more \u2014 with portable skill export for Codex CLI and Gemini CLI",
+    "version": "1.6.2",
+    "homepage": "https://github.com/alexei-led/cc-thingz",
+    "repository": "https://github.com/alexei-led/cc-thingz",
+    "license": "MIT"
   },
   "plugins": [
     {
@@ -19,6 +22,28 @@
         "linting",
         "commit",
         "hooks"
+      ],
+      "version": "1.6.3",
+      "author": {
+        "name": "Alexei Ledenev",
+        "email": "alexei.led@gmail.com",
+        "url": "https://github.com/alexei-led"
+      },
+      "homepage": "https://github.com/alexei-led/cc-thingz/tree/master/plugins/dev-workflow",
+      "repository": "https://github.com/alexei-led/cc-thingz",
+      "license": "MIT",
+      "keywords": [
+        "code-review",
+        "linting",
+        "commit",
+        "workflow",
+        "hooks",
+        "agents",
+        "go",
+        "python",
+        "typescript",
+        "security",
+        "testing"
       ]
     },
     {
@@ -29,6 +54,25 @@
       "tags": [
         "go",
         "golang"
+      ],
+      "version": "1.6.2",
+      "author": {
+        "name": "Alexei Ledenev",
+        "email": "alexei.led@gmail.com",
+        "url": "https://github.com/alexei-led"
+      },
+      "homepage": "https://github.com/alexei-led/cc-thingz/tree/master/plugins/go-dev",
+      "repository": "https://github.com/alexei-led/cc-thingz",
+      "license": "MIT",
+      "keywords": [
+        "go",
+        "golang",
+        "development",
+        "testing",
+        "cli",
+        "stdlib",
+        "patterns",
+        "architecture"
       ]
     },
     {
@@ -40,6 +84,25 @@
         "python",
         "uv",
         "ruff"
+      ],
+      "version": "1.6.2",
+      "author": {
+        "name": "Alexei Ledenev",
+        "email": "alexei.led@gmail.com",
+        "url": "https://github.com/alexei-led"
+      },
+      "homepage": "https://github.com/alexei-led/cc-thingz/tree/master/plugins/python-dev",
+      "repository": "https://github.com/alexei-led/cc-thingz",
+      "license": "MIT",
+      "keywords": [
+        "python",
+        "uv",
+        "ruff",
+        "pyright",
+        "type-hints",
+        "development",
+        "testing",
+        "fastapi"
       ]
     },
     {
@@ -51,6 +114,25 @@
         "typescript",
         "react",
         "nodejs"
+      ],
+      "version": "1.6.2",
+      "author": {
+        "name": "Alexei Ledenev",
+        "email": "alexei.led@gmail.com",
+        "url": "https://github.com/alexei-led"
+      },
+      "homepage": "https://github.com/alexei-led/cc-thingz/tree/master/plugins/typescript-dev",
+      "repository": "https://github.com/alexei-led/cc-thingz",
+      "license": "MIT",
+      "keywords": [
+        "typescript",
+        "react",
+        "nodejs",
+        "strict-typing",
+        "bun",
+        "vite",
+        "frontend",
+        "development"
       ]
     },
     {
@@ -63,6 +145,26 @@
         "css",
         "javascript",
         "htmx"
+      ],
+      "version": "1.6.2",
+      "author": {
+        "name": "Alexei Ledenev",
+        "email": "alexei.led@gmail.com",
+        "url": "https://github.com/alexei-led"
+      },
+      "homepage": "https://github.com/alexei-led/cc-thingz/tree/master/plugins/web-dev",
+      "repository": "https://github.com/alexei-led/cc-thingz",
+      "license": "MIT",
+      "keywords": [
+        "html",
+        "css",
+        "javascript",
+        "htmx",
+        "web",
+        "frontend",
+        "vanilla",
+        "accessibility",
+        "responsive"
       ]
     },
     {
@@ -76,6 +178,28 @@
         "helm",
         "aws",
         "gcp"
+      ],
+      "version": "1.6.2",
+      "author": {
+        "name": "Alexei Ledenev",
+        "email": "alexei.led@gmail.com",
+        "url": "https://github.com/alexei-led"
+      },
+      "homepage": "https://github.com/alexei-led/cc-thingz/tree/master/plugins/infra-ops",
+      "repository": "https://github.com/alexei-led/cc-thingz",
+      "license": "MIT",
+      "keywords": [
+        "kubernetes",
+        "terraform",
+        "helm",
+        "kustomize",
+        "github-actions",
+        "aws",
+        "gcp",
+        "infrastructure",
+        "devops",
+        "ci-cd",
+        "docker"
       ]
     },
     {
@@ -88,6 +212,26 @@
         "worktrees",
         "research",
         "documentation"
+      ],
+      "version": "1.6.2",
+      "author": {
+        "name": "Alexei Ledenev",
+        "email": "alexei.led@gmail.com",
+        "url": "https://github.com/alexei-led"
+      },
+      "homepage": "https://github.com/alexei-led/cc-thingz/tree/master/plugins/dev-tools",
+      "repository": "https://github.com/alexei-led/cc-thingz",
+      "license": "MIT",
+      "keywords": [
+        "cli",
+        "modern-cli",
+        "worktrees",
+        "git-worktrees",
+        "research",
+        "web-search",
+        "documentation",
+        "brainstorming",
+        "utilities"
       ]
     },
     {
@@ -100,6 +244,26 @@
         "planning",
         "requirements",
         "tasks"
+      ],
+      "version": "1.6.2",
+      "author": {
+        "name": "Alexei Ledenev",
+        "email": "alexei.led@gmail.com",
+        "url": "https://github.com/alexei-led"
+      },
+      "homepage": "https://github.com/alexei-led/cc-thingz/tree/master/plugins/spec-system",
+      "repository": "https://github.com/alexei-led/cc-thingz",
+      "license": "MIT",
+      "keywords": [
+        "spec",
+        "spec-driven",
+        "planning",
+        "requirements",
+        "tasks",
+        "epic",
+        "agile",
+        "project-management",
+        "workflow"
       ]
     },
     {
@@ -111,6 +275,24 @@
         "playwright",
         "e2e",
         "browser-automation"
+      ],
+      "version": "1.6.2",
+      "author": {
+        "name": "Alexei Ledenev",
+        "email": "alexei.led@gmail.com",
+        "url": "https://github.com/alexei-led"
+      },
+      "homepage": "https://github.com/alexei-led/cc-thingz/tree/master/plugins/testing-e2e",
+      "repository": "https://github.com/alexei-led/cc-thingz",
+      "license": "MIT",
+      "keywords": [
+        "playwright",
+        "e2e",
+        "testing",
+        "browser-automation",
+        "ui-testing",
+        "accessibility",
+        "typescript"
       ]
     }
   ]

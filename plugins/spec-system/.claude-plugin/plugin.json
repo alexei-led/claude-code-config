@@ -3,15 +3,22 @@
   "description": "Spec-driven development: structured requirements, tasks, and planning workflows",
   "version": "1.6.2",
   "author": {
-    "name": "Alexei Ledenev"
+    "name": "Alexei Ledenev",
+    "email": "alexei.led@gmail.com",
+    "url": "https://github.com/alexei-led"
   },
   "repository": "https://github.com/alexei-led/cc-thingz",
   "license": "MIT",
   "keywords": [
     "spec",
+    "spec-driven",
     "planning",
     "requirements",
     "tasks",
-    "project-management"
-  ]
+    "epic",
+    "agile",
+    "project-management",
+    "workflow"
+  ],
+  "homepage": "https://github.com/alexei-led/cc-thingz/tree/master/plugins/spec-system"
 }

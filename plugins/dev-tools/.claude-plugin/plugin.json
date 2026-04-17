@@ -3,15 +3,22 @@
   "description": "Developer utilities: modern CLI tools, git worktrees, docs lookup, web research, brainstorming",
   "version": "1.6.2",
   "author": {
-    "name": "Alexei Ledenev"
+    "name": "Alexei Ledenev",
+    "email": "alexei.led@gmail.com",
+    "url": "https://github.com/alexei-led"
   },
   "repository": "https://github.com/alexei-led/cc-thingz",
   "license": "MIT",
   "keywords": [
     "cli",
+    "modern-cli",
     "worktrees",
+    "git-worktrees",
     "research",
+    "web-search",
     "documentation",
+    "brainstorming",
     "utilities"
-  ]
+  ],
+  "homepage": "https://github.com/alexei-led/cc-thingz/tree/master/plugins/dev-tools"
 }

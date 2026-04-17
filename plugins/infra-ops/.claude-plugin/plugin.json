@@ -3,7 +3,9 @@
   "description": "Infrastructure and cloud operations: Kubernetes, Terraform, Helm, GitHub Actions, AWS, GCP",
   "version": "1.6.2",
   "author": {
-    "name": "Alexei Ledenev"
+    "name": "Alexei Ledenev",
+    "email": "alexei.led@gmail.com",
+    "url": "https://github.com/alexei-led"
   },
   "repository": "https://github.com/alexei-led/cc-thingz",
   "license": "MIT",
@@ -11,9 +13,14 @@
     "kubernetes",
     "terraform",
     "helm",
+    "kustomize",
     "github-actions",
     "aws",
     "gcp",
-    "infrastructure"
-  ]
+    "infrastructure",
+    "devops",
+    "ci-cd",
+    "docker"
+  ],
+  "homepage": "https://github.com/alexei-led/cc-thingz/tree/master/plugins/infra-ops"
 }

@@ -3,7 +3,9 @@
   "description": "End-to-end testing with Playwright: browser automation, test generation, and UI testing",
   "version": "1.6.2",
   "author": {
-    "name": "Alexei Ledenev"
+    "name": "Alexei Ledenev",
+    "email": "alexei.led@gmail.com",
+    "url": "https://github.com/alexei-led"
   },
   "repository": "https://github.com/alexei-led/cc-thingz",
   "license": "MIT",
@@ -11,6 +13,10 @@
     "playwright",
     "e2e",
     "testing",
-    "browser-automation"
-  ]
+    "browser-automation",
+    "ui-testing",
+    "accessibility",
+    "typescript"
+  ],
+  "homepage": "https://github.com/alexei-led/cc-thingz/tree/master/plugins/testing-e2e"
 }

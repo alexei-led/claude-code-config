@@ -3,7 +3,9 @@
   "description": "TypeScript development with strict typing, React patterns, and modern tooling",
   "version": "1.6.2",
   "author": {
-    "name": "Alexei Ledenev"
+    "name": "Alexei Ledenev",
+    "email": "alexei.led@gmail.com",
+    "url": "https://github.com/alexei-led"
   },
   "repository": "https://github.com/alexei-led/cc-thingz",
   "license": "MIT",
@@ -11,6 +13,11 @@
     "typescript",
     "react",
     "nodejs",
+    "strict-typing",
+    "bun",
+    "vite",
+    "frontend",
     "development"
-  ]
+  ],
+  "homepage": "https://github.com/alexei-led/cc-thingz/tree/master/plugins/typescript-dev"
 }

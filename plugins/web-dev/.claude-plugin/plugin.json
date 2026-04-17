@@ -3,7 +3,9 @@
   "description": "Web frontend development with vanilla HTML, CSS, JavaScript, and HTMX",
   "version": "1.6.2",
   "author": {
-    "name": "Alexei Ledenev"
+    "name": "Alexei Ledenev",
+    "email": "alexei.led@gmail.com",
+    "url": "https://github.com/alexei-led"
   },
   "repository": "https://github.com/alexei-led/cc-thingz",
   "license": "MIT",
@@ -12,6 +14,11 @@
     "css",
     "javascript",
     "htmx",
-    "web"
-  ]
+    "web",
+    "frontend",
+    "vanilla",
+    "accessibility",
+    "responsive"
+  ],
+  "homepage": "https://github.com/alexei-led/cc-thingz/tree/master/plugins/web-dev"
 }

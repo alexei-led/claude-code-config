@@ -3,7 +3,9 @@
   "description": "Python 3.12+ development with uv/ruff/pyright toolchain and modern patterns",
   "version": "1.6.2",
   "author": {
-    "name": "Alexei Ledenev"
+    "name": "Alexei Ledenev",
+    "email": "alexei.led@gmail.com",
+    "url": "https://github.com/alexei-led"
   },
   "repository": "https://github.com/alexei-led/cc-thingz",
   "license": "MIT",
@@ -11,6 +13,11 @@
     "python",
     "uv",
     "ruff",
-    "development"
-  ]
+    "pyright",
+    "type-hints",
+    "development",
+    "testing",
+    "fastapi"
+  ],
+  "homepage": "https://github.com/alexei-led/cc-thingz/tree/master/plugins/python-dev"
 }

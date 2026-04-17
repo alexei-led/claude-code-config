@@ -3,13 +3,21 @@
   "description": "Idiomatic Go development with stdlib-first patterns, testing, and CLI tooling",
   "version": "1.6.2",
   "author": {
-    "name": "Alexei Ledenev"
+    "name": "Alexei Ledenev",
+    "email": "alexei.led@gmail.com",
+    "url": "https://github.com/alexei-led"
   },
   "repository": "https://github.com/alexei-led/cc-thingz",
   "license": "MIT",
   "keywords": [
     "go",
     "golang",
-    "development"
-  ]
+    "development",
+    "testing",
+    "cli",
+    "stdlib",
+    "patterns",
+    "architecture"
+  ],
+  "homepage": "https://github.com/alexei-led/cc-thingz/tree/master/plugins/go-dev"
 }

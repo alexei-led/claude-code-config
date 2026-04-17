@@ -3,7 +3,9 @@
   "description": "Core development loop: code review, fixes, commits, linting hooks, and 24 language-specific review agents",
   "version": "1.6.3",
   "author": {
-    "name": "Alexei Ledenev"
+    "name": "Alexei Ledenev",
+    "email": "alexei.led@gmail.com",
+    "url": "https://github.com/alexei-led"
   },
   "repository": "https://github.com/alexei-led/cc-thingz",
   "license": "MIT",
@@ -12,6 +14,13 @@
     "linting",
     "commit",
     "workflow",
-    "hooks"
-  ]
+    "hooks",
+    "agents",
+    "go",
+    "python",
+    "typescript",
+    "security",
+    "testing"
+  ],
+  "homepage": "https://github.com/alexei-led/cc-thingz/tree/master/plugins/dev-workflow"
 }
