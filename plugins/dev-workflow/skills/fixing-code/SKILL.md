@@ -7,7 +7,9 @@ argument-hint: "[investigate] [team]"
 allowed-tools:
   - Task
   - TaskOutput
-  - TodoWrite
+  - TaskCreate
+  - TaskUpdate
+  - TaskList
   - Bash(make *)
   - Bash(go *)
   - Bash(golangci-lint *)
@@ -29,7 +31,7 @@ Execute until clean. Parallel analysis, sequential fixes.
 - `investigate` → 5-Why root cause analysis before fixing (for recurring or mysterious bugs)
 - `team` → Agent team mode: Analysts compete to find root causes and debate solutions
 
-**Use TodoWrite** to track these 6 phases:
+**Use TaskCreate / TaskUpdate** to track these 6 phases:
 
 1. Run validation
 2. Parallel analysis (spawn agents or team)

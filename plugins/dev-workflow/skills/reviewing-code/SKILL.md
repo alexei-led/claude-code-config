@@ -11,9 +11,20 @@ context: fork
 allowed-tools:
   - Task
   - TaskOutput
-  - TodoWrite
+  - TaskCreate
+  - TaskUpdate
+  - TaskList
   - AskUserQuestion
-  - Bash
+  - Read
+  - Grep
+  - Glob
+  - LS
+  - LSP
+  - Bash(git *)
+  - Bash(gh pr *)
+  - Bash(gh api *)
+  - Bash(rg *)
+  - Bash(wc *)
   - mcp__plugin_claude-mem_mcp-search__search
   - mcp__plugin_claude-mem_mcp-search__get_observations
 argument-hint: "[deep] [team] [external]"
@@ -21,7 +32,7 @@ argument-hint: "[deep] [team] [external]"
 
 # Multi-Agent Code Review
 
-**Use TodoWrite** to track these 4 phases:
+**Use TaskCreate / TaskUpdate** to track these 4 phases:
 
 1. Detect languages and scope
 2. Spawn review agents (or team)

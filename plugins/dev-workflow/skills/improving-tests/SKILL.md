@@ -7,7 +7,9 @@ argument-hint: "[review|refactor|coverage|full]"
 allowed-tools:
   - Task
   - TaskOutput
-  - TodoWrite
+  - TaskCreate
+  - TaskUpdate
+  - TaskList
   - Bash(go test *)
   - Bash(pytest *)
   - Bash(bun test *)
@@ -23,7 +25,7 @@ allowed-tools:
 
 Improve test quality: review existing, refactor structure, fill coverage gaps.
 
-**Use TodoWrite** to track these 6 phases:
+**Use TaskCreate / TaskUpdate** to track these 6 phases:
 
 1. Choose mode
 2. Explore test structure

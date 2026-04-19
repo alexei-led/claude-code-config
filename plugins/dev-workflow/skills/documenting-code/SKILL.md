@@ -5,7 +5,9 @@ user-invocable: true
 context: fork
 allowed-tools:
   - Task
-  - TodoWrite
+  - TaskCreate
+  - TaskUpdate
+  - TaskList
   - AskUserQuestion
   - mcp__context7__resolve-library-id
   - mcp__context7__query-docs
@@ -17,7 +19,7 @@ Update project documentation to reflect current code state.
 
 <!-- CC-ONLY: begin -->
 
-**Use TodoWrite** to track these 5 phases:
+**Use TaskCreate / TaskUpdate** to track these 5 phases:
 
 <!-- CC-ONLY: end -->
 
