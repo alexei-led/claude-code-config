@@ -164,8 +164,15 @@ make check        # fmt + lint + typecheck + deptry + test
 
 ## Verify Generated Code
 
-After generating code, always verify it passes checks:
+After generating or modifying code, run the full check loop:
 
 ```bash
-ruff check . && ruff format --check . && pyright
+ruff check --fix . && ruff format . && pyright
 ```
+
+If checks fail:
+
+1. Fix lint/format issues (ruff autofix handles most)
+2. Fix type errors flagged by pyright
+3. Re-run: `ruff check . && ruff format --check . && pyright`
+4. Repeat until all checks pass — only then consider the task complete

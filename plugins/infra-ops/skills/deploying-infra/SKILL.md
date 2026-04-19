@@ -7,7 +7,9 @@ argument-hint: "[--dry-run | --apply] [environment]"
 allowed-tools:
   - Task
   - TaskOutput
-  - TodoWrite
+  - TaskCreate
+  - TaskUpdate
+  - TaskList
   - Bash(kubectl *)
   - Bash(helm *)
   - Bash(kustomize *)

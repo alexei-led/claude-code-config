@@ -7,7 +7,9 @@ argument-hint: "[run|record|generate|verify <feature>]"
 allowed-tools:
   - Task
   - TaskOutput
-  - TodoWrite
+  - TaskCreate
+  - TaskUpdate
+  - TaskList
   - Bash(npx playwright *)
   - Bash(npm *)
   - Bash(bun *)
@@ -23,7 +25,7 @@ allowed-tools:
 
 Execute E2E testing workflows using Playwright scripts (via playwright-skill).
 
-**Use TodoWrite** to track these 4 phases:
+**Use TaskCreate / TaskUpdate** to track these 4 phases:
 
 1. Determine action (parse args or ask)
 2. Execute action (run/record/generate/verify)
@@ -123,11 +125,21 @@ Task(
 
 ## Phase 3: Verify Results
 
+Run the test suite and validate:
+
 ```bash
 npx playwright test --headed
 ```
 
-If tests fail, review output and fix issues.
+**Pass criteria:** all tests green, no flaky failures on re-run.
+
+If tests fail:
+
+1. Read the Playwright error output — identify failing locator or assertion
+2. Fix the test or application code
+3. Re-run: `npx playwright test <failed-spec> --headed`
+4. Repeat until all tests pass
+5. Run full suite once more to confirm no regressions: `npx playwright test`
 
 ---
 
