@@ -6,7 +6,9 @@ context: fork
 allowed-tools:
   - AskUserQuestion
   - Task
-  - TodoWrite
+  - TaskCreate
+  - TaskUpdate
+  - TaskList
   - Read
   - Grep
   - Glob
@@ -23,7 +25,7 @@ argument-hint: "[<topic>]"
 
 Transform vague ideas into fully-formed designs through structured collaborative dialogue.
 
-**Use TodoWrite** to track these 7 phases:
+**Use TaskCreate / TaskUpdate** to track these 7 phases:
 
 1. Understand the idea (dialogue first, no agents)
 2. Explore requirements (Starbursting questions)

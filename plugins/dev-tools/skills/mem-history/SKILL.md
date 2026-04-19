@@ -2,6 +2,7 @@
 name: mem-history
 description: Query project history, past decisions, and known gotchas from claude-mem observations. Use when user asks "last session", "did we already", "what did we decide", "project history", "timeline", or "what happened with".
 user-invocable: true
+context: fork
 allowed-tools:
   - mcp__plugin_claude-mem_mcp-search__search
   - mcp__plugin_claude-mem_mcp-search__get_observations

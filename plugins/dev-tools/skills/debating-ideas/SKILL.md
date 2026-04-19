@@ -8,7 +8,9 @@ argument-hint: "<question or topic>"
 allowed-tools:
   - Task
   - TaskOutput
-  - TodoWrite
+  - TaskCreate
+  - TaskUpdate
+  - TaskList
   - Read
   - Grep
   - Glob
@@ -24,7 +26,7 @@ If no argument provided, ask the user what they want to evaluate.
 
 <!-- CC-ONLY: begin -->
 
-**Use TodoWrite** to track these 4 phases:
+**Use TaskCreate / TaskUpdate** to track these 4 phases:
 
 <!-- CC-ONLY: end -->
 

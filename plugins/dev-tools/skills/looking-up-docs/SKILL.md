@@ -11,8 +11,6 @@ allowed-tools:
   - Grep
   - Glob
   - WebFetch
-  - WebSearch
-  - mcp__perplexity-ask__perplexity_ask
   - mcp__context7__resolve-library-id
   - mcp__context7__query-docs
 ---
