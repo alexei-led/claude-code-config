@@ -6,6 +6,27 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 major = breaking config/hook changes, minor = new skills/features, patch = fixes.
 
+## [1.7.1] - 2026-04-19
+
+### Changed
+
+- **`reviewing-code` skill**: replaced unscoped `Bash` with scoped permissions (`Bash(git *)`, `Bash(gh pr *)`, `Bash(gh api *)`, `Bash(rg *)`, `Bash(wc *)`); added `Read`/`Grep`/`Glob`/`LS`/`LSP` for fallback inspection of user-provided file paths
+- **24 review sub-agents** (`go-*`, `py-*`, `ts-*`, `web-*` × `qa/impl/tests/idioms/docs/simplify`): scoped unscoped `Bash` to per-language read-only tooling. Top-level engineers (`go-engineer`, `python-engineer`, `typescript-engineer`, `web-engineer`) untouched
+- **`writing-python` skill**: expanded "Verify Generated Code" with explicit retry loop (`ruff --fix` → format → `pyright` → repeat until green)
+- **`testing-e2e` skill**: expanded Phase 3 with pass criteria, retry steps, and full-suite regression run
+- **8 skills**: `TodoWrite` → `TaskCreate` / `TaskUpdate` / `TaskList` in frontmatter and prose. Per CC spec, `TodoWrite` is non-interactive/SDK only; interactive sessions use `Task*`
+- **`linting-instructions` skill**: model `opus` → `sonnet` (rule-based regex linting doesn't need Opus reasoning)
+- **`looking-up-docs` skill**: removed dead `WebSearch` and `mcp__perplexity-ask__perplexity_ask` (description explicitly excludes general web search)
+
+### Fixed
+
+- **`mem-history` skill**: added `context: fork` — `get_observations` returns 500–2k tokens per result and was leaking into the main context
+
+### Notes
+
+- All 9 plugins bumped to 1.7.1 to align with marketplace tag
+- PR #6 (yogesh-tessl) closed without merge: the "frontmatter validation fix" was based on a third-party Tessl validator, not the Claude Code spec — which explicitly accepts both YAML lists and space-separated strings for `allowed-tools`. Useful prose changes (verify loops) cherry-picked manually
+
 ## [1.7.0] - 2026-04-17
 
 ### Added
