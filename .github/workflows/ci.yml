@@ -115,7 +115,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      SKILL_EVAL_WORKSPACE: ${{ runner.temp }}/skill-evals
+      SKILL_EVAL_WORKSPACE: /tmp/skill-evals
     steps:
       - uses: actions/checkout@v6
       - uses: astral-sh/setup-uv@v7
@@ -137,9 +137,11 @@ jobs:
           if [ -f "$SKILL_EVAL_WORKSPACE/summary.md" ]; then
             cat "$SKILL_EVAL_WORKSPACE/summary.md" >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "# Skill eval report" >> "$GITHUB_STEP_SUMMARY"
-            echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "No summary was produced. Check the job logs." >> "$GITHUB_STEP_SUMMARY"
+            {
+              echo "# Skill eval report"
+              echo ""
+              echo "No summary was produced. Check the job logs."
+            } >> "$GITHUB_STEP_SUMMARY"
           fi
           if [ "$status" -ne 0 ]; then
             echo "::warning::Skill evals failed in advisory mode. See the job summary and artifact."

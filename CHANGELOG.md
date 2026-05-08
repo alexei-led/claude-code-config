@@ -8,6 +8,12 @@ major = breaking config/hook changes, minor = new skills/features, patch = fixes
 
 ## [Unreleased]
 
+## [1.10.1] - 2026-05-08
+
+### Fixed
+
+- **CI workflow startup**: moved skill-eval workspace configuration out of the invalid `runner.temp` job-level context so GitHub Actions can start CI jobs.
+
 ## [1.10.0] - 2026-05-08
 
 ### Added
