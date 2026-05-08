@@ -18,6 +18,8 @@ tests/skill-evals/dev-tools/using-modern-cli/
 
 `make skill-evals-prepare` copies the matching deployable skill from `plugins/<plugin>/skills/<skill>/` into `/tmp/cc-thingz-skill-eval-root` and injects `evals/` there. This gives `agent-skills-eval` the layout it expects without shipping evals in plugin packages.
 
+Use `SKILL_EVAL_SOURCE=skills-codex` to test the Codex/Gemini overlays while preserving the evaluator's expected `plugins/<plugin>/skills/<skill>/` output layout.
+
 `make validate` runs `validate-no-plugin-evals`, which fails if `plugins/*/skills/*/evals` exists.
 
 ## Basic eval file
@@ -145,6 +147,12 @@ Run one skill:
 make skill-evals SKILL_EVAL_INCLUDE='dev-tools/skills/using-modern-cli'
 ```
 
+Run against exported Codex/Gemini skill overlays:
+
+```bash
+make skill-evals SKILL_EVAL_SOURCE=skills-codex
+```
+
 The target writes event logs to JSONL and prints a fix-focused summary:
 
 - `WITH-SKILL FAILURES TO FIX` — real failures in the skill path. Fix these.
@@ -171,6 +179,26 @@ Run faster with more parallel eval cases:
 make skill-evals SKILL_EVAL_CONCURRENCY=8 SKILL_EVAL_LOG_FORMAT=jsonl
 ```
 
+Fast fix loop, no baseline and no HTML report:
+
+```bash
+make skill-evals-fast SKILL_EVAL_INCLUDE='dev-tools/skills/analyzing-usage'
+```
+
+Run source skills and Codex/Gemini overlays in parallel with separate workspaces:
+
+```bash
+make skill-evals-both SKILL_EVAL_STRICT=0
+```
+
+Speed knobs:
+
+- `SKILL_EVAL_BASELINE=0` halves target/judge work by skipping `without_skill` mode.
+- `SKILL_EVAL_HTML_REPORT=0` skips static report generation; JSONL and Markdown summary remain.
+- `SKILL_EVAL_CONCURRENCY=8` roughly doubles parallel eval calls versus the default 4, subject to provider rate limits.
+- `SKILL_EVAL_INCLUDE='plugin/skills/skill-name'` runs one skill instead of the full suite.
+- `SKILL_EVAL_JUDGE=gpt-5.4-nano` can make judging cheaper/faster for iteration; use the default judge before trusting final numbers.
+
 Use `SKILL_EVAL_LOG_FORMAT=pretty` only for small one-skill runs. The upstream `silent` mode still emits pretty logs because the SDK installs a default reporter when no reporter is passed. Naturally.
 
 Use a cheaper judge:
@@ -185,6 +213,9 @@ Defaults:
 - judge: `gpt-5.4-mini`
 - workspace: `/tmp/cc-thingz-skill-eval-workspace`
 - prepared root: `/tmp/cc-thingz-skill-eval-root`
+- skill source: `skills` (`skills-codex` for exported Codex/Gemini overlays)
+- baseline: enabled (`SKILL_EVAL_BASELINE=0` disables it)
+- HTML report: enabled (`SKILL_EVAL_HTML_REPORT=0` disables it)
 - concurrency: `4`
 - event log: `/tmp/cc-thingz-skill-eval-workspace/events.jsonl`
 - Markdown summary: `/tmp/cc-thingz-skill-eval-workspace/summary.md`

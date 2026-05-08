@@ -51,7 +51,7 @@ make setup    # Install pre-commit hook + dev dependencies
 6. Register the plugin in both marketplaces:
    - `.claude-plugin/marketplace.json` (Claude Code)
    - `.agents/plugins/marketplace.json` (Codex CLI)
-7. Run `make flat` to sync symlinks
+7. Run `make flat overlays agents-md gemini-md` to sync exported skill docs
 
 ## Directory Structure
 
@@ -84,10 +84,14 @@ plugins/your-plugin/
 make help       # Show all commands
 make ci         # Run full CI pipeline locally (lint + validate + test)
 make lint       # Run all linters
-make test       # Run pytest
-make validate   # Validate configs and flat/ sync
-make fmt        # Auto-format Python files
-make flat       # Sync flat/ symlinks
+make test             # Run pytest
+make validate         # Validate configs, overlays, flat/, AGENTS.md, and GEMINI.md sync
+make fmt              # Auto-format Python files
+make flat             # Sync flat/ symlinks
+make overlays         # Sync Codex/Gemini skill overlays
+make agents-md        # Generate AGENTS.md from flat skill overlays
+make gemini-md        # Generate GEMINI.md from flat skill overlays
+make skill-evals-fast # Fast paid eval loop: no baseline, no HTML, higher concurrency
 ```
 
 ## PR Checklist
@@ -97,5 +101,5 @@ make flat       # Sync flat/ symlinks
 - [ ] CHANGELOG.md updated
 - [ ] README.md plugin table updated (skill/agent counts)
 - [ ] Plugin README.md updated if adding skills, agents, or hooks
-- [ ] `make flat` run to sync flat/ directory
+- [ ] `make flat overlays agents-md gemini-md` run to sync exported skill docs
 - [ ] Both marketplace files updated if adding/removing plugins

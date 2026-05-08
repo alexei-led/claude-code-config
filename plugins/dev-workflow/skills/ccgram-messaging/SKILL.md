@@ -66,6 +66,8 @@ ccgram msg read <msg-id>  # mark as read + display full message
 
 If the user asks you to send, reply, or broadcast, actually run the matching `ccgram msg send`, `ccgram msg reply`, or `ccgram msg broadcast` command. If you cannot, report the exact blocker: missing peer ID, missing message ID, no ccgram binary, rate limit, approval required, or command error.
 
+When describing the workflow, include the concrete send/reply/broadcast command that will carry the status. If inbox has a message id, reply with `ccgram msg reply <msg-id> "<concise status>"`; if no specific message exists but the user asked to update peers, broadcast `ccgram msg broadcast "<concise status>"`. Do not stop at "checking" or offering a template.
+
 ```bash
 # Fire-and-forget
 ccgram msg send <peer-id> "your message" --subject "topic"

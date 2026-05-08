@@ -24,6 +24,8 @@ Group changed files logically into focused, atomic commits.
 
 Scope: only inspect changes, group them, and create normal commits. Do not rewrite history, amend existing commits, force-push, or stage secrets. Include relevant `git status`, `git diff`, and `git log` output in the proposal.
 
+Any commit plan must explicitly say the first inspection commands are `git status --short`, `git diff --stat HEAD`, `git diff HEAD`, and `git log --oneline -8`. Any commit summary must include a final `git status --short` plus recent `git log --oneline -n <created>` output.
+
 ## Step 1: Gather State
 
 Run in parallel before any commit:
@@ -58,7 +60,7 @@ Proposed commits:
 
 ## Step 3: Execute
 
-Never stage files matching `.env`, `*.pem`, `*credentials*`, or `*secret*`. Flag to user if detected in changes.
+Never stage files matching `.env`, `*.pem`, `*credentials*`, or `*secret*`. Flag to user if detected in changes. Safe source/test files may still be grouped and committed separately after approval.
 
 For each group, run git add + commit.
 

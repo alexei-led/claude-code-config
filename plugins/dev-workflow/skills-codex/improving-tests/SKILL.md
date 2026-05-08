@@ -65,6 +65,8 @@ Look for:
 
 ## Preferred consolidation patterns
 
+For refactoring brittle private-helper tests, state the public behavior surface first. Example: `create_user(payload)` is the primary test surface; `_normalize_user_payload()` is not. Replace duplicate helper tests and internal call-count assertions with behavior checks through the public API. Mock only system boundaries. Delete shallow duplicates once the public behavior tests cover them.
+
 | Language   | Pattern                                          |
 | ---------- | ------------------------------------------------ |
 | Go         | table-driven with `t.Run(tc.name, ...)`          |
@@ -83,7 +85,7 @@ pytest -v
 bun test
 ```
 
-For Python, mention `pytest` or the project-specific equivalent explicitly. For other stacks, name the equivalent test command instead of saying only "tests passed."
+For Python, mention `pytest` or the project-specific equivalent explicitly. For refactor plans in Python projects, include `pytest -v` or the repository's configured `uv run pytest` command by name instead of only saying "run tests." For other stacks, name the equivalent test command instead of saying only "tests passed."
 
 Output:
 

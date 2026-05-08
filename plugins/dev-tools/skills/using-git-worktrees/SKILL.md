@@ -21,7 +21,7 @@ Think of a worktree as a **disposable branch folder**, not a long-lived parallel
 
 ## Workflow
 
-Check repo state before creating a worktree:
+Check repo state before creating a worktree. Any worktree workflow description must name this dirty-state check before `git worktree add`:
 
 ```bash
 git status --short

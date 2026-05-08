@@ -5,7 +5,7 @@
 #
 # This script:
 # 1. Validates the version format (vX.Y.Z)
-# 2. Bumps all plugin.json + marketplace.json to the new version
+# 2. Bumps Claude, Codex, and Gemini manifests to the new version
 # 3. Updates CHANGELOG.md with a placeholder entry
 # 4. Commits the version bump
 # 5. Creates an annotated git tag
@@ -43,8 +43,12 @@ echo "Bumping versions to $VERSION..."
 # Bump marketplace.json
 sed -i '' "s/\"version\": \"[^\"]*\"/\"version\": \"$VERSION\"/" .claude-plugin/marketplace.json
 
-# Bump all plugin.json files
-for f in plugins/*/.claude-plugin/plugin.json; do
+# Bump all plugin and extension manifests
+for f in \
+	plugins/*/.claude-plugin/plugin.json \
+	plugins/*/.codex-plugin/plugin.json \
+	plugins/*/gemini-extension.json \
+	gemini-extension.json; do
 	sed -i '' "s/\"version\": \"[^\"]*\"/\"version\": \"$VERSION\"/" "$f"
 done
 
@@ -61,11 +65,22 @@ fi
 # Show what changed
 echo ""
 echo "Version bumped to $VERSION in:"
-grep -rl "\"$VERSION\"" .claude-plugin/marketplace.json plugins/*/.claude-plugin/plugin.json | sed 's/^/  /'
+grep -rl "\"$VERSION\"" \
+	.claude-plugin/marketplace.json \
+	gemini-extension.json \
+	plugins/*/.claude-plugin/plugin.json \
+	plugins/*/.codex-plugin/plugin.json \
+	plugins/*/gemini-extension.json | sed 's/^/  /'
 echo ""
 
 # Commit and tag
-git add .claude-plugin/marketplace.json plugins/*/.claude-plugin/plugin.json CHANGELOG.md
+git add \
+	.claude-plugin/marketplace.json \
+	gemini-extension.json \
+	plugins/*/.claude-plugin/plugin.json \
+	plugins/*/.codex-plugin/plugin.json \
+	plugins/*/gemini-extension.json \
+	CHANGELOG.md
 git commit -m "chore: bump version to $VERSION"
 git tag -a "$TAG" -m "Release $VERSION"
 

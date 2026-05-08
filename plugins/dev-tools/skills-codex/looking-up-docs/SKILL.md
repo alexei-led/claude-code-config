@@ -4,8 +4,6 @@ allowed-tools:
 - Grep
 - Glob
 - WebFetch
-- mcp__context7__resolve-library-id
-- mcp__context7__query-docs
 description: Library documentation via Context7. Use when user says "look up docs",
   "how to use", "API for", "syntax for", "examples of", "show me the docs", or needs
   API references, code examples, framework-specific documentation. NOT for comparisons

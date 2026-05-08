@@ -74,10 +74,12 @@ Return a bounded code map:
 
 ## Workflow
 
+For trace-flow requests, explicitly say you will first check for `CONTEXT.md`, `CONTEXT-MAP.md`, nearest `*/CONTEXT.md`, and `docs/adr/*.md` when present before naming domain concepts.
+
 1. **Formulate query**: Describe WHAT you want to understand, not just WHAT to find
 2. **Load domain docs when present**: `CONTEXT.md`, `CONTEXT-MAP.md`, and relevant ADRs
 3. **Run targeted shell search**: `fd 'auth|login|session|user'` for likely files; `rg 'login|authenticate|AuthService|Session|UserRepository'` for entry points, symbols, and shared types
-4. **Run WarpGrep**: `mcp__morphllm__warpgrep_codebase_search` for cross-file semantic flow
+4. **Run semantic code search**: use WarpGrep or another available semantic search tool for cross-file flow
 5. **Interpret results**: Ranked snippets with file paths and line numbers
 6. **Follow up**: Read specific files or line ranges only when needed for verification
 

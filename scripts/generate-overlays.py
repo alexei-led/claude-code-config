@@ -51,8 +51,7 @@ CC_ONLY_TOOL_PATTERNS = [
     re.compile(r"^TodoWrite$"),
     re.compile(r"^AskUserQuestion$"),
     re.compile(r"^Agent$"),
-    re.compile(r"^mcp__plugin_claude-mem"),
-    re.compile(r"^mcp__morphllm"),
+    re.compile(r"^mcp__"),
 ]
 
 CC_ONLY_BEGIN = "<!-- CC-ONLY: begin -->"

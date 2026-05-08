@@ -138,6 +138,10 @@ Add cases that produce or inspect artifacts, not just text:
 - `analyzing-usage` — chart/calendar output.
 - `searching-code` — code map with read-next files.
 
+### Codex/Gemini overlay parity
+
+Run the same eval fixtures against `SKILL_EVAL_SOURCE=skills-codex` before trusting exported skills. Add assertions for platform-neutral wording: no Claude-only tool names, no missing flat skill links, and no stale Gemini context.
+
 ### Internal-skill activation guards
 
 Internal/non-user-invocable skills should have direct-invocation tests:

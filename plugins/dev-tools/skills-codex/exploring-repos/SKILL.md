@@ -5,12 +5,6 @@ allowed-tools:
 - Bash(gh search *)
 - Bash(gh release *)
 - Bash(gh issue *)
-- mcp__deepwiki__read_wiki_structure
-- mcp__deepwiki__read_wiki_contents
-- mcp__deepwiki__ask_question
-- mcp__context7__resolve-library-id
-- mcp__context7__query-docs
-- mcp__perplexity-ask__perplexity_ask
 description: Explore public GitHub repositories via DeepWiki AI-generated documentation.
   Use for understanding architecture, patterns, design decisions, and code organization
   of popular open-source projects. Use when user asks "how does X repo work", "explain

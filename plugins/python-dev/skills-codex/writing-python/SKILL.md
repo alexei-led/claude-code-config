@@ -23,7 +23,7 @@ name: writing-python
 
 - State Python 3.12+ typing choices explicitly and include a small example when planning code: concrete types, `X | Y`, generics/Protocol where useful, and `Any` is not the default.
 - Prefer stdlib first for small tools: `argparse`, `pathlib`, `json`, `dataclasses`, `urllib`, `typing`.
-- Prefer flat control flow with guard clauses and early returns; keep the happy path visually obvious.
+- Prefer flat control flow with guard clauses and early returns; keep the happy path visually obvious. In implementation plans, explicitly say validation/parsing should fail fast with guard clauses before the happy path summary logic.
 - Include behavior tests with `pytest` for the happy path and invalid input/error paths.
 - Include verification commands when code changes: `uv run pytest`, `uv run ruff check .`, `uv run ruff format --check .`, and `uv run pyright` when configured.
 - Keep dependencies minimal; add one only when real requirements beat stdlib simplicity. Dependency guidance must still mention typed boundaries and pytest coverage for the script.

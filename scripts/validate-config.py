@@ -65,6 +65,74 @@ CODEX_PLUGIN_JSON_REQUIRED = ["name", "version", "description"]
 
 # Gemini CLI extension validation constants
 GEMINI_EXT_REQUIRED = ["name", "version", "description"]
+GEMINI_SKILL_LINK_RE = re.compile(r"@flat/skills-codex/([^/]+)/SKILL\.md")
+GEMINI_DESCRIPTION_COUNT_RE = re.compile(r"^(\d+)\s+portable development skills\b")
+PLATFORM_LEAK_RE = re.compile(
+    r"\b(AskUserQuestion|TaskCreate|TaskUpdate|TaskList|TaskOutput|TodoWrite)\b|mcp__"
+)
+
+
+def flat_skill_names() -> set[str]:
+    """Return skill names exported through flat/skills-codex."""
+    flat_dir = ROOT / "flat" / "skills-codex"
+    if not flat_dir.is_dir():
+        return set()
+    return {
+        path.name
+        for path in flat_dir.iterdir()
+        if (path.is_dir() or path.is_symlink()) and (path / "SKILL.md").exists()
+    }
+
+
+def gemini_skill_links() -> list[str]:
+    """Return skill names referenced by root GEMINI.md."""
+    gemini_md = ROOT / "GEMINI.md"
+    if not gemini_md.is_file():
+        return []
+    return GEMINI_SKILL_LINK_RE.findall(gemini_md.read_text())
+
+
+def validate_gemini_skill_links() -> list[str]:
+    """Check GEMINI.md references every flat Codex/Gemini skill exactly once."""
+    errors: list[str] = []
+    expected = flat_skill_names()
+    actual_list = gemini_skill_links()
+    actual = set(actual_list)
+    gemini_md = ROOT / "GEMINI.md"
+
+    if not expected:
+        return errors
+    if not gemini_md.is_file():
+        return ["ERROR: GEMINI.md not found"]
+
+    missing = sorted(expected - actual)
+    stale = sorted(actual - expected)
+    duplicates = sorted({name for name in actual_list if actual_list.count(name) > 1})
+    if missing:
+        errors.append(
+            "ERROR: GEMINI.md missing flat skill link(s): " + ", ".join(missing)
+        )
+    if stale:
+        errors.append("ERROR: GEMINI.md stale flat skill link(s): " + ", ".join(stale))
+    if duplicates:
+        errors.append(
+            "ERROR: GEMINI.md duplicate flat skill link(s): " + ", ".join(duplicates)
+        )
+    return errors
+
+
+def validate_platform_overlays() -> list[str]:
+    """Reject Claude-specific tool names in Codex/Gemini skill overlays."""
+    errors: list[str] = []
+    for skill_md in sorted((ROOT / "plugins").glob("*/skills-codex/*/SKILL.md")):
+        rel = skill_md.relative_to(ROOT)
+        for line_number, line in enumerate(skill_md.read_text().splitlines(), start=1):
+            for match in PLATFORM_LEAK_RE.finditer(line):
+                errors.append(
+                    f"ERROR: {rel}:{line_number}: Claude-specific tool "
+                    f"'{match.group(0)}' leaked into Codex/Gemini overlay"
+                )
+    return errors
 
 
 def validate_marketplace_json() -> tuple[list[str], list[str]]:
@@ -515,6 +583,16 @@ def validate_gemini_extensions() -> tuple[list[str], list[str]]:
             for field in GEMINI_EXT_REQUIRED:
                 if field not in data:
                     errors.append(f"ERROR: gemini-extension.json: missing '{field}'")
+            description = str(data.get("description", ""))
+            count_match = GEMINI_DESCRIPTION_COUNT_RE.match(description)
+            skill_count = len(flat_skill_names())
+            if count_match and skill_count:
+                declared = int(count_match.group(1))
+                if declared != skill_count:
+                    errors.append(
+                        "ERROR: gemini-extension.json: description declares "
+                        f"{declared} skills but flat/skills-codex has {skill_count}"
+                    )
         except json.JSONDecodeError as e:
             errors.append(f"ERROR: gemini-extension.json: invalid JSON: {e}")
 
@@ -592,6 +670,8 @@ def main() -> int:
     gemini_errors, gemini_warnings = validate_gemini_extensions()
     all_errors.extend(gemini_errors)
     all_warnings.extend(gemini_warnings)
+    all_errors.extend(validate_gemini_skill_links())
+    all_errors.extend(validate_platform_overlays())
 
     # Frontmatter validation
     for config_type, spec in REQUIRED_FIELDS.items():

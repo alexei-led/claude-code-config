@@ -85,7 +85,7 @@ jobs:
   validate:
     name: Config Validation
     needs: changes
-    if: needs.changes.outputs.config == 'true' || needs.changes.outputs.python == 'true' || github.event_name == 'push'
+    if: needs.changes.outputs.config == 'true' || needs.changes.outputs.python == 'true' || needs.changes.outputs.skill_evals == 'true' || github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6

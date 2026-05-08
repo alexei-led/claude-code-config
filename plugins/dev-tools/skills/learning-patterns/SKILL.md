@@ -127,7 +127,7 @@ Only record domain concepts meaningful to domain experts. General implementation
 
 ## Phase 3: Categorize
 
-Pick an explicit target artifact for every durable learning before drafting text:
+Pick an explicit target artifact for every durable learning before drafting text. Do not merely say you will discover possible destinations; choose the destination and name it in the workflow.
 
 - `AGENTS.md` / `CLAUDE.md` — reusable workflow or coding instructions
 - `CONTEXT.md` — domain language and project glossary terms
@@ -137,6 +137,8 @@ Pick an explicit target artifact for every durable learning before drafting text
 - `.claude/settings.json` — hooks, permissions, or automation
 
 If no target artifact is justified, do not persist the learning.
+
+When the learning is a reusable project workflow, choose `AGENTS.md`/`CLAUDE.md`; when it is domain language, choose `CONTEXT.md`; when it is a hard-to-reverse decision, choose `docs/adr/`; when it is a repeated command sequence, choose `.claude/commands/`; when it is a reusable multi-tool process, choose `.claude/skills/`.
 
 Sort extractions into buckets:
 
@@ -380,7 +382,7 @@ Based on confirmation:
 
 ## Phase 9: Verify Generated Customization
 
-Review every changed artifact before reporting success:
+Always include verification in the workflow, even when only describing what would happen. Review every changed artifact before reporting success:
 
 1. Re-read the changed `AGENTS.md`/`CLAUDE.md`, `CONTEXT.md`, ADR, command, skill, or hook file.
 2. Check the generated customization is specific, non-duplicative, and grounded in session evidence.

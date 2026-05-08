@@ -28,7 +28,7 @@ Review configuration against context engineering principles derived from
 Anthropic's "Effective Context Engineering for AI Agents" and
 "Best Practices for Claude Code."
 
-**Use TaskCreate** to track these 4 phases. Keep Opus work scoped to ONLY these review targets and keep agent prompts/output compact:
+Track these 4 phases. Keep work scoped to ONLY these review targets and keep agent prompts/output compact:
 
 1. Discover and inventory configuration
 2. Measure context budget impact
@@ -40,7 +40,7 @@ Anthropic's "Effective Context Engineering for AI Agents" and
 ## Phase 1: Discovery
 
 Scan for all Claude Code configuration components. Check BOTH standard layout
-and plugin layout (cc-thingz style).
+and plugin layout (cc-thingz style). Findings must cite concrete file paths or configuration locations such as `CLAUDE.md`, `.claude/settings.json`, `.claude/skills/<name>/SKILL.md`, `plugins/<plugin>/skills/<name>/SKILL.md`, `plugins/<plugin>/hooks/<hook>.sh`, or `.claude-plugin/marketplace.json`.
 
 ### Standard layout
 
@@ -182,7 +182,7 @@ Notification=alerts, PostCompact=metrics). Output per hook:
 Collect results from all review agents. **Cross-check**: for each ERROR
 finding that references a specific line number or file path, verify it
 exists by reading the actual file. Agents can hallucinate line numbers —
-drop findings that don't match reality. Present:
+drop findings that don't match reality. Every finding must include a concrete file path/config location and actionable fix. Do not report generic "CLAUDE.md" or "RUBRIC.md" unless that exact path was read or requested. Present:
 
 Report structure:
 

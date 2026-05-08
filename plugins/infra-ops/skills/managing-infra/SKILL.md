@@ -54,6 +54,17 @@ Every workload: non-root user, read-only filesystem, no privilege escalation, dr
 - **Release workflow**: Multi-arch Docker build on tags (native ARM runners)
 - Pin actions by SHA, least-privilege permissions
 
+## Terraform Module Structure
+
+For shared VPC, service accounts, and app environments:
+
+- Put shared network primitives and organization-wide IAM in shared/foundation modules.
+- Put app-specific service accounts, bindings, and deploy-time config in app/environment modules.
+- Keep module inputs/outputs explicit; pass IDs, self-links, emails, and subnet names instead of reaching into sibling state implicitly.
+- Choose backend/state boundaries deliberately: shared foundations change slowly; app environments can have separate state for safer rollout and ownership.
+- Apply least-privilege IAM per service account and environment.
+- Require CI validation for changed Terraform stacks: `terraform fmt -check`, `terraform init -backend=false`, `terraform validate`, and `terraform plan` where credentials allow.
+
 ## References
 
 - [KUBERNETES.md](KUBERNETES.md) - K8s resource patterns

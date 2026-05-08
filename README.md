@@ -8,11 +8,11 @@
 [![Codex CLI](https://img.shields.io/badge/Codex_CLI-skill_export-10A37F)](https://developers.openai.com/codex/plugins)
 [![Gemini CLI](https://img.shields.io/badge/Gemini_CLI-skill_export-4285F4)](https://geminicli.com/docs/extensions)
 [![Plugins](https://img.shields.io/badge/plugins-9-green)](plugins/)
-[![Skills](https://img.shields.io/badge/skills-33-green)](plugins/)
+[![Skills](https://img.shields.io/badge/skills-35-green)](plugins/)
 
-A **Claude Code** plugin suite — 33 skills, 34 agents, 10 hooks, and 9 commands — with portable skill export for Codex CLI, Gemini CLI, and [AGENTS.md](https://agents.md)-compatible tools. Built over 6+ months of daily use and continuous refinement.
+A **Claude Code** plugin suite — 35 skills, 34 agents, 10 hooks, and 9 commands — with portable skill export for Codex CLI, Gemini CLI, and [AGENTS.md](https://agents.md)-compatible tools. Built over 6+ months of daily use and continuous refinement.
 
-Built for Claude Code, with all 33 skills exported as platform-optimized instructions for Codex CLI, Gemini CLI, and any tool supporting the AGENTS.md standard.
+Built for Claude Code, with all 35 skills exported as platform-optimized instructions for Codex CLI, Gemini CLI, and any tool supporting the AGENTS.md standard.
 
 ## Why This Exists
 
@@ -249,10 +249,10 @@ plugins/
 
 ## Flat Directory
 
-`flat/` provides a unified symlink view of all plugin components for tools that need flat directory access (chezmoi, Codex CLI, Gemini CLI). `AGENTS.md` is generated from `flat/skills-codex/`. Regenerate with:
+`flat/` provides a unified symlink view of all plugin components for tools that need flat directory access (chezmoi, Codex CLI, Gemini CLI). `AGENTS.md` and `GEMINI.md` are generated from `flat/skills-codex/`. Regenerate with:
 
 ```bash
-scripts/generate-flat.sh
+make flat overlays agents-md gemini-md
 ```
 
 ## Contributing

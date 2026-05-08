@@ -46,15 +46,9 @@ For research output, include:
 - Official docs as supporting sources for non-syntax facts
 - Stable technical content
 
-## Default Mode: Direct MCP Call
+## Default Mode: Direct Web Research
 
-**Use this for 90% of research requests.** When user says "ask Perplexity", "research", "look up", etc.:
-
-```json
-mcp__perplexity-ask__perplexity_ask({
-  "messages": [{ "role": "user", "content": "Your research question" }]
-})
-```
+**Use this for 90% of research requests.** When user says "ask Perplexity", "research", "look up", etc., use the available web research tool with a scoped research question.
 
 This is fast, reliable, and what users expect.
 

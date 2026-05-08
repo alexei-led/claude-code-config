@@ -58,12 +58,15 @@ Read relevant `CONTEXT.md`, `CONTEXT-MAP.md`, and ADRs when present. Preserve do
 ### Standard Refactoring
 
 ```
-1. Use WarpGrep to find all locations needing change
-2. State intended behavior preservation or deepening move
-3. Use MorphLLM `edit_file` for each batch/file, grouping related edits
-4. Verify with lint/test
-5. Delete obsolete shallow tests once deeper interface tests cover the behavior
+1. Use WarpGrep or semantic search to find all locations needing change
+2. State: "Behavior must be preserved unless the user explicitly requested a behavior change."
+3. Use MorphLLM `edit_file` or the batch refactoring workflow for each batch/file, grouping related edits
+4. Batch all edits for the same file into one edit operation
+5. Verify with lint/test
+6. Delete obsolete shallow tests once deeper interface tests cover the behavior
 ```
+
+For multi-file renames, say this is a batch refactor, map all occurrences before editing, use the batch refactoring tool/workflow by name, preserve behavior, and run relevant lint/tests after the rename.
 
 ### High-Stakes Changes (dryRun)
 

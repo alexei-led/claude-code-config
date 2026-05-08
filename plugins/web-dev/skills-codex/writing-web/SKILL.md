@@ -22,7 +22,7 @@ name: writing-web
 ## Philosophy
 
 1. **HTML first** - Semantic markup does the work
-2. **Responsive simple CSS second** - Small stylesheets, fluid layout, media/container queries only when needed
+2. **Responsive simple CSS second** - Small stylesheets, fluid layout, mobile-first sizing, and media/container queries only when needed
 3. **HTMX third** - Server-driven interactivity
 4. **JS last** - Only when nothing else works
 
@@ -114,6 +114,8 @@ After generating code, validate HTML and check behavior:
 ```bash
 npx html-validate . 2>&1 || true
 ```
+
+For small HTMX/form answers, explicitly mention simple responsive CSS and include a basic browser/manual or Playwright verification plan.
 
 Verification plan must include:
 

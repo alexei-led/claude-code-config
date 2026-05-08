@@ -340,6 +340,102 @@ class TestTomlValidation:
         assert any("invalid TOML" in e for e in errors)
 
 
+class TestGeminiSkillLinks:
+    def _write_flat_skill(self, tmp_path, skill):
+        skill_dir = tmp_path / "flat" / "skills-codex" / skill
+        skill_dir.mkdir(parents=True)
+        (skill_dir / "SKILL.md").write_text("---\nname: test\n---\n")
+
+    def test_gemini_links_match_flat_skills(self, tmp_path):
+        self._write_flat_skill(tmp_path, "writing-go")
+        (tmp_path / "GEMINI.md").write_text("@flat/skills-codex/writing-go/SKILL.md\n")
+
+        with patch.object(validate_config, "ROOT", tmp_path):
+            errors = validate_config.validate_gemini_skill_links()
+
+        assert not errors
+
+    def test_missing_gemini_link_is_error(self, tmp_path):
+        self._write_flat_skill(tmp_path, "writing-go")
+        self._write_flat_skill(tmp_path, "writing-python")
+        (tmp_path / "GEMINI.md").write_text("@flat/skills-codex/writing-go/SKILL.md\n")
+
+        with patch.object(validate_config, "ROOT", tmp_path):
+            errors = validate_config.validate_gemini_skill_links()
+
+        assert any("writing-python" in error for error in errors)
+
+    def test_stale_gemini_link_is_error(self, tmp_path):
+        self._write_flat_skill(tmp_path, "writing-go")
+        (tmp_path / "GEMINI.md").write_text(
+            "@flat/skills-codex/writing-go/SKILL.md\n"
+            "@flat/skills-codex/missing-skill/SKILL.md\n"
+        )
+
+        with patch.object(validate_config, "ROOT", tmp_path):
+            errors = validate_config.validate_gemini_skill_links()
+
+        assert any("missing-skill" in error for error in errors)
+
+    def test_duplicate_gemini_link_is_error(self, tmp_path):
+        self._write_flat_skill(tmp_path, "writing-go")
+        (tmp_path / "GEMINI.md").write_text(
+            "@flat/skills-codex/writing-go/SKILL.md\n"
+            "@flat/skills-codex/writing-go/SKILL.md\n"
+        )
+
+        with patch.object(validate_config, "ROOT", tmp_path):
+            errors = validate_config.validate_gemini_skill_links()
+
+        assert any("duplicate" in error and "writing-go" in error for error in errors)
+
+    def test_root_gemini_count_must_match_flat_skill_count(self, tmp_path):
+        self._write_flat_skill(tmp_path, "writing-go")
+        (tmp_path / "gemini-extension.json").write_text(
+            json.dumps(
+                {
+                    "name": "cc-thingz",
+                    "version": "1.0.0",
+                    "description": "29 portable development skills exported",
+                }
+            )
+        )
+        (tmp_path / "plugins").mkdir()
+
+        with patch.object(validate_config, "ROOT", tmp_path):
+            errors, warnings = validate_config.validate_gemini_extensions()
+
+        assert not warnings
+        assert any("declares 29 skills" in error for error in errors)
+
+
+class TestPlatformOverlays:
+    def test_clean_codex_overlay_passes(self, tmp_path):
+        skill_dir = (
+            tmp_path / "plugins" / "dev-tools" / "skills-codex" / "researching-web"
+        )
+        skill_dir.mkdir(parents=True)
+        (skill_dir / "SKILL.md").write_text("Use available web research tools.\n")
+
+        with patch.object(validate_config, "ROOT", tmp_path):
+            errors = validate_config.validate_platform_overlays()
+
+        assert not errors
+
+    def test_claude_tool_leak_is_error(self, tmp_path):
+        skill_dir = (
+            tmp_path / "plugins" / "dev-tools" / "skills-codex" / "researching-web"
+        )
+        skill_dir.mkdir(parents=True)
+        (skill_dir / "SKILL.md").write_text("Use AskUserQuestion or mcp__tool.\n")
+
+        with patch.object(validate_config, "ROOT", tmp_path):
+            errors = validate_config.validate_platform_overlays()
+
+        assert any("AskUserQuestion" in error for error in errors)
+        assert any("mcp__" in error for error in errors)
+
+
 class TestJsonValidation:
     def test_valid_json(self, tmp_path):
         (tmp_path / "hook-config.json").write_text(

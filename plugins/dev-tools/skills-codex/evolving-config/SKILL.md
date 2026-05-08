@@ -6,7 +6,6 @@ allowed-tools:
 - Grep
 - Glob
 - WebFetch
-- mcp__perplexity-ask__perplexity_ask
 argument-hint: '[--dry-run]'
 description: Audit Claude Code configuration against latest features and best practices.
   Use when user says "evolve", "self-improve", "audit config", "what's new in claude
@@ -83,23 +82,10 @@ If WebFetch fails or returns insufficient data, note the gap and rely on Phase 3
 
 ## Phase 3: Research Best Practices
 
-Two targeted Perplexity queries:
+Run two targeted web research queries:
 
-**Query 1** — Features and configuration:
-
-```json
-mcp__perplexity-ask__perplexity_ask({
-  "messages": [{ "role": "user", "content": "Claude Code CLI by Anthropic: what are the latest features, configuration options, best practices, and power user tips as of 2026? Include: hooks, skills, agents, MCP servers, settings.json options, CLAUDE.md patterns, team features, model routing, context management." }]
-})
-```
-
-**Query 2** — Ecosystem and integrations:
-
-```json
-mcp__perplexity-ask__perplexity_ask({
-  "messages": [{ "role": "user", "content": "Claude Code CLI advanced configuration 2026: MCP server recommendations, hook patterns, permission optimization, context fork strategies, agent orchestration patterns, skill design best practices. What are experienced users doing?" }]
-})
-```
+1. **Features and configuration** — "Claude Code CLI by Anthropic: what are the latest features, configuration options, best practices, and power user tips as of 2026? Include: hooks, skills, agents, MCP servers, settings.json options, CLAUDE.md patterns, team features, model routing, context management."
+2. **Ecosystem and integrations** — "Claude Code CLI advanced configuration 2026: MCP server recommendations, hook patterns, permission optimization, context fork strategies, agent orchestration patterns, skill design best practices. What are experienced users doing?"
 
 If Perplexity returns cited URLs with high-value content, WebFetch top 2 for deeper details.
 
@@ -194,10 +180,13 @@ If `$ARGUMENTS` contains `--dry-run`: Skip the question, show diffs only, do not
 Based on user selection:
 
 1. **Apply only approved items** — never sneak in extras
-2. **Before major or risky config changes** — model routing changes, hook behavior changes, permissions, MCP server changes, deletes, or broad rewrites — ask for explicit confirmation naming the files and risk
-3. **Prefer Edit over Write** — modify existing files, don't recreate
-4. **Show diff summary** after each change
-5. **Verify** the change doesn't break existing config (quick sanity read)
+2. **For small-improvement requests** — limit the answer to small scoped suggestions unless the user approves more; separate must-fix issues from optional suggestions
+3. **Before major or risky config changes** — model routing changes, hook behavior changes, permissions, MCP server changes, deletes, or broad rewrites — ask for explicit confirmation naming the files and risk
+4. **Prefer Edit over Write** — modify existing files, don't recreate
+5. **Show diff summary** after each change
+6. **Verify** the change doesn't break existing config (quick sanity read)
+
+When describing how to avoid overreach, include this explicit gate: "I will not make major/risky config changes unless you confirm the named files and risks."
 
 If user selected "Dry run only": show what each edit would look like, then stop.
 

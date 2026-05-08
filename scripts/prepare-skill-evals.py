@@ -16,8 +16,8 @@ class EvalPrepError(Exception):
     """Skill eval preparation failed."""
 
 
-def copy_skill(plugin: str, skill: str, out: Path) -> Path:
-    source = PLUGINS_DIR / plugin / "skills" / skill
+def copy_skill(plugin: str, skill: str, out: Path, source_dir: str) -> Path:
+    source = PLUGINS_DIR / plugin / source_dir / skill
     if not source.is_dir():
         raise EvalPrepError(f"missing skill directory: {source.relative_to(ROOT)}")
     if not (source / "SKILL.md").is_file():
@@ -50,7 +50,9 @@ def copy_evals(eval_root: Path, skill_dest: Path) -> int:
     return eval_count
 
 
-def prepare(out: Path) -> tuple[int, int]:
+def prepare(out: Path, source_dir: str = "skills") -> tuple[int, int]:
+    if source_dir not in {"skills", "skills-codex"}:
+        raise EvalPrepError("source directory must be 'skills' or 'skills-codex'")
     if out == ROOT or ROOT in out.parents:
         raise EvalPrepError("output directory must not be inside the repository")
 
@@ -63,7 +65,7 @@ def prepare(out: Path) -> tuple[int, int]:
         skill_root = eval_file.parents[1]
         plugin = skill_root.parent.name
         skill = skill_root.name
-        skill_dest = copy_skill(plugin, skill, out)
+        skill_dest = copy_skill(plugin, skill, out, source_dir)
         eval_count += copy_evals(skill_root, skill_dest)
         skill_count += 1
 
@@ -82,15 +84,24 @@ def main() -> int:
         default=DEFAULT_OUT,
         help=f"output directory (default: {DEFAULT_OUT})",
     )
+    parser.add_argument(
+        "--source-dir",
+        choices=["skills", "skills-codex"],
+        default="skills",
+        help="skill tree to copy from while preserving evaluator layout",
+    )
     args = parser.parse_args()
 
     try:
-        skills, evals = prepare(args.out.resolve())
+        skills, evals = prepare(args.out.resolve(), args.source_dir)
     except EvalPrepError as exc:
         print(f"ERROR: {exc}")
         return 1
 
-    print(f"prepared {skills} skill(s), {evals} eval(s) at {args.out}")
+    print(
+        f"prepared {skills} skill(s), {evals} eval(s) "
+        f"from {args.source_dir} at {args.out}"
+    )
     return 0
 
 

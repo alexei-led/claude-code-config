@@ -58,7 +58,10 @@ eza --tree -L 2               # Tree view, 2 levels
 
 # Replace: sd instead of sed
 sd "old" "new" file.txt       # Simple replacement
-sd -p "pattern" "new"         # Preview changes first
+sd -p "pattern" "new" file    # Preview changes first
+sd -p 'colour' 'color' docs/**/*.md  # Preview British→US spelling; do not apply
+
+For preview-only replacement tasks, always include `sd -p 'colour' 'color' <files>` or equivalent and state it is preview-only; do not show a non-preview `sd` command unless the user asked to apply.
 
 # Disk: dust instead of du
 dust -d 2                     # 2 levels deep

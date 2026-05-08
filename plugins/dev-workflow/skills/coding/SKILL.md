@@ -28,11 +28,13 @@ Transform the task into verifiable goals.
 | "Fix the bug"    | Reproduce with a test or script, then make it pass  |
 | "Refactor X"     | Tests pass before and after, diff stays minimal     |
 
-For multi-step work, state a brief plan. Every step must include its own verification check; do not write unverified plan steps.
+For multi-step work, state a brief plan. Every step must include its own verification check; do not write unverified plan steps. In first responses to ambiguous feature work, every numbered plan item must include `→ verify:`; a single final "run tests" step is not enough.
 
 ```text
-1. [Step] → verify: [check]
-2. [Step] → verify: [check]
+1. Read domain docs and ADRs → verify: list concepts/constraints found or say none exist
+2. Define export behavior and privacy rules → verify: user confirms success criteria
+3. Add CSV/JSON behavior tests → verify: targeted tests fail for missing behavior
+4. Implement export path → verify: targeted tests pass and broader suite still passes
 ```
 
 ## Test-First Mode

@@ -18,11 +18,14 @@ Credentials may be pre-configured. Verify identity before touching resources. Us
 
 Before destructive commands (`delete`, `destroy`, `rm`, `terminate`, IAM changes, bucket/object deletion):
 
+Do not present executable delete commands as the next action until identity and candidate resources have been shown and the user has explicitly confirmed the exact resources. A safe answer may show inventory/dry-run commands first, then say deletion commands come only after confirmation.
+
 1. Confirm the active cloud target:
    - AWS: `aws sts get-caller-identity` plus explicit `--profile` and `--region` when relevant.
    - GCP: `gcloud config get-value account` and `gcloud config get-value project`, or pass explicit `--project`.
-2. Present the exact command, account/profile, project, region/zone, and resources affected.
-3. Require explicit user confirmation before execution. Do not rely on `--quiet`, default profiles, or implicit projects for destructive work.
+2. Inventory candidate resources with non-destructive list/describe commands.
+3. Present the exact command, account/profile, project, region/zone, and resources affected.
+4. Require explicit user confirmation before execution. Do not rely on `--quiet`, default profiles, or implicit projects for destructive work.
 
 ## BigQuery
 

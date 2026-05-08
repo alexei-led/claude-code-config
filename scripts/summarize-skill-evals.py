@@ -134,6 +134,8 @@ def collect(
 
 
 def format_counts(label: str, counts: Counts) -> str:
+    if counts.total == 0:
+        return f"{label}: not run"
     return f"{label}: {counts.passed}/{counts.total} passed ({counts.rate:.1%})"
 
 
@@ -246,8 +248,13 @@ def render_markdown(
         f"- HTML report: `{iteration / 'report' / 'index.html'}`",
         f"- With skill: **{with_counts.passed}/{with_counts.total}** "
         f"passed ({pct(with_counts.rate)})",
-        f"- Baseline: **{baseline_counts.passed}/{baseline_counts.total}** "
-        f"passed ({pct(baseline_counts.rate)})",
+        "- Baseline: "
+        + (
+            f"**{baseline_counts.passed}/{baseline_counts.total}** "
+            f"passed ({pct(baseline_counts.rate)})"
+            if baseline_counts.total
+            else "not run"
+        ),
         "",
         "## Per-skill results",
         "",

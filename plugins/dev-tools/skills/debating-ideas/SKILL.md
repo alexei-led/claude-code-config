@@ -24,7 +24,7 @@ Stress-test ideas by spawning competing perspectives, then synthesize and ground
 
 If no argument provided, ask the user what they want to evaluate.
 
-Routing rule: if the user wants open-ended idea generation, option discovery, or "what could we build/do?", route to `brainstorming-ideas`. Use this skill only when there is a specific design decision, thesis, or bounded trade-off to stress-test. If no clear opposing positions exist or evidence is unavailable, stop and ask for a sharper decision instead of inventing a debate.
+Routing rule: if the user wants open-ended idea generation, option discovery, or "what could we build/do?", explicitly say this is open-ended brainstorming and route to `brainstorming-ideas` or an ideation workflow. Use this skill only when there is a specific design decision, thesis, or bounded trade-off to stress-test. If no clear opposing positions exist or evidence is unavailable, stop and ask for a sharper decision instead of inventing a debate.
 
 <!-- CC-ONLY: begin -->
 

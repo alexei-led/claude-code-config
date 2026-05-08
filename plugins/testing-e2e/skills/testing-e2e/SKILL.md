@@ -59,7 +59,7 @@ If no argument provided, use AskUserQuestion. Ask one question at a time:
 
 ## Phase 2: Prepare App and Data
 
-Before any browser test run:
+Before any browser test run or test-generation plan, explicitly include dev-server detection/startup and deterministic test data setup. Do not jump straight to browser steps.
 
 1. Detect the app start command from Playwright config, package scripts, Makefile, README, or existing dev server docs.
 2. If tests need a running app, check whether the dev server is already reachable at the configured `baseURL`; start it if missing, or report the blocker if no start command is known.
@@ -96,6 +96,8 @@ Write a Playwright script to `/tmp/playwright-record-*.js` that:
 4. Execute via: `cd ~/.claude/skills/playwright-skill && node run.js /tmp/playwright-record-*.js`
 
 ### Generate Test
+
+Translate manual flows into Playwright actions and assertions, but first define deterministic fixtures: seeded users/items/coupons, fixed dates, stable IDs, reset database state, and mocked external services where needed.
 
 **Spawn playwright-tester agent:**
 
@@ -158,6 +160,8 @@ If tests fail:
 ---
 
 ## Phase 5: Output
+
+The final report must include PASS/FAIL/BLOCKED, dev server status, fixture/reset summary, test results, and artifact paths for traces/screenshots/videos/reports when relevant. If tests were not run, report BLOCKED or explain exactly why; do not imply success.
 
 ```
 E2E TESTING

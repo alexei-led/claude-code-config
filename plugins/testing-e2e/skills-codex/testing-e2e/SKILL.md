@@ -21,7 +21,7 @@ Wait for their answer if nothing was supplied.
 
 ## Step 2: Find existing test context
 
-Use Glob and Read to understand what already exists. Do not assume.
+Use Glob and Read to understand what already exists. Do not assume. Any E2E workflow or generated-test plan must explicitly include dev-server detection/startup and deterministic test data setup before browser actions.
 
 Look for:
 
@@ -32,7 +32,7 @@ Look for:
 
 Note the base URL the app runs on. Detect whether the dev server is already reachable; if tests require a server and none is running, start the documented command or report the blocker. Note whether Playwright is already installed (`node_modules/@playwright/test`).
 
-Use deterministic fixtures: seeded users, fixed dates, stable IDs, known database state, and mocked external services where needed. Do not depend on production data, random order, wall-clock time, or previous test runs.
+Use deterministic fixtures: seeded users, fixed dates, stable IDs, known database state, reset commands, and mocked external services where needed. Do not depend on production data, random order, wall-clock time, or previous test runs.
 
 ## Step 3: Execute based on action
 
@@ -55,6 +55,8 @@ npm install --save-dev @playwright/test && npx playwright install chromium
 ```
 
 ### Generate a new test
+
+For manual flows, first define deterministic fixtures such as seeded users/items/coupons, fixed dates, stable IDs, reset database state, and mocked external services where needed. Then translate each manual step into Playwright actions and observable assertions.
 
 Write a Playwright test script to `/tmp/e2e-<name>.spec.ts`. Use this structure:
 
@@ -150,6 +152,8 @@ For each failure, diagnose before editing:
 Fix the script, re-run, and repeat until all tests pass. Do not declare done with failing tests. Preserve failure evidence with Playwright traces, screenshots, videos, or HTML reports when available.
 
 ## Step 6: Report results
+
+Always report PASS/FAIL/BLOCKED, dev server status, fixture/reset summary, test results, and artifact paths for traces/screenshots/videos/reports when relevant. If tests were not run, report BLOCKED or explain exactly why; do not imply success.
 
 ```
 E2E TESTING
