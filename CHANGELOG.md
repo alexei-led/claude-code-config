@@ -8,6 +8,25 @@ major = breaking config/hook changes, minor = new skills/features, patch = fixes
 
 ## [Unreleased]
 
+## [1.10.0] - 2026-05-08
+
+### Added
+
+- **Skill eval automation**: added deterministic unit coverage for skill-eval preparation, summaries, Gemini context generation, and export validation.
+- **Gemini context generation**: new `scripts/generate-gemini-md.py` plus `make gemini-md` / `validate-gemini-md` keep `GEMINI.md` generated from `flat/skills-codex/`.
+- **Fast skill eval workflows**: `SKILL_EVAL_BASELINE`, `SKILL_EVAL_HTML_REPORT`, `skill-evals-fast`, and `skill-evals-both` speed up local iteration and source-vs-overlay checks.
+
+### Changed
+
+- **Skill quality pass**: tightened eval-driven instructions across development workflow, dev-tools, infra, Python, web, and E2E skills; regenerated Codex/Gemini overlays.
+- **Skill export hygiene**: validation now catches stale/missing Gemini skill links, stale Gemini skill counts, and Claude-only tool leaks in Codex/Gemini overlays.
+- **Docs**: refreshed README, CONTRIBUTING, skill eval docs, `AGENTS.md`, and `GEMINI.md` for 35 exported skills and the new eval workflows.
+
+### Fixed
+
+- **Gemini drift**: `GEMINI.md` now includes all 35 flat Codex/Gemini skills and the root Gemini extension version/count is current.
+- **Overlay portability**: stripped Claude-specific MCP/tool names from generated Codex/Gemini skill overlays.
+
 ## [1.9.1] - 2026-05-03
 
 ### Added
