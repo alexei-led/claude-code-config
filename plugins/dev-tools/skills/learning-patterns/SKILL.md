@@ -21,6 +21,15 @@ argument-hint: "[topic] [--dry-run]"
 
 Extract actionable learnings and generate project-specific customizations. Adapts Claude Code to project patterns over time. Ground changes in actual conversation/tool output and ask one question at a time when confirmation is needed.
 
+## Critical Routing Rules
+
+- Use this skill only for durable project learning: reusable instructions, domain language, decisions, commands, skills, or hooks.
+- Do not use it for ordinary documentation edits. Route README/API/docs updates to `documenting-code`; ask whether durable learning should also be captured only if the session reveals a reusable project rule.
+- Do not fabricate learnings. If the conversation transcript or tool evidence is missing, say actual extraction is blocked and ask for the missing evidence before proposing permanent changes.
+- If the user asks to describe the workflow, describe the phases and the evidence needed; do not apply changes.
+- Treat secrets, credentials, local paths, one-off failures, and transient debugging details as non-durable unless the user explicitly says otherwise. Do not persist `/tmp/...` paths; preserve only the durable rule, such as "skill eval summaries are written under the configured skill-eval workspace".
+- Always name the target artifact before proposing persistence, e.g. `AGENTS.md` for workflow rules, `CONTEXT.md` for domain language, `docs/adr/` for decisions, `.claude/commands/` for repeated commands, or `.claude/skills/` for complex workflows.
+
 <!-- CC-ONLY: begin -->
 
 **Use TaskCreate** to track these 8 phases:

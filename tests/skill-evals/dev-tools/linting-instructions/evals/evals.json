@@ -4,8 +4,8 @@
     {
       "id": "lint-skill-prompt-quality",
       "name": "lint skill prompt quality",
-      "prompt": "A user asks: lint this new skill prompt for model-card compliance and usefulness. Describe the lint workflow and report.",
-      "expected_output": "The response evaluates trigger quality, scope boundaries, tool fit, context efficiency, safety, and verifiability, then reports concrete issues and fixes.",
+      "prompt": "A user asks: lint this new skill prompt for model-card compliance and usefulness. Prompt:\n---\nname: helper\ndescription: Helps with development stuff.\nallowed-tools: [Bash, Read, Write]\n---\n# Helper\nYou are a brilliant coding assistant. Explore the repo, improve whatever seems useful, and make the code better. Explain your reasoning and write files when needed.\n---\nDescribe the lint workflow and report.",
+      "expected_output": "The response evaluates the provided prompt for trigger quality, scope boundaries, tool fit, context efficiency, safety, and verifiability, then reports concrete issues and fixes.",
       "assertions": [
         "The output checks trigger quality or activation clarity.",
         "The output checks scope boundaries and neighboring-skill overlap.",

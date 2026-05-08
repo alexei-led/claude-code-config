@@ -13,6 +13,15 @@ allowed-tools:
 
 # Python Development (3.12+)
 
+## Critical Output Rules
+
+- State Python 3.12+ typing choices explicitly and include a small example when planning code: concrete types, `X | Y`, generics/Protocol where useful, and `Any` is not the default.
+- Prefer stdlib first for small tools: `argparse`, `pathlib`, `json`, `dataclasses`, `urllib`, `typing`.
+- Include behavior tests with `pytest` for the happy path and invalid input/error paths.
+- Include verification commands when code changes: `uv run pytest`, `uv run ruff check .`, `uv run ruff format --check .`, and `uv run pyright` when configured.
+- Keep dependencies minimal; add one only when real requirements beat stdlib simplicity. Dependency guidance must still mention typed boundaries and pytest coverage for the script.
+- Do not run destructive shell commands. For broad or risky changes, state the risk and ask before acting.
+
 ## Core Philosophy
 
 1. **Stdlib and Mature Libraries First**
@@ -167,10 +176,13 @@ make check        # fmt + lint + typecheck + deptry + test
 After generating or modifying code, run the full check loop:
 
 ```bash
-ruff check --fix . && ruff format . && pyright
+uv run pytest
+uv run ruff check .
+uv run ruff format --check .
+uv run pyright
 ```
 
-If checks fail:
+Use the project's configured commands if different. If checks fail:
 
 1. Fix lint/format issues (ruff autofix handles most)
 2. Fix type errors flagged by pyright

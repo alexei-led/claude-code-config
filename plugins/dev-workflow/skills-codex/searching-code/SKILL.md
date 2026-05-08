@@ -21,6 +21,25 @@ name: searching-code
 
 WarpGrep is an RL-trained search agent that reasons about code, not just pattern matches. Use zoom-out mode when the user needs a higher-level map before touching code.
 
+## Critical Workflow Rules
+
+- Do not read the whole repo indiscriminately. Convert vague asks into a scoped map question or ask for scope.
+- Start search-first and name the commands: use `fd` to find likely files and `rg` to find known symbols, routes, handlers, and types; use WarpGrep for semantic flow across files.
+- Read `CONTEXT.md`, `CONTEXT-MAP.md`, and relevant ADRs when present before naming architectural boundaries.
+- Trace callers, callees, shared types/messages, and data/control flow across files. Follow only enough files or line ranges to verify the map.
+- Separate known facts from guesses. List unknowns explicitly instead of filling gaps.
+- For vague requests like "read this repo and explain everything", refuse the full dump, offer a zoom-out map, say exploration will start with `fd`/`rg`/WarpGrep searches instead of full-file reading, and say the final summary will separate verified facts from guesses/unknowns.
+
+## Final Answer Contract
+
+Return a bounded code map:
+
+1. Flow with `file:line` references.
+2. Key modules and responsibilities.
+3. Callers/callees and shared types/messages.
+4. Unknowns or unverified assumptions.
+5. Read-next list, top 3 files only.
+
 ## How It Works
 
 - **8 parallel searches** per turn (explores multiple hypotheses)
@@ -60,9 +79,10 @@ WarpGrep is an RL-trained search agent that reasons about code, not just pattern
 
 1. **Formulate query**: Describe WHAT you want to understand, not just WHAT to find
 2. **Load domain docs when present**: `CONTEXT.md`, `CONTEXT-MAP.md`, and relevant ADRs
-3. **Run WarpGrep**: `mcp__morphllm__warpgrep_codebase_search`
-4. **Interpret results**: Ranked snippets with file paths and line numbers
-5. **Follow up**: Read specific files for deeper understanding
+3. **Run targeted shell search**: `fd 'auth|login|session|user'` for likely files; `rg 'login|authenticate|AuthService|Session|UserRepository'` for entry points, symbols, and shared types
+4. **Run WarpGrep**: `mcp__morphllm__warpgrep_codebase_search` for cross-file semantic flow
+5. **Interpret results**: Ranked snippets with file paths and line numbers
+6. **Follow up**: Read specific files or line ranges only when needed for verification
 
 ## Zoom-Out Mode
 
@@ -74,6 +94,7 @@ Return a map, not a dump:
 - data/control flow across seams
 - domain terms from `CONTEXT.md`
 - ADR constraints that shape the design
+- known facts vs guesses/unknowns
 - where to read next, limited to the top 3 files
 
 Avoid line-by-line explanations unless asked. The point is orientation, not drowning the user in snippets.

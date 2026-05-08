@@ -21,6 +21,16 @@ name: linting-instructions
 
 Review agent and skill instructions against rules derived from the Claude Opus 4.6 and Sonnet 4.6 system cards. Combines a fast regex pre-pass with deep model-based semantic review. Do not fabricate compliance; report impossible or missing evidence directly.
 
+## Critical Scope Rules
+
+- Primary goal is behavioral instruction quality, not cosmetic polish, generic tone softening, or making prompts sound nicer.
+- Review only against observable criteria: triggers, scope boundaries, tool fit, output format, context budget/token efficiency, safety/irreversible-action guidance, failure handling, grounding, and verifiability.
+- If the actual prompt/instruction text is missing, ask for it before making findings. Use explicit wording: "Paste the actual prompt/instruction text or file path before I make findings." Do not invent findings from a summary.
+- Do not rewrite for tone unless a behavioral issue is identified first. Any rewrite must preserve constraints and improve testable behavior.
+- Every report must explicitly check these minimum categories by name: trigger quality/activation clarity; scope boundaries/neighbor overlap; tool fit; context budget/token efficiency/prompt bloat; safety/irreversible-action guidance; verifiability/testability.
+- Every report must explicitly include context budget/token efficiency and safety/irreversible-action guidance, even when the verdict is PASS.
+- Every finding must cite the exact file/section or missing evidence and include a concrete fix that can be reviewed or tested.
+
 ---
 
 ## Step 1: Read the Rules

@@ -20,12 +20,30 @@ allowed-tools:
 
 **Default**: Call Perplexity MCP directly. Only spawn agent when codebase context is explicitly needed.
 
+## Critical Routing Rules
+
+- Use this for web-grounded research: comparisons, recommendations, best practices, standards, recent developments, licensing, ecosystem, and market/release facts.
+- Do not use this for narrow API syntax or framework examples. Route those to `looking-up-docs`; prefer official docs for exact syntax.
+- Do not answer research questions from memory. Use current sources, cite URLs, and mark stale-source risk or unknowns. If live retrieval is unavailable, say exactly that final evidence must be grounded in URL-cited sources before factual claims or recommendations are trusted.
+- Separate sourced facts from recommendation/judgment. If evidence is missing, say what is missing instead of filling gaps.
+- If the user asks to "describe the workflow", describe the source-gathering and output structure; do not present an uncited final recommendation as fact.
+
+## Response Contract
+
+For research output, include:
+
+1. Research question and decision criteria.
+2. Sources consulted or source plan; citations/URLs required for factual claims. If only a plan is available, state: "final evidence must be grounded in URL-cited sources."
+3. Evidence table or bullets grouped by criterion.
+4. Recommendation separated from sourced facts.
+5. Unknowns, assumptions, and stale-source risks.
+
 ## Best For
 
 - Technology comparisons (X vs Y)
 - Best practices, industry standards
 - OWASP, security guidelines
-- Documentation references
+- Official docs as supporting sources for non-syntax facts
 - Stable technical content
 
 ## Default Mode: Direct MCP Call

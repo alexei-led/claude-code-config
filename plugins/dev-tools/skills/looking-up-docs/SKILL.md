@@ -19,6 +19,26 @@ allowed-tools:
 
 Context7 provides up-to-date, version-specific documentation and code examples directly from source libraries.
 
+## Critical Routing Rules
+
+- Use this for narrow library/framework/API syntax, examples, and version-specific docs.
+- Do not use this for comparisons, recommendations, "vs", best practices, market/release research, or recent industry facts. Route those to `researching-web`; use docs lookup later only for the chosen library's exact syntax.
+- First identify the library and version from project files when available; otherwise say the version is unknown and resolve the closest library docs.
+- Use Context7 first: resolve the library ID, then query docs for the exact topic. Use official docs/WebFetch only when Context7 is missing or insufficient.
+- Ground examples in retrieved docs. Do not invent APIs; if docs are missing, report that and show the fallback source.
+
+## Response Contract
+
+For a docs lookup, output:
+
+1. Library/version identified or unknown.
+2. Context7 resolve/query plan or result.
+3. Concise syntax/example guidance grounded in docs.
+4. Fallback used, if any.
+5. Boundary note: broader web research is only for missing/insufficient docs, comparisons, recommendations, recent facts, or release/market changes.
+
+If the user asks to "describe the workflow", describe those steps instead of answering from memory.
+
 ## Why Context7
 
 - **Current APIs**: No hallucinated or outdated patterns
