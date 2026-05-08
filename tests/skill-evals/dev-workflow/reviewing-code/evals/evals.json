@@ -1,0 +1,32 @@
+{
+  "skill_name": "reviewing-code",
+  "evals": [
+    {
+      "id": "missing-review-scope",
+      "name": "missing review scope",
+      "prompt": "A user says: review code. No diff, PR, branch, or files are specified. Describe the first response and workflow.",
+      "expected_output": "The response asks for review scope, offers uncommitted changes, branch vs main, or specific files, then plans diff/file reading and checks.",
+      "assertions": [
+        "The output asks a clarifying question about review scope instead of choosing silently.",
+        "The output includes scope options such as uncommitted changes, branch comparison, or specific files.",
+        "The output says to inspect the relevant diff or files before making findings.",
+        "The output says findings must cite concrete files and lines or tool output.",
+        "The output includes running relevant checks when project tooling exists or saying what was skipped."
+      ]
+    },
+    {
+      "id": "security-review-large-diff",
+      "name": "security review large diff",
+      "prompt": "A user asks for a security-focused code review of a large mixed Go and TypeScript diff. Describe the review workflow and output.",
+      "expected_output": "The response scopes the diff, detects languages, optionally uses specialized reviewers, checks security risks with evidence, avoids web/private-code leakage, ranks severity, and reports concise file:line findings with fixes.",
+      "assertions": [
+        "The output detects languages or areas in the changed files before choosing checks/reviewers.",
+        "The output mentions using specialized or parallel reviewers/subagents for a large diff.",
+        "The output focuses on security findings and ranks severity such as critical/important/suggestion.",
+        "Every finding format requires file and line evidence or explicit tool output.",
+        "The output warns not to paste private code into web tools and uses web only for external facts when needed.",
+        "The output includes concrete fixes for findings rather than vague observations."
+      ]
+    }
+  ]
+}

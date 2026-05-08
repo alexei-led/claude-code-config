@@ -1,0 +1,32 @@
+{
+  "skill_name": "writing-go",
+  "evals": [
+    {
+      "id": "go-http-handler-design",
+      "name": "go http handler design",
+      "prompt": "A user asks you to write a Go HTTP handler and service for account creation. Describe the implementation approach before coding.",
+      "expected_output": "The response uses idiomatic Go: concrete types, stdlib first, simple errors, context-aware APIs, table-driven tests, and minimal dependencies.",
+      "assertions": [
+        "The output prefers the Go standard library where practical, such as net/http and testing.",
+        "The output favors concrete types or small interfaces only at real seams rather than abstracting everything.",
+        "The output includes simple explicit error handling.",
+        "The output mentions context-aware API boundaries where appropriate.",
+        "The output includes table-driven tests with t.Run or equivalent behavior-focused tests.",
+        "The output avoids adding unnecessary dependencies."
+      ]
+    },
+    {
+      "id": "go-review-error-handling",
+      "name": "go review error handling",
+      "prompt": "A user asks for advice on Go error handling in repository methods. Describe the guidance.",
+      "expected_output": "The response recommends explicit error returns, wrapping with context, sentinel/custom errors only when useful, and tests for success and error paths.",
+      "assertions": [
+        "The output recommends returning errors explicitly rather than panicking for normal failures.",
+        "The output mentions wrapping errors with useful context.",
+        "The output avoids overusing custom error hierarchies or abstractions without need.",
+        "The output includes tests for both success and error paths.",
+        "The output keeps the guidance idiomatic and simple rather than framework-heavy."
+      ]
+    }
+  ]
+}

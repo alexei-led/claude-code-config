@@ -1,0 +1,30 @@
+{
+  "skill_name": "using-git-worktrees",
+  "evals": [
+    {
+      "id": "parallel-feature-worktree",
+      "name": "parallel feature worktree",
+      "prompt": "A user wants to start a risky feature while keeping the current branch untouched. Describe the worktree workflow.",
+      "expected_output": "The response uses git worktree for isolation, checks current status, chooses branch/path, creates worktree, and explains how to work/clean up safely.",
+      "assertions": [
+        "The output says a git worktree is appropriate for isolated parallel feature work.",
+        "The output checks current git status or dirty state before creating the worktree.",
+        "The output chooses or asks for a branch name and worktree path.",
+        "The output creates or describes git worktree add workflow.",
+        "The output mentions cleanup/removal after the work is done."
+      ]
+    },
+    {
+      "id": "boundary-simple-branch-switch",
+      "name": "boundary simple branch switch",
+      "prompt": "A user says: switch from branch feature-a to feature-b. No parallel work is needed. Describe how the worktree skill should respond.",
+      "expected_output": "The response says a worktree is unnecessary for simple branch switching and routes to normal git checkout/switch workflow after status check.",
+      "assertions": [
+        "The output says a git worktree is not needed for simple branch switching.",
+        "The output recommends normal git switch/checkout workflow instead.",
+        "The output still checks for uncommitted changes before switching.",
+        "The output avoids creating extra worktrees unnecessarily."
+      ]
+    }
+  ]
+}

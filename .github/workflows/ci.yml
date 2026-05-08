@@ -6,6 +6,7 @@ on:
     tags-ignore:
       - v*
   pull_request:
+  workflow_dispatch:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 jobs:
@@ -19,6 +20,7 @@ jobs:
       shell: ${{ steps.filter.outputs.shell }}
       markdown: ${{ steps.filter.outputs.markdown }}
       config: ${{ steps.filter.outputs.config }}
+      skill_evals: ${{ steps.filter.outputs.skill_evals }}
     steps:
       - uses: actions/checkout@v6
       - uses: dorny/paths-filter@v4
@@ -39,6 +41,14 @@ jobs:
               - '**/*.json'
               - '**/*.toml'
               - 'scripts/validate-config.py'
+            skill_evals:
+              - 'plugins/**/skills/**'
+              - 'tests/skill-evals/**'
+              - 'scripts/prepare-skill-evals.py'
+              - 'scripts/summarize-skill-evals.py'
+              - 'docs/skill-eval*.md'
+              - 'Makefile'
+              - '.node-version'
   python-lint:
     name: Python Lint
     needs: changes
@@ -96,6 +106,51 @@ jobs:
           enable-cache: true
           cache-dependency-glob: uv.lock
       - run: make test
+  skill-evals:
+    name: Skill Evals
+    needs: changes
+    if: >
+      (github.event_name == 'workflow_dispatch' || needs.changes.outputs.skill_evals == 'true') &&
+      (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      SKILL_EVAL_WORKSPACE: ${{ runner.temp }}/skill-evals
+    steps:
+      - uses: actions/checkout@v6
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .node-version
+      - name: Run advisory skill evals
+        run: |
+          set +e
+          make skill-evals \
+            SKILL_EVAL_LOG_FORMAT=jsonl \
+            SKILL_EVAL_CONCURRENCY=8 \
+            SKILL_EVAL_STRICT=0 \
+            SKILL_EVAL_REPORT="$SKILL_EVAL_WORKSPACE/summary.md"
+          status=$?
+          if [ -f "$SKILL_EVAL_WORKSPACE/summary.md" ]; then
+            cat "$SKILL_EVAL_WORKSPACE/summary.md" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "# Skill eval report" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "No summary was produced. Check the job logs." >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if [ "$status" -ne 0 ]; then
+            echo "::warning::Skill evals failed in advisory mode. See the job summary and artifact."
+          fi
+          exit 0
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: skill-eval-report
+          path: ${{ runner.temp }}/skill-evals
+          if-no-files-found: ignore
   secrets:
     name: Secret Scan
     runs-on: ubuntu-latest

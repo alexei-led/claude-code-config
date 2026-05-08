@@ -1,0 +1,34 @@
+{
+  "skill_name": "refactoring-code",
+  "evals": [
+    {
+      "id": "batch-rename-across-files",
+      "name": "batch rename across files",
+      "prompt": "A user asks: rename getUserById to findUser everywhere. It appears in 9 files and several tests. Describe the refactoring workflow before making changes.",
+      "expected_output": "The response treats this as batch refactoring, searches all affected locations first, uses MorphLLM edit_file or equivalent batch refactor flow instead of many manual edits, preserves behavior, batches edits per file, and verifies with tests.",
+      "assertions": [
+        "The output recognizes this as a multi-file batch refactor rather than a simple single edit.",
+        "The output says to search or map all occurrences before editing.",
+        "The output mentions using MorphLLM edit_file or the skill's batch refactoring tool/workflow.",
+        "The output says behavior should be preserved unless the user explicitly requested behavior change.",
+        "The output says to batch all edits for the same file in one edit operation.",
+        "The output includes verification with relevant lint or tests after the refactor."
+      ]
+    },
+    {
+      "id": "architecture-deepening-safety",
+      "name": "architecture deepening safety",
+      "prompt": "A user asks: apply the approved architecture-deepening refactor to replace duplicated payment validation scattered across services with a deeper module. The change is high stakes. Describe the refactoring workflow.",
+      "expected_output": "The response uses architecture-deepening vocabulary, reads context/ADRs, applies deletion test and seam rules, previews high-stakes changes with dryRun before applying, preserves behavior, improves tests through the deeper interface, and verifies after changes.",
+      "assertions": [
+        "The output uses architecture terms such as module, interface, seam, adapter, depth, leverage, or locality.",
+        "The output says to read relevant CONTEXT.md, CONTEXT-MAP.md, or docs/adr before editing.",
+        "The output applies the deletion test or explains why the module earns its keep.",
+        "The output mentions seam discipline, such as avoiding interfaces without real variation or using adapters only at real seams.",
+        "The output says to use dryRun or preview mode for the high-stakes change before applying edits.",
+        "The output says tests should verify behavior through the deepened module interface rather than extracted helpers.",
+        "The output includes post-refactor lint/test verification."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "skill_name": "documenting-code",
+  "evals": [
+    {
+      "id": "ambiguous-doc-update-asks-scope",
+      "name": "ambiguous doc update asks scope",
+      "prompt": "A user says: update docs. No specific documentation target is provided. Describe the first response and workflow.",
+      "expected_output": "The response asks the user to choose documentation scope, offering auto-detect, README, API docs, or all, then plans analysis, update, and verification.",
+      "assertions": [
+        "The output asks a clarifying question about documentation scope instead of choosing silently.",
+        "The output includes scope options equivalent to auto-detect, README, API docs, and all/comprehensive docs.",
+        "The output says it would inspect recent changes or git diff before updating docs.",
+        "The output says it would find existing documentation files before editing.",
+        "The output includes verification of changed documentation such as diff review, links, placeholders, or runnable examples."
+      ]
+    },
+    {
+      "id": "verify-docs-agent-output",
+      "name": "verify docs agent output",
+      "prompt": "A docs-keeper agent claims it updated the README after a recent API change. Describe what the parent workflow must do before reporting success to the user.",
+      "expected_output": "The response independently verifies the agent's work by checking git diff/stat, reading the changed docs, ensuring no placeholders or broken links, verifying examples when possible, and reporting if no files changed instead of trusting the agent.",
+      "assertions": [
+        "The output says not to trust the docs agent's self-report without independent verification.",
+        "The output mentions checking git diff or git diff --stat to confirm files changed.",
+        "The output says to inspect the changed documentation diff for correctness.",
+        "The output checks for no placeholders, stale content, or broken links.",
+        "The output mentions verifying code examples or commands when practical.",
+        "The output says to report clearly if no files actually changed."
+      ]
+    }
+  ]
+}

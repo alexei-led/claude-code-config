@@ -1,4 +1,5 @@
 # === Secrets & Credentials ===
+.env
 secrets.json
 credentials*
 .credentials*

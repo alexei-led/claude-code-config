@@ -1,0 +1,30 @@
+{
+  "skill_name": "looking-up-docs",
+  "evals": [
+    {
+      "id": "api-syntax-docs-context7",
+      "name": "api syntax docs context7",
+      "prompt": "A user asks: how do I use FastAPI dependency overrides in tests? I need syntax and examples. Describe the workflow.",
+      "expected_output": "The response uses library documentation lookup, resolves the library, queries docs for API syntax/examples, and avoids broad comparison-style web research.",
+      "assertions": [
+        "The output treats the request as API documentation lookup rather than broad web research.",
+        "The output mentions resolving or identifying the library/framework version when possible.",
+        "The output uses Context7 or documentation-query workflow for syntax and examples.",
+        "The output returns concise examples or API usage guidance grounded in docs.",
+        "The output says to use broader web research only if docs lookup is insufficient or the task changes to comparison/recent facts."
+      ]
+    },
+    {
+      "id": "boundary-comparison-request",
+      "name": "boundary comparison request",
+      "prompt": "A user asks: compare FastAPI vs Django Ninja for a new backend. Describe how this docs skill should respond.",
+      "expected_output": "The response identifies this as a comparison/research task and routes to researching-web instead of only looking up API docs.",
+      "assertions": [
+        "The output says the request is a comparison rather than a narrow API docs lookup.",
+        "The output routes to researching-web or a research workflow.",
+        "The output avoids pretending docs lookup alone is enough for trade-off comparison.",
+        "The output may offer to use docs lookup later for chosen-framework syntax."
+      ]
+    }
+  ]
+}

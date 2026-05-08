@@ -1,0 +1,32 @@
+{
+  "skill_name": "coding",
+  "evals": [
+    {
+      "id": "ambiguous-feature-assumptions",
+      "name": "ambiguous feature assumptions",
+      "prompt": "Implement export for user profiles. It should support CSV and JSON, respect privacy settings, and be fast. The repo may have CONTEXT.md and ADRs. Describe the first response you would give before editing files.",
+      "expected_output": "The response surfaces assumptions or interpretations, asks a clarifying question instead of silently choosing behavior, checks project context docs, and defines verifiable success criteria with a plan and verification steps.",
+      "assertions": [
+        "The output explicitly states assumptions or multiple possible interpretations of the export request.",
+        "The output asks at least one clarifying question before choosing implementation details.",
+        "The output says it would read project domain context such as CONTEXT.md, CONTEXT-MAP.md, or docs/adr before naming concepts or changing architecture.",
+        "The output turns the vague request into verifiable success criteria or goals.",
+        "The output includes a brief plan where each step has a verification check."
+      ]
+    },
+    {
+      "id": "test-first-validation-slice",
+      "name": "test first validation slice",
+      "prompt": "Use TDD to add email validation to an existing account creation function. The public API should reject missing emails and invalid email formats. Describe the workflow you would follow.",
+      "expected_output": "The response follows red-green-refactor: confirm public interface, write one failing behavior test, implement the smallest code, run the narrow test, repeat one slice at a time, and avoid testing private helpers.",
+      "assertions": [
+        "The output identifies the public interface or behavior surface as the test target.",
+        "The output says to write one failing test for one behavior before implementation.",
+        "The output says to implement the smallest code needed to pass the failing test.",
+        "The output repeats the loop one vertical slice at a time instead of writing all tests first.",
+        "The output says to refactor only after tests are green.",
+        "The output avoids testing private helpers as the primary test surface."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "skill_name": "learning-patterns",
+  "evals": [
+    {
+      "id": "extract-conversation-learning",
+      "name": "extract conversation learning",
+      "prompt": "A user says: save what we learned from this debugging session into project instructions. Describe the workflow.",
+      "expected_output": "The response extracts concrete reusable learnings, chooses appropriate artifacts such as AGENTS.md/CONTEXT.md/ADR/skills/hooks, avoids generic notes, and verifies changes.",
+      "assertions": [
+        "The output extracts concrete reusable project learnings rather than generic advice.",
+        "The output chooses an appropriate destination such as AGENTS.md, CONTEXT.md, ADRs, skills, commands, or hooks.",
+        "The output preserves project domain language or decisions from the session.",
+        "The output avoids saving secrets or transient details as permanent instructions.",
+        "The output includes verification or review of the generated customization."
+      ]
+    },
+    {
+      "id": "boundary-doc-update",
+      "name": "boundary doc update",
+      "prompt": "A user says: update the README for the new CLI flag. Describe how learning-patterns should respond.",
+      "expected_output": "The response identifies this as documentation update, not learning extraction, and routes to documenting-code unless there is a reusable instruction pattern to capture.",
+      "assertions": [
+        "The output says a README update is primarily a documentation task.",
+        "The output routes to documenting-code or a docs workflow.",
+        "The output does not create project instruction customizations unless there is a reusable pattern to save.",
+        "The output asks or notes whether any durable learning should also be captured."
+      ]
+    }
+  ]
+}

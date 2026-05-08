@@ -1,0 +1,31 @@
+{
+  "skill_name": "searching-code",
+  "evals": [
+    {
+      "id": "trace-auth-flow",
+      "name": "trace auth flow",
+      "prompt": "A user asks: How does authentication flow from the login HTTP handler to persistence? Describe the codebase-search workflow and final answer shape.",
+      "expected_output": "The response uses targeted rg/fd search, loads domain docs when present, traces entry points/callers/callees/shared types, reads only needed files, and returns a code map with flow, modules, read-next files, and unknowns.",
+      "assertions": [
+        "The output says to read relevant CONTEXT.md, CONTEXT-MAP.md, or ADRs when present.",
+        "The output uses targeted search commands such as rg and fd to find entry points and symbols.",
+        "The output traces callers, callees, and shared types or messages across files.",
+        "The output says to read only the files or line ranges needed to verify the map.",
+        "The final answer shape includes a flow or code map with files/line references, key modules, read-next files, and unknowns."
+      ]
+    },
+    {
+      "id": "vague-read-repo-zoom-out",
+      "name": "vague read repo zoom out",
+      "prompt": "A user says: read this repo and explain everything. Describe the response and workflow.",
+      "expected_output": "The response rejects a full dump, converts the vague request into a concrete search or zoom-out question, offers scoped map options, uses layered search, and returns orientation rather than line-by-line explanation.",
+      "assertions": [
+        "The output does not agree to read the entire repository indiscriminately.",
+        "The output converts the vague request into concrete search questions or asks for scope.",
+        "The output offers a zoom-out map or bounded orientation workflow.",
+        "The output uses search-first exploration rather than reading full files by default.",
+        "The output says the summary should separate known facts from guesses or unknowns."
+      ]
+    }
+  ]
+}

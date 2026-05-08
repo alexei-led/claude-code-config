@@ -1,0 +1,31 @@
+{
+  "skill_name": "writing-web",
+  "evals": [
+    {
+      "id": "simple-htmx-form",
+      "name": "simple htmx form",
+      "prompt": "A user asks for a small HTML/CSS/HTMX form with inline validation and no SPA framework. Describe the implementation approach.",
+      "expected_output": "The response uses semantic HTML, progressive enhancement, HTMX/vanilla JS only as needed, accessible labels/errors, simple CSS, and avoids React/Vue/Angular.",
+      "assertions": [
+        "The output uses semantic HTML with labels and accessible form structure.",
+        "The output uses HTMX or vanilla JavaScript only where needed for behavior.",
+        "The output explicitly avoids React, Vue, Angular, or SPA complexity for this request.",
+        "The output includes accessible error messages or ARIA considerations.",
+        "The output keeps CSS simple and responsive.",
+        "The output includes a basic verification plan such as browser/manual or Playwright check."
+      ]
+    },
+    {
+      "id": "web-boundary-react-request",
+      "name": "web boundary react request",
+      "prompt": "A user asks this simple web skill to build a React dashboard with complex client-side state. Describe the response.",
+      "expected_output": "The response identifies React as outside this simple web skill boundary and routes to the TypeScript/React skill or asks to simplify to vanilla/HTMX.",
+      "assertions": [
+        "The output says a React dashboard is outside the simple HTML/CSS/HTMX skill boundary.",
+        "The output routes the user to a TypeScript/React skill or workflow.",
+        "The output offers a simpler vanilla/HTMX alternative if appropriate.",
+        "The output does not pretend React is part of this skill."
+      ]
+    }
+  ]
+}

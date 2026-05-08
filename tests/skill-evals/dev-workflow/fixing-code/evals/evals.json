@@ -1,0 +1,33 @@
+{
+  "skill_name": "fixing-code",
+  "evals": [
+    {
+      "id": "pytest-failure-one-issue-loop",
+      "name": "pytest failure one issue loop",
+      "prompt": "A user says: make tests pass. The failing output is:\n\n```text\nFAILED tests/test_accounts.py::test_create_user_rejects_duplicate_email\nE   AssertionError: assert 201 == 409\nE    + where 201 = response.status_code\n```\n\nDescribe the fix workflow before editing files.",
+      "expected_output": "The response starts with a feedback loop, reads the failing output, identifies the exact failing behavior, fixes one root cause at a time, adds or updates a regression test at the right seam when possible, and verifies with narrow then broad checks.",
+      "assertions": [
+        "The output says to reproduce or run the failing test before editing.",
+        "The output identifies the specific observed failure: duplicate email returns 201 instead of 409.",
+        "The output says to inspect the relevant code path before changing code.",
+        "The output commits to fixing one issue or root cause at a time.",
+        "The output mentions adding or updating a regression test at the correct seam when possible.",
+        "The output includes narrow verification of the failing test and broader verification such as make test or pytest."
+      ]
+    },
+    {
+      "id": "hard-bug-hypotheses-before-fix",
+      "name": "hard bug hypotheses before fix",
+      "prompt": "A user reports an intermittent production bug: checkout sometimes charges customers twice, but local tests pass. They ask you to fix it now. Describe the diagnostic workflow before making code changes.",
+      "expected_output": "The response refuses to guess, builds a deterministic repro or harness first, requests missing artifacts if needed, ranks several falsifiable hypotheses, probes one hypothesis at a time, adds targeted temporary instrumentation carefully, and removes probes after verification.",
+      "assertions": [
+        "The output says not to edit or guess until there is a reproducible pass/fail signal or adequate artifacts.",
+        "The output proposes a deterministic repro, script, replay, harness, or captured payload/log workflow.",
+        "The output asks for missing artifacts such as logs, traces, payloads, timestamps, or recordings if reproduction is not possible.",
+        "The output lists or commits to 3-5 ranked falsifiable hypotheses before testing fixes.",
+        "The output says to probe one hypothesis at a time.",
+        "The output mentions removing temporary debug instrumentation or probes before final verification."
+      ]
+    }
+  ]
+}

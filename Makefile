@@ -1,5 +1,18 @@
 .DEFAULT_GOAL := help
 
+NODE_VERSION ?= $(shell cat .node-version 2>/dev/null || echo 24)
+SKILL_EVAL_ROOT ?= /tmp/cc-thingz-skill-eval-root
+SKILL_EVAL_WORKSPACE ?= /tmp/cc-thingz-skill-eval-workspace
+SKILL_EVAL_INCLUDE ?= **
+SKILL_EVAL_TARGET ?= gpt-5.4-mini
+SKILL_EVAL_JUDGE ?= gpt-5.4-mini
+SKILL_EVAL_LOG_FORMAT ?= jsonl
+SKILL_EVAL_LOG_FILE ?= $(SKILL_EVAL_WORKSPACE)/events.jsonl
+SKILL_EVAL_REPORT ?= $(SKILL_EVAL_WORKSPACE)/summary.md
+SKILL_EVAL_CONCURRENCY ?= 4
+SKILL_EVAL_STRICT ?= 1
+SKILL_EVAL_CLI ?= $(shell if command -v agent-skills-eval >/dev/null 2>&1; then printf 'agent-skills-eval'; elif command -v bunx >/dev/null 2>&1; then printf 'bunx agent-skills-eval'; elif command -v fnm >/dev/null 2>&1; then printf 'fnm exec --using $(NODE_VERSION) -- npx --yes agent-skills-eval'; else printf 'npx --yes agent-skills-eval'; fi)
+
 # --- Lint ---
 
 .PHONY: lint lint-python lint-shell lint-markdown
@@ -23,17 +36,55 @@ lint-markdown: ## Lint Markdown files
 
 # --- Test ---
 
-.PHONY: test
+.PHONY: test skill-evals-prepare skill-evals skill-evals-summary
 test: ## Run pytest
 	uv run --extra test python -m pytest tests/ -v
 
+skill-evals-prepare: ## Build temporary Agent Skills eval tree under /tmp
+	uv run python scripts/prepare-skill-evals.py --out $(SKILL_EVAL_ROOT)
+
+skill-evals: skill-evals-prepare ## Run paid Agent Skills evals and print fix-focused summary
+	@set -u; \
+	if [ -f .env ]; then set -a; . ./.env; set +a; fi; \
+	test -n "$${OPENAI_API_KEY:-}" || { echo "OPENAI_API_KEY missing"; exit 2; }; \
+	mkdir -p $(SKILL_EVAL_WORKSPACE); \
+	$(SKILL_EVAL_CLI) $(SKILL_EVAL_ROOT) \
+		--include '$(SKILL_EVAL_INCLUDE)' \
+		--workspace $(SKILL_EVAL_WORKSPACE) \
+		--baseline \
+		--target $(SKILL_EVAL_TARGET) \
+		--judge $(SKILL_EVAL_JUDGE) \
+		--base-url https://api.openai.com/v1 \
+		--api-key-env OPENAI_API_KEY \
+		--concurrency $(SKILL_EVAL_CONCURRENCY) \
+		--log-format $(SKILL_EVAL_LOG_FORMAT) \
+		--log-file $(SKILL_EVAL_LOG_FILE) \
+		--layout iteration \
+		--strict \
+		--report; \
+	status=$$?; \
+	uv run python scripts/summarize-skill-evals.py $(SKILL_EVAL_WORKSPACE) --markdown $(SKILL_EVAL_REPORT) || true; \
+	if [ "$(SKILL_EVAL_STRICT)" = "0" ]; then exit 0; fi; \
+	exit $$status
+
+skill-evals-summary: ## Print summary for latest skill eval workspace
+	uv run python scripts/summarize-skill-evals.py $(SKILL_EVAL_WORKSPACE) --markdown $(SKILL_EVAL_REPORT)
+
 # --- Validate ---
 
-.PHONY: validate validate-config validate-flat validate-overlays validate-agents-md validate-executables lint-instructions
-validate: validate-config validate-flat validate-overlays validate-agents-md validate-executables ## Run all validation checks
+.PHONY: validate validate-config validate-flat validate-overlays validate-agents-md validate-executables validate-no-plugin-evals lint-instructions
+validate: validate-no-plugin-evals validate-config validate-flat validate-overlays validate-agents-md validate-executables ## Run all validation checks
 
 validate-config: ## Validate plugin configs and frontmatter
 	uv run python scripts/validate-config.py
+
+validate-no-plugin-evals: ## Ensure eval fixtures are not inside deployable plugin skill dirs
+	@bad=$$(find plugins -path '*/skills/*/evals' -type d); \
+	if [ -n "$$bad" ]; then \
+		echo "ERROR: evals/ found inside deployable plugin skills"; \
+		echo "$$bad"; \
+		exit 1; \
+	fi
 
 validate-flat: ## Check flat/ symlinks are in sync
 	bash scripts/generate-flat.sh --check

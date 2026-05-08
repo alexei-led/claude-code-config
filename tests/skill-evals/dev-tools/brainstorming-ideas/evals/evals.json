@@ -1,0 +1,30 @@
+{
+  "skill_name": "brainstorming-ideas",
+  "evals": [
+    {
+      "id": "open-ended-feature-design",
+      "name": "open ended feature design",
+      "prompt": "A user says: brainstorm approaches for adding offline mode to our app. Describe the brainstorming workflow.",
+      "expected_output": "The response explores multiple approaches, assumptions, tradeoffs, risks, and decision criteria without jumping into implementation tasks.",
+      "assertions": [
+        "The output treats this as open-ended ideation or brainstorming.",
+        "The output surfaces assumptions or asks clarifying questions about constraints.",
+        "The output offers multiple plausible approaches rather than one answer.",
+        "The output compares tradeoffs, risks, and decision criteria.",
+        "The output avoids turning the request directly into a detailed implementation plan before the approach is chosen."
+      ]
+    },
+    {
+      "id": "boundary-grill-specific-plan",
+      "name": "boundary grill specific plan",
+      "prompt": "A user says: grill me on this specific rollout plan until it is airtight. Describe how brainstorming should respond.",
+      "expected_output": "The response identifies this as grill-me territory, not broad brainstorming, and routes to a focused one-question-at-a-time interrogation workflow.",
+      "assertions": [
+        "The output says the request is not broad brainstorming because there is already a specific plan.",
+        "The output routes to grill-me or a focused plan interrogation workflow.",
+        "The output mentions asking hard questions one at a time or resolving a decision tree.",
+        "The output avoids generating a broad idea list as the main response."
+      ]
+    }
+  ]
+}

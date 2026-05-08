@@ -1,0 +1,32 @@
+{
+  "skill_name": "writing-typescript",
+  "evals": [
+    {
+      "id": "typescript-strict-service",
+      "name": "typescript strict service",
+      "prompt": "A user asks you to implement a TypeScript service that fetches users, validates API responses, and exposes a typed function. Describe the approach.",
+      "expected_output": "The response uses strict typing, runtime validation at boundaries, composition, async error handling, tests, and modern tooling such as bun/vite/tsc.",
+      "assertions": [
+        "The output emphasizes strict TypeScript types and avoids using any as the default.",
+        "The output validates untrusted API responses at the boundary.",
+        "The output favors composition and small functions over large classes or global state.",
+        "The output handles async errors explicitly.",
+        "The output includes tests for success and failure cases.",
+        "The output mentions TypeScript verification such as tsc --noEmit, bun test, or linting."
+      ]
+    },
+    {
+      "id": "react-boundary",
+      "name": "react boundary",
+      "prompt": "A user asks for a React component with state, API loading, and form validation. Describe the implementation approach.",
+      "expected_output": "The response applies TypeScript/React patterns, typed props/state, clear effects or hooks, tests, and avoids mixing unrelated concerns.",
+      "assertions": [
+        "The output uses typed props, state, and event handlers.",
+        "The output separates data fetching, validation, and presentation concerns where practical.",
+        "The output handles loading, success, and error states.",
+        "The output includes component or behavior tests.",
+        "The output mentions modern TS/React tooling or strict type checks."
+      ]
+    }
+  ]
+}

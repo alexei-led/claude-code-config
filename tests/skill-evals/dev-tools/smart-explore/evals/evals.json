@@ -1,0 +1,31 @@
+{
+  "skill_name": "smart-explore",
+  "evals": [
+    {
+      "id": "large-file-token-efficient-navigation",
+      "name": "large file token efficient navigation",
+      "prompt": "A user asks you to understand a 2,000-line TypeScript file and find where UserService.createUser is defined and called. Describe the workflow.",
+      "expected_output": "The response uses smart_outline, smart_search, and smart_unfold or equivalent AST navigation to avoid reading the full file, then reads only the relevant symbol neighborhoods.",
+      "assertions": [
+        "The output recommends token-efficient AST or smart navigation rather than reading the whole 2,000-line file first.",
+        "The output mentions smart_outline or an equivalent outline step to inspect file structure.",
+        "The output mentions smart_search or equivalent symbol search for UserService.createUser.",
+        "The output mentions smart_unfold or targeted extraction of only relevant function/class bodies.",
+        "The output explains that this saves tokens compared with full-file reads."
+      ]
+    },
+    {
+      "id": "cross-file-symbol-discovery",
+      "name": "cross file symbol discovery",
+      "prompt": "A user asks: find all implementations and callers of PaymentGateway across a large repo. Describe the workflow.",
+      "expected_output": "The response uses cross-file symbol search and targeted unfolding, collects implementations/callers, avoids duplicate full-file reads, and reports a concise map.",
+      "assertions": [
+        "The output uses symbol search or smart_search to find PaymentGateway implementations and callers.",
+        "The output says to inspect file outlines before reading full files.",
+        "The output unfolds or extracts only relevant symbols or neighborhoods.",
+        "The output deduplicates or organizes results into implementations and callers.",
+        "The output returns a concise map with files and roles rather than dumping all code."
+      ]
+    }
+  ]
+}

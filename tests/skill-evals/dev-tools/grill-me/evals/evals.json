@@ -1,0 +1,30 @@
+{
+  "skill_name": "grill-me",
+  "evals": [
+    {
+      "id": "one-question-at-a-time-plan-review",
+      "name": "one question at a time plan review",
+      "prompt": "A user says: grill me on my migration plan. I want you to challenge every assumption. Describe the interaction style.",
+      "expected_output": "The response conducts a focused interrogation of the plan, asks one hard question at a time, follows branches until resolved, and does not dump a generic checklist.",
+      "assertions": [
+        "The output treats the request as a focused grill/interview on an existing plan.",
+        "The output asks one question at a time rather than dumping many questions at once.",
+        "The output follows decision-tree branches until each uncertainty is resolved.",
+        "The output challenges assumptions and failure modes.",
+        "The output avoids turning the interaction into broad brainstorming or a static checklist."
+      ]
+    },
+    {
+      "id": "boundary-full-feature-design",
+      "name": "boundary full feature design",
+      "prompt": "A user says: help me design a new feature from scratch; I do not have a plan yet. Describe how grill-me should respond.",
+      "expected_output": "The response identifies this as broader feature design/brainstorming rather than grill-me and routes accordingly.",
+      "assertions": [
+        "The output says there is no specific plan to grill yet.",
+        "The output routes to brainstorming-ideas or feature design exploration.",
+        "The output offers to return to grill-me after a draft plan exists.",
+        "The output avoids interrogating a nonexistent plan."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "skill_name": "writing-python",
+  "evals": [
+    {
+      "id": "python-cli-stdlib-first",
+      "name": "python cli stdlib first",
+      "prompt": "A user asks you to write a Python 3.12 CLI that reads a JSON file, validates records, and prints a summary. Describe the implementation plan.",
+      "expected_output": "The response uses pathlib/argparse/json/dataclasses/types, type hints, guard clauses, explicit errors, pytest tests, uv/ruff tooling, and minimal dependencies.",
+      "assertions": [
+        "The output prefers standard-library tools such as pathlib, argparse, json, or dataclasses.",
+        "The output includes Python 3.12 type hints and avoids Any as the default.",
+        "The output uses explicit error handling with specific exceptions or messages, not bare except.",
+        "The output favors flat control flow or guard clauses.",
+        "The output includes pytest behavior tests for valid and invalid input.",
+        "The output mentions uv, ruff, or pyright/pytest verification tooling."
+      ]
+    },
+    {
+      "id": "python-dependency-restraint",
+      "name": "python dependency restraint",
+      "prompt": "A user asks whether to add attrs, click, requests, and pydantic for a tiny local script. Describe the guidance.",
+      "expected_output": "The response pushes back on unnecessary dependencies, suggests stdlib alternatives first, and adds dependencies only with clear value.",
+      "assertions": [
+        "The output pushes back on adding multiple dependencies for a tiny script.",
+        "The output suggests stdlib alternatives such as dataclasses, argparse, urllib, or json where suitable.",
+        "The output explains when a dependency would be justified by real complexity or requirements.",
+        "The output keeps the implementation minimal and maintainable.",
+        "The output still considers testing and typing of the script."
+      ]
+    }
+  ]
+}
