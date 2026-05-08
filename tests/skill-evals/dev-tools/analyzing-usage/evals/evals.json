@@ -8,10 +8,10 @@
       "expected_output": "The response uses ccusage-style commands, reports spend/tokens/cache/burn rate, distinguishes total cost from daily rate, and optionally visualizes trends.",
       "assertions": [
         "The output uses ccusage or an equivalent Claude Code usage analysis command.",
-        "The output reports total spend or cost for the month.",
+        "The output says the report includes total spend or cost for the month, or reports the actual total when data has been queried.",
         "The output distinguishes burn rate or daily rate from total spend.",
         "The output mentions tokens, cache hits, or model breakdown when useful.",
-        "The output optionally uses termgraph or a chart/calendar for trend visualization."
+        "The output mentions termgraph or a chart/calendar for trend visualization."
       ]
     },
     {

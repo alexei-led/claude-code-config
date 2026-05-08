@@ -20,7 +20,7 @@
       "prompt": "A user says: gemini search for recent examples of Bun test mocking patterns. Describe the workflow.",
       "expected_output": "The response uses Gemini for web/search assistance, asks for recent examples/sources, then verifies or summarizes rather than copying blindly.",
       "assertions": [
-        "The output uses Gemini for web search or external examples.",
+        "The output says to run Gemini CLI for web search or external examples rather than relying on local knowledge.",
         "The output asks for recent examples or sources relevant to Bun test mocking.",
         "The output verifies or cross-checks the result before recommending changes.",
         "The output avoids sending secrets or private code unnecessarily."

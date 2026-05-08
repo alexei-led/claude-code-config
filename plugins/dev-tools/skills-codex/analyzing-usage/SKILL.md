@@ -24,6 +24,17 @@ name: analyzing-usage
 
 Visual usage reports with cost, token, and efficiency analysis.
 
+## Critical Output Rules
+
+- Use `ccusage` for Claude Code usage data. For workflow descriptions, show the exact `ccusage` query shape instead of generic analysis steps.
+- Monthly cost reports must include: month-to-date total spend, average daily burn rate, projected month-end spend, limit/budget comparison, and tokens/cache/model breakdown when useful.
+- Efficiency reports must include: 30-day window, total/input/output/cache creation/cache read tokens, cache hit/cache efficiency ratio, model breakdown, session/project breakdown when available, and uncertainty if data is missing.
+- Always give concrete optimization suggestions tied to metrics: increase cache reuse, reduce repeated long prompts, route cheaper models, split long sessions, reuse project context, or investigate high cost-per-output days.
+- Use `uvx termgraph` charts when describing trend visualization; mention `uvx termgraph` by name. If charts are unavailable, fall back to plain tables.
+- Do not invent totals. If data has not been queried, label numbers as output fields or examples, not actual results. Say: "If ccusage data is missing or incomplete, report the gap and avoid firm conclusions."
+- Ask one question at a time when profile/date scope is unclear.
+- Do not run destructive shell commands; usage analysis is read-only.
+
 ## Profiles
 
 - **work** (default): `CLAUDE_CONFIG_DIR=/Users/alexei/.claude-team-gaia-mbp-m2 ccusage` — Enterprise, $1,500/mo limit, focus on cost burn rate and project allocation

@@ -18,6 +18,14 @@ name: improve-codebase-architecture
 
 Surface architectural friction and propose **deepening opportunities** — refactors that turn shallow modules into deep ones. The aim is testability and AI-navigability.
 
+## Critical Boundary Rules
+
+- Do not use this skill for line-level cleanup: renames, formatting, comment cleanup, or one-file cosmetic edits.
+- For line-level cleanup, say once: "This is not an architecture-deepening task." Route to `reviewing-code`, `refactoring-code`, or normal editing, and keep scope limited to the requested cleanup if proceeding.
+- For line-level cleanup, do not mention modules, interfaces, seams, depth, leverage, locality, or other design terms. Ask once: "Do you want deeper architecture analysis, or should I keep this to the requested cleanup?"
+- Seam discipline: do not add interfaces/ports for hypothetical variation. State that real variation is required before adding an interface/port: one adapter means hypothetical; two real adapters or confirmed variation means real.
+- For valid architecture workflow descriptions, explicitly contrast deepening work with cosmetic or line-level cleanup.
+
 ## Glossary
 
 Use these terms exactly in every suggestion. Consistent language is the point — don't drift into "component," "service," "API," or "boundary." Full definitions in [LANGUAGE.md](LANGUAGE.md).
@@ -35,7 +43,7 @@ Key principles (see [LANGUAGE.md](LANGUAGE.md) for the full list):
 
 - **Deletion test**: imagine deleting the module. If complexity vanishes, it was a pass-through. If complexity reappears across N callers, it was earning its keep.
 - **The interface is the test surface.**
-- **One adapter = hypothetical seam. Two adapters = real seam.**
+- **One adapter = hypothetical seam. Two adapters = real seam.** Need real variation before adding an interface/port.
 
 This skill is _informed_ by the project's domain model. The domain language gives names to good seams; ADRs record decisions the skill should not re-litigate.
 

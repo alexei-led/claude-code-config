@@ -23,7 +23,15 @@ Common installation paths:
 
 # Playwright Browser Automation
 
-General-purpose browser automation skill. I'll write custom Playwright code for any automation task you request and execute it via the universal executor.
+Internal helper/library for lower-level Playwright automation. It is not the primary user-facing E2E skill.
+
+## Critical Boundary Rules
+
+- If a user directly asks to "use playwright-skill" or "test my app", say `playwright-skill` is an internal helper/library and route the request to `testing-e2e` or a Playwright E2E workflow.
+- Do not present this helper as directly user-invoked. The user-facing workflow owns test scope, assertions, reporting, and strategy.
+- This helper only provides primitives that support higher-level `testing-e2e` workflows: dev server detection, temporary script execution, browser/context/page actions, screenshots/artifacts, and helper utilities.
+- When routing a direct user request to `testing-e2e`, still mention these helper primitives briefly.
+- Avoid expanding into general test strategy. When asked what this helper provides, list only helper primitives; do not add a strategy/non-goals section.
 
 **CRITICAL WORKFLOW - Follow these steps in order:**
 

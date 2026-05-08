@@ -51,6 +51,16 @@ argument-hint: "[deep] [team] [external] [architecture]"
 
 **IMPORTANT:** Without `external` flag, run ONLY Claude agents. Never run Codex or Gemini unless `external` is in arguments.
 
+## Critical Review Rules
+
+- If scope is missing, ask for review scope first: uncommitted changes, branch comparison, or specific files. Do not choose silently.
+- Before making findings, inspect the relevant diff or files with the selected git command/read tools.
+- Every finding must cite concrete `file:line` evidence or explicit tool output. No evidence, no finding.
+- Always include a checks line in the workflow/report: run relevant project checks when tooling exists, or state which checks were skipped and why.
+- For every security review, explicitly say: "Keep private code local; do not paste private diffs/code into web tools. Use web only for external facts such as CVE/docs lookups, and cite those sources separately."
+- Findings must include severity and a concrete fix.
+- Ask one review-scope question at a time; do not batch unrelated clarification questions.
+
 | Arguments          | Claude Agents                                                       | Mode     | External (Codex + Gemini) |
 | ------------------ | ------------------------------------------------------------------- | -------- | ------------------------- |
 | (none)             | go-engineer, python-engineer                                        | Subagent | ❌ No                     |

@@ -13,6 +13,17 @@ allowed-tools:
 
 # TypeScript Development (5.x)
 
+## Critical Output Rules
+
+- State strict TypeScript choices explicitly: `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, no `any` by default, and `unknown` for untrusted input.
+- Validate untrusted API/JSON responses at the boundary before returning typed data.
+- Favor composition and small functions/hooks over large classes, global state, or mixed concerns.
+- Handle async errors explicitly with `Result`/discriminated unions or typed thrown errors at boundaries.
+- Always mention behavior tests for success and failure paths. For React, include component or user-behavior tests for loading, success, error, and validation states.
+- Include verification commands when code changes: `bunx tsc --noEmit`, `bun test`, and lint/format commands when configured.
+- Keep dependencies minimal; add schema/form libraries only when real complexity beats a small type guard or helper.
+- Do not run destructive shell commands. For broad or risky changes, state the risk and ask before acting.
+
 ## Core Philosophy
 
 1. **Strict Mode Always**
@@ -179,8 +190,13 @@ bun run format           # Format
 
 ## Verify Generated Code
 
-After generating code, always verify it compiles and passes lint:
+After generating code, always verify it compiles, tests pass, and lint runs when configured:
 
 ```bash
-bunx tsc --noEmit && bun run lint
+bunx tsc --noEmit
+bun test
+bun run lint
+bun run format --check
 ```
+
+Use the project's configured commands if different.

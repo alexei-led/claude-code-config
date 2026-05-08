@@ -19,6 +19,16 @@ name: writing-go
 
 # Go Development (1.25+)
 
+## Critical Output Rules
+
+- State stdlib-first choices explicitly: use `net/http`, `encoding/json`, `context`, and `testing` where practical before adding dependencies.
+- Avoid unnecessary dependencies. Add a library only when concrete requirements beat stdlib simplicity.
+- Prefer concrete types and small consumer-side interfaces only at real seams; do not abstract everything by default.
+- Error handling guidance must say normal failures return `error`, not `panic`; wrap with context using `%w`; avoid custom error hierarchies unless callers need distinct behavior.
+- Always mention behavior tests for success and error paths, even when only giving design or error-handling advice. Prefer table-driven tests with `t.Run`; stdlib `testing` is enough unless the project already uses another test library.
+- For handlers/services, pass `context.Context` through API boundaries and map service errors to HTTP status at the edge.
+- Do not run destructive shell commands. For broad or risky changes, state the risk and ask before acting.
+
 ## Core Philosophy
 
 1. **Stdlib and Mature Libraries First**
@@ -171,8 +181,13 @@ mockery --all            # Generate mocks
 
 ## Verify Generated Code
 
-After generating code, always verify it compiles and passes lint:
+After generating code, always verify it compiles, tests pass, and lint runs when configured:
 
 ```bash
-go build ./... && go vet ./... && golangci-lint run ./...
+go test ./...
+go test -race ./...
+go vet ./...
+golangci-lint run ./...
 ```
+
+Use the project's configured commands if different.
