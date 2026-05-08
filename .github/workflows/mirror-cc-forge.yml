@@ -19,25 +19,12 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - name: Check cc-forge token access
+      - name: Push to cc-forge/main
         run: |
           test -n "$CC_FORGE_TOKEN" || {
             echo "CC_FORGE_TOKEN secret is missing"
             exit 1
           }
-          status=$(curl --silent --show-error --output /tmp/cc-forge-repo.json --write-out '%{http_code}' \
-            --header "Authorization: Bearer ${CC_FORGE_TOKEN}" \
-            --header "Accept: application/vnd.github+json" \
-            --header "X-GitHub-Api-Version: 2022-11-28" \
-            https://api.github.com/repos/alexei-led/cc-forge)
-          echo "repo metadata HTTP status: $status"
-          if [ "$status" != "200" ]; then
-            jq -r '.message // .' /tmp/cc-forge-repo.json
-            exit 1
-          fi
-          jq '{full_name, private, default_branch, permissions}' /tmp/cc-forge-repo.json
-      - name: Push to cc-forge/main
-        run: |
           git remote add cc-forge "https://${GITHUB_ACTOR}:${CC_FORGE_TOKEN}@github.com/alexei-led/cc-forge.git"
           git fetch cc-forge main
           expected=$(git rev-parse FETCH_HEAD)
