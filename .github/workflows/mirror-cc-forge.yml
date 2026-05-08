@@ -24,7 +24,7 @@ jobs:
             echo "CC_FORGE_TOKEN secret is missing"
             exit 1
           }
-          git remote add cc-forge "https://x-access-token:${CC_FORGE_TOKEN}@github.com/alexei-led/cc-forge.git"
+          git remote add cc-forge "https://${GITHUB_ACTOR}:${CC_FORGE_TOKEN}@github.com/alexei-led/cc-forge.git"
           git fetch cc-forge main
           expected=$(git rev-parse FETCH_HEAD)
           git push \
