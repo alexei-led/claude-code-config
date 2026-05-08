@@ -29,6 +29,16 @@ Think of a worktree as a **disposable branch folder**, not a long-lived parallel
 
 ## Workflow
 
+Check repo state before creating a worktree:
+
+```bash
+git status --short
+git branch --show-current
+git worktree list
+```
+
+If the current worktree is dirty, ask whether to commit, stash, or create the new worktree anyway before proceeding. Confirm before running cleanup commands that remove worktrees or delete branches.
+
 ```bash
 # 1. Create worktree for new work (from main repo)
 git worktree add ../myproject-fix-cron -b fix-cron
@@ -36,7 +46,7 @@ git worktree add ../myproject-fix-cron -b fix-cron
 # 2. Work there (open editor/Claude Code in that folder)
 cd ../myproject-fix-cron
 
-# 3. After PR is merged — clean up from main repo
+# 3. After PR is merged — confirm cleanup, then run from main repo
 cd ../myproject
 git worktree remove ../myproject-fix-cron
 git branch -d fix-cron

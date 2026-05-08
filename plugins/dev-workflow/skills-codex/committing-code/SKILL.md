@@ -22,13 +22,16 @@ name: committing-code
 
 Group changed files logically into focused, atomic commits.
 
+Scope: only inspect changes, group them, and create normal commits. Do not rewrite history, amend existing commits, force-push, or stage secrets. Include relevant `git status`, `git diff`, and `git log` output in the proposal.
+
 ## Step 1: Gather State
 
-Run in parallel:
+Run in parallel before any commit:
 
 ```bash
-git status --porcelain
-git diff --name-status HEAD
+git status --short
+git diff --stat HEAD
+git diff HEAD
 git log --oneline -8
 ```
 
@@ -63,6 +66,13 @@ User will be prompted to approve each write operation (git add/commit not pre-al
 
 ## Step 4: Summary
 
-Show `git status` and list commits created.
+Run final checks and show the result:
+
+```bash
+git status --short
+git log --oneline -n <number-of-created-commits>
+```
+
+Summarize commits created and any remaining uncommitted files.
 
 ---

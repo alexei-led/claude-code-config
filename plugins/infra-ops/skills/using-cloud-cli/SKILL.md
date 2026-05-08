@@ -12,7 +12,17 @@ allowed-tools:
 
 # Cloud CLI Patterns
 
-Credentials are pre-configured. Use `--help` or Context7 for syntax.
+Credentials may be pre-configured. Verify identity before touching resources. Use `--help` or Context7 for syntax.
+
+## Safety and Identity
+
+Before destructive commands (`delete`, `destroy`, `rm`, `terminate`, IAM changes, bucket/object deletion):
+
+1. Confirm the active cloud target:
+   - AWS: `aws sts get-caller-identity` plus explicit `--profile` and `--region` when relevant.
+   - GCP: `gcloud config get-value account` and `gcloud config get-value project`, or pass explicit `--project`.
+2. Present the exact command, account/profile, project, region/zone, and resources affected.
+3. Require explicit user confirmation before execution. Do not rely on `--quiet`, default profiles, or implicit projects for destructive work.
 
 ## BigQuery
 
@@ -44,8 +54,10 @@ gcloud compute instances describe INSTANCE --zone=ZONE --format=json
 # Create with explicit project
 gcloud compute instances create NAME --project=PROJECT --zone=ZONE
 
-# Use --quiet for automation
-gcloud compute instances delete NAME --quiet
+# Destructive: confirm active account/project first, then ask the user
+gcloud config get-value account
+gcloud config get-value project
+gcloud compute instances delete NAME --project=PROJECT --zone=ZONE
 ```
 
 ## AWS

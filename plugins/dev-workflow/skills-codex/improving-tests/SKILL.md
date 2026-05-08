@@ -75,13 +75,15 @@ Extract helpers only after 3+ repetitions and only when the helper improves read
 
 ## Verify and report
 
-Run relevant tests:
+Run and name the relevant verification command for the project. Examples:
 
 ```bash
 go test ./...
 pytest -v
 bun test
 ```
+
+For Python, mention `pytest` or the project-specific equivalent explicitly. For other stacks, name the equivalent test command instead of saying only "tests passed."
 
 Output:
 

@@ -45,7 +45,7 @@ Use TaskCreate / TaskUpdate to track:
 - `full` → review + refactor + coverage
 - empty → ask what to do
 
-If empty, ask one question with options: review existing, refactor tests, fill coverage gaps, TDD loop, or full improvement.
+If empty, ask one question at a time with options: review existing, refactor tests, fill coverage gaps, TDD loop, or full improvement.
 
 ## Testing Principles
 
@@ -123,13 +123,15 @@ Extract helpers only after 3+ repetitions and only when the helper improves read
 
 ## Phase 6: Verify and Report
 
-Run relevant tests:
+Run and name the relevant verification command for the project. Examples:
 
 ```bash
 go test ./...
 pytest -v
 bun test
 ```
+
+For Python, mention `pytest` or the project-specific equivalent explicitly. For other stacks, name the equivalent test command instead of saying only "tests passed."
 
 Output:
 

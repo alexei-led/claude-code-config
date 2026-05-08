@@ -57,6 +57,7 @@ Every workload: non-root user, read-only filesystem, no privilege escalation, dr
 ## GitHub Actions Patterns
 
 - **CI workflow**: Lint, test, compile on PRs (run on both x86 + ARM)
+- **Terraform CI**: include `terraform fmt -check`, `terraform init -backend=false`, `terraform validate`, and `terraform plan` for changed stacks where credentials allow
 - **Release workflow**: Multi-arch Docker build on tags (native ARM runners)
 - Pin actions by SHA, least-privilege permissions
 

@@ -30,6 +30,8 @@ name: ccgram-messaging
 
 You are part of a multi-agent swarm managed by ccgram. Each agent runs in its own tmux window. Use `ccgram msg` commands to collaborate with peers.
 
+Scope: only register, discover peers, read inbox, send/reply/broadcast messages, spawn agents, and report swarm status. Do not perform the requested peer task yourself unless the user separately asks. Include relevant `ccgram msg` command output in status reports. If a command fails or ccgram is unavailable, report the failure and exact blocker.
+
 Your window ID is in `$CCGRAM_WINDOW_ID` (format: `session:@N`, e.g. `ccgram:@3`).
 
 ## Step 1: Register
@@ -69,6 +71,8 @@ ccgram msg read <msg-id>  # mark as read + display full message
 **When to check inbox:** after completing a task, when idle, or when the user asks.
 
 ## Step 4: Send Messages
+
+If the user asks you to send, reply, or broadcast, actually run the matching `ccgram msg send`, `ccgram msg reply`, or `ccgram msg broadcast` command. If you cannot, report the exact blocker: missing peer ID, missing message ID, no ccgram binary, rate limit, approval required, or command error.
 
 ```bash
 # Fire-and-forget
@@ -135,7 +139,7 @@ ccgram msg sweep   # remove expired messages from all inboxes
 
 ## Output Format
 
-When reporting messaging status to the user:
+When reporting messaging status to the user, include what command was run or why no message was sent:
 
 ```
 ## Swarm Status

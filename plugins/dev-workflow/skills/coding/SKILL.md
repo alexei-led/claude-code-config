@@ -28,7 +28,7 @@ Transform the task into verifiable goals.
 | "Fix the bug"    | Reproduce with a test or script, then make it pass  |
 | "Refactor X"     | Tests pass before and after, diff stays minimal     |
 
-For multi-step work, state a brief plan:
+For multi-step work, state a brief plan. Every step must include its own verification check; do not write unverified plan steps.
 
 ```text
 1. [Step] → verify: [check]

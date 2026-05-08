@@ -22,7 +22,7 @@ name: writing-web
 ## Philosophy
 
 1. **HTML first** - Semantic markup does the work
-2. **CSS second** - Styling and layout
+2. **Responsive simple CSS second** - Small stylesheets, fluid layout, media/container queries only when needed
 3. **HTMX third** - Server-driven interactivity
 4. **JS last** - Only when nothing else works
 
@@ -100,6 +100,7 @@ document.body.addEventListener("click", (e) => {
 
 ## Avoid
 
+- Destructive shell commands; ask before deleting or overwriting user files
 - JS for things HTML can do (accordions, modals)
 - CSS for things HTML can do (form validation)
 - Fetch when HTMX works
@@ -108,8 +109,15 @@ document.body.addEventListener("click", (e) => {
 
 ## Verify Generated Code
 
-After generating code, validate HTML and check for issues:
+After generating code, validate HTML and check behavior:
 
 ```bash
 npx html-validate . 2>&1 || true
 ```
+
+Verification plan must include:
+
+1. Manual/browser check for the changed page or component.
+2. Responsive check at mobile and desktop widths.
+3. Playwright or equivalent browser test when behavior changed.
+4. Screenshot or concise pass/fail notes for visual changes.

@@ -22,7 +22,7 @@ WarpGrep is an RL-trained search agent that reasons about code, not just pattern
 
 - Do not read the whole repo indiscriminately. Convert vague asks into a scoped map question or ask for scope.
 - Start search-first and name the commands: use `fd` to find likely files and `rg` to find known symbols, routes, handlers, and types; use WarpGrep for semantic flow across files.
-- Read `CONTEXT.md`, `CONTEXT-MAP.md`, and relevant ADRs when present before naming architectural boundaries.
+- Before mapping architecture, check for and read `CONTEXT.md`, `CONTEXT-MAP.md`, nearest `*/CONTEXT.md`, and relevant `docs/adr/*.md` files when present.
 - Trace callers, callees, shared types/messages, and data/control flow across files. Follow only enough files or line ranges to verify the map.
 - Separate known facts from guesses. List unknowns explicitly instead of filling gaps.
 - For vague requests like "read this repo and explain everything", refuse the full dump, offer a zoom-out map, say exploration will start with `fd`/`rg`/WarpGrep searches instead of full-file reading, and say the final summary will separate verified facts from guesses/unknowns.

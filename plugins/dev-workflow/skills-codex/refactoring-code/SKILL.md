@@ -18,7 +18,9 @@ name: refactoring-code
 
 # Fast Refactoring with MorphLLM
 
-MorphLLM edit_file provides semantic code merging at 10,500+ tokens/sec with 98% accuracy. Refactoring here means behavior-preserving change or architecture deepening, not cosmetic churn.
+MorphLLM `edit_file` provides semantic code merging at 10,500+ tokens/sec with 98% accuracy. Use the MorphLLM `edit_file` / batch refactoring workflow for broad changes. Refactoring here means behavior-preserving change or architecture deepening, not cosmetic churn.
+
+Critical rule: preserve existing behavior unless the user explicitly asks for a behavior change. State the preservation target before editing.
 
 ## When to Use edit_file
 
@@ -62,7 +64,7 @@ Read relevant `CONTEXT.md`, `CONTEXT-MAP.md`, and ADRs when present. Preserve do
 ```
 1. Use WarpGrep to find all locations needing change
 2. State intended behavior preservation or deepening move
-3. For each file: call edit_file with changes
+3. Use MorphLLM `edit_file` for each batch/file, grouping related edits
 4. Verify with lint/test
 5. Delete obsolete shallow tests once deeper interface tests cover the behavior
 ```

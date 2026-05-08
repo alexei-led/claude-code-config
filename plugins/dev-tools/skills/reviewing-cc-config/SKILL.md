@@ -28,7 +28,7 @@ Review configuration against context engineering principles derived from
 Anthropic's "Effective Context Engineering for AI Agents" and
 "Best Practices for Claude Code."
 
-**Use TaskCreate** to track these 4 phases:
+**Use TaskCreate** to track these 4 phases. Keep Opus work scoped to ONLY these review targets and keep agent prompts/output compact:
 
 1. Discover and inventory configuration
 2. Measure context budget impact
@@ -128,7 +128,7 @@ Glob("**/skills/reviewing-cc-config/RUBRIC.md")
 ```
 
 Read the first match. If no match found, **stop and warn the user** that
-RUBRIC.md is missing — do not proceed without the rubric.
+RUBRIC.md is missing — do not proceed without the rubric. If the rubric or requested config files are unavailable, stop and report the blocker instead of inventing findings.
 
 **Parse `$ARGUMENTS`:**
 
@@ -188,7 +188,7 @@ Report structure:
 
 1. **Context Budget** table: component / count / token est / rating (LEAN/OK/HEAVY/BLOATED)
 2. **Findings by Severity**: ERRORS (must fix), WARNINGS (should fix), INFO (consider)
-   - One sentence per finding, no preamble. State what IS wrong. Include component names, line numbers, token counts
+   - One sentence per finding, no preamble. State what IS wrong. Include concrete file paths/config locations, component names, line numbers, and token counts where relevant
 3. **Cross-Cutting**: trigger overlap matrix, model routing summary, hook vs CLAUDE.md balance
 4. **Top 5 Highest-Impact Improvements** with estimated savings
 5. **What's Working Well** — explicit acknowledgment of good patterns
@@ -201,7 +201,7 @@ Report structure:
 
 <!-- CC-ONLY: begin -->
 
-If `--fix` is NOT present, use `AskUserQuestion`:
+If `--fix` is NOT present, use `AskUserQuestion`. Ask one question at a time:
 
 | Header | Question                     | Options                                                         |
 | ------ | ---------------------------- | --------------------------------------------------------------- |
@@ -209,7 +209,7 @@ If `--fix` is NOT present, use `AskUserQuestion`:
 
 <!-- CC-ONLY: end -->
 
-Apply only approved fixes:
+Apply only approved fixes. Confirm before deleting files, removing hooks, broad rewrites, or changing permissions:
 
 1. **CLAUDE.md**: Remove flagged lines, move content to skills/hooks
 2. **Skills**: Add missing `context: fork`, trim tool lists, fix descriptions

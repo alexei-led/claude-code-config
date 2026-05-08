@@ -1,5 +1,13 @@
 ---
 allowed-tools:
+- Read
+- Bash(git diff *)
+- Bash(git status *)
+- Bash(make *)
+- Bash(npm *)
+- Bash(go test *)
+- Bash(pytest *)
+- Bash(uv *)
 - mcp__context7__resolve-library-id
 - mcp__context7__query-docs
 description: Update project documentation based on recent changes. Use when user says
@@ -17,7 +25,7 @@ name: documenting-code
 
 # Documentation Update
 
-Update project documentation to reflect current code state.
+Update project documentation to reflect current code state. Do not delete or overwrite existing docs without confirmation. If verification fails or required evidence is unavailable, report the failure instead of claiming docs are current.
 
 
 1. Determine documentation scope
@@ -30,7 +38,7 @@ Update project documentation to reflect current code state.
 
 ## Phase 1: Determine Scope
 
-Use AskUserQuestion:
+Use AskUserQuestion. Ask one question at a time:
 
 | Header    | Question                            | Options                                                                                                                                                                                                        |
 | --------- | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -55,7 +63,8 @@ mcp__context7__query-docs for GoDoc, Sphinx, or framework-specific docs
 
 1. Run `git diff --stat` to confirm files were actually changed
 2. For each changed file, verify the diff looks correct (no broken links, no placeholder text)
-3. If no files changed, report that docs-keeper made no modifications
+3. Run or compile documented code examples and commands when practical; if not practical, state why the check was skipped
+4. If no files changed, report that docs-keeper made no modifications
 
 Report what was updated, verified diffs, and any issues found.
 

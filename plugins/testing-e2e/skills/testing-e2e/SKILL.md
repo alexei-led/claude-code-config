@@ -14,6 +14,10 @@ allowed-tools:
   - Bash(npm *)
   - Bash(bun *)
   - Bash(node *)
+  - Bash(curl *)
+  - Bash(lsof *)
+  - Bash(make *)
+  - Bash(go run *)
   - Read
   - Grep
   - Glob
@@ -23,14 +27,15 @@ allowed-tools:
 
 # E2E Testing with Playwright
 
-Execute E2E testing workflows using Playwright scripts (via playwright-skill).
+Execute E2E testing workflows using Playwright scripts (via playwright-skill). Do not delete, reset, or mutate non-test data without explicit user confirmation. If the app cannot be started or fixtures are unavailable, report BLOCKED instead of inventing passing results.
 
-**Use TaskCreate / TaskUpdate** to track these 4 phases:
+**Use TaskCreate / TaskUpdate** to track these 5 phases:
 
 1. Determine action (parse args or ask)
-2. Execute action (run/record/generate/verify)
-3. Verify results
-4. Present output
+2. Prepare app, dev server, and deterministic test data
+3. Execute action (run/record/generate/verify)
+4. Verify results and collect artifacts
+5. Present output
 
 ---
 
@@ -44,7 +49,7 @@ Execute E2E testing workflows using Playwright scripts (via playwright-skill).
 - `verify <feature>` → Verify specific feature works in browser
 - (empty) → Ask what to do
 
-If no argument provided, use AskUserQuestion:
+If no argument provided, use AskUserQuestion. Ask one question at a time:
 
 | Header | Question                      | Options                                                                                                                                                                      |
 | ------ | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -52,7 +57,16 @@ If no argument provided, use AskUserQuestion:
 
 ---
 
-## Phase 2: Execute Action
+## Phase 2: Prepare App and Data
+
+Before any browser test run:
+
+1. Detect the app start command from Playwright config, package scripts, Makefile, README, or existing dev server docs.
+2. If tests need a running app, check whether the dev server is already reachable at the configured `baseURL`; start it if missing, or report the blocker if no start command is known.
+3. Use deterministic fixtures: seeded users, fixed dates, stable IDs, known database state, and mocked external services where needed.
+4. Avoid tests depending on production data, local user state, random order, wall-clock time, or previous test runs.
+
+## Phase 3: Execute Action
 
 ### Run Tests
 
@@ -123,7 +137,7 @@ Task(
 
 ---
 
-## Phase 3: Verify Results
+## Phase 4: Verify Results
 
 Run the test suite and validate:
 
@@ -131,7 +145,7 @@ Run the test suite and validate:
 npx playwright test --headed
 ```
 
-**Pass criteria:** all tests green, no flaky failures on re-run.
+**Pass criteria:** all tests green, no flaky failures on re-run, deterministic fixtures reset cleanly, and traces/screenshots/videos are saved or linked when failures occur.
 
 If tests fail:
 
@@ -143,14 +157,17 @@ If tests fail:
 
 ---
 
-## Phase 4: Output
+## Phase 5: Output
 
 ```
 E2E TESTING
 ===========
 Action: {run|record|generate|verify}
-Result: {outcome}
+Result: PASS | FAIL | BLOCKED
 Tests: {pass/fail count}
+Dev server: {reused|started|not needed|blocked: reason}
+Fixtures: {deterministic data/reset summary}
+Artifacts: {trace/screenshots/videos/report paths or "none"}
 
 Details:
 - [test results or generation summary]

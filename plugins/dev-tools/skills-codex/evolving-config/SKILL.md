@@ -194,9 +194,10 @@ If `$ARGUMENTS` contains `--dry-run`: Skip the question, show diffs only, do not
 Based on user selection:
 
 1. **Apply only approved items** — never sneak in extras
-2. **Prefer Edit over Write** — modify existing files, don't recreate
-3. **Show diff summary** after each change
-4. **Verify** the change doesn't break existing config (quick sanity read)
+2. **Before major or risky config changes** — model routing changes, hook behavior changes, permissions, MCP server changes, deletes, or broad rewrites — ask for explicit confirmation naming the files and risk
+3. **Prefer Edit over Write** — modify existing files, don't recreate
+4. **Show diff summary** after each change
+5. **Verify** the change doesn't break existing config (quick sanity read)
 
 If user selected "Dry run only": show what each edit would look like, then stop.
 

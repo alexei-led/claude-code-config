@@ -42,6 +42,7 @@ Extract actionable learnings and generate project-specific customizations. Adapt
 6. Budget check
 7. Present & confirm
 8. Apply changes
+9. Verify generated customization
 
 ---
 
@@ -123,6 +124,17 @@ Only record domain concepts meaningful to domain experts. General implementation
 ---
 
 ## Phase 3: Categorize
+
+Pick an explicit target artifact for every durable learning before drafting text:
+
+- `AGENTS.md` / `CLAUDE.md` — reusable workflow or coding instructions
+- `CONTEXT.md` — domain language and project glossary terms
+- `docs/adr/NNNN-slug.md` — hard-to-reverse decisions with real alternatives
+- `.claude/commands/{name}.md` — repeated command workflows
+- `.claude/skills/{name}/SKILL.md` — complex reusable multi-tool workflows
+- `.claude/settings.json` — hooks, permissions, or automation
+
+If no target artifact is justified, do not persist the learning.
 
 Sort extractions into buckets:
 
@@ -354,6 +366,15 @@ Based on confirmation:
 3. **Skills**: Create directory + SKILL.md, add reference files if needed
 4. **Domain docs**: Update `CONTEXT.md`, ADRs, or `.out-of-scope/` only for durable knowledge
 5. **Hooks**: Merge into existing settings.json `hooks` object
+
+## Phase 9: Verify Generated Customization
+
+Review every changed artifact before reporting success:
+
+1. Re-read the changed `AGENTS.md`/`CLAUDE.md`, `CONTEXT.md`, ADR, command, skill, or hook file.
+2. Check the generated customization is specific, non-duplicative, and grounded in session evidence.
+3. For commands/hooks/skills, verify frontmatter, paths, and referenced commands are valid when practical.
+4. Report verification results and any skipped checks with reasons.
 
 ### Section Placement (CLAUDE.md)
 

@@ -26,10 +26,13 @@ Use Glob and Read to understand what already exists. Do not assume.
 Look for:
 
 - Existing test files: `**/*.spec.ts`, `**/*.test.ts`, `**/e2e/**`
-- A `playwright.config.ts` or `playwright.config.js` — read it to understand base URLs, timeouts, and project settings
-- A dev server start command in `package.json` scripts (`dev`, `start`, `serve`)
+- A `playwright.config.ts` or `playwright.config.js` — read it to understand base URLs, timeouts, projects, traces, screenshots, and webServer settings
+- A dev server start command in `package.json` scripts (`dev`, `start`, `serve`) or project docs
+- Existing fixtures, seed scripts, test users, mocked services, and database reset commands
 
-Note the base URL the app runs on. Note whether Playwright is already installed (`node_modules/@playwright/test`).
+Note the base URL the app runs on. Detect whether the dev server is already reachable; if tests require a server and none is running, start the documented command or report the blocker. Note whether Playwright is already installed (`node_modules/@playwright/test`).
+
+Use deterministic fixtures: seeded users, fixed dates, stable IDs, known database state, and mocked external services where needed. Do not depend on production data, random order, wall-clock time, or previous test runs.
 
 ## Step 3: Execute based on action
 
@@ -108,6 +111,8 @@ Run it:
 cd ~/.claude/skills/playwright-skill && node /tmp/e2e-record.js
 ```
 
+Save the resulting test, screenshots, trace, or notes as artifacts when useful.
+
 ### Verify a feature
 
 Write a focused verification script to `/tmp/e2e-verify-<feature>.spec.ts` that:
@@ -115,7 +120,7 @@ Write a focused verification script to `/tmp/e2e-verify-<feature>.spec.ts` that:
 1. Navigates to the relevant page
 2. Executes the user flow step by step
 3. Asserts the expected outcome at each step
-4. Captures a screenshot on failure
+4. Captures a screenshot or trace on failure
 
 ## Step 4: Run the generated test
 
@@ -142,7 +147,7 @@ For each failure, diagnose before editing:
 | Wrong assertion   | Page state differs from expectation    | Read the actual page state and update assertion |
 | Navigation error  | Wrong URL or server not running        | Verify base URL and that dev server is up       |
 
-Fix the script, re-run, and repeat until all tests pass. Do not declare done with failing tests.
+Fix the script, re-run, and repeat until all tests pass. Do not declare done with failing tests. Preserve failure evidence with Playwright traces, screenshots, videos, or HTML reports when available.
 
 ## Step 6: Report results
 
@@ -150,9 +155,13 @@ Fix the script, re-run, and repeat until all tests pass. Do not declare done wit
 E2E TESTING
 ===========
 Action: <run|generate|record|verify>
+Result: PASS | FAIL | BLOCKED
 Tests written: <count>
 Pass: <count>
 Fail: <count>
+Dev server: <reused|started|not needed|blocked: reason>
+Fixtures: <deterministic data/reset summary>
+Artifacts: <trace/screenshots/videos/report paths or none>
 
 Results:
 - <test name>: PASS
