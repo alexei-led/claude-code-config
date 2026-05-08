@@ -18,6 +18,7 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          persist-credentials: false
       - name: Check cc-forge token access
         run: |
           test -n "$CC_FORGE_TOKEN" || {
