@@ -1,5 +1,5 @@
 {
   "name": "go-dev",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Idiomatic Go 1.25+ development with stdlib-first patterns"
 }
