@@ -11,8 +11,10 @@ allowed-tools:
   - TaskUpdate
   - TaskList
   - Bash(npx playwright *)
+  - Bash(bunx playwright *)
   - Bash(npm *)
   - Bash(bun *)
+  - Bash(bunx *)
   - Bash(node *)
   - Bash(curl *)
   - Bash(lsof *)
@@ -28,6 +30,8 @@ allowed-tools:
 # E2E Testing with Playwright
 
 Execute E2E testing workflows using Playwright scripts (via playwright-skill). Do not delete, reset, or mutate non-test data without explicit user confirmation. If the app cannot be started or fixtures are unavailable, report BLOCKED instead of inventing passing results.
+
+> **Runner**: Examples below use `npx playwright`. If the project uses Bun, substitute `bunx playwright` everywhere. Both runners work; pick the one matching the project's lockfile (`package-lock.json`/`pnpm-lock.yaml` → `npx`; `bun.lock`/`bun.lockb` → `bunx`).
 
 **Use TaskCreate / TaskUpdate** to track these 5 phases:
 
@@ -72,6 +76,8 @@ Before any browser test run or test-generation plan, explicitly include dev-serv
 
 ```bash
 npx playwright test
+# or, with Bun:
+bunx playwright test
 ```
 
 For specific test:

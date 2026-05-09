@@ -113,6 +113,8 @@ After generating code, validate HTML and check behavior:
 
 ```bash
 npx html-validate . 2>&1 || true
+# or, with Bun:
+# bunx html-validate . 2>&1 || true
 ```
 
 For small HTMX/form answers, explicitly mention simple responsive CSS and include a basic browser/manual or Playwright verification plan.

@@ -65,6 +65,8 @@ Internal helper/library for lower-level Playwright automation. It is not the pri
 ```bash
 cd $SKILL_DIR
 npm run setup
+# or, if you use Bun:
+bun run setup
 ```
 
 This installs Playwright and Chromium browser. Only needed once.
