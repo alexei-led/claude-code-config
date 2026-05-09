@@ -8,6 +8,36 @@ major = breaking config/hook changes, minor = new skills/features, patch = fixes
 
 ## [Unreleased]
 
+### Added
+
+- **Pi agent exports** (commit `a4ce0fc`): `make pi-overlays`, `make pi-agents`, and
+  `flat/skills-pi`/`flat/agents-pi` ship 36 skills mirrored from plugins, 4 Pi-only
+  planning skills (`planning-common`, `planning-make`, `planning-exec`,
+  `planning-review`), and runtime subagents (`scout`, `planner`, `reviewer`,
+  `worker`, `playwright-tester`). Install with `scripts/install-pi-exports.sh
+--apply` or chezmoi. Requires [`@tintinweb/pi-subagents`](https://github.com/tintinweb/pi-subagents)
+  for `Agent`/`get_subagent_result`/`steer_subagent` tools.
+- **Install-script integration tests**: `tests/test_install_pi_exports.py` exercises
+  dry-run, apply, idempotency, and backup-on-existing behaviors of
+  `scripts/install-pi-exports.sh`.
+- **Pi schedules placeholder**: `.pi/subagent-schedules/` is reserved for future
+  cron-style schedules; see its `README.md` for usage notes.
+
+### Changed
+
+- **Source agents now use ctx7 CLI, not context7 MCP**: 11 agents and 2 skills
+  switched from `mcp__context7__resolve-library-id`/`mcp__context7__query-docs` to
+  `Bash(ctx7 *)` / `Bash(npx ctx7@latest *)` and updated body refs to invoke
+  `ctx7 library` / `ctx7 docs` directly. Aligns Claude Code source with the existing
+  Pi/Codex/Gemini overlays and unblocks the playwright-tester agent's Pi export.
+  Locked by `tests/test_no_mcp_context7_in_plugins.py`.
+
+### Documentation
+
+- **MCP migration backlog**: new `docs/mcp-migration-backlog.md` tracks remaining
+  MCP namespaces (perplexity-ask, morphllm, deepwiki, claude-mem, sequential-thinking)
+  and per-namespace CLI status.
+
 ## [1.10.1] - 2026-05-08
 
 ### Fixed

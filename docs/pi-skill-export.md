@@ -6,13 +6,13 @@ one-off test. Generated exports are committed and deployable.
 
 ## Generated Outputs
 
-| Consumer | Output | Contains |
-| --- | --- | --- |
-| Pi skills | `flat/skills-pi/` | Pi-compatible Agent Skills directories |
-| Pi agents | `flat/agents-pi/` | Flat `pi-subagents` `.md` agent files |
-| Codex CLI | `plugins/*/skills-codex/` | Plugin skill payloads referenced by `.codex-plugin/plugin.json` |
-| Gemini CLI | `GEMINI.md` + `flat/skills-codex/` | Extension context with linked skill files |
-| AGENTS.md tools | `AGENTS.md` + `flat/skills-codex/` | Generated catalog for tools that read AGENTS.md |
+| Consumer        | Output                             | Contains                                                        |
+| --------------- | ---------------------------------- | --------------------------------------------------------------- |
+| Pi skills       | `flat/skills-pi/`                  | Pi-compatible Agent Skills directories                          |
+| Pi agents       | `flat/agents-pi/`                  | Flat `pi-subagents` `.md` agent files                           |
+| Codex CLI       | `plugins/*/skills-codex/`          | Plugin skill payloads referenced by `.codex-plugin/plugin.json` |
+| Gemini CLI      | `GEMINI.md` + `flat/skills-codex/` | Extension context with linked skill files                       |
+| AGENTS.md tools | `AGENTS.md` + `flat/skills-codex/` | Generated catalog for tools that read AGENTS.md                 |
 
 Regenerate everything after changing source skills or agents:
 
@@ -167,8 +167,24 @@ Smoke checks:
 
 - Skill list includes `context7-cli`, `planning-exec`, and language skills.
 - `Agent` tool is available.
-- Custom agents include `scout`, `planner`, `reviewer`, and `worker`.
+- Custom agents include `scout`, `planner`, `reviewer`, `worker`, and
+  `playwright-tester`.
 - A read-only `Agent` call with `scout` can inspect the current repo.
+
+### Subagent schedules
+
+`.pi/subagent-schedules/` is reserved for Pi cron-style schedules. It is empty
+by design and not deployed by `install-pi-exports.sh`. See
+[.pi/subagent-schedules/README.md](../.pi/subagent-schedules/README.md) for the
+intended layout when schedules are introduced.
+
+### Outstanding MCP migrations
+
+Skills source still ships `mcp__perplexity-ask`, `mcp__morphllm`,
+`mcp__deepwiki`, `mcp__plugin_claude-mem_mcp-search`, and
+`mcp__sequential-thinking` references for Claude Code. The Pi overlay generator
+strips them, so Pi exports remain MCP-free. Tracking and per-namespace status:
+[docs/mcp-migration-backlog.md](mcp-migration-backlog.md).
 
 ## Codex CLI
 

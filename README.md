@@ -66,12 +66,17 @@ Gemini uses `gemini-extension.json`, `GEMINI.md`, and `flat/skills-codex/`.
 
 ### Pi
 
-Pi uses generated skills and agents:
+Pi uses generated skills and agents. The `Agent`/`get_subagent_result`/`steer_subagent`
+tools are provided by [`@tintinweb/pi-subagents`](https://github.com/tintinweb/pi-subagents) —
+install it (or the [pinned fork](https://github.com/alexei-led/pi-subagents/tree/fix/pi-skill-discovery))
+before running Pi against these exports.
 
 ```bash
 git clone https://github.com/alexei-led/cc-thingz.git
 cd cc-thingz
 pi install npm:@tintinweb/pi-subagents
+# or, for unreleased fixes:
+# pi install git:github.com/alexei-led/pi-subagents@fix/pi-skill-discovery
 scripts/install-pi-exports.sh        # dry-run
 scripts/install-pi-exports.sh --apply
 ```
@@ -80,6 +85,10 @@ This links `~/.pi/agent/skills` to `flat/skills-pi` and
 `~/.pi/agent/agents` to `flat/agents-pi`. See
 [Deploy cc-thingz Skills and Agents](docs/pi-skill-export.md) for chezmoi and
 no-chezmoi instructions.
+
+**Pi gets**: 36 skills mirrored from plugins, plus 4 Pi-only planning skills
+(`planning-common`, `planning-make`, `planning-exec`, `planning-review`) and
+runtime subagents (`scout`, `planner`, `reviewer`, `worker`, `playwright-tester`).
 
 ### Other AGENTS.md-Compatible Tools
 
@@ -164,7 +173,7 @@ Invoke as `/skill-name` or let the skill enforcer suggest them.
 | `exploring-repos`               | Explore public GitHub repos and architecture      | "explore repo", "how does repo work"     |
 | `fixing-code`                   | Parallel agents fix all issues, zero tolerance    | "fix errors", "make it pass"             |
 | `improving-tests`               | Refactor tests: combine to tabular, fill gaps     | "improve tests", "coverage"              |
-| `context7-cli`                  | Current library docs via ctx7 CLI                 | "ctx7", "context7", "current docs"      |
+| `context7-cli`                  | Current library docs via ctx7 CLI                 | "ctx7", "context7", "current docs"       |
 | `looking-up-docs`               | Router for Context7 CLI docs lookup               | "look up docs", "API ref"                |
 | `mem-history`                   | Query project history and prior decisions         | "last session", "what happened"          |
 | `researching-web`               | Web research via Perplexity AI                    | "research", "X vs Y"                     |
@@ -181,24 +190,25 @@ Invoke as `/skill-name` or let the skill enforcer suggest them.
 
 These activate silently when relevant patterns are detected — no `/skill-name` needed.
 
-| Skill                | Activates When                                      |
-| -------------------- | --------------------------------------------------- |
-| `managing-infra`     | K8s resources, Terraform, Helm, GitHub Actions      |
-| `playwright-skill`   | Runtime library for testing-e2e skill               |
-| `refactoring-code`   | Multi-file batch changes, rename everywhere         |
-| `searching-code`     | "how does X work", trace flow, find all uses        |
-| `smart-explore`      | Token-efficient local code navigation             |
-| `using-cloud-cli`    | bq queries, gcloud/aws commands                     |
-| `using-modern-cli`   | rg, fd, bat, eza, sd instead of legacy tools        |
-| `writing-go`         | Go files, go commands, Go-specific terms            |
-| `writing-python`     | Python files, pytest, pip, frameworks               |
-| `writing-typescript` | TS/TSX files, npm/bun, React, Node.js               |
-| `writing-web`        | HTML/CSS/JS/HTMX templates                          |
+| Skill                | Activates When                                 |
+| -------------------- | ---------------------------------------------- |
+| `managing-infra`     | K8s resources, Terraform, Helm, GitHub Actions |
+| `playwright-skill`   | Runtime library for testing-e2e skill          |
+| `refactoring-code`   | Multi-file batch changes, rename everywhere    |
+| `searching-code`     | "how does X work", trace flow, find all uses   |
+| `smart-explore`      | Token-efficient local code navigation          |
+| `using-cloud-cli`    | bq queries, gcloud/aws commands                |
+| `using-modern-cli`   | rg, fd, bat, eza, sd instead of legacy tools   |
+| `writing-go`         | Go files, go commands, Go-specific terms       |
+| `writing-python`     | Python files, pytest, pip, frameworks          |
+| `writing-typescript` | TS/TSX files, npm/bun, React, Node.js          |
+| `writing-web`        | HTML/CSS/JS/HTMX templates                     |
 
 ## Agents
 
 Claude Code uses the full plugin agent set below. Pi gets a small generated
-runtime set in `flat/agents-pi/`: `scout`, `planner`, `reviewer`, and `worker`.
+runtime set in `flat/agents-pi/`: `scout`, `planner`, `reviewer`, `worker`, and
+`playwright-tester`.
 
 | Need                       | Agent                       | Model  |
 | -------------------------- | --------------------------- | ------ |
@@ -238,12 +248,12 @@ Skills are authored under `plugins/<plugin>/skills/<skill>/` and exported into
 platform-specific outputs. Generated directories are committed so downstream
 tools can consume them without running Python first.
 
-| Target | Output | Notes |
-| --- | --- | --- |
-| Claude Code | `plugins/*/skills/`, `plugins/*/agents/`, hooks, commands | Source of rich Claude workflows |
-| Codex/Gemini/AGENTS.md | `plugins/*/skills-codex/`, `flat/skills-codex/` | Claude-only frontmatter stripped; platform preamble added |
-| Pi skills | `plugins/*/skills-pi/`, `platforms/pi/skills/`, `flat/skills-pi/` | Pi tool names, ctx7 CLI docs, no MCP assumptions |
-| Pi agents | `platforms/pi/agents/`, `flat/agents-pi/` | Flat `.md` files for `pi-subagents`; filename is the agent name |
+| Target                 | Output                                                            | Notes                                                           |
+| ---------------------- | ----------------------------------------------------------------- | --------------------------------------------------------------- |
+| Claude Code            | `plugins/*/skills/`, `plugins/*/agents/`, hooks, commands         | Source of rich Claude workflows                                 |
+| Codex/Gemini/AGENTS.md | `plugins/*/skills-codex/`, `flat/skills-codex/`                   | Claude-only frontmatter stripped; platform preamble added       |
+| Pi skills              | `plugins/*/skills-pi/`, `platforms/pi/skills/`, `flat/skills-pi/` | Pi tool names, ctx7 CLI docs, no MCP assumptions                |
+| Pi agents              | `platforms/pi/agents/`, `flat/agents-pi/`                         | Flat `.md` files for `pi-subagents`; filename is the agent name |
 
 ### Pi Export and Deployment
 
