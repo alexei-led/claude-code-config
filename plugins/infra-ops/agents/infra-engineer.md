@@ -11,7 +11,6 @@ tools:
     "Bash(ctx7 *)",
     "Bash(npx ctx7@latest *)",
     "Bash(bunx ctx7@latest *)",
-    mcp__sequential-thinking__sequentialthinking,
     mcp__morphllm__warpgrep_codebase_search,
     mcp__morphllm__codebase_search,
     "mcp__plugin_claude-mem_mcp-search__smart_search",
@@ -29,6 +28,7 @@ skills:
     "looking-up-docs",
     "smart-explore",
     "mem-history",
+    "sequential-thinking",
   ]
 ---
 

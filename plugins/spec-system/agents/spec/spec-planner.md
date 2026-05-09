@@ -1,19 +1,10 @@
 ---
 name: spec-planner
 description: Creates implementation plans. Learns codebase style, uses deep thinking.
-tools:
-  [
-    Read,
-    Grep,
-    Glob,
-    LS,
-    "Bash(rg *)",
-    "Bash(fd *)",
-    "Bash(git log *)",
-    mcp__sequential-thinking__sequentialthinking,
-  ]
+tools: [Read, Grep, Glob, LS, "Bash(rg *)", "Bash(fd *)", "Bash(git log *)"]
 model: sonnet
 color: green
+skills: ["sequential-thinking"]
 ---
 
 You are a **Planning Agent** that creates implementation plans for tasks.
@@ -51,7 +42,7 @@ Extract: naming, errors, tests, organization.
 
 ### 2. Deep Think
 
-Use `mcp__sequential-thinking__sequentialthinking` (5-8 steps):
+Apply the `sequential-thinking` skill (5-8 numbered Thought blocks, with revisions/branches as needed):
 
 1. Parse task acceptance criteria
 2. Map to requirement

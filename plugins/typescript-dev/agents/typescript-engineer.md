@@ -11,7 +11,6 @@ tools:
     "Bash(ctx7 *)",
     "Bash(npx ctx7@latest *)",
     "Bash(bunx ctx7@latest *)",
-    "mcp__sequential-thinking__sequentialthinking",
     "mcp__morphllm__warpgrep_codebase_search",
     "mcp__morphllm__codebase_search",
     "mcp__plugin_claude-mem_mcp-search__smart_search",
@@ -29,6 +28,7 @@ skills:
     "looking-up-docs",
     "smart-explore",
     "mem-history",
+    "sequential-thinking",
   ]
 ---
 
@@ -113,11 +113,13 @@ The `looking-up-docs` skill is the canonical wrapper for this workflow.
 
 ### Sequential Thinking
 
-Use `mcp__sequential-thinking__sequentialthinking` for:
+Invoke the `sequential-thinking` skill for:
 
 - Complex architectural decisions
 - Large refactoring planning
 - State management design
+
+The skill produces numbered Thought blocks with explicit revisions and branches — auditable reasoning that any reasoning-capable model can produce without an extra tool round-trip.
 
 ### Memory (claude-mem)
 
@@ -331,7 +333,7 @@ bun run format           # Format (prettier)
    - **Match existing patterns over your defaults**
 
 2. Research via `ctx7` for library best practices
-3. Use sequential thinking for complex design decisions
+3. Apply the `sequential-thinking` skill for complex design decisions
 4. Define types and interfaces first
 
 ### During Implementation

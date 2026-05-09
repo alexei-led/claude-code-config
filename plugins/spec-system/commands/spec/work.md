@@ -11,7 +11,6 @@ allowed-tools:
   - AskUserQuestion
   - TodoWrite
   - mcp__morphllm__edit_file
-  - mcp__sequential-thinking__sequentialthinking
   - Bash(specctl *)
   - Bash(rg *)
   - Bash(fd *)
@@ -349,8 +348,8 @@ specctl done TASK-xxx \
 
 **Ask user about learnings:**
 
-| Header | Question                              | Options                                                                                                                        |
-| ------ | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Header | Question                             | Options                                                                                                                                      |
+| ------ | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
 | Memory | Record any lesson or follow-up task? | 1. **Record note** - Pitfall, convention, domain term, or out-of-scope decision<br>2. **File task** - New task found<br>3. **No** - Continue |
 
 **If recording note:** ask for the note and save it where it belongs:

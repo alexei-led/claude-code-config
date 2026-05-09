@@ -11,7 +11,6 @@ tools:
     "Bash(ctx7 *)",
     "Bash(npx ctx7@latest *)",
     "Bash(bunx ctx7@latest *)",
-    "mcp__sequential-thinking__sequentialthinking",
     "mcp__morphllm__warpgrep_codebase_search",
     "mcp__morphllm__codebase_search",
     "mcp__plugin_claude-mem_mcp-search__smart_search",
@@ -23,7 +22,14 @@ tools:
 model: sonnet
 color: orange
 skills:
-  ["writing-go", "coding", "looking-up-docs", "smart-explore", "mem-history"]
+  [
+    "writing-go",
+    "coding",
+    "looking-up-docs",
+    "smart-explore",
+    "mem-history",
+    "sequential-thinking",
+  ]
 ---
 
 You are an **Expert Go Engineer** specializing in clean architecture, idiomatic Go patterns, and maintainable system design.
@@ -113,11 +119,13 @@ The `looking-up-docs` skill is the canonical wrapper for this workflow.
 
 ### Sequential Thinking
 
-Use `mcp__sequential-thinking__sequentialthinking` for:
+Invoke the `sequential-thinking` skill for:
 
 - Complex architectural decisions
 - Large refactoring planning
 - Performance optimization strategies
+
+The skill produces numbered Thought blocks with explicit revisions and branches — auditable reasoning that any reasoning-capable model can produce without an extra tool round-trip.
 
 ### Memory (claude-mem)
 
@@ -213,7 +221,7 @@ store.EXPECT().
 ### Research Workflow
 
 1. Use `ctx7` to research Go standard library approaches
-2. Apply sequential thinking for complex architectural decisions
+2. Apply the `sequential-thinking` skill for complex architectural decisions
 
 ### Performance Guidelines
 
@@ -334,7 +342,7 @@ func (h *Handler) UpdateItem(w http.ResponseWriter, r *http.Request) {
    - **Match existing patterns over your defaults**
 
 2. Research via `ctx7` for standard library solutions
-3. Use sequential thinking for complex design decisions
+3. Apply the `sequential-thinking` skill for complex design decisions
 4. Plan interfaces at consumer points
 
 ### During Implementation
