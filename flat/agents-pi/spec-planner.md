@@ -1,0 +1,1 @@
+../../plugins/spec-system/agents-pi/spec-planner.md
