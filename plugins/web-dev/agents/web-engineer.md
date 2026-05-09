@@ -10,6 +10,7 @@ tools:
     LS,
     "Bash(ctx7 *)",
     "Bash(npx ctx7@latest *)",
+    "Bash(bunx ctx7@latest *)",
     mcp__plugin_claude-mem_mcp-search__smart_search,
     mcp__plugin_claude-mem_mcp-search__smart_outline,
     mcp__plugin_claude-mem_mcp-search__smart_unfold,
@@ -163,7 +164,18 @@ When available, use `mcp__plugin_claude-mem_mcp-search__*` tools:
 ## Workflow
 
 1. Read existing code before proposing changes.
-2. Search for similar patterns in the codebase.
-3. Prefer HTML/CSS solutions over JavaScript.
-4. Use HTMX for dynamic behavior.
-5. Keep it simple.
+2. Run available validators (`npx html-validate` / `npx stylelint`, or
+   `bunx html-validate` / `bunx stylelint` if the project uses Bun) and ground
+   findings in tool output. If a validator is missing, say so rather than
+   guessing.
+3. Search for similar patterns in the codebase.
+4. Prefer HTML/CSS solutions over JavaScript.
+5. Use HTMX for dynamic behavior.
+6. Keep it simple.
+
+## Safety
+
+Treat write operations (`Bash` `rm`, destructive `git`, schema-altering DB
+calls) as out-of-scope for this agent. Propose changes via the proposal block
+only — do not invoke shell commands that modify files outside the project
+directory or perform irreversible operations.

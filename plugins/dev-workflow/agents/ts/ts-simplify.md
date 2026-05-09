@@ -18,6 +18,7 @@ tools:
     "mcp__perplexity-ask__perplexity_ask",
     "Bash(ctx7 *)",
     "Bash(npx ctx7@latest *)",
+    "Bash(bunx ctx7@latest *)",
     "mcp__plugin_claude-mem_mcp-search__smart_search",
     "mcp__plugin_claude-mem_mcp-search__smart_outline",
     "mcp__plugin_claude-mem_mcp-search__smart_unfold",

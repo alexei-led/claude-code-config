@@ -19,6 +19,7 @@ allowed-tools:
   - Bash(uv *)
   - Bash(ctx7 *)
   - Bash(npx ctx7@latest *)
+  - Bash(bunx ctx7@latest *)
 ---
 
 # Documentation Update

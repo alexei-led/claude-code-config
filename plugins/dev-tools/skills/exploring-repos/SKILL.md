@@ -21,6 +21,7 @@ allowed-tools:
   - mcp__deepwiki__ask_question
   - Bash(ctx7 *)
   - Bash(npx ctx7@latest *)
+  - Bash(bunx ctx7@latest *)
   - mcp__perplexity-ask__perplexity_ask
 ---
 
@@ -177,8 +178,8 @@ DeepWiki returns empty or error?
    ctx7 docs /fastify/fastify "middleware"
    ```
 
-   Use `npx ctx7@latest` when `ctx7` is not globally installed. The
-   `looking-up-docs` skill wraps this workflow.
+   Use `npx ctx7@latest` (or `bunx ctx7@latest`) when `ctx7` is not globally
+   installed. The `looking-up-docs` skill wraps this workflow.
 
 3. **Perplexity** — for repos not in DeepWiki or Context7:
    <!-- CC-ONLY: begin -->

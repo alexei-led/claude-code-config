@@ -10,6 +10,7 @@ tools:
     LS,
     "Bash(ctx7 *)",
     "Bash(npx ctx7@latest *)",
+    "Bash(bunx ctx7@latest *)",
     mcp__sequential-thinking__sequentialthinking,
     mcp__morphllm__warpgrep_codebase_search,
     mcp__morphllm__codebase_search,

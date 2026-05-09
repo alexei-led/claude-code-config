@@ -19,30 +19,41 @@ here.
 
 ## Route
 
-Use the `context7-cli` workflow for narrow docs lookup:
+Use the `context7-cli` workflow for narrow docs lookup. SHOW the exact `ctx7`
+commands you ran in the response — claiming "I used Context7" without
+emitting a command does not satisfy this skill.
 
-1. Identify the library and version from project files when possible.
-2. Resolve a library ID unless the user already supplied `/org/project` or
-   `/org/project/version`.
-3. Query docs with a real topic.
+1. Identify the library and version from project files (`package.json`,
+   `go.mod`, `pyproject.toml`, lockfiles). State the version or say it is
+   unknown.
+2. Unless the user already supplied `/org/project` or `/org/project/version`,
+   resolve a library ID by running and showing:
+
+   ```bash
+   ctx7 library <name> "<specific query>"
+   ```
+
+3. Query docs with a real topic by running and showing:
+
+   ```bash
+   ctx7 docs /org/project "<specific query>"
+   ```
+
 4. Ground syntax and examples in returned docs.
-5. Use `npx ctx7@latest` when `ctx7` is missing.
-6. Use available web tools such as `web_search` or `web_answer` only when
-   Context7 has no useful match, and say a fallback was used.
+5. If `ctx7` is missing on `PATH`, fall back to `npx` (or `bunx`) for both
+   `library` and `docs` invocations and say a fallback was used:
 
-Required commands:
+   ```bash
+   npx ctx7@latest library <name> "<specific query>"
+   npx ctx7@latest docs /org/project "<specific query>"
 
-```bash
-ctx7 library <name> "<specific query>"
-ctx7 docs /org/project "<specific query>"
-```
+   # or, if you use Bun:
+   bunx ctx7@latest library <name> "<specific query>"
+   bunx ctx7@latest docs /org/project "<specific query>"
+   ```
 
-Fallback commands:
-
-```bash
-npx ctx7@latest library <name> "<specific query>"
-npx ctx7@latest docs /org/project "<specific query>"
-```
+6. Use web tools such as `web_search` or `web_answer` only when Context7 has
+   no useful match, and say a fallback was used.
 
 ## Boundaries
 

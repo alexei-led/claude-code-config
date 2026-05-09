@@ -10,6 +10,7 @@ allowed-tools:
   - Glob
   - Bash(ctx7 *)
   - Bash(npx ctx7@latest *)
+  - Bash(bunx ctx7@latest *)
 ---
 
 # Context7 CLI Documentation Lookup
@@ -39,29 +40,40 @@ chosen-library syntax.
 
 ## Required Workflow
 
-1. Identify the library and version from project files when possible.
+You MUST follow these steps and SHOW the exact `ctx7` commands you ran in the
+response. Claims like "I used Context7" without an emitted command do not
+satisfy this skill.
+
+1. Identify the library and version from project files (`package.json`,
+   `go.mod`, `pyproject.toml`, `requirements.txt`, lockfiles). State the
+   identified version, or say version is unknown.
 2. Build a query from the user's real topic. Do not use one-word placeholders.
-3. If the user provided `/org/project` or `/org/project/version`, use it
-   directly with `ctx7 docs`.
-4. Otherwise resolve first:
+3. If the user provided `/org/project` or `/org/project/version`, skip step 4
+   and call `ctx7 docs` directly with that ID.
+4. Otherwise resolve the library ID first by running and showing:
 
    ```bash
    ctx7 library <name> "<specific query>"
    ```
 
-5. Select the best library ID from the results.
-6. Fetch docs:
+5. Select the best library ID from the results and explain why.
+6. Fetch docs by running and showing:
 
    ```bash
    ctx7 docs /org/project "<specific query>"
    ```
 
 7. Ground the answer in the returned docs. Quote only the relevant parts.
-8. If `ctx7` is missing, retry with:
+8. If `ctx7` is missing on `PATH`, retry with the `npx` (or `bunx`) fallback
+   and say so:
 
    ```bash
    npx ctx7@latest library <name> "<specific query>"
    npx ctx7@latest docs /org/project "<specific query>"
+
+   # or, if you use Bun:
+   bunx ctx7@latest library <name> "<specific query>"
+   bunx ctx7@latest docs /org/project "<specific query>"
    ```
 
 9. If Context7 has no useful match, use available web tools such as

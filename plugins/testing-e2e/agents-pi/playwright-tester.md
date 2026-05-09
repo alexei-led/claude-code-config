@@ -42,6 +42,11 @@ page.locator("#submit-button");
 npx playwright test              # Run existing tests
 npx playwright test --headed     # Run visible
 npx playwright codegen URL       # Record tests
+
+# or, if you use Bun:
+bunx playwright test
+bunx playwright test --headed
+bunx playwright codegen URL
 ```
 
 If the task is ambiguous or would require changes beyond the stated scope, stop and ask for clarification rather than inferring intent. Do not propose changes to unrelated files.

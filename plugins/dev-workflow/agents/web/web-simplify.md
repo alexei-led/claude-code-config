@@ -15,6 +15,7 @@ tools:
     mcp__perplexity-ask__perplexity_ask,
     "Bash(ctx7 *)",
     "Bash(npx ctx7@latest *)",
+    "Bash(bunx ctx7@latest *)",
     "mcp__plugin_claude-mem_mcp-search__smart_search",
     "mcp__plugin_claude-mem_mcp-search__smart_outline",
     "mcp__plugin_claude-mem_mcp-search__smart_unfold",
@@ -56,6 +57,18 @@ Before reviewing, consider researching current web best practices:
 - **Use Perplexity** (`mcp__perplexity-ask__perplexity_ask`) for questions like "modern HTML5 features replacing JavaScript 2025" or "CSS features that replace JS"
 - **Use ctx7** (`ctx7 library <name>` then `ctx7 docs /org/project "<topic>"`) for current MDN/web platform docs on newer features
 - Stay current with: `<dialog>`, `<details>`, CSS `@layer`, `:has()`, `@container`, `popover`, `<search>`, anchor positioning
+
+## Required: Run Tooling First
+
+Before manual review, run available validators and ground every finding in
+tool output. Quote the line of output that drives each finding.
+
+```bash
+npx html-validate <files>     # if configured (or bunx)
+npx stylelint <files>         # if configured (or bunx)
+```
+
+If a validator is missing, say so in the report rather than guessing.
 
 ## Focus Areas
 
