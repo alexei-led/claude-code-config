@@ -1,5 +1,31 @@
 {
   "hooks": {
+    "BeforeTool": [
+      {
+        "matcher": "write_file|replace",
+        "sequential": true,
+        "hooks": [
+          {
+            "type": "command",
+            "name": "file-protector",
+            "command": "${extensionPath}/plugins/dev-workflow/hooks/file-protector.sh",
+            "timeout": 10000
+          }
+        ]
+      },
+      {
+        "matcher": "run_shell_command",
+        "sequential": true,
+        "hooks": [
+          {
+            "type": "command",
+            "name": "git-guardrails",
+            "command": "${extensionPath}/plugins/dev-workflow/hooks/git-guardrails.sh",
+            "timeout": 10000
+          }
+        ]
+      }
+    ],
     "AfterTool": [
       {
         "matcher": "write_file|replace",
@@ -10,6 +36,18 @@
             "name": "smart-lint",
             "command": "${extensionPath}/plugins/dev-workflow/hooks/smart-lint.sh",
             "timeout": 60000
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "name": "session-start",
+            "command": "${extensionPath}/plugins/dev-workflow/hooks/session-start.sh",
+            "timeout": 5000
           }
         ]
       }

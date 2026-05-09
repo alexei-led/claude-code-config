@@ -73,9 +73,17 @@ instead:
 }
 ```
 
-`dev-workflow` ships a `PostToolUse` hook (`plugins/dev-workflow/hooks/codex.hooks.json`)
-that runs `smart-lint.sh` after every `apply_patch`. Codex injects
-`$CLAUDE_PLUGIN_ROOT` so the hook command resolves regardless of cwd.
+`dev-workflow` ships hooks via `plugins/dev-workflow/hooks/codex.hooks.json`:
+
+- `PreToolUse` on `Bash` → `git-guardrails.sh` (blocks `git reset --hard`,
+  `git push --force`, etc.)
+- `PostToolUse` on `apply_patch` → `smart-lint.sh` (auto-format and lint
+  changed files)
+- `SessionStart` → `session-start.sh` (prints branch and last commit)
+
+All commands resolve via `$PLUGIN_ROOT`, the env var Codex injects for
+plugin-sourced hooks (works without Claude Code installed; Codex also
+exports `$CLAUDE_PLUGIN_ROOT` as a compatibility alias).
 
 ### Google Gemini CLI
 
@@ -93,8 +101,18 @@ Gemini reads `gemini-extension.json` at the repo root, loads context from
 `GEMINI.md` (auto-generated), and discovers per-skill SKILL.md files under
 `flat/skills-codex/` (Gemini and Codex share the same overlay format).
 
-The `hooks/hooks.json` at the repo root registers an `AfterTool` hook that
-runs `smart-lint.sh` after every `write_file` or `replace`.
+`hooks/hooks.json` at the repo root registers:
+
+- `BeforeTool` on `write_file|replace` → `file-protector.sh` (blocks writes
+  to `.env`, credentials, `.pem`/`.key` files)
+- `BeforeTool` on `run_shell_command` → `git-guardrails.sh` (blocks
+  destructive git commands)
+- `AfterTool` on `write_file|replace` → `smart-lint.sh` (auto-format and
+  lint changed files)
+- `SessionStart` → `session-start.sh` (prints branch and last commit)
+
+All commands resolve via `${extensionPath}`, Gemini's substitution variable
+for the extension root.
 
 ### Pi
 
