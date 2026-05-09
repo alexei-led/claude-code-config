@@ -1,6 +1,5 @@
 ---
-description:
-  Structured stepwise reasoning with explicit revisions and branches. Use
+description: Structured stepwise reasoning with explicit revisions and branches. Use
   when the user says "think step by step", "sequential thinking", "plan this out",
   "reason through this", "branch this idea", or when tackling a hard multi-step problem
   (architecture decisions, ambiguous bugs, multi-constraint tradeoffs, plans that
