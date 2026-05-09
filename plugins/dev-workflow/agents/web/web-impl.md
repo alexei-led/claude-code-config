@@ -25,6 +25,19 @@ skills: ["writing-web", "smart-explore"]
 
 Review for **requirements match** and **responsive design** in simple web apps.
 
+## Required: Run Tooling First
+
+Before manual review, run the available validators and ground every finding in
+tool output. Quote the line of output that drives each finding.
+
+```bash
+npx html-validate <files>     # if html-validate is configured (or bunx)
+npx stylelint <files>         # if stylelint is configured (or bunx)
+npx playwright test --list    # confirm any e2e specs that should pass (or bunx)
+```
+
+If a validator is missing, say so in the report rather than guessing.
+
 ## Focus Areas
 
 ### 1. Requirements

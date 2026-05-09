@@ -25,6 +25,18 @@ skills: ["writing-web", "testing-e2e", "smart-explore"]
 
 Review **E2E tests** for simple web apps using Playwright.
 
+## Required: Run Tooling First
+
+Before manual review, list and (when safe) execute the existing E2E suite, and
+ground findings in tool output:
+
+```bash
+npx playwright test --list                    # or bunx
+npx playwright test --reporter=list   # only when explicitly asked to run (or bunx)
+```
+
+If Playwright is not configured, say so in the report rather than guessing.
+
 ## Focus Areas
 
 ### 1. Locator Strategy

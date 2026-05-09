@@ -27,6 +27,18 @@ skills: ["writing-web", "smart-explore"]
 
 Review for **security**, **performance**, and **accessibility** in simple web apps (HTML, CSS, JS, HTMX).
 
+## Required: Run Tooling First
+
+Before manual review, run available validators and ground every finding in
+tool output. Quote the line of output that drives each finding.
+
+```bash
+npx html-validate <files>     # if configured (or bunx)
+npx stylelint <files>         # if configured (or bunx)
+```
+
+If a validator is missing, say so in the report rather than guessing.
+
 ## Focus Areas
 
 ### 1. Security
