@@ -1,7 +1,7 @@
 {
   "name": "go-dev",
   "description": "Idiomatic Go development with stdlib-first patterns, testing, and CLI tooling",
-  "version": "1.10.1",
+  "version": "2.0.0",
   "author": {
     "name": "Alexei Ledenev",
     "email": "alexei.led@gmail.com",

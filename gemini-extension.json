@@ -1,6 +1,6 @@
 {
   "name": "cc-thingz",
-  "version": "1.10.1",
+  "version": "2.0.0",
   "description": "36 portable development skills exported from cc-thingz — Go, Python, TypeScript, web, infrastructure, code review, testing, and more",
   "contextFileName": "GEMINI.md"
 }
