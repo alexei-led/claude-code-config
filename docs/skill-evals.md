@@ -18,7 +18,7 @@ tests/skill-evals/dev-tools/using-modern-cli/
 
 `make skill-evals-prepare` copies the matching deployable skill from `plugins/<plugin>/skills/<skill>/` into `/tmp/cc-thingz-skill-eval-root` and injects `evals/` there. This gives `agent-skills-eval` the layout it expects without shipping evals in plugin packages.
 
-Use `SKILL_EVAL_SOURCE=skills-codex` to test the Codex/Gemini overlays while preserving the evaluator's expected `plugins/<plugin>/skills/<skill>/` output layout.
+Use `SKILL_EVAL_SOURCE=skills-codex` to test the Codex/Gemini overlays while preserving the evaluator's expected `plugins/<plugin>/skills/<skill>/` output layout. Pi exports are validated locally by `make validate`; paid eval preparation currently supports source skills and Codex/Gemini overlays only.
 
 `make validate` runs `validate-no-plugin-evals`, which fails if `plugins/*/skills/*/evals` exists.
 
@@ -153,6 +153,12 @@ Run against exported Codex/Gemini skill overlays:
 make skill-evals SKILL_EVAL_SOURCE=skills-codex
 ```
 
+Validate Pi exports without paid model calls:
+
+```bash
+make pi-overlays pi-agents flat validate
+```
+
 The target writes event logs to JSONL and prints a fix-focused summary:
 
 - `WITH-SKILL FAILURES TO FIX` — real failures in the skill path. Fix these.
@@ -213,7 +219,7 @@ Defaults:
 - judge: `gpt-5.4-mini`
 - workspace: `/tmp/cc-thingz-skill-eval-workspace`
 - prepared root: `/tmp/cc-thingz-skill-eval-root`
-- skill source: `skills` (`skills-codex` for exported Codex/Gemini overlays)
+- skill source: `skills` (`skills-codex` for exported Codex/Gemini overlays; Pi uses local validation)
 - baseline: enabled (`SKILL_EVAL_BASELINE=0` disables it)
 - HTML report: enabled (`SKILL_EVAL_HTML_REPORT=0` disables it)
 - concurrency: `4`

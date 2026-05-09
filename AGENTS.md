@@ -2,7 +2,7 @@
 
 A Claude Code plugin suite with portable skill export for Codex CLI, Gemini CLI, and AGENTS.md-compatible tools.
 
-35 skills across 8 plugins — code review, language tooling, infrastructure, testing, and developer utilities.
+36 skills across 8 plugins — code review, language tooling, infrastructure, testing, and developer utilities.
 
 ## Development Workflow
 
@@ -57,13 +57,14 @@ A Claude Code plugin suite with portable skill export for Codex CLI, Gemini CLI,
 |-------|-------------|
 | analyzing-usage | Analyze Claude Code usage, cost, efficiency, and burn rate using ccusage and termgraph |
 | brainstorming-ideas | Brainstorm ideas and stress-test draft plans before coding |
+| context7-cli | Current library documentation via the ctx7 CLI |
 | debating-ideas | Dialectic thinking |
 | evolving-config | Audit Claude Code configuration against latest features and best practices |
 | exploring-repos | Explore public GitHub repositories via DeepWiki AI-generated documentation |
 | grill-me | Interview the user relentlessly about a plan or design until reaching shared understanding,... |
 | learning-patterns | Extract learnings and generate project-specific customizations (CLAUDE.md, CONTEXT.md, ADRs,... |
 | linting-instructions | Lint plugin agent/skill prompts against rules derived from Anthropic model cards (Opus 4.6,... |
-| looking-up-docs | Library documentation via Context7 |
+| looking-up-docs | Compatibility router for library documentation lookup |
 | mem-history | Query project history, past decisions, and known gotchas from claude-mem observations |
 | researching-web | Web research via Perplexity AI |
 | reviewing-cc-config | Review Claude Code configuration for context efficiency, signal density, and anti-patterns |

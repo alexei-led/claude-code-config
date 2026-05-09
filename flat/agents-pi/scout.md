@@ -1,0 +1,1 @@
+../../platforms/pi/agents/scout.md

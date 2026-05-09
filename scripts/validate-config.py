@@ -71,6 +71,37 @@ PLATFORM_LEAK_RE = re.compile(
     r"\b(AskUserQuestion|TaskCreate|TaskUpdate|TaskList|TaskOutput|TodoWrite)\b|mcp__"
 )
 
+PI_AGENT_FRONTMATTER_FIELDS = {
+    "description",
+    "display_name",
+    "tools",
+    "extensions",
+    "skills",
+    "memory",
+    "disallowed_tools",
+    "model",
+    "thinking",
+    "max_turns",
+    "prompt_mode",
+    "inherit_context",
+    "run_in_background",
+    "isolated",
+    "isolation",
+    "enabled",
+}
+PI_AGENT_TOOLS = {"read", "bash", "edit", "write", "grep", "find", "ls", "none"}
+PI_AGENT_MEMORY = {"project", "local", "user"}
+PI_AGENT_THINKING = {"off", "minimal", "low", "medium", "high", "xhigh"}
+PI_AGENT_PROMPT_MODES = {"replace", "append"}
+PI_AGENT_ISOLATION = {"worktree"}
+KNOWN_PI_PACKAGE_SKILLS = {"revdiff"}
+PI_EXPORT_LEAK_RE = re.compile(
+    r"\b(AskUserQuestion|TaskCreate|TaskUpdate|TaskList|TaskOutput|TodoWrite|"
+    r"WebSearch|WebFetch|web_contents)\b|mcp__|Context7 MCP|DeepWiki MCP|"
+    r"MorphLLM MCP|claude-mem|\bsubagent\b"
+)
+MD_LINK_RE = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
+
 
 def flat_skill_names() -> set[str]:
     """Return skill names exported through flat/skills-codex."""
@@ -132,6 +163,236 @@ def validate_platform_overlays() -> list[str]:
                     f"ERROR: {rel}:{line_number}: Claude-specific tool "
                     f"'{match.group(0)}' leaked into Codex/Gemini overlay"
                 )
+    return errors
+
+
+def pi_skill_dirs() -> list[Path]:
+    """Return flat Pi skill directories that contain SKILL.md."""
+    flat_dir = ROOT / "flat" / "skills-pi"
+    if not flat_dir.is_dir():
+        return []
+    return [
+        path
+        for path in sorted(flat_dir.iterdir())
+        if (path.is_dir() or path.is_symlink()) and (path / "SKILL.md").exists()
+    ]
+
+
+def pi_skill_names() -> set[str]:
+    return {path.name for path in pi_skill_dirs()}
+
+
+def pi_agent_files() -> list[Path]:
+    flat_dir = ROOT / "flat" / "agents-pi"
+    if not flat_dir.is_dir():
+        return []
+    return [path for path in sorted(flat_dir.iterdir()) if path.is_file()]
+
+
+def split_csv_or_list(value: object) -> list[str]:
+    if value is None or isinstance(value, bool):
+        return []
+    if isinstance(value, str):
+        if value.strip().lower() in {"", "true", "false"}:
+            return []
+        return [part.strip() for part in value.split(",") if part.strip()]
+    if isinstance(value, list):
+        return [str(item).strip() for item in value if str(item).strip()]
+    return [str(value).strip()]
+
+
+def validate_pi_skill_frontmatter() -> list[str]:
+    """Validate Agent Skills frontmatter in flat Pi skill exports."""
+    errors: list[str] = []
+    for skill_dir in pi_skill_dirs():
+        skill_md = skill_dir / "SKILL.md"
+        rel = skill_md.relative_to(ROOT)
+        try:
+            post = frontmatter.load(str(skill_md))
+        except Exception as exc:
+            errors.append(f"ERROR: {rel}: invalid frontmatter: {exc}")
+            continue
+
+        name = post.metadata.get("name")
+        description = post.metadata.get("description")
+        if not name:
+            errors.append(f"ERROR: {rel}: missing required field 'name'")
+        elif name != skill_dir.name:
+            errors.append(
+                f"ERROR: {rel}: name '{name}' does not match directory "
+                f"'{skill_dir.name}'"
+            )
+        elif not KEBAB_CASE_RE.match(str(name)):
+            errors.append(f"ERROR: {rel}: name '{name}' is not kebab-case")
+        if not description:
+            errors.append(f"ERROR: {rel}: missing required field 'description'")
+    return errors
+
+
+def validate_pi_agent_frontmatter() -> list[str]:
+    """Validate pi-subagents frontmatter in flat Pi agent exports."""
+    errors: list[str] = []
+    flat_dir = ROOT / "flat" / "agents-pi"
+    if flat_dir.is_dir():
+        for path in sorted(flat_dir.iterdir()):
+            rel = path.relative_to(ROOT)
+            if path.is_dir():
+                errors.append(f"ERROR: {rel}: agents-pi entries must be flat .md files")
+            elif path.suffix != ".md":
+                errors.append(f"ERROR: {rel}: agents-pi entries must be .md files")
+
+    for agent_md in pi_agent_files():
+        rel = agent_md.relative_to(ROOT)
+        try:
+            post = frontmatter.load(str(agent_md))
+        except Exception as exc:
+            errors.append(f"ERROR: {rel}: invalid frontmatter: {exc}")
+            continue
+
+        unknown = sorted(set(post.metadata) - PI_AGENT_FRONTMATTER_FIELDS)
+        if unknown:
+            errors.append(f"ERROR: {rel}: unsupported Pi agent field(s): {unknown}")
+
+        for key in ("tools", "disallowed_tools"):
+            for tool in split_csv_or_list(post.metadata.get(key)):
+                if tool not in PI_AGENT_TOOLS:
+                    errors.append(f"ERROR: {rel}: unsupported {key} entry '{tool}'")
+
+        memory = post.metadata.get("memory")
+        if memory is not None and memory not in PI_AGENT_MEMORY:
+            errors.append(f"ERROR: {rel}: unsupported memory '{memory}'")
+        thinking = post.metadata.get("thinking")
+        if thinking is not None and thinking not in PI_AGENT_THINKING:
+            errors.append(f"ERROR: {rel}: unsupported thinking '{thinking}'")
+        prompt_mode = post.metadata.get("prompt_mode")
+        if prompt_mode is not None and prompt_mode not in PI_AGENT_PROMPT_MODES:
+            errors.append(f"ERROR: {rel}: unsupported prompt_mode '{prompt_mode}'")
+        isolation = post.metadata.get("isolation")
+        if isolation is not None and isolation not in PI_AGENT_ISOLATION:
+            errors.append(f"ERROR: {rel}: unsupported isolation '{isolation}'")
+    return errors
+
+
+def validate_pi_export_tool_names() -> list[str]:
+    """Reject unavailable tool/provider names in Pi skill and agent exports."""
+    errors: list[str] = []
+    roots = [ROOT / "flat" / "skills-pi", ROOT / "flat" / "agents-pi"]
+    for root in roots:
+        if not root.exists():
+            continue
+        for path in sorted(root.rglob("*.md")):
+            rel = path.relative_to(ROOT)
+            for line_number, line in enumerate(path.read_text().splitlines(), start=1):
+                for match in PI_EXPORT_LEAK_RE.finditer(line):
+                    errors.append(
+                        f"ERROR: {rel}:{line_number}: unavailable Pi export token "
+                        f"'{match.group(0)}'"
+                    )
+    return errors
+
+
+def validate_pi_agent_skill_refs() -> list[str]:
+    """Validate skills: references in Pi agent frontmatter."""
+    errors: list[str] = []
+    available = pi_skill_names() | KNOWN_PI_PACKAGE_SKILLS
+    for agent_md in pi_agent_files():
+        rel = agent_md.relative_to(ROOT)
+        post = frontmatter.load(str(agent_md))
+        for skill in split_csv_or_list(post.metadata.get("skills")):
+            if skill not in available:
+                errors.append(f"ERROR: {rel}: unknown Pi skill reference '{skill}'")
+    return errors
+
+
+def link_target_path(markdown_path: Path, target: str) -> Path | None:
+    target = target.strip()
+    if not target or target.startswith("#"):
+        return None
+    if re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*:", target):
+        return None
+    if target.startswith("/"):
+        return None
+    path_part = target.split("#", 1)[0]
+    if not path_part:
+        return None
+    return markdown_path.parent / path_part
+
+
+def validate_pi_skill_links() -> list[str]:
+    """Validate local relative Markdown links in Pi skill exports."""
+    errors: list[str] = []
+    for skill_dir in pi_skill_dirs():
+        for markdown_path in sorted(skill_dir.rglob("*.md")):
+            rel = markdown_path.relative_to(ROOT)
+            inside_fence = False
+            for line in markdown_path.read_text().splitlines():
+                if line.lstrip().startswith("```"):
+                    inside_fence = not inside_fence
+                    continue
+                if inside_fence:
+                    continue
+                for match in MD_LINK_RE.finditer(line):
+                    target_path = link_target_path(markdown_path, match.group(1))
+                    if target_path is not None and not target_path.exists():
+                        errors.append(
+                            f"ERROR: {rel}: broken relative link '{match.group(1)}'"
+                        )
+    return errors
+
+
+def validate_pi_support_executables() -> list[str]:
+    """Check shell support scripts in Pi skill exports are executable."""
+    errors: list[str] = []
+    flat_dir = ROOT / "flat" / "skills-pi"
+    if not flat_dir.is_dir():
+        return errors
+    for script in sorted(flat_dir.rglob("*.sh")):
+        if not script.is_file():
+            continue
+        if script.stat().st_mode & 0o111 == 0:
+            errors.append(
+                f"ERROR: {script.relative_to(ROOT)}: shell script not executable"
+            )
+    return errors
+
+
+def validate_ctx7_skill_refs() -> list[str]:
+    """Check Context7 CLI skill and router references exist in Pi exports."""
+    errors: list[str] = []
+    ctx7_dir = ROOT / "flat" / "skills-pi" / "context7-cli"
+    looking_up = ROOT / "flat" / "skills-pi" / "looking-up-docs" / "SKILL.md"
+    required = [
+        ctx7_dir / "SKILL.md",
+        ctx7_dir / "references" / "docs.md",
+        ctx7_dir / "references" / "skills.md",
+        ctx7_dir / "references" / "setup.md",
+        looking_up,
+    ]
+    for path in required:
+        if not path.exists():
+            errors.append(
+                f"ERROR: {path.relative_to(ROOT)}: required ctx7 file missing"
+            )
+    if looking_up.exists():
+        text = looking_up.read_text()
+        for token in ("context7-cli", "ctx7 library", "ctx7 docs"):
+            if token not in text:
+                errors.append(
+                    f"ERROR: {looking_up.relative_to(ROOT)}: missing '{token}'"
+                )
+    return errors
+
+
+def validate_pi_exports() -> list[str]:
+    """Run all Pi export semantic checks."""
+    errors: list[str] = []
+    errors.extend(validate_pi_skill_frontmatter())
+    errors.extend(validate_pi_agent_frontmatter())
+    errors.extend(validate_pi_export_tool_names())
+    errors.extend(validate_pi_agent_skill_refs())
+    errors.extend(validate_pi_skill_links())
+    errors.extend(validate_pi_support_executables())
+    errors.extend(validate_ctx7_skill_refs())
     return errors
 
 
@@ -672,6 +933,7 @@ def main() -> int:
     all_warnings.extend(gemini_warnings)
     all_errors.extend(validate_gemini_skill_links())
     all_errors.extend(validate_platform_overlays())
+    all_errors.extend(validate_pi_exports())
 
     # Frontmatter validation
     for config_type, spec in REQUIRED_FIELDS.items():

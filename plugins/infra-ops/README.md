@@ -1,6 +1,6 @@
 # infra-ops
 
-Infrastructure and cloud operations: Kubernetes, Terraform, Helm, GitHub Actions, AWS, GCP. Available for both Claude Code and Codex CLI.
+Infrastructure and cloud operations: Kubernetes, Terraform, Helm, GitHub Actions, AWS, GCP. Exported for Claude Code, Codex CLI, Gemini CLI, and Pi.
 
 ## Skills (3)
 
@@ -16,11 +16,11 @@ Includes supplementary docs: `KUBERNETES.md`, `TERRAFORM.md`, `DOCKERFILE.md`, `
 
 - `infra-engineer` (sonnet) — infrastructure implementation and validation (Claude Code only)
 
-## MCP Servers
+## External Providers
 
-| Server              | Used For                             |
-| ------------------- | ------------------------------------ |
-| Context7            | Cloud and IaC documentation          |
-| Perplexity          | Deploying-infra best practices       |
-| Sequential Thinking | Structured planning for complex work |
-| MorphLLM            | Codebase search and batch editing    |
+| Provider | Used For |
+| --- | --- |
+| Context7 CLI (`ctx7`) | Portable cloud and IaC documentation |
+| Perplexity/web providers | Deployment research and best practices |
+| Sequential Thinking MCP | Claude Code-only structured planning |
+| MorphLLM MCP | Claude Code-only codebase search and batch editing |

@@ -436,6 +436,115 @@ class TestPlatformOverlays:
         assert any("mcp__" in error for error in errors)
 
 
+class TestPiExports:
+    def _write_pi_skill(
+        self,
+        tmp_path: Path,
+        name: str,
+        body: str = "Body\n",
+    ) -> Path:
+        skill_dir = tmp_path / "flat" / "skills-pi" / name
+        skill_dir.mkdir(parents=True)
+        (skill_dir / "SKILL.md").write_text(
+            f"---\nname: {name}\ndescription: Test skill\n---\n{body}"
+        )
+        return skill_dir
+
+    def _write_pi_agent(self, tmp_path: Path, name: str, frontmatter: str) -> Path:
+        agent_dir = tmp_path / "flat" / "agents-pi"
+        agent_dir.mkdir(parents=True, exist_ok=True)
+        agent = agent_dir / f"{name}.md"
+        agent.write_text(f"---\n{frontmatter}---\nBody\n")
+        return agent
+
+    def test_pi_skill_frontmatter_validates_name(self, tmp_path):
+        self._write_pi_skill(tmp_path, "good-skill")
+        bad = tmp_path / "flat" / "skills-pi" / "bad-skill"
+        bad.mkdir(parents=True)
+        (bad / "SKILL.md").write_text("---\nname: other\ndescription: Bad\n---\nBody\n")
+
+        with patch.object(validate_config, "ROOT", tmp_path):
+            errors = validate_config.validate_pi_skill_frontmatter()
+
+        assert any("does not match directory" in error for error in errors)
+        assert not any("good-skill" in error for error in errors)
+
+    def test_pi_agent_frontmatter_rejects_unknown_fields_and_tools(self, tmp_path):
+        self._write_pi_agent(
+            tmp_path,
+            "reviewer",
+            "description: Review\ntools: read, Bash\ncolor: blue\n",
+        )
+
+        with patch.object(validate_config, "ROOT", tmp_path):
+            errors = validate_config.validate_pi_agent_frontmatter()
+
+        assert any("unsupported Pi agent field" in error for error in errors)
+        assert any("unsupported tools entry 'Bash'" in error for error in errors)
+
+    def test_pi_export_tool_name_leaks_are_errors(self, tmp_path):
+        self._write_pi_skill(tmp_path, "docs", "Use WebFetch and mcp__context7.\n")
+
+        with patch.object(validate_config, "ROOT", tmp_path):
+            errors = validate_config.validate_pi_export_tool_names()
+
+        assert any("WebFetch" in error for error in errors)
+        assert any("mcp__" in error for error in errors)
+
+    def test_pi_agent_skill_refs_must_resolve(self, tmp_path):
+        self._write_pi_skill(tmp_path, "known-skill")
+        self._write_pi_agent(
+            tmp_path,
+            "worker",
+            "description: Work\ntools: read\nskills: known-skill, missing-skill\n",
+        )
+
+        with patch.object(validate_config, "ROOT", tmp_path):
+            errors = validate_config.validate_pi_agent_skill_refs()
+
+        assert any("missing-skill" in error for error in errors)
+        assert not any("known-skill" in error for error in errors)
+
+    def test_pi_skill_links_and_executable_scripts(self, tmp_path):
+        skill_dir = self._write_pi_skill(
+            tmp_path,
+            "linked-skill",
+            "See [ok](references/ok.md) and [bad](missing.md).\n",
+        )
+        (skill_dir / "references").mkdir()
+        (skill_dir / "references" / "ok.md").write_text("ok\n")
+        script = skill_dir / "scripts" / "run.sh"
+        script.parent.mkdir()
+        script.write_text("#!/bin/sh\n")
+
+        with patch.object(validate_config, "ROOT", tmp_path):
+            link_errors = validate_config.validate_pi_skill_links()
+            exec_errors = validate_config.validate_pi_support_executables()
+
+        assert any("missing.md" in error for error in link_errors)
+        assert any("run.sh" in error for error in exec_errors)
+
+    def test_ctx7_refs_must_exist(self, tmp_path):
+        ctx7 = self._write_pi_skill(
+            tmp_path,
+            "context7-cli",
+            "Run ctx7 library and ctx7 docs.\n",
+        )
+        (ctx7 / "references").mkdir()
+        for name in ("docs.md", "skills.md", "setup.md"):
+            (ctx7 / "references" / name).write_text("ref\n")
+        self._write_pi_skill(
+            tmp_path,
+            "looking-up-docs",
+            "Route to context7-cli with ctx7 library and ctx7 docs.\n",
+        )
+
+        with patch.object(validate_config, "ROOT", tmp_path):
+            errors = validate_config.validate_ctx7_skill_refs()
+
+        assert not errors
+
+
 class TestJsonValidation:
     def test_valid_json(self, tmp_path):
         (tmp_path / "hook-config.json").write_text(

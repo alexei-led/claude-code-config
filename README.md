@@ -8,11 +8,11 @@
 [![Codex CLI](https://img.shields.io/badge/Codex_CLI-skill_export-10A37F)](https://developers.openai.com/codex/plugins)
 [![Gemini CLI](https://img.shields.io/badge/Gemini_CLI-skill_export-4285F4)](https://geminicli.com/docs/extensions)
 [![Plugins](https://img.shields.io/badge/plugins-9-green)](plugins/)
-[![Skills](https://img.shields.io/badge/skills-35-green)](plugins/)
+[![Skills](https://img.shields.io/badge/skills-36-green)](plugins/)
 
-A **Claude Code** plugin suite — 35 skills, 34 agents, 10 hooks, and 9 commands — with portable skill export for Codex CLI, Gemini CLI, and [AGENTS.md](https://agents.md)-compatible tools. Built over 6+ months of daily use and continuous refinement.
+A **Claude Code** plugin suite — 36 skills, 34 agents, 10 hooks, and 9 commands — with portable skill export for Codex CLI, Gemini CLI, Pi, and [AGENTS.md](https://agents.md)-compatible tools. Built over 6+ months of daily use and continuous refinement.
 
-Built for Claude Code, with all 35 skills exported as platform-optimized instructions for Codex CLI, Gemini CLI, and any tool supporting the AGENTS.md standard.
+Built for Claude Code, with all 36 portable skills exported as platform-optimized instructions for Codex CLI, Gemini CLI, Pi, and any tool supporting the AGENTS.md standard.
 
 ## Why This Exists
 
@@ -42,10 +42,13 @@ Use `--scope project` to install into `.claude/settings.json` for team sharing.
 
 ```bash
 git clone https://github.com/alexei-led/cc-thingz.git
-# Codex discovers plugins via .agents/plugins/marketplace.json
-codex plugin list
-codex plugin install go-dev
+cd cc-thingz
+codex
+# inside Codex: /plugins
 ```
+
+Install from the `cc-thingz` repo marketplace. Codex plugins use
+`plugins/*/.codex-plugin/plugin.json` and `plugins/*/skills-codex/`.
 
 ### Google Gemini CLI
 
@@ -53,11 +56,30 @@ codex plugin install go-dev
 gemini extensions install https://github.com/alexei-led/cc-thingz
 ```
 
-Individual plugins can also be installed as standalone extensions:
+For local development, link the checkout instead of copying it:
 
 ```bash
-gemini extensions install --path=./plugins/go-dev
+gemini extensions link /path/to/cc-thingz
 ```
+
+Gemini uses `gemini-extension.json`, `GEMINI.md`, and `flat/skills-codex/`.
+
+### Pi
+
+Pi uses generated skills and agents:
+
+```bash
+git clone https://github.com/alexei-led/cc-thingz.git
+cd cc-thingz
+pi install npm:@tintinweb/pi-subagents
+scripts/install-pi-exports.sh        # dry-run
+scripts/install-pi-exports.sh --apply
+```
+
+This links `~/.pi/agent/skills` to `flat/skills-pi` and
+`~/.pi/agent/agents` to `flat/agents-pi`. See
+[Deploy cc-thingz Skills and Agents](docs/pi-skill-export.md) for chezmoi and
+no-chezmoi instructions.
 
 ### Other AGENTS.md-Compatible Tools
 
@@ -65,15 +87,24 @@ The `AGENTS.md` at the repo root provides a skill catalog readable by any tool s
 
 ## Prerequisites
 
-Some plugins use MCP servers for enhanced capabilities. These are optional — plugins degrade gracefully without them.
+Portable docs lookup uses the [Context7 CLI](https://github.com/upstash/context7):
 
-| MCP Server                                                                                              | Purpose                                     | Used By                                                                  |
-| ------------------------------------------------------------------------------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------ |
-| [Context7](https://github.com/upstash/context7)                                                         | Library and framework documentation lookup  | All 9 plugins                                                            |
-| [DeepWiki](https://cognition.ai/blog/deepwiki-mcp-server)                                               | AI-generated wiki for public GitHub repos   | dev-tools                                                                |
-| [Perplexity](https://github.com/ppl-ai/modelcontextprotocol)                                            | Web research and technical comparisons      | dev-workflow, dev-tools, infra-ops                                       |
-| [Sequential Thinking](https://github.com/modelcontextprotocol/servers/tree/main/src/sequentialthinking) | Step-by-step reasoning for complex planning | go-dev, python-dev, typescript-dev, infra-ops, spec-system               |
-| [MorphLLM](https://github.com/morphllm/morph-claude-code)                                               | Fast codebase search and batch file editing | dev-workflow, go-dev, python-dev, typescript-dev, infra-ops, spec-system |
+```bash
+npm install -g ctx7@latest
+# or one-shot
+npx ctx7@latest docs /facebook/react "React hooks"
+```
+
+Claude Code agents can also use optional MCP servers for enhanced capabilities.
+These are optional — plugins degrade gracefully without them. Pi exports do not
+assume MCP tools.
+
+| MCP Server                                                                                              | Purpose                                     | Used By                                                    |
+| ------------------------------------------------------------------------------------------------------- | ------------------------------------------- | ---------------------------------------------------------- |
+| [DeepWiki](https://cognition.ai/blog/deepwiki-mcp-server)                                               | AI-generated wiki for public GitHub repos   | Claude Code dev-tools                                      |
+| [Perplexity](https://github.com/ppl-ai/modelcontextprotocol)                                            | Web research and technical comparisons      | Claude Code dev-workflow, dev-tools, infra-ops             |
+| [Sequential Thinking](https://github.com/modelcontextprotocol/servers/tree/main/src/sequentialthinking) | Step-by-step reasoning for complex planning | Claude Code language, infra, and spec agents               |
+| [MorphLLM](https://github.com/morphllm/morph-claude-code)                                               | Fast codebase search and batch file editing | Claude Code dev-workflow, language, infra, and spec agents |
 
 ### Claude-Mem Integration
 
@@ -106,15 +137,15 @@ All agents and several skills optionally integrate with [claude-mem](https://git
 | [**typescript-dev**](plugins/typescript-dev/README.md) | 1      | 1      | TypeScript with strict typing, React patterns, and modern tooling                  |
 | [**web-dev**](plugins/web-dev/README.md)               | 1      | 1      | Web frontend with vanilla HTML, CSS, JavaScript, and HTMX                          |
 | [**infra-ops**](plugins/infra-ops/README.md)           | 3      | 1      | Kubernetes, Terraform, Helm, GitHub Actions, AWS, GCP                              |
-| [**dev-tools**](plugins/dev-tools/README.md)           | 16     | 2      | Modern CLI, git worktrees, docs lookup, web research, config review, brainstorming |
+| [**dev-tools**](plugins/dev-tools/README.md)           | 17     | 2      | Modern CLI, git worktrees, docs lookup, web research, config review, brainstorming |
 | [**spec-system**](plugins/spec-system/README.md)       | 0      | 1      | Spec-driven development: requirements, tasks, and planning workflows               |
 | [**testing-e2e**](plugins/testing-e2e/README.md)       | 2      | 1      | E2E testing with Playwright: browser automation and test generation                |
 
-**Totals**: 35 skills, 34 agents, 10 hooks, 9 commands
+**Totals**: 36 skills, 34 agents, 10 hooks, 9 commands
 
 ## Skills
 
-Skills teach the AI model domain-specific knowledge and workflows. All skills are authored for Claude Code and exported with platform-optimized instructions for Codex CLI, Gemini CLI, and [AGENTS.md](https://agents.md)-compatible tools. On Claude Code, the `skill-enforcer` hook auto-suggests relevant skills based on your prompt.
+Skills teach the AI model domain-specific knowledge and workflows. All skills are authored in cc-thingz and exported with platform-optimized instructions for Codex CLI, Gemini CLI, Pi, and [AGENTS.md](https://agents.md)-compatible tools. On Claude Code, the `skill-enforcer` hook auto-suggests relevant skills based on your prompt.
 
 ### User-Invocable
 
@@ -130,11 +161,12 @@ Invoke as `/skill-name` or let the skill enforcer suggest them.
 | `deploying-infra`               | Validate + deploy K8s/Terraform/Helm              | "deploy to staging", "rollout"           |
 | `documenting-code`              | Update docs based on recent changes               | "update docs", "document"                |
 | `evolving-config`               | Audit config against latest Claude Code features  | "evolve", "audit config"                 |
-| `exploring-repos`               | Explore GitHub repos via DeepWiki AI wiki         | "explore repo", "deepwiki"               |
+| `exploring-repos`               | Explore public GitHub repos and architecture      | "explore repo", "how does repo work"     |
 | `fixing-code`                   | Parallel agents fix all issues, zero tolerance    | "fix errors", "make it pass"             |
 | `improving-tests`               | Refactor tests: combine to tabular, fill gaps     | "improve tests", "coverage"              |
-| `looking-up-docs`               | Library documentation via Context7                | "look up docs", "API ref"                |
-| `mem-history`                   | Query past sessions and decisions (claude-mem)    | "last session", "what happened"          |
+| `context7-cli`                  | Current library docs via ctx7 CLI                 | "ctx7", "context7", "current docs"      |
+| `looking-up-docs`               | Router for Context7 CLI docs lookup               | "look up docs", "API ref"                |
+| `mem-history`                   | Query project history and prior decisions         | "last session", "what happened"          |
 | `researching-web`               | Web research via Perplexity AI                    | "research", "X vs Y"                     |
 | `reviewing-code`                | Multi-agent review (security, quality, idioms)    | "review code", "check this"              |
 | `testing-e2e`                   | Playwright browser automation and test gen        | "e2e test", "playwright"                 |
@@ -155,7 +187,7 @@ These activate silently when relevant patterns are detected — no `/skill-name`
 | `playwright-skill`   | Runtime library for testing-e2e skill               |
 | `refactoring-code`   | Multi-file batch changes, rename everywhere         |
 | `searching-code`     | "how does X work", trace flow, find all uses        |
-| `smart-explore`      | AST code navigation via claude-mem (10-20x savings) |
+| `smart-explore`      | Token-efficient local code navigation             |
 | `using-cloud-cli`    | bq queries, gcloud/aws commands                     |
 | `using-modern-cli`   | rg, fd, bat, eza, sd instead of legacy tools        |
 | `writing-go`         | Go files, go commands, Go-specific terms            |
@@ -163,7 +195,10 @@ These activate silently when relevant patterns are detected — no `/skill-name`
 | `writing-typescript` | TS/TSX files, npm/bun, React, Node.js               |
 | `writing-web`        | HTML/CSS/JS/HTMX templates                          |
 
-## Agents (Claude Code only)
+## Agents
+
+Claude Code uses the full plugin agent set below. Pi gets a small generated
+runtime set in `flat/agents-pi/`: `scout`, `planner`, `reviewer`, and `worker`.
 
 | Need                       | Agent                       | Model  |
 | -------------------------- | --------------------------- | ------ |
@@ -199,60 +234,71 @@ These activate silently when relevant patterns are detected — no `/skill-name`
 
 ## Skill Export Architecture
 
-All skills are authored for Claude Code and exported via a build system (`scripts/generate-overlays.py`) that produces platform-optimized `skills-codex/` directories. An `AGENTS.md` file is generated from these overlays for broad tool compatibility.
+Skills are authored under `plugins/<plugin>/skills/<skill>/` and exported into
+platform-specific outputs. Generated directories are committed so downstream
+tools can consume them without running Python first.
 
-### Platform Support
+| Target | Output | Notes |
+| --- | --- | --- |
+| Claude Code | `plugins/*/skills/`, `plugins/*/agents/`, hooks, commands | Source of rich Claude workflows |
+| Codex/Gemini/AGENTS.md | `plugins/*/skills-codex/`, `flat/skills-codex/` | Claude-only frontmatter stripped; platform preamble added |
+| Pi skills | `plugins/*/skills-pi/`, `platforms/pi/skills/`, `flat/skills-pi/` | Pi tool names, ctx7 CLI docs, no MCP assumptions |
+| Pi agents | `platforms/pi/agents/`, `flat/agents-pi/` | Flat `.md` files for `pi-subagents`; filename is the agent name |
 
-| Component        | Claude Code                                   | Skill Export (Codex, Gemini, AGENTS.md)             |
-| ---------------- | --------------------------------------------- | --------------------------------------------------- |
-| **Skills** (33)  | Full — CC source with orchestration           | Optimized — stripped frontmatter + agentic preamble |
-| **Agents** (34)  | Full — multi-agent review, parallel execution | Claude Code only                                    |
-| **Hooks** (10)   | Full — lint, test, protect, suggest           | Claude Code only                                    |
-| **Commands** (9) | Full — spec-driven development                | Claude Code only                                    |
+### Pi Export and Deployment
 
-### Skill Tiers
+Pi uses generated flat exports as the source of truth:
 
-Skills are classified by how much adaptation they need:
+```text
+~/.pi/agent/skills -> ~/.local/share/cc-thingz/flat/skills-pi
+~/.pi/agent/agents -> ~/.local/share/cc-thingz/flat/agents-pi
+```
 
-| Tier       | Count | Strategy                                                      | Example                              |
-| ---------- | ----- | ------------------------------------------------------------- | ------------------------------------ |
-| **GREEN**  | 18    | Shared body, CC frontmatter stripped, platform preamble added | `writing-go`, `using-modern-cli`     |
-| **YELLOW** | 9     | CC-ONLY body sections stripped, frontmatter cleaned           | `looking-up-docs`, `exploring-repos` |
-| **RED**    | 6     | Hand-authored overlays optimized for o3/codex-1               | `reviewing-code`, `fixing-code`      |
+The symlinks are managed from chezmoi source, not by copying individual skills or
+agents into `dot_pi/agent/skills` or `dot_pi/agent/agents`. See
+[docs/pi-skill-export.md](docs/pi-skill-export.md).
 
 ### Structure
 
-```
+```text
 AGENTS.md                            # AGENTS.md standard (generated)
+GEMINI.md                            # Gemini context file (generated)
 .claude-plugin/marketplace.json      # Claude Code marketplace
 .agents/plugins/marketplace.json     # Codex CLI marketplace
 gemini-extension.json                # Gemini CLI extension manifest
+platforms/pi/                        # Pi-only skills and agents
+flat/                                # Unified symlink view
 plugins/
 ├── dev-workflow/
-│   ├── .claude-plugin/plugin.json   # Claude Code manifest
-│   ├── .codex-plugin/plugin.json    # Codex CLI manifest
-│   ├── gemini-extension.json        # Gemini CLI manifest
-│   ├── skills/                      # CC source skills
-│   ├── skills-codex/                # Platform-optimized (build output)
-│   ├── agents/                      # Claude Code only
-│   ├── hooks/                       # Claude Code only
-│   └── commands/                    # Claude Code only
-├── go-dev/
-├── python-dev/
-├── typescript-dev/
-├── web-dev/
-├── infra-ops/
-├── dev-tools/
-├── spec-system/
-└── testing-e2e/
+│   ├── .claude-plugin/plugin.json
+│   ├── .codex-plugin/plugin.json
+│   ├── gemini-extension.json
+│   ├── skills/                      # source skills
+│   ├── skills-codex/                # Codex/Gemini build output
+│   ├── skills-pi/                   # Pi build output
+│   ├── agents/                      # Claude Code agents
+│   ├── hooks/
+│   └── commands/
+└── ...
 ```
 
 ## Flat Directory
 
-`flat/` provides a unified symlink view of all plugin components for tools that need flat directory access (chezmoi, Codex CLI, Gemini CLI). `AGENTS.md` and `GEMINI.md` are generated from `flat/skills-codex/`. Regenerate with:
+`flat/` provides a unified symlink view of all plugin components for tools that
+need flat directory access. `AGENTS.md` and `GEMINI.md` are generated from
+`flat/skills-codex/`. Pi deploys from `flat/skills-pi/` and `flat/agents-pi/`.
+
+Regenerate with:
 
 ```bash
-make flat overlays agents-md gemini-md
+make flat overlays pi-overlays pi-agents agents-md gemini-md
+```
+
+Validate with:
+
+```bash
+make validate
+make test
 ```
 
 ## Contributing

@@ -16,19 +16,53 @@ MODE="${1:-sync}"
 # Build desired symlink map: flat_path -> target
 declare -A desired
 
-for component in skills skills-codex agents hooks commands scripts; do
+add_desired() {
+	local flat_path="$1"
+	local target="$2"
+	if [[ -n "${desired[$flat_path]+x}" && "${desired[$flat_path]}" != "$target" ]]; then
+		echo "ERROR: duplicate flat entry: $flat_path"
+		echo "  ${desired[$flat_path]}"
+		echo "  $target"
+		exit 1
+	fi
+	desired["$flat_path"]="$target"
+}
+
+for component in skills skills-codex skills-pi agents hooks commands scripts; do
 	for src in plugins/*/"$component"; do
 		[ -d "$src" ] || continue
 		plugin_rel="../../$src"
 		for item in "$src"/*; do
 			[ -e "$item" ] || continue
 			name="$(basename "$item")"
-			desired["flat/$component/$name"]="$plugin_rel/$name"
+			add_desired "flat/$component/$name" "$plugin_rel/$name"
 		done
 	done
 done
 
-desired["flat/hook-config.json"]="../plugins/dev-workflow/hook-config.json"
+src="platforms/pi/skills"
+if [ -d "$src" ]; then
+	for item in "$src"/*; do
+		[ -e "$item" ] || continue
+		name="$(basename "$item")"
+		add_desired "flat/skills-pi/$name" "../../$src/$name"
+	done
+fi
+
+for src in plugins/*/agents-pi platforms/pi/agents; do
+	[ -d "$src" ] || continue
+	for item in "$src"/*; do
+		[ -e "$item" ] || continue
+		name="$(basename "$item")"
+		if [ ! -f "$item" ] || [[ "$name" != *.md ]]; then
+			echo "ERROR: agents-pi entries must be flat .md files: $item"
+			exit 1
+		fi
+		add_desired "flat/agents-pi/$name" "../../$src/$name"
+	done
+done
+
+add_desired "flat/hook-config.json" "../plugins/dev-workflow/hook-config.json"
 
 # Detect differences
 stale=()

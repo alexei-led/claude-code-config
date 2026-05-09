@@ -3,11 +3,12 @@ allowed-tools:
 - Read
 - Grep
 - Glob
-- WebFetch
-description: Library documentation via Context7. Use when user says "look up docs",
-  "how to use", "API for", "syntax for", "examples of", "show me the docs", or needs
-  API references, code examples, framework-specific documentation. NOT for comparisons
-  (use researching-web) or general web search.
+- Bash(ctx7 *)
+- Bash(npx ctx7@latest *)
+description: Compatibility router for library documentation lookup. Use when user
+  says "look up docs", "how to use", "API for", "syntax for", "examples of", "show
+  me the docs", or needs API references, code examples, or framework-specific documentation.
+  Routes to the context7-cli workflow.
 name: looking-up-docs
 ---
 
@@ -18,163 +19,74 @@ name: looking-up-docs
 <!-- Reliability: Assess risk before irreversible actions. Ask for clarification on ambiguity. -->
 <!-- Completeness: Generate complete responses without truncating. Review your output against the original constraints. -->
 
-# Documentation Lookup with Context7
+# Documentation Lookup Router
 
-Context7 provides up-to-date, version-specific documentation and code examples directly from source libraries.
+This skill preserves the old `looking-up-docs` trigger while routing the actual
+workflow to `context7-cli`. Do not maintain a second competing docs lookup flow
+here.
 
-## Critical Routing Rules
+## Route
 
-- Use this for narrow library/framework/API syntax, examples, and version-specific docs.
-- Do not use this for comparisons, recommendations, "vs", best practices, market/release research, or recent industry facts. Route those to `researching-web`; use docs lookup later only for the chosen library's exact syntax.
-- First identify the library and version from project files when available; otherwise say the version is unknown and resolve the closest library docs.
-- Use Context7 first: resolve the library ID, then query docs for the exact topic. Use official docs/WebFetch only when Context7 is missing or insufficient.
-- Ground examples in retrieved docs. Do not invent APIs; if docs are missing, report that and show the fallback source.
+Use the `context7-cli` workflow for narrow docs lookup:
+
+1. Identify the library and version from project files when possible.
+2. Resolve a library ID unless the user already supplied `/org/project` or
+   `/org/project/version`.
+3. Query docs with a real topic.
+4. Ground syntax and examples in returned docs.
+5. Use `npx ctx7@latest` when `ctx7` is missing.
+6. Use available web tools such as `web_search` or `web_answer` only when
+   Context7 has no useful match, and say a fallback was used.
+
+Required commands:
+
+```bash
+ctx7 library <name> "<specific query>"
+ctx7 docs /org/project "<specific query>"
+```
+
+Fallback commands:
+
+```bash
+npx ctx7@latest library <name> "<specific query>"
+npx ctx7@latest docs /org/project "<specific query>"
+```
+
+## Boundaries
+
+Use this skill for:
+
+- API docs, syntax, config keys, and examples.
+- Version-specific library behavior.
+- Documentation checks before writing code.
+
+Do not use this skill as the primary workflow for:
+
+- Comparisons, recommendations, pros/cons, or market research.
+- Broad best-practice surveys.
+- Recent ecosystem news.
+
+Route those to `researching-web`; use docs lookup later for exact syntax in the
+chosen library.
+
+## Safety Rules
+
+- Do not include secrets, credentials, personal data, private payloads, or
+  proprietary code in ctx7 queries.
+- Do not call `ctx7 library` more than 3 times for one question.
+- Do not call `ctx7 docs` more than 3 times for one question.
+- Always pass a real query, not a placeholder.
+- Prefer `ctx7 docs --json` when structured output helps.
 
 ## Response Contract
 
-For a docs lookup, output:
+When answering a docs lookup, report:
 
-1. Library/version identified or unknown.
-2. Context7 resolve/query plan or result.
+1. Library/version identified, or say version is unknown.
+2. Library ID selected.
 3. Concise syntax/example guidance grounded in docs.
 4. Fallback used, if any.
-5. Boundary note: broader web research is only for missing/insufficient docs, comparisons, recommendations, recent facts, or release/market changes.
+5. Boundary note if the request is actually research or comparison.
 
-If the user asks to "describe the workflow", describe those steps instead of answering from memory.
-
-## Why Context7
-
-- **Current APIs**: No hallucinated or outdated patterns
-- **Version-specific**: Gets docs for exact library versions
-- **Code examples**: Real, working code from actual documentation
-
-## Workflow
-
-
-## Modes
-
-| Mode   | Use For                                    |
-| ------ | ------------------------------------------ |
-| `code` | API references, code examples (default)    |
-| `info` | Conceptual guides, architecture, tutorials |
-
-## Examples
-
-```
-# React hooks
-resolve-library-id: "react"
-get-library-docs: context7CompatibleLibraryID="/facebook/react", topic="hooks", mode="code"
-
-# Next.js middleware
-resolve-library-id: "next.js"
-get-library-docs: context7CompatibleLibraryID="/vercel/next.js", topic="middleware"
-
-# Go net/http
-resolve-library-id: "go net/http"
-get-library-docs: context7CompatibleLibraryID="/golang/go", topic="http server"
-
-# Kubernetes API
-resolve-library-id: "kubernetes"
-get-library-docs: context7CompatibleLibraryID="/kubernetes/kubernetes", topic="deployment"
-```
-
-## Tips for Better Results
-
-**Be specific with queries:**
-
-- BAD: `topic="hooks"` → returns everything hook-related
-- GOOD: `topic="useEffect cleanup function"` → precise results
-
-**Filter strategies:**
-
-- Use `topic` with function/method names: `topic="json.Unmarshal"`
-- Include version when relevant: `libraryName="react 18"`
-- Combine with feature context: `topic="middleware error handling"`
-
-**When results are too broad:**
-
-1. Narrow the `topic` parameter
-2. Try `mode="code"` to focus on examples
-3. Paginate: `page=2`, `page=3` for additional results
-4. Re-resolve library ID with more specific name
-
-**Quality check:**
-
-- Verify code examples match your library version
-- Cross-reference with official docs if uncertain
-
-## Fallback: Empty or Missing Results
-
-When Context7 returns no results or doesn't have the library:
-
-### Decision Tree
-
-```
-Context7 query returns empty?
-├── Try broader query (e.g., "hooks" instead of "useCallback")
-├── Still empty?
-│   ├── Re-resolve library ID with alternative name
-│   │   (e.g., "nextjs" → "next.js", "golang" → "go")
-│   └── Still empty?
-│       ├── Library not indexed → Use fallbacks below
-│       └── Very niche library → WebSearch for official docs
-```
-
-### Fallback Strategies
-
-1. **Alternative library ID**: Try variations
-
-   ```
-   # If "fastapi" fails, try:
-   resolve-library-id: "starlette"  # FastAPI's underlying framework
-   resolve-library-id: "pydantic"   # Often used with FastAPI
-   ```
-
-2. **WebSearch for official docs**:
-
-   ```
-   WebSearch: "<library> official documentation <feature>"
-   WebFetch: Official docs URL → extract relevant info
-   ```
-
-3. **Source code exploration** (for open-source):
-
-   ```
-   # Clone and explore
-   git clone --depth=1 <repo>
-   Grep: "function <name>" --type=<lang>
-   ```
-
-4. **Perplexity for recent/niche libraries**:
-
-### Libraries Commonly Not in Context7
-
-| Library              | Fallback                    |
-| -------------------- | --------------------------- |
-| Internal/proprietary | Source code + README        |
-| Very new (<6 months) | WebSearch + official docs   |
-| Niche/specialized    | Perplexity or GitHub issues |
-| Language stdlib      | Use language docs directly  |
-
-### Example Fallback Flow
-
-```
-# Initial attempt fails
-resolve-library-id: "htmx"
-→ No results
-
-# Fallback 1: WebSearch
-WebSearch: "htmx documentation hx-swap"
-→ Found: https://htmx.org/docs/
-
-# Fallback 2: Fetch docs
-WebFetch: url="https://htmx.org/docs/", prompt="Explain hx-swap attribute"
-→ Returns relevant documentation
-```
-
-### When to Skip Context7 Entirely
-
-- Asking about breaking changes between versions → WebSearch release notes
-- Debugging specific error messages → WebSearch + StackOverflow
-- Comparing libraries → Perplexity for analysis
-- Very recent features → WebSearch for latest docs
+If the user asks to describe the workflow, describe these steps instead of
+answering from memory.

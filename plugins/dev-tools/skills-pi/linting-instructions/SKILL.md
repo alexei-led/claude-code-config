@@ -1,0 +1,166 @@
+---
+description: Lint plugin agent/skill prompts against rules derived from Anthropic
+  model cards (Opus 4.6, Sonnet 4.6). Use when authoring or reviewing skills and agents
+  — "lint instructions", "audit prompts", "model card rules".
+name: linting-instructions
+---
+
+<!-- Pi platform guidance -->
+<!-- Use Pi tool names exactly: read, bash, edit, write, ask_user_question, structured_output, todo, Agent, get_subagent_result, steer_subagent, web_search, web_answer, web_research. -->
+<!-- Use Agent, get_subagent_result, and steer_subagent for delegated work. -->
+<!-- Use ctx7 or npx ctx7@latest through bash when Context7 documentation lookup is required. -->
+
+# Instruction Lint (Model-Based Review)
+
+Review agent and skill instructions against rules derived from the Claude Opus 4.6 and Sonnet 4.6 system cards. Combines a fast regex pre-pass with deep model-based semantic review. Do not fabricate compliance; report impossible or missing evidence directly.
+
+## Critical Scope Rules
+
+- Primary goal is behavioral instruction quality, not cosmetic polish, generic tone softening, or making prompts sound nicer.
+- Review only against observable criteria: triggers, scope boundaries, tool fit, output format, context budget/token efficiency, safety/irreversible-action guidance, failure handling, grounding, and verifiability.
+- If the actual prompt/instruction text is missing, ask for it before making findings. Use explicit wording: "Paste the actual prompt/instruction text or file path before I make findings." Do not invent findings from a summary.
+- Do not rewrite for tone unless a behavioral issue is identified first. Any rewrite must preserve constraints and improve testable behavior.
+- Every report must explicitly check these minimum categories by name: trigger quality/activation clarity; scope boundaries/neighbor overlap; tool fit; context budget/token efficiency/prompt bloat; safety/irreversible-action guidance; verifiability/testability.
+- Every report must explicitly include context budget/token efficiency and safety/irreversible-action guidance, even when the verdict is PASS.
+- Every finding must cite the exact file/section or missing evidence and include a concrete fix that can be reviewed or tested.
+
+---
+
+## Step 1: Read the Rules
+
+Read the lint rules rubric:
+
+```
+Read docs/instruction-lint-rules.md
+```
+
+This contains model-behavior and skill-structure rules:
+
+- **Universal (U-\*)**: Apply to all agents/skills regardless of model
+- **Opus-specific (O-\*)**: Address Opus 4.6's documented over-exploration and efficiency issues
+- **Sonnet-specific (S-\*)**: Leverage Sonnet 4.6's documented steerability advantages
+- **Skill structure (K-\*, I-\*)**: Check names, trigger descriptions, progressive disclosure, and sequential interaction
+
+---
+
+## Step 2: Run Regex Pre-Pass (optional baseline)
+
+Run the fast regex linter for a structural baseline:
+
+```bash
+uv run python scripts/lint-instructions.py
+```
+
+Note which files have structural issues. These are heuristic — the model review in Step 3 is authoritative.
+
+---
+
+## Step 3: Model-Based Review
+
+For each model tier, spawn a review agent that reads the actual instruction files and evaluates them semantically against the rules. The agent should understand INTENT, not just keyword presence.
+
+**Parse `$ARGUMENTS`:**
+
+- No args → review all plugins
+- Plugin name (e.g., `go-dev`) → review only that plugin
+- `opus` / `sonnet` / `haiku` → review only agents using that model
+
+### Agent prompt template
+
+For each batch of files, spawn an Agent with:
+
+```
+You are reviewing Claude Code plugin instructions for quality against
+rules derived from the Opus 4.6 and Sonnet 4.6 system cards.
+
+## Rules (apply based on model in frontmatter)
+
+### Universal (all models)
+- U-SCOPE: Must have clear scope boundaries (what's in, what's out)
+- U-OUTPUT: Must define expected output format
+- U-TOOL-FIRST: If agent has Bash, must require running tools before manual analysis
+- U-FAILURE: Must handle failure/impossibility (prevents over-eager workarounds)
+- U-GROUND: Must instruct to ground claims in actual tool output
+- U-NO-DESTROY: If agent has Bash, must warn about destructive actions
+
+### Opus agents (model: opus)
+- O-EFFICIENCY: Must include efficiency constraints (Opus over-explores)
+- O-SCOPE-ONLY: Should have "ONLY these" or "exclusively" markers
+- O-EFFORT-MATCH: effort:high must be justified by complex multi-dimensional tasks
+
+### Sonnet agents (model: sonnet)
+- S-NO-LECTURE: Must NOT contain lecture-inducing patterns (Sonnet tends to lecture)
+- S-DECISIVE: Should include decisive action language
+- S-ANTI-EAGER: Should include anti-over-eagerness (Sonnet is steerable here)
+
+### Skill structure
+- K-NAME: Skill names should be kebab-case and clear
+- K-DESC: Skill descriptions should include trigger language
+- K-PROGRESSIVE: Large skills should use support files
+- I-ONE-QUESTION: Interactive skills should ask sequentially
+
+## Review these files
+
+[list of file paths]
+
+For each file:
+1. Read it fully
+2. Note the model from frontmatter
+3. Apply the matching rules SEMANTICALLY — check intent, not just keywords
+4. Rate each applicable rule: PASS / WARN / FAIL
+5. For WARN/FAIL: explain specifically what's missing and suggest a fix
+6. Prefer enriching existing skills over recommending new near-duplicates
+
+## Output Format
+
+For each file, output:
+
+### `<relative path>` (model: <model>, kind: <agent|skill>)
+| Rule | Verdict | Notes |
+|------|---------|-------|
+| U-SCOPE | PASS/WARN/FAIL | ... |
+...
+
+Then at the end, output a summary:
+- Total files reviewed
+- Pass/warn/fail counts per rule
+- Top 5 most impactful improvements to make
+```
+
+### Batching strategy
+
+
+---
+
+## Step 4: Aggregate and Present
+
+Collect results from all review agents. Present:
+
+1. **Summary table**: files x rules matrix
+2. **Critical findings**: Any FAIL verdicts with specific fix suggestions
+3. **Top improvements**: Ranked by impact (how many files affected x severity)
+4. **Model-specific patterns**: Are opus agents missing efficiency guards? Sonnet agents missing anti-eagerness?
+
+---
+
+## Output
+
+Present findings as a structured report:
+
+```
+## Instruction Lint Report
+
+### Summary
+- Files reviewed: N (X opus, Y sonnet, Z haiku)
+- Regex pre-pass: N errors, N warnings
+- Model review: N pass, N warn, N fail
+
+### Critical Findings
+1. ...
+
+### Top 5 Improvements
+1. ...
+
+### Per-Plugin Results
+...
+```

@@ -1,26 +1,27 @@
 #!/usr/bin/env python3
-"""Build platform-optimized skill overlays for Codex CLI and Gemini CLI.
+"""Build platform-optimized skill overlays for Codex, Gemini, and Pi.
 
 For each skill in plugins/*/skills/:
-- RED (SKILL.codex.md exists): copy overlay verbatim to skills-codex/
-- YELLOW (has CC-ONLY markers): strip CC frontmatter + CC-ONLY body blocks
-- GREEN (neither): strip CC frontmatter only (body unchanged)
-
-All non-RED skills get a platform preamble injected (agentic anchors for
-o3/codex-1 and Gemini models). The output serves both Codex and Gemini —
-XML is neutral-to-beneficial on all target models.
+- Codex: copy SKILL.codex.md when present, otherwise strip Claude-specific
+  frontmatter/body blocks and inject the shared platform preamble.
+- Pi: use SKILL.pi.md, then SKILL.codex.md, then SKILL.md; strip non-Pi
+  frontmatter/body blocks, inject the Pi preamble, and copy support files.
 
 Usage:
-  scripts/generate-overlays.py          # sync (build/update skills-codex/)
-  scripts/generate-overlays.py --check  # exit 1 if outputs are stale
-  scripts/generate-overlays.py --hook   # sync + git add
+  scripts/generate-overlays.py                     # sync skills-codex/
+  scripts/generate-overlays.py --check             # check skills-codex/
+  scripts/generate-overlays.py --hook              # sync + git add
+  scripts/generate-overlays.py --platform pi       # sync skills-pi/
+  scripts/generate-overlays.py --platform pi --check
 """
 
 from __future__ import annotations
 
+import argparse
 import re
 import subprocess
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 
 try:
@@ -31,7 +32,7 @@ except ImportError:
 
 ROOT = Path(__file__).resolve().parent.parent
 
-# CC-specific frontmatter keys to strip (entire key removed)
+# Claude-specific frontmatter keys to strip from portable overlays.
 CC_ONLY_FM_KEYS = {
     "context",
     "model",
@@ -41,7 +42,12 @@ CC_ONLY_FM_KEYS = {
     "user-invocable",
 }
 
-# CC-specific tool patterns to remove from allowed-tools lists
+PI_ONLY_FM_KEYS = CC_ONLY_FM_KEYS | {
+    "allowed-tools",
+    "argument-hint",
+}
+
+# Claude-specific tool patterns to remove from allowed-tools lists.
 CC_ONLY_TOOL_PATTERNS = [
     re.compile(r"^Task$"),
     re.compile(r"^TaskOutput$"),
@@ -57,19 +63,67 @@ CC_ONLY_TOOL_PATTERNS = [
 CC_ONLY_BEGIN = "<!-- CC-ONLY: begin -->"
 CC_ONLY_END = "<!-- CC-ONLY: end -->"
 
-# Platform preamble injected at the top of skill body
-PREAMBLE_PATH = ROOT / "scripts" / "preambles" / "platform.md"
+OUTPUT_DIRS = {
+    "codex": "skills-codex",
+    "pi": "skills-pi",
+}
+
+SKILL_SOURCE_FILES = {
+    "SKILL.md",
+    "SKILL.codex.md",
+    "SKILL.pi.md",
+}
+
+SUPPORT_EXCLUDED_PARTS = {
+    ".git",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    "__pycache__",
+    "evals",
+    "node_modules",
+}
+
+SUPPORT_EXCLUDED_NAMES = {
+    ".DS_Store",
+}
+
+TEMP_SUFFIXES = (
+    ".bak",
+    ".swp",
+    ".temp",
+    ".tmp",
+    "~",
+)
 
 
-def strip_cc_frontmatter(metadata: dict) -> dict:
-    """Remove CC-specific keys and tool entries from frontmatter."""
+@dataclass(frozen=True, slots=True)
+class DesiredFile:
+    data: bytes
+    mode: int
+
+
+def preamble_path(platform: str) -> Path:
+    name = "platform.md" if platform == "codex" else f"{platform}.md"
+    return ROOT / "scripts" / "preambles" / name
+
+
+def strip_frontmatter(metadata: dict, platform: str) -> dict:
+    """Remove platform-incompatible frontmatter."""
+    if platform == "pi":
+        return {
+            key: value for key, value in metadata.items() if key not in PI_ONLY_FM_KEYS
+        }
+
     out = {}
     for key, value in metadata.items():
         if key in CC_ONLY_FM_KEYS:
             continue
         if key == "allowed-tools" and isinstance(value, list):
             filtered = [
-                t for t in value if not any(p.match(t) for p in CC_ONLY_TOOL_PATTERNS)
+                tool
+                for tool in value
+                if not any(pattern.match(tool) for pattern in CC_ONLY_TOOL_PATTERNS)
             ]
             if filtered:
                 out[key] = filtered
@@ -95,22 +149,22 @@ def strip_cc_body(body: str) -> str:
     return "\n".join(result)
 
 
-def has_cc_only_markers(body: str) -> bool:
-    """Check if body contains CC-ONLY markers."""
-    return CC_ONLY_BEGIN in body
-
-
-def load_preamble() -> str:
+def load_preamble(platform: str) -> str:
     """Load platform preamble text."""
-    if PREAMBLE_PATH.exists():
-        return PREAMBLE_PATH.read_text().strip()
+    path = preamble_path(platform)
+    if path.exists():
+        return path.read_text().strip()
     return ""
 
 
-def build_stripped_content(source_path: Path, preamble: str = "") -> str:
-    """Build stripped SKILL.md content from a CC source."""
+def build_transformed_content(
+    source_path: Path,
+    platform: str,
+    preamble: str = "",
+) -> str:
+    """Build transformed SKILL.md content from a source skill."""
     post = frontmatter.load(str(source_path))
-    metadata = strip_cc_frontmatter(dict(post.metadata))
+    metadata = strip_frontmatter(dict(post.metadata), platform)
     body = strip_cc_body(post.content)
     if preamble:
         body = preamble + "\n\n" + body
@@ -118,151 +172,269 @@ def build_stripped_content(source_path: Path, preamble: str = "") -> str:
     return frontmatter.dumps(out) + "\n"
 
 
-def compute_desired_state() -> dict[Path, str]:
-    """Compute desired state for all skills-codex/ outputs.
+def desired_text_file(content: str, mode: int = 0o644) -> DesiredFile:
+    return DesiredFile(content.encode(), mode)
 
-    Returns dict mapping output path -> content string.
-    All outputs are files (no symlinks) to ensure CC-specific
-    frontmatter is always stripped.
-    """
-    desired: dict[Path, str] = {}
-    preamble = load_preamble()
+
+def desired_source_file(source: Path) -> DesiredFile:
+    return DesiredFile(source.read_bytes(), source.stat().st_mode & 0o777)
+
+
+def iter_plugin_dirs() -> list[Path]:
     plugins_dir = ROOT / "plugins"
     if not plugins_dir.is_dir():
-        return desired
+        return []
+    return [
+        plugin_dir
+        for plugin_dir in sorted(plugins_dir.iterdir())
+        if plugin_dir.is_dir() and not plugin_dir.name.startswith(".")
+    ]
 
-    for plugin_dir in sorted(plugins_dir.iterdir()):
-        if not plugin_dir.is_dir() or plugin_dir.name.startswith("."):
-            continue
-        skills_dir = plugin_dir / "skills"
-        if not skills_dir.is_dir():
-            continue
 
-        for skill_dir in sorted(skills_dir.iterdir()):
-            if not skill_dir.is_dir() or skill_dir.name.startswith("."):
-                continue
+def iter_skill_dirs(plugin_dir: Path) -> list[Path]:
+    skills_dir = plugin_dir / "skills"
+    if not skills_dir.is_dir():
+        return []
+    return [
+        skill_dir
+        for skill_dir in sorted(skills_dir.iterdir())
+        if skill_dir.is_dir() and not skill_dir.name.startswith(".")
+    ]
 
+
+def compute_codex_desired_state() -> dict[Path, DesiredFile]:
+    """Compute desired state for all skills-codex/ outputs."""
+    desired: dict[Path, DesiredFile] = {}
+    preamble = load_preamble("codex")
+
+    for plugin_dir in iter_plugin_dirs():
+        for skill_dir in iter_skill_dirs(plugin_dir):
             source = skill_dir / "SKILL.md"
             if not source.exists():
                 continue
 
-            out_dir = plugin_dir / "skills-codex" / skill_dir.name
-            out_file = out_dir / "SKILL.md"
-
+            out_file = plugin_dir / "skills-codex" / skill_dir.name / "SKILL.md"
             overlay = skill_dir / "SKILL.codex.md"
             if overlay.exists():
-                # RED: copy overlay verbatim (already optimized)
-                desired[out_file] = overlay.read_text()
-            else:
-                # GREEN + YELLOW: strip CC frontmatter + body,
-                # inject platform preamble
-                desired[out_file] = build_stripped_content(source, preamble)
+                desired[out_file] = desired_text_file(overlay.read_text())
+                continue
+
+            content = build_transformed_content(source, "codex", preamble)
+            desired[out_file] = desired_text_file(content)
 
     return desired
 
 
-def sync(desired: dict[Path, str]) -> int:
+def select_pi_source(skill_dir: Path) -> Path:
+    pi_overlay = skill_dir / "SKILL.pi.md"
+    if pi_overlay.exists():
+        return pi_overlay
+
+    codex_overlay = skill_dir / "SKILL.codex.md"
+    if codex_overlay.exists():
+        return codex_overlay
+
+    return skill_dir / "SKILL.md"
+
+
+def is_support_file(source: Path, skill_dir: Path) -> bool:
+    rel = source.relative_to(skill_dir)
+    if source.name in SKILL_SOURCE_FILES:
+        return False
+    if source.name in SUPPORT_EXCLUDED_NAMES:
+        return False
+    if source.name.endswith(TEMP_SUFFIXES):
+        return False
+    return not any(part in SUPPORT_EXCLUDED_PARTS for part in rel.parts)
+
+
+def iter_support_files(skill_dir: Path) -> list[Path]:
+    return [
+        path
+        for path in sorted(skill_dir.rglob("*"))
+        if path.is_file() and is_support_file(path, skill_dir)
+    ]
+
+
+def compute_pi_desired_state() -> dict[Path, DesiredFile]:
+    """Compute desired state for all skills-pi/ outputs."""
+    desired: dict[Path, DesiredFile] = {}
+    preamble = load_preamble("pi")
+
+    for plugin_dir in iter_plugin_dirs():
+        for skill_dir in iter_skill_dirs(plugin_dir):
+            source = select_pi_source(skill_dir)
+            if not source.exists():
+                continue
+
+            out_dir = plugin_dir / "skills-pi" / skill_dir.name
+            content = build_transformed_content(source, "pi", preamble)
+            desired[out_dir / "SKILL.md"] = desired_text_file(content)
+
+            for support in iter_support_files(skill_dir):
+                desired[out_dir / support.relative_to(skill_dir)] = desired_source_file(
+                    support
+                )
+
+    return desired
+
+
+def compute_desired_state(platform: str) -> dict[Path, DesiredFile]:
+    if platform == "codex":
+        return compute_codex_desired_state()
+    if platform == "pi":
+        return compute_pi_desired_state()
+    raise ValueError(f"unknown platform: {platform}")
+
+
+def generated_root_dirs(platform: str) -> list[Path]:
+    out_dir_name = OUTPUT_DIRS[platform]
+    return [
+        plugin_dir / out_dir_name
+        for plugin_dir in iter_plugin_dirs()
+        if (plugin_dir / out_dir_name).is_dir()
+    ]
+
+
+def remove_empty_dirs(root: Path) -> int:
+    changes = 0
+    dirs = [path for path in root.rglob("*") if path.is_dir()]
+    for path in sorted(dirs, key=lambda item: len(item.parts), reverse=True):
+        try:
+            path.rmdir()
+        except OSError:
+            continue
+        changes += 1
+    try:
+        root.rmdir()
+    except OSError:
+        pass
+    else:
+        changes += 1
+    return changes
+
+
+def sync(platform: str, desired: dict[Path, DesiredFile]) -> int:
     """Apply desired state. Returns count of changes."""
     changes = 0
 
-    # Remove stale files in skills-codex/ dirs
-    plugins_dir = ROOT / "plugins"
-    if plugins_dir.is_dir():
-        for plugin_dir in sorted(plugins_dir.iterdir()):
-            if not plugin_dir.is_dir() or plugin_dir.name.startswith("."):
-                continue
-            codex_dir = plugin_dir / "skills-codex"
-            if not codex_dir.is_dir():
-                continue
-            for skill_out_dir in sorted(codex_dir.iterdir()):
-                skill_md = skill_out_dir / "SKILL.md"
-                if skill_md.exists() and skill_md not in desired:
-                    skill_md.unlink()
-                    changes += 1
-                if skill_out_dir.is_dir() and not any(skill_out_dir.iterdir()):
-                    skill_out_dir.rmdir()
+    for root in generated_root_dirs(platform):
+        paths = sorted(root.rglob("*"), key=lambda item: len(item.parts), reverse=True)
+        for path in paths:
+            if (path.is_file() or path.is_symlink()) and path not in desired:
+                path.unlink()
+                changes += 1
+        changes += remove_empty_dirs(root)
 
-    # Create/update outputs
-    for out_path, content in sorted(desired.items()):
+    for out_path, desired_file in sorted(desired.items()):
         out_path.parent.mkdir(parents=True, exist_ok=True)
 
-        # Remove stale symlinks (from previous GREEN strategy)
         if out_path.is_symlink():
             out_path.unlink()
 
-        if out_path.exists() and out_path.read_text() == content:
-            continue
-        out_path.write_text(content)
-        changes += 1
+        if out_path.exists() and out_path.is_dir():
+            raise RuntimeError(f"output path is a directory: {out_path}")
+
+        wrote_file = False
+        if not out_path.exists() or out_path.read_bytes() != desired_file.data:
+            out_path.write_bytes(desired_file.data)
+            wrote_file = True
+            changes += 1
+
+        current_mode = out_path.stat().st_mode & 0o777
+        if current_mode != desired_file.mode:
+            out_path.chmod(desired_file.mode)
+            if not wrote_file:
+                changes += 1
 
     return changes
 
 
-def check(desired: dict[Path, str]) -> int:
+def mode_string(mode: int) -> str:
+    return f"{mode:04o}"
+
+
+def check(platform: str, desired: dict[Path, DesiredFile]) -> int:
     """Check if outputs match desired state. Returns count of mismatches."""
     mismatches = 0
 
-    for out_path, content in sorted(desired.items()):
+    for out_path, desired_file in sorted(desired.items()):
+        rel_path = out_path.relative_to(ROOT)
         if out_path.is_symlink():
-            print(f"  stale symlink: {out_path.relative_to(ROOT)}")
+            print(f"  stale symlink: {rel_path}")
             mismatches += 1
         elif not out_path.exists():
-            print(f"  missing: {out_path.relative_to(ROOT)}")
+            print(f"  missing: {rel_path}")
             mismatches += 1
-        elif out_path.read_text() != content:
-            print(f"  stale: {out_path.relative_to(ROOT)}")
+        elif out_path.is_dir():
+            print(f"  directory blocks file: {rel_path}")
+            mismatches += 1
+        elif out_path.read_bytes() != desired_file.data:
+            print(f"  stale: {rel_path}")
+            mismatches += 1
+        elif (out_path.stat().st_mode & 0o777) != desired_file.mode:
+            current = out_path.stat().st_mode & 0o777
+            print(
+                f"  mode: {rel_path} "
+                f"{mode_string(current)} != {mode_string(desired_file.mode)}"
+            )
             mismatches += 1
 
-    # Check for stale files not in desired
-    plugins_dir = ROOT / "plugins"
-    if plugins_dir.is_dir():
-        for plugin_dir in sorted(plugins_dir.iterdir()):
-            if not plugin_dir.is_dir() or plugin_dir.name.startswith("."):
-                continue
-            codex_dir = plugin_dir / "skills-codex"
-            if not codex_dir.is_dir():
-                continue
-            for skill_out_dir in sorted(codex_dir.iterdir()):
-                skill_md = skill_out_dir / "SKILL.md"
-                if skill_md.exists() and skill_md not in desired:
-                    print(f"  stale: {skill_md.relative_to(ROOT)}")
-                    mismatches += 1
+    for root in generated_root_dirs(platform):
+        for path in sorted(root.rglob("*")):
+            if (path.is_file() or path.is_symlink()) and path not in desired:
+                print(f"  stale: {path.relative_to(ROOT)}")
+                mismatches += 1
 
     return mismatches
 
 
-def main() -> int:
-    mode = sys.argv[1] if len(sys.argv) > 1 else "sync"
-    desired = compute_desired_state()
+def sync_command(platform: str) -> str:
+    command = "uv run python scripts/generate-overlays.py"
+    if platform != "codex":
+        command += f" --platform {platform}"
+    return command
 
-    if mode == "--check":
-        mismatches = check(desired)
+
+def stage_generated_dirs(platform: str) -> None:
+    for plugin_dir in iter_plugin_dirs():
+        out_dir = plugin_dir / OUTPUT_DIRS[platform]
+        if out_dir.is_dir():
+            subprocess.run(["git", "add", str(out_dir)], cwd=ROOT, check=False)
+
+
+def parse_args(argv: list[str]) -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--platform", choices=sorted(OUTPUT_DIRS), default="codex")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--check", action="store_true")
+    mode.add_argument("--hook", action="store_true")
+    return parser.parse_args(argv)
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = parse_args(sys.argv[1:] if argv is None else argv)
+    desired = compute_desired_state(args.platform)
+    out_dir_name = OUTPUT_DIRS[args.platform]
+
+    if args.check:
+        mismatches = check(args.platform, desired)
         if mismatches:
-            print(f"skills-codex/ out of sync: {mismatches} issue(s)")
-            print("Run: uv run python scripts/generate-overlays.py")
+            print(f"{out_dir_name}/ out of sync: {mismatches} issue(s)")
+            print(f"Run: {sync_command(args.platform)}")
             return 1
-        print(f"skills-codex/ in sync ({len(desired)} skills)")
+        print(f"{out_dir_name}/ in sync ({len(desired)} files)")
         return 0
 
-    changes = sync(desired)
+    changes = sync(args.platform, desired)
 
-    if mode == "--hook" and changes > 0:
-        # Stage all skills-codex/ directories
-        for plugin_dir in sorted((ROOT / "plugins").iterdir()):
-            if not plugin_dir.is_dir() or plugin_dir.name.startswith("."):
-                continue
-            codex_dir = plugin_dir / "skills-codex"
-            if codex_dir.is_dir():
-                subprocess.run(
-                    ["git", "add", str(codex_dir)],
-                    cwd=ROOT,
-                    check=False,
-                )
-        print(f"skills-codex/ synced: {changes} change(s) (staged)")
+    if args.hook and changes > 0:
+        stage_generated_dirs(args.platform)
+        print(f"{out_dir_name}/ synced: {changes} change(s) (staged)")
     elif changes > 0:
-        print(f"skills-codex/ synced: {changes} change(s)")
+        print(f"{out_dir_name}/ synced: {changes} change(s)")
     else:
-        print(f"skills-codex/ already in sync ({len(desired)} skills)")
+        print(f"{out_dir_name}/ already in sync ({len(desired)} files)")
 
     return 0
 

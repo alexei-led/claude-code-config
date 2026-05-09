@@ -1,0 +1,319 @@
+# Deploy cc-thingz Skills and Agents
+
+`cc-thingz` is the source of truth. Do not hand-copy generated skills or agents
+into assistant-specific config directories unless you are making a temporary
+one-off test. Generated exports are committed and deployable.
+
+## Generated Outputs
+
+| Consumer | Output | Contains |
+| --- | --- | --- |
+| Pi skills | `flat/skills-pi/` | Pi-compatible Agent Skills directories |
+| Pi agents | `flat/agents-pi/` | Flat `pi-subagents` `.md` agent files |
+| Codex CLI | `plugins/*/skills-codex/` | Plugin skill payloads referenced by `.codex-plugin/plugin.json` |
+| Gemini CLI | `GEMINI.md` + `flat/skills-codex/` | Extension context with linked skill files |
+| AGENTS.md tools | `AGENTS.md` + `flat/skills-codex/` | Generated catalog for tools that read AGENTS.md |
+
+Regenerate everything after changing source skills or agents:
+
+```bash
+make overlays pi-overlays pi-agents flat agents-md gemini-md
+make validate
+```
+
+`make validate` checks that generated Pi exports are in sync, Pi frontmatter is
+valid, banned tool names are absent, local links resolve, support scripts keep
+executable bits, and `context7-cli` references exist.
+
+## Pi
+
+### Requirements
+
+Pi loads skills from `~/.pi/agent/skills/` and discovers directories containing
+`SKILL.md`. Project skills can also live in `.pi/skills/`, but global deployment
+uses `~/.pi/agent/skills/`.
+
+Pi custom agents from `pi-subagents` are flat files:
+
+```text
+~/.pi/agent/agents/<name>.md
+```
+
+The filename is the agent name. No `name:` frontmatter is required.
+
+Install the subagent extension before using `flat/agents-pi/`:
+
+```bash
+pi install npm:@tintinweb/pi-subagents
+```
+
+A pinned fork works too if you need unreleased behavior:
+
+```bash
+pi install git:github.com/alexei-led/pi-subagents@fix/pi-skill-discovery
+```
+
+### No-chezmoi install
+
+Use the helper script from the repository root. It is dry-run by default:
+
+```bash
+scripts/install-pi-exports.sh
+```
+
+Apply after reviewing the plan:
+
+```bash
+scripts/install-pi-exports.sh --apply
+```
+
+This creates:
+
+```text
+~/.pi/agent/skills -> <repo>/flat/skills-pi
+~/.pi/agent/agents -> <repo>/flat/agents-pi
+```
+
+Existing `skills` or `agents` paths are moved to timestamped backups before the
+symlinks are created. The script does not install packages, edit settings, or run
+Pi. Restart Pi or run `/reload` after applying.
+
+If you want the script to regenerate exports first:
+
+```bash
+scripts/install-pi-exports.sh --build --apply
+```
+
+Manual equivalent:
+
+```bash
+repo="$HOME/src/cc-thingz"
+mkdir -p ~/.pi/agent
+mv ~/.pi/agent/skills ~/.pi/agent/skills.backup.$(date +%Y%m%d%H%M%S) 2>/dev/null || true
+mv ~/.pi/agent/agents ~/.pi/agent/agents.backup.$(date +%Y%m%d%H%M%S) 2>/dev/null || true
+ln -s "$repo/flat/skills-pi" ~/.pi/agent/skills
+ln -s "$repo/flat/agents-pi" ~/.pi/agent/agents
+```
+
+### chezmoi install
+
+Manage symlinks in chezmoi source instead of copying generated outputs.
+
+Example source files:
+
+```text
+dot_pi/agent/symlink_skills.tmpl
+dot_pi/agent/symlink_agents.tmpl
+```
+
+Contents:
+
+```gotemplate
+{{ .chezmoi.homeDir }}/.local/share/cc-thingz/flat/skills-pi
+```
+
+```gotemplate
+{{ .chezmoi.homeDir }}/.local/share/cc-thingz/flat/agents-pi
+```
+
+Then remove copied generated resources from chezmoi source:
+
+```text
+dot_pi/agent/skills/**
+dot_pi/agent/agents/**
+```
+
+Keep only private local Pi resources in chezmoi, such as settings, private API
+config, local prompts, and local-only extensions. Generated cc-thingz skills and
+agents belong in cc-thingz, not chezmoi. Two copies drift. They always drift.
+
+Preview before applying:
+
+```bash
+chezmoi diff ~/.pi/agent/skills ~/.pi/agent/agents ~/.pi/agent/settings.json
+```
+
+Expected live diff:
+
+```text
+~/.pi/agent/skills -> ~/.local/share/cc-thingz/flat/skills-pi
+~/.pi/agent/agents -> ~/.local/share/cc-thingz/flat/agents-pi
+```
+
+Apply only after reviewing:
+
+```bash
+chezmoi apply ~/.pi/agent/skills ~/.pi/agent/agents
+```
+
+If chezmoi refuses because a directory changed since the last write, inspect the
+diff first. Use `--force` only when you intentionally replace the copied
+directories with symlinks.
+
+### Pi verification
+
+After deployment:
+
+```bash
+ls -ld ~/.pi/agent/skills ~/.pi/agent/agents
+readlink ~/.pi/agent/skills
+readlink ~/.pi/agent/agents
+pi list | rg 'pi-subagents|@tintinweb/pi-subagents'
+```
+
+Then restart Pi or run `/reload` in the TUI.
+
+Smoke checks:
+
+- Skill list includes `context7-cli`, `planning-exec`, and language skills.
+- `Agent` tool is available.
+- Custom agents include `scout`, `planner`, `reviewer`, and `worker`.
+- A read-only `Agent` call with `scout` can inspect the current repo.
+
+## Codex CLI
+
+Codex consumes plugin manifests, not the Pi flat export.
+
+Each plugin contains:
+
+```text
+plugins/<plugin>/.codex-plugin/plugin.json
+plugins/<plugin>/skills-codex/<skill>/SKILL.md
+```
+
+The plugin manifest points Codex at `./skills-codex/`:
+
+```json
+{
+  "skills": "./skills-codex/"
+}
+```
+
+The repo marketplace is:
+
+```text
+.agents/plugins/marketplace.json
+```
+
+Install from a clone:
+
+```bash
+git clone https://github.com/alexei-led/cc-thingz.git
+cd cc-thingz
+codex
+```
+
+Inside Codex, open plugin management:
+
+```text
+/plugins
+```
+
+Select the `cc-thingz` marketplace, install the plugin you want, and enable it.
+The interactive plugin browser is the current documented install path for local
+marketplaces. If your Codex version exposes non-interactive plugin commands, use
+those only after confirming they map to the same marketplace entries.
+
+For local development, regenerate first:
+
+```bash
+make overlays flat validate-overlays validate-flat
+```
+
+Codex installs plugins into its own cache. If you change `skills-codex/`, update
+or reinstall the plugin from `/plugins` so Codex sees the new copy.
+
+## Gemini CLI
+
+Gemini consumes extensions. The root extension uses:
+
+```text
+gemini-extension.json
+GEMINI.md
+flat/skills-codex/<skill>/SKILL.md
+```
+
+`gemini-extension.json` sets:
+
+```json
+{
+  "contextFileName": "GEMINI.md"
+}
+```
+
+`GEMINI.md` links every exported skill with `@flat/skills-codex/...` references.
+Install the full repository extension, not only `flat/`, so those links resolve.
+
+Install from GitHub:
+
+```bash
+gemini extensions install https://github.com/alexei-led/cc-thingz
+```
+
+Install from a local checkout:
+
+```bash
+gemini extensions install /path/to/cc-thingz
+```
+
+For active development, link instead of copying:
+
+```bash
+gemini extensions link /path/to/cc-thingz
+```
+
+Useful checks:
+
+```bash
+gemini extensions list
+gemini
+```
+
+Inside Gemini:
+
+```text
+/extensions list
+```
+
+After source changes:
+
+```bash
+make overlays flat gemini-md validate-gemini-md validate-flat
+gemini extensions update
+```
+
+If you used `gemini extensions link`, restart Gemini after regenerating files;
+there is no install copy to refresh.
+
+## Adding or Changing Skills
+
+Source order for Pi skills:
+
+1. `SKILL.pi.md`
+2. `SKILL.codex.md`
+3. `SKILL.md` transformed for Pi
+4. `platforms/pi/skills/*` for Pi-only skills
+
+Source order for Pi agents:
+
+1. `plugins/<plugin>/agents/<agent>.pi.md`
+2. portable `plugins/<plugin>/agents/<agent>.md`
+3. `platforms/pi/agents/*.md` for Pi-only agents
+
+Use `SKILL.pi.md` or `<agent>.pi.md` when source instructions mention tools Pi
+does not have. Pi exports must use real Pi tool names and must not mention
+Claude-only or MCP tool names.
+
+Docs lookup is through `context7-cli`:
+
+```bash
+ctx7 library <name> "<specific query>"
+ctx7 docs /org/project "<specific query>"
+```
+
+Fallback:
+
+```bash
+npx ctx7@latest library <name> "<specific query>"
+npx ctx7@latest docs /org/project "<specific query>"
+```

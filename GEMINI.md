@@ -2,7 +2,7 @@
 
 These skills provide domain-specific knowledge and workflows. They are optimized for non-Claude models and generated from `flat/skills-codex/`.
 
-Total skills: 35
+Total skills: 36
 
 ## Development Workflow
 
@@ -43,6 +43,7 @@ Total skills: 35
 
 @flat/skills-codex/analyzing-usage/SKILL.md
 @flat/skills-codex/brainstorming-ideas/SKILL.md
+@flat/skills-codex/context7-cli/SKILL.md
 @flat/skills-codex/debating-ideas/SKILL.md
 @flat/skills-codex/evolving-config/SKILL.md
 @flat/skills-codex/exploring-repos/SKILL.md

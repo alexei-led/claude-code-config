@@ -92,8 +92,8 @@ skill-evals-summary: ## Print summary for latest skill eval workspace
 
 # --- Validate ---
 
-.PHONY: validate validate-config validate-flat validate-overlays validate-agents-md validate-gemini-md validate-executables validate-no-plugin-evals lint-instructions
-validate: validate-no-plugin-evals validate-config validate-flat validate-overlays validate-agents-md validate-gemini-md validate-executables ## Run all validation checks
+.PHONY: validate validate-config validate-flat validate-overlays validate-pi-overlays validate-pi-agents validate-agents-md validate-gemini-md validate-executables validate-no-plugin-evals lint-instructions
+validate: validate-no-plugin-evals validate-config validate-flat validate-overlays validate-pi-overlays validate-pi-agents validate-agents-md validate-gemini-md validate-executables ## Run all validation checks
 
 validate-config: ## Validate plugin configs and frontmatter
 	uv run python scripts/validate-config.py
@@ -111,6 +111,12 @@ validate-flat: ## Check flat/ symlinks are in sync
 
 validate-overlays: ## Check skills-codex/ overlays are in sync
 	uv run python scripts/generate-overlays.py --check
+
+validate-pi-overlays: ## Check skills-pi/ overlays are in sync
+	uv run python scripts/generate-overlays.py --platform pi --check
+
+validate-pi-agents: ## Check agents-pi/ overlays are in sync
+	uv run python scripts/generate-pi-agents.py --check
 
 validate-agents-md: ## Check AGENTS.md is in sync with skills
 	uv run python scripts/generate-agents-md.py --check
@@ -145,9 +151,15 @@ flat: ## Sync flat/ symlinks with plugin contents
 
 # --- Overlays ---
 
-.PHONY: overlays
+.PHONY: overlays pi-overlays pi-agents
 overlays: ## Build platform-specific skill overlays (skills-codex/)
 	uv run python scripts/generate-overlays.py
+
+pi-overlays: ## Build Pi skill overlays (skills-pi/)
+	uv run python scripts/generate-overlays.py --platform pi
+
+pi-agents: ## Build Pi subagent overlays (agents-pi/)
+	uv run python scripts/generate-pi-agents.py
 
 # --- Generated docs ---
 

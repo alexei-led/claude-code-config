@@ -1,6 +1,6 @@
 # spec-system
 
-Spec-driven development: structured requirements, vertical-slice tasks, and evidence-based completion workflows. Agent and commands are Claude Code-only; Codex CLI users get the spec-planner agent's knowledge via skills.
+Spec-driven development: structured requirements, vertical-slice tasks, and evidence-based completion workflows. Agent and commands are Claude Code-only; portable exports get the planning knowledge through generated skills where applicable.
 
 ## Commands (8)
 
@@ -51,9 +51,9 @@ specctl validate            # Check for issues
 
 Each `/spec:work` cycle: select a task → plan implementation → implement → verify → mark done.
 
-## MCP Servers
+## External Providers
 
-| Server              | Used For                        |
-| ------------------- | ------------------------------- |
-| Sequential Thinking | Systematic task decomposition   |
-| MorphLLM            | Codebase search during planning |
+| Provider | Used For |
+| --- | --- |
+| Sequential Thinking MCP | Claude Code-only systematic task decomposition |
+| MorphLLM MCP | Claude Code-only codebase search during planning |

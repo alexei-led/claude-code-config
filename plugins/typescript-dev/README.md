@@ -1,6 +1,6 @@
 # typescript-dev
 
-TypeScript development with strict typing, React patterns, and modern tooling. Available for both Claude Code and Codex CLI.
+TypeScript development with strict typing, React patterns, and modern tooling. Exported for Claude Code, Codex CLI, Gemini CLI, and Pi.
 
 ## Skills (1)
 
@@ -12,10 +12,10 @@ Includes supplementary docs: `PATTERNS.md`, `REACT.md`, `TESTING.md`.
 
 - `typescript-engineer` (sonnet) — TypeScript implementation, React apps, Node.js services (Claude Code only)
 
-## MCP Servers
+## External Providers
 
-| Server              | Used For                             |
-| ------------------- | ------------------------------------ |
-| Context7            | TS/React library docs                |
-| Sequential Thinking | Structured planning for complex work |
-| MorphLLM            | Codebase search and batch editing    |
+| Provider | Used For |
+| --- | --- |
+| Context7 CLI (`ctx7`) | Portable TS/React library docs |
+| Sequential Thinking MCP | Claude Code-only structured planning |
+| MorphLLM MCP | Claude Code-only codebase search and batch editing |

@@ -1,6 +1,6 @@
 # Skill eval roadmap
 
-The current suite covers all 35 skills with 70 eval cases. Use this roadmap for adding the next layer of tests without turning the suite into expensive confetti.
+The current suite covers all 36 skills with 71 eval cases. Use this roadmap for adding the next layer of tests without turning the suite into expensive confetti.
 
 ## Groups
 
@@ -42,11 +42,11 @@ Focus:
 
 ### 4. External information and second opinions
 
-Skills: `looking-up-docs`, `researching-web`, `exploring-repos`, `using-gemini`, `mem-history`.
+Skills: `context7-cli`, `looking-up-docs`, `researching-web`, `exploring-repos`, `using-gemini`, `mem-history`.
 
 Focus:
 
-- docs lookup vs broad research
+- Context7 CLI docs lookup vs broad research
 - current sources and citations
 - no private-code leakage to external tools
 - second-opinion results are verified, not trusted blindly
@@ -140,7 +140,7 @@ Add cases that produce or inspect artifacts, not just text:
 
 ### Codex/Gemini overlay parity
 
-Run the same eval fixtures against `SKILL_EVAL_SOURCE=skills-codex` before trusting exported skills. Add assertions for platform-neutral wording: no Claude-only tool names, no missing flat skill links, and no stale Gemini context.
+Run the same eval fixtures against `SKILL_EVAL_SOURCE=skills-codex` before trusting Codex/Gemini exported skills. Add assertions for platform-neutral wording: no Claude-only tool names, no missing flat skill links, and no stale Gemini context. Use `make validate` for Pi export checks: no banned Pi tool names, valid frontmatter, resolved local links, and executable support scripts.
 
 ### Internal-skill activation guards
 

@@ -1,0 +1,194 @@
+---
+description: Extract learnings and generate Pi/project customizations (AGENTS.md,
+  CONTEXT.md, ADRs, skills, agents, commands, hooks). Use when user says "learn",
+  "extract learnings", "what did we learn", "save learnings", "adapt config", "capture
+  domain language", or wants to improve Pi based on conversation patterns.
+name: learning-patterns
+---
+
+<!-- Pi platform guidance -->
+<!-- Use Pi tool names exactly: read, bash, edit, write, ask_user_question, structured_output, todo, Agent, get_subagent_result, steer_subagent, web_search, web_answer, web_research. -->
+<!-- Use Agent, get_subagent_result, and steer_subagent for delegated work. -->
+<!-- Use ctx7 or npx ctx7@latest through bash when Context7 documentation lookup is required. -->
+
+# Learn from Session
+
+Extract durable learnings and propose concrete customization updates. Ground changes in actual conversation/tool output. Ask one question at a time when confirmation is needed.
+
+## Workflow
+
+1. Discover existing customizations.
+2. Extract learnings from the conversation and tool output.
+3. Categorize by artifact type.
+4. Deduplicate with existing files.
+5. Present proposed changes and get approval.
+6. Apply only approved changes.
+7. Verify syntax, scope, and budget.
+
+## Phase 1: Discover Existing
+
+Find relevant project and Pi customization files:
+
+```text
+AGENTS.md                         # agent instructions
+.pi/agents/*.md                   # project-local subagents
+~/.pi/agent/skills/*/SKILL.md     # Pi user skills
+CONTEXT.md / CONTEXT-MAP.md       # domain language
+docs/adr/*.md                     # durable decisions
+.out-of-scope/*.md                # rejected requests, if used
+```
+
+For global Pi config, edit the chezmoi source first:
+
+```text
+/Users/alexei/.local/share/chezmoi/dot_pi/agent/...
+```
+
+Then apply to live config under `~/.pi/agent/`. Pi user skills live under `~/.pi/agent/skills/`; chezmoi source lives under `dot_pi/agent/skills/`. Do not edit generated/live-only files when a source file exists.
+
+For broad customization reviews, use a background `scout` or `reviewer` agent to inspect independent file sets. The parent decides what to write.
+
+Use `web_answer` or `web_search` only for current Pi docs or external tool behavior. Prefer local Pi docs under the installed package when available.
+
+## Phase 2: Extract Learnings
+
+### Instruction Signals -> AGENTS.md
+
+| Signal            | Look For                                      |
+|-------------------|-----------------------------------------------|
+| Corrections       | "no", "wrong", "actually", "instead"     |
+| Direct guidance   | "always", "prefer", "use X", "never"      |
+| Repeated explains | Same thing clarified 2+ times                 |
+| Project quirks    | Unexpected behavior, edge cases, workarounds  |
+| Workflows         | Commands or sequences that worked             |
+
+### Domain Signals -> CONTEXT.md / ADRs
+
+| Signal             | Artifact   | Look For                                      |
+|--------------------|------------|-----------------------------------------------|
+| Term resolution    | CONTEXT.md | "call this X", "X means", overloaded jargon |
+| Ambiguity resolved | CONTEXT.md | "not account, customer", "avoid Y"          |
+| Durable trade-off  | ADR        | hard-to-reverse, surprising, real alternative |
+| Scope rejection    | out-of-scope | "we will not support X because"            |
+
+Only record domain concepts meaningful to domain experts. General implementation terms do not belong in `CONTEXT.md`.
+
+### Skill Signals -> Pi Skills
+
+Create or update a skill only for a workflow that is:
+
+- repeated or likely to recur
+- multi-step enough to forget details
+- tool-heavy or review-heavy
+- specific enough to trigger reliably
+
+Prefer updating an existing skill over creating a near-duplicate.
+
+### Agent Signals -> Pi Agents
+
+Create or update an agent only when isolation helps:
+
+- independent review pass
+- language/domain specialist
+- long-running research
+- parallel analysis with a bounded output
+
+Do not make an agent for generic advice. That is how prompt zoos happen.
+
+## Phase 3: Distill Artifacts
+
+### AGENTS.md Instructions
+
+Use terse rules:
+
+```text
+Use X for Y.
+Prefer X over Y.
+When X, run Y.
+Never do X without confirmation.
+```
+
+One instruction per line. Avoid stories.
+
+### CONTEXT.md Entry
+
+```markdown
+**Term**:
+One-sentence definition.
+_Avoid_: overloaded synonym, fuzzy alias
+```
+
+### ADR Entry
+
+```markdown
+# Decision title
+
+One to three sentences: context, decision, why.
+```
+
+Write ADRs only when the decision is hard to reverse, surprising without context, and a real trade-off.
+
+### Skill Authoring Rules
+
+- Frontmatter must have `name` and `description`.
+- Directory name must match skill name.
+- Description must explain what the skill does and when to use it.
+- Keep `SKILL.md` concise; move deep reference material to sibling files only when needed.
+- Use specific triggers, not mush like "helps with things".
+- Ask one question at a time in interactive skills.
+- Include verification when the skill changes code/config.
+
+## Phase 4: Budget Check
+
+Recommended limits:
+
+| Artifact   | Limit     | Why                |
+|------------|-----------|--------------------|
+| AGENTS.md  | 200 lines | context efficiency |
+| CONTEXT.md | concise   | domain terms only  |
+| ADRs       | sparse    | decisions, not diary |
+| Skills     | focused   | discoverability    |
+| Agents     | few       | routing clarity    |
+
+If the budget is exceeded, propose consolidation before adding more text.
+
+## Phase 5: Present and Confirm
+
+Before editing, show proposed changes:
+
+```markdown
+## Proposed Learnings
+
+### AGENTS.md
+- + Use prepared statements for SQL.
+- ~ Prefer explicit errors -> Prefer domain error types at service boundaries.
+
+### Domain docs
+- + CONTEXT.md: Materialization
+- + docs/adr/0003-use-events-for-materialization.md
+
+### Skills
+- + auth-patterns — OAuth2/JWT workflow
+- ~ reviewing-code — add architecture seam checks
+
+Rollback: git checkout <files>
+```
+
+Stop for approval unless the user already explicitly asked to apply changes.
+
+## Output
+
+```text
+LEARNED
+-------
+Instructions: +N ~N
+Domain docs: +N ~N
+Skills: +N ~N
+Agents: +N ~N
+
+Applied:
+- file — change
+
+Verification:
+- <command> — pass/fail
+```

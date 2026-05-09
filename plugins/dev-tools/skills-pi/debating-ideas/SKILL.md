@@ -1,0 +1,114 @@
+---
+description: Dialectic thinking — spawn thesis and antithesis agents to stress-test
+  ideas, then synthesize and verify against code. Use when user says "debate", "argue
+  both sides", "devil's advocate", "stress test this idea", "pros and cons of approach",
+  or wants rigorous evaluation of a design decision.
+name: debating-ideas
+---
+
+<!-- Pi platform guidance -->
+<!-- Use Pi tool names exactly: read, bash, edit, write, ask_user_question, structured_output, todo, Agent, get_subagent_result, steer_subagent, web_search, web_answer, web_research. -->
+<!-- Use Agent, get_subagent_result, and steer_subagent for delegated work. -->
+<!-- Use ctx7 or npx ctx7@latest through bash when Context7 documentation lookup is required. -->
+
+# Dialectic Debate
+
+Stress-test ideas by spawning competing perspectives, then synthesize and ground-truth against code.
+
+**`$ARGUMENTS` is the question or topic to debate.**
+
+If no argument provided, ask the user what they want to evaluate.
+
+Routing rule: if the user wants open-ended idea generation, option discovery, or "what could we build/do?", explicitly say this is open-ended brainstorming and route to `brainstorming-ideas` or an ideation workflow. Use this skill only when there is a specific design decision, thesis, or bounded trade-off to stress-test. If no clear opposing positions exist or evidence is unavailable, stop and ask for a sharper decision instead of inventing a debate.
+
+
+1. Frame the debate
+2. Spawn thesis + antithesis agents
+3. Synthesize positions
+4. Verify claims against code
+
+---
+
+## Phase 1: Frame the Debate
+
+Parse the topic from `$ARGUMENTS`. Identify:
+
+- **The core tension** — what are the two opposing positions?
+- **Stakes** — what depends on getting this right?
+- **Scope** — bound the debate to avoid sprawl
+
+Frame as a clear binary or spectrum question. Examples:
+
+- "Should we use microservices or a monolith for X?"
+- "Is caching worth the complexity here?"
+- "Should this be a library or an inline implementation?"
+
+---
+
+## Phase 2: Spawn Thesis + Antithesis (Parallel)
+
+Spawn two Explore agents in a single message:
+
+
+---
+
+## Phase 3: Synthesize
+
+Collect both results:
+
+
+Synthesize into a structured verdict:
+
+1. **Where they agree** — shared facts, common ground
+2. **Where they conflict** — genuine disagreements with evidence
+3. **Weak arguments** — flag claims that lack code evidence or rely on generalities
+4. **Verdict** — which position has stronger grounding, and why
+5. **Conditions** — when would the other position win instead?
+
+---
+
+## Phase 4: Verify Claims
+
+For any factual claims made by either side (file references, pattern assertions, dependency claims):
+
+- Read the cited files to confirm accuracy
+- Flag any misrepresentations or hallucinated evidence
+- Adjust verdict if verification changes the balance
+
+---
+
+## Output
+
+```
+DEBATE: {topic}
+==============
+
+Thesis: {position A}
+  Confidence: {high/medium/low}
+  Key evidence: {1-2 strongest points with file refs}
+
+Antithesis: {position B}
+  Confidence: {high/medium/low}
+  Key evidence: {1-2 strongest points with file refs}
+
+Verdict: {position} wins because {reason}
+Caveat: {position} would win if {conditions}
+
+Verified claims: {N}/{M} checked, {K} corrected
+```
+
+---
+
+## Examples
+
+```
+/debating-ideas Should we split the API into microservices?
+/debating-ideas Is it worth adding Redis caching to the auth flow?
+/debating-ideas Monorepo vs polyrepo for our frontend packages
+```
+
+---
+
+If the debate reaches no clear conclusion, present both positions with evidence and let the user decide.
+
+**Frame the debate now.**
