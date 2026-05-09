@@ -2,7 +2,7 @@
 
 A Claude Code plugin suite with portable skill export for Codex CLI, Gemini CLI, and AGENTS.md-compatible tools.
 
-36 skills across 8 plugins — code review, language tooling, infrastructure, testing, and developer utilities.
+37 skills across 8 plugins — code review, language tooling, infrastructure, testing, and developer utilities.
 
 ## Development Workflow
 
@@ -68,6 +68,7 @@ A Claude Code plugin suite with portable skill export for Codex CLI, Gemini CLI,
 | mem-history | Query project history, past decisions, and known gotchas from claude-mem observations |
 | researching-web | Web research via Perplexity AI |
 | reviewing-cc-config | Review Claude Code configuration for context efficiency, signal density, and anti-patterns |
+| sequential-thinking | Structured stepwise reasoning with explicit revisions and branches |
 | smart-explore | Token-efficient code navigation via AST parsing |
 | using-gemini | Consult Gemini for second opinions, brainstorming, or web search |
 | using-git-worktrees | Creates isolated git worktrees for parallel development |
