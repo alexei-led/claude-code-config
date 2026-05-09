@@ -50,7 +50,13 @@ if echo "$PROMPT_LOWER" | grep -qE '\bgcloud\b|\bgsutil\b|\bbq\s|\baws\s|bigquer
 	skills+="using-cloud-cli "
 fi
 
-# looking-up-docs: Library documentation via Context7
+# context7-cli: Direct ctx7 CLI invocation for library docs
+# Triggers: explicit "ctx7" / "context7" mentions or library-id queries
+if echo "$PROMPT_LOWER" | grep -qE '\bctx7\b|\bcontext7\b|context7[\s-]cli|/[a-z0-9-]+/[a-z0-9-]+\s+(library|docs|version)'; then
+	skills+="context7-cli "
+fi
+
+# looking-up-docs: Library documentation via Context7 (router → context7-cli)
 # Triggers: Explicit doc-seeking language, API reference needs
 # NOT for comparisons/best-practices (use researching-web)
 if echo "$PROMPT_LOWER" | grep -qE '\bdocs\b|\bdocumentation\b|api\s*(reference|docs)|look\s*up.*(docs|api|syntax|usage|reference|examples)|find.*(docs|documentation|reference)|check.*(docs|documentation)|man\s*page|reference.*(guide|manual)|official.*(docs|documentation)|library.*docs|version.*specific|syntax\s*for|examples\s*of|how\s*to\s*use\s*\w+'; then
@@ -86,12 +92,21 @@ if echo "$PROMPT_LOWER" | grep -qE 'refactor.*(across|multiple|batch|all|every)|
 	skills+="refactoring-code "
 fi
 
-# reviewing-code: Multi-agent code review for security, quality, architecture
-# Triggers: review code, check code, review changes, review PR, architecture/deep-module review
+# improve-codebase-architecture: Find deepening opportunities, module/seam vocab
+# Triggers: improve architecture, deepen modules, find architecture opportunities
+# NOT for line-level cleanup or PR review (use reviewing-code)
+if echo "$PROMPT_LOWER" | grep -qE '\bimprove\s*(the|my|this)?\s*(codebase\s*)?architecture\b|\bdeepen\s*(the|my)?\s*(modules?|architecture|abstractions?)\b|\bfind\s*(architecture|deepening|module)\s*opportunities\b|\bmake\s*(this|the|my)?\s*codebase\s*(more\s*)?(testable|navigable|deep)\b|\bconsolidate\s*(tightly[\s-]?)?(coupled\s*)?modules?\b'; then
+	skills+="improve-codebase-architecture "
+fi
+
+# reviewing-code: Multi-agent code review for security, quality, line-level concerns
+# Triggers: review code, check code, review changes, review PR
+# NOT for architecture deepening (use improve-codebase-architecture)
 # NOT for config/setup/skills/agents/hooks review (use reviewing-cc-config)
-if echo "$PROMPT_LOWER" | grep -qE '\breview\b.*\b(code|changes|this|my|the)\b|\bcode\s*review\b|\bcheck\s*(this|my|the)?\s*code\b|\bdeep\s*(code\s*)?review\b|\bfeedback\s*(on)?\s*(my|the|this)?\s*code\b|review\s*(my|the|these)?\s*(changes|implementation|pr)\b|critique\s*(my|the|this)?\s*code|architecture\s*review|review\s*(the\s*)?architecture|find\s*(architecture|refactoring)\s*opportunities|deep\s*module|shallow\s*module|seam|adapter\b|deletion\s*test'; then
+if echo "$PROMPT_LOWER" | grep -qE '\breview\b.*\b(code|changes|this|my|the)\b|\bcode\s*review\b|\bcheck\s*(this|my|the)?\s*code\b|\bdeep\s*(code\s*)?review\b|\bfeedback\s*(on)?\s*(my|the|this)?\s*code\b|review\s*(my|the|these)?\s*(changes|implementation|pr)\b|critique\s*(my|the|this)?\s*code|find\s*refactoring\s*opportunities|deep\s*module|shallow\s*module|seam|adapter\b|deletion\s*test'; then
+	# Exclude architecture-deepening — those go to improve-codebase-architecture
 	# Exclude config-review patterns — those go to reviewing-cc-config
-	if ! echo "$PROMPT_LOWER" | grep -qE '\b(config|configuration|setup|skills?|agents?|hooks?|claude\.?md)\b'; then
+	if ! echo "$PROMPT_LOWER" | grep -qE '\b(config|configuration|setup|skills?|agents?|hooks?|claude\.?md|architecture\s*deepening|deepen\s*(module|architecture))\b'; then
 		skills+="reviewing-code "
 	fi
 fi
@@ -137,9 +152,16 @@ if echo "$PROMPT_LOWER" | grep -qE '\bhtml\s*(template|file|page|component)?\b|\
 fi
 
 # brainstorming-ideas: Brainstorm ideas and stress-test draft plans
-# Triggers: brainstorm/design, grill or stress-test a plan, resolve design-blocking terms
-if echo "$PROMPT_LOWER" | grep -qE '\bbrainstorm\b|\bideate\b|\bdesign\s*(a|an|this|the|new)?\s*(\w+\s+)?(feature|component|system|api|flow|architecture)\b|\bexplore\s*(approach|option|idea|design|alternative)s?\b|\bthink\s*through\b|\bbefore\s*(i|we)?\s*(implement|code|build|start)\b|\bplan\s*(out|this|the)?\s*(feature|design|approach)\b|\bplan\s*(review|grill)\b|\breview\s*(this|the|my)?\s*plan\b|\bsketch\s*out\b|\bfigure\s*out\s*(how|what|the)\b|\bdesign\s*session\b|\bwhat\s*should\s*(i|we)\s*(build|implement|create)\b|\bgrill\s*(me|this|the|my)?\b|stress[\s-]?test\s*(this|the|my)?\s*(plan|design|idea)|\bCONTEXT\.md\b|\bADR\b|domain\s*(language|glossary|term)'; then
+# Triggers: brainstorm/design, plan exploration, resolve design-blocking terms
+# NOT for "grill me" decision-tree interview on a single plan (use grill-me)
+if echo "$PROMPT_LOWER" | grep -qE '\bbrainstorm\b|\bideate\b|\bdesign\s*(a|an|this|the|new)?\s*(\w+\s+)?(feature|component|system|api|flow|architecture)\b|\bexplore\s*(approach|option|idea|design|alternative)s?\b|\bthink\s*through\b|\bbefore\s*(i|we)?\s*(implement|code|build|start)\b|\bplan\s*(out|this|the)?\s*(feature|design|approach)\b|\bsketch\s*out\b|\bfigure\s*out\s*(how|what|the)\b|\bdesign\s*session\b|\bwhat\s*should\s*(i|we)\s*(build|implement|create)\b|\bCONTEXT\.md\b|\bADR\b|domain\s*(language|glossary|term)'; then
 	skills+="brainstorming-ideas "
+fi
+
+# grill-me: Decision-tree interview on a single plan/design
+# Triggers: "grill me", stress-test a SPECIFIC plan, challenge an existing design
+if echo "$PROMPT_LOWER" | grep -qE '\bgrill\s*(me|this|the|my)\b|\bstress[\s-]?test\s*(this|the|my)\s*(plan|design|idea)\b|\bchallenge\s*me\b.*\bplan\b|\binterview\s*me\b.*\b(plan|design|approach)\b'; then
+	skills+="grill-me "
 fi
 
 # using-modern-cli: Modern CLI tools for better performance
