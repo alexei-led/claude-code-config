@@ -8,35 +8,74 @@ major = breaking config/hook changes, minor = new skills/features, patch = fixes
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-05-09
+
+First-class Pi support, ctx7 CLI replacing context7 MCP, Bun runner coverage,
+and an overhauled skill-enforcer hook.
+
 ### Added
 
-- **Pi agent exports** (commit `a4ce0fc`): `make pi-overlays`, `make pi-agents`, and
-  `flat/skills-pi`/`flat/agents-pi` ship 36 skills mirrored from plugins, 4 Pi-only
-  planning skills (`planning-common`, `planning-make`, `planning-exec`,
-  `planning-review`), and runtime subagents (`scout`, `planner`, `reviewer`,
-  `worker`, `playwright-tester`). Install with `scripts/install-pi-exports.sh
---apply` or chezmoi. Requires [`@tintinweb/pi-subagents`](https://github.com/tintinweb/pi-subagents)
-  for `Agent`/`get_subagent_result`/`steer_subagent` tools.
-- **Install-script integration tests**: `tests/test_install_pi_exports.py` exercises
-  dry-run, apply, idempotency, and backup-on-existing behaviors of
-  `scripts/install-pi-exports.sh`.
-- **Pi schedules placeholder**: `.pi/subagent-schedules/` is reserved for future
-  cron-style schedules; see its `README.md` for usage notes.
+- **Pi agent exports**. `make pi-overlays` + `make pi-agents` produce
+  `flat/skills-pi/` (40 skills: 36 mirrored + 4 Pi-only planning skills) and
+  `flat/agents-pi/` (5 subagents: `scout`, `planner`, `reviewer`, `worker`,
+  `playwright-tester`). Deploy with `scripts/install-pi-exports.sh --apply`
+  (no chezmoi needed) or via the chezmoi recipe in `docs/pi-skill-export.md`.
+  Pi requires [`@tintinweb/pi-subagents`](https://github.com/tintinweb/pi-subagents)
+  for `Agent` / `get_subagent_result` / `steer_subagent`.
+- **Install-script integration tests** (`tests/test_install_pi_exports.py`)
+  cover dry-run, apply, idempotency, backup-on-existing, and nested-target
+  creation for `scripts/install-pi-exports.sh`.
+- **Bun/bunx runner coverage** across all ctx7 and Playwright skills/agents.
+  Allowlists now include `Bash(bunx ctx7@latest *)` and `Bash(bunx playwright *)`
+  alongside the npx variants. Body examples show both runners; pick by
+  lockfile (`bun.lock`/`bun.lockb` → `bunx`, otherwise `npx`).
+- **Tool-first / grounding sections** added to web review agents
+  (`web-impl`, `web-qa`, `web-tests`, `web-idioms`, `web-simplify`,
+  `web-engineer`). Each requires running `html-validate` / `stylelint` /
+  `playwright` first and grounding findings in tool output.
+- **Skill-enforcer triggers** for `context7-cli`, `grill-me`, and
+  `improve-codebase-architecture`; tightened `reviewing-code` and
+  `brainstorming-ideas` to exclude overlapping triggers.
+- **MCP migration backlog** (`docs/mcp-migration-backlog.md`) tracks remaining
+  MCP→CLI work: perplexity-ask, morphllm, deepwiki, claude-mem,
+  sequential-thinking.
+- **Pi schedules placeholder** (`.pi/subagent-schedules/README.md`) reserved
+  for future cron-style schedules; not deployed by `install-pi-exports.sh`.
 
 ### Changed
 
-- **Source agents now use ctx7 CLI, not context7 MCP**: 11 agents and 2 skills
-  switched from `mcp__context7__resolve-library-id`/`mcp__context7__query-docs` to
-  `Bash(ctx7 *)` / `Bash(npx ctx7@latest *)` and updated body refs to invoke
-  `ctx7 library` / `ctx7 docs` directly. Aligns Claude Code source with the existing
-  Pi/Codex/Gemini overlays and unblocks the playwright-tester agent's Pi export.
-  Locked by `tests/test_no_mcp_context7_in_plugins.py`.
+- **context7 MCP removed from source agents and skills**. 11 Claude Code
+  agents (`go-engineer`, `python-engineer`, `typescript-engineer`,
+  `infra-engineer`, `web-engineer`, `playwright-tester`, `docs-keeper`, and
+  the four `*-simplify` review agents) plus 2 skills (`exploring-repos`,
+  `documenting-code`) now invoke `ctx7` via `Bash(ctx7 *)` /
+  `Bash(npx ctx7@latest *)` / `Bash(bunx ctx7@latest *)`. Body references
+  rewritten to use `ctx7 library` / `ctx7 docs`. Locked by
+  `tests/test_no_mcp_context7_in_plugins.py`.
+- **Skill instructions strengthened for ctx7 emission**. `context7-cli` and
+  `looking-up-docs` now require the response to SHOW the actual `ctx7`
+  commands invoked — claiming "I used Context7" without an emitted command
+  no longer satisfies the workflow.
 
-### Documentation
+### Docs
 
-- **MCP migration backlog**: new `docs/mcp-migration-backlog.md` tracks remaining
-  MCP namespaces (perplexity-ask, morphllm, deepwiki, claude-mem, sequential-thinking)
-  and per-namespace CLI status.
+- **README install rewrite** assumes no chezmoi by default. Each section
+  states its CLI prerequisite, links upstream installers, and shows the
+  exact symlink targets / settings.json snippets for Codex, Gemini, and Pi.
+- **`docs/pi-skill-export.md`** cross-links to `.pi/subagent-schedules/README.md`
+  and `docs/mcp-migration-backlog.md`; smoke-check list updated for the new
+  `playwright-tester` Pi agent.
+
+### Migration notes
+
+- **Claude Code users**: no action needed. Agents that previously used
+  `mcp__context7__*` now use the `ctx7` CLI directly. If `ctx7` is not
+  installed, agents fall back to `npx ctx7@latest` / `bunx ctx7@latest`.
+- **Codex / Gemini users**: the overlay pipeline already stripped MCP
+  references, so behavior is unchanged. Newly added `Bash(bunx …)`
+  allowlist entries are pure additions.
+- **Pi users (new)**: install `@tintinweb/pi-subagents` then run
+  `scripts/install-pi-exports.sh --apply`. See README "Pi" section.
 
 ## [1.10.1] - 2026-05-08
 
