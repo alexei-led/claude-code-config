@@ -52,7 +52,7 @@ fi
 
 # context7-cli: Direct ctx7 CLI invocation for library docs
 # Triggers: explicit "ctx7" / "context7" mentions or library-id queries
-if echo "$PROMPT_LOWER" | grep -qE '\bctx7\b|\bcontext7\b|context7[\s-]cli|/[a-z0-9-]+/[a-z0-9-]+\s+(library|docs|version)'; then
+if echo "$PROMPT_LOWER" | grep -qE '\bctx7\b|\bcontext7\b|context7[[:space:]-]cli|/[a-z0-9-]+/[a-z0-9-]+\s+(library|docs|version)'; then
 	skills+="context7-cli "
 fi
 
@@ -69,7 +69,7 @@ fi
 # researching-web: Web research via Perplexity AI (comparisons, best practices, standards)
 # Triggers: Research language, comparisons, best practices, industry standards
 # NOT for API references or library docs (use looking-up-docs)
-if echo "$PROMPT_LOWER" | grep -qE '\bresearch\b|search.*(web|online)|look\s*up.*online|find\s*out.*(about|if|whether)|compare.*(tool|lib|framework|approach|option|technolog)|(\w+)\s+vs\s+(\w+)|pros\s*(and|&)\s*cons|trade[\s-]?off|which.*(better|should|recommend)|latest.*(version|release|update)|current.*(version|best)|what.?s\s*new\s*in|best\s*practice|up[\s-]?to[\s-]?date|2024|2025|2026|industry\s*standard|owasp|recommended\s*(practice|approach|pattern)|perplexity'; then
+if echo "$PROMPT_LOWER" | grep -qE '\bresearch\b|search.*(web|online)|look\s*up.*online|find\s*out.*(about|if|whether)|compare.*(tool|lib|framework|approach|option|technolog)|(\w+)\s+vs\s+(\w+)|pros\s*(and|&)\s*cons|trade[[:space:]-]?off|which.*(better|should|recommend)|latest.*(version|release|update)|current.*(version|best)|what.?s\s*new\s*in|best\s*practice|up[[:space:]-]?to[[:space:]-]?date|2024|2025|2026|industry\s*standard|owasp|recommended\s*(practice|approach|pattern)|perplexity'; then
 	skills+="researching-web "
 fi
 
@@ -82,20 +82,20 @@ fi
 # searching-code: Intelligent codebase search + zoom-out mapping via WarpGrep
 # Triggers: Understanding code flow, tracing, cross-file exploration, zoom-out requests, large repos
 # "how does X work" only for THIS codebase — external libs go to looking-up-docs/exploring-repos
-if echo "$PROMPT_LOWER" | grep -qE 'how\s*does.*(this|our|the\s*(code|project|repo|module|function|class|method)).*work|trace.*(flow|data|request|call)|understand.*(codebase|code|flow|architecture)|find\s*all.*(implementation|usage|call|reference)|cross[\s-]?file|multi[\s-]?hop|where.*implemented|explore.*(codebase|code)|large\s*repo|warpgrep|intelligent\s*search|reason.*about.*code|zoom\s*out|go\s*up\s*a\s*layer|map\s*(this|the)?\s*(area|module|code|flow)|caller\s*map|module\s*map'; then
+if echo "$PROMPT_LOWER" | grep -qE 'how\s*does.*(this|our|the\s*(code|project|repo|module|function|class|method)).*work|trace.*(flow|data|request|call)|understand.*(codebase|code|flow|architecture)|find\s*all.*(implementation|usage|call|reference)|cross[[:space:]-]?file|multi[[:space:]-]?hop|where.*implemented|explore.*(codebase|code)|large\s*repo|warpgrep|intelligent\s*search|reason.*about.*code|zoom\s*out|go\s*up\s*a\s*layer|map\s*(this|the)?\s*(area|module|code|flow)|caller\s*map|module\s*map'; then
 	skills+="searching-code "
 fi
 
 # refactoring-code: Fast batch refactoring via MorphLLM edit_file
 # Triggers: Multi-file batch changes, style updates everywhere, complex prompt → many changes
-if echo "$PROMPT_LOWER" | grep -qE 'refactor.*(across|multiple|batch|all|every)|batch.*(edit|rename|update|change)|rename.*(across|everywhere|all|every)|update.*(pattern|import|style).*everywhere|(multi[\s-]?file|cross[\s-]?file).*(refactor|update|change)|morphllm|edit_file|5\+?\s*files|same\s*pattern.*files|style.*every'; then
+if echo "$PROMPT_LOWER" | grep -qE 'refactor.*(across|multiple|batch|all|every)|batch.*(edit|rename|update|change)|rename.*(across|everywhere|all|every)|update.*(pattern|import|style).*everywhere|(multi[[:space:]-]?file|cross[[:space:]-]?file).*(refactor|update|change)|morphllm|edit_file|5\+?\s*files|same\s*pattern.*files|style.*every'; then
 	skills+="refactoring-code "
 fi
 
 # improve-codebase-architecture: Find deepening opportunities, module/seam vocab
 # Triggers: improve architecture, deepen modules, find architecture opportunities
 # NOT for line-level cleanup or PR review (use reviewing-code)
-if echo "$PROMPT_LOWER" | grep -qE '\bimprove\s*(the|my|this)?\s*(codebase\s*)?architecture\b|\bdeepen\s*(the|my)?\s*(modules?|architecture|abstractions?)\b|\bfind\s*(architecture|deepening|module)\s*opportunities\b|\bmake\s*(this|the|my)?\s*codebase\s*(more\s*)?(testable|navigable|deep)\b|\bconsolidate\s*(tightly[\s-]?)?(coupled\s*)?modules?\b'; then
+if echo "$PROMPT_LOWER" | grep -qE '\bimprove\s*(the|my|this)?\s*(codebase\s*)?architecture\b|\bdeepen\s*(the|my)?\s*(modules?|architecture|abstractions?)\b|\bfind\s*(architecture|deepening|module)\s*opportunities\b|\bmake\s*(this|the|my)?\s*codebase\s*(more\s*)?(testable|navigable|deep)\b|\bconsolidate\s*(tightly[[:space:]-]?)?(coupled\s*)?modules?\b'; then
 	skills+="improve-codebase-architecture "
 fi
 
@@ -137,7 +137,7 @@ fi
 
 # testing-e2e: E2E testing with Playwright MCP
 # Triggers: e2e test, playwright, browser testing, UI automation
-if echo "$PROMPT_LOWER" | grep -qE '\be2e\b.*\btest|\bplaywright\b|\bbrowser\s*(test|testing|automation)\b|\bui\s*(test|testing|automation)\b|\bend[\s-]?to[\s-]?end\b|\bvisual\s*(test|testing|regression)\b|\baccessibility\s*(test|testing|check)\b|\ba11y\s*(test|check)\b'; then
+if echo "$PROMPT_LOWER" | grep -qE '\be2e\b.*\btest|\bplaywright\b|\bbrowser\s*(test|testing|automation)\b|\bui\s*(test|testing|automation)\b|\bend[[:space:]-]?to[[:space:]-]?end\b|\bvisual\s*(test|testing|regression)\b|\baccessibility\s*(test|testing|check)\b|\ba11y\s*(test|check)\b'; then
 	skills+="testing-e2e "
 fi
 
@@ -160,7 +160,7 @@ fi
 
 # grill-me: Decision-tree interview on a single plan/design
 # Triggers: "grill me", stress-test a SPECIFIC plan, challenge an existing design
-if echo "$PROMPT_LOWER" | grep -qE '\bgrill\s*(me|this|the|my)\b|\bstress[\s-]?test\s*(this|the|my)\s*(plan|design|idea)\b|\bchallenge\s*me\b.*\bplan\b|\binterview\s*me\b.*\b(plan|design|approach)\b'; then
+if echo "$PROMPT_LOWER" | grep -qE '\bgrill\s*(me|this|the|my)\b|\bstress[[:space:]-]?test\s*(this|the|my)\s*(plan|design|idea)\b|\bchallenge\s*me\b.*\bplan\b|\binterview\s*me\b.*\b(plan|design|approach)\b'; then
 	skills+="grill-me "
 fi
 
@@ -172,13 +172,13 @@ fi
 
 # improving-tests: Review, refactor, improve tests, and TDD workflow
 # Triggers: improve tests, refactor tests, coverage, TDD, red-green-refactor
-if echo "$PROMPT_LOWER" | grep -qE '\bimprove\s*(my|the|these)?\s*tests?\b|\brefactor\s*(my|the|these)?\s*tests?\b|\btest\s*coverage\b|\bcombine\s*(the|my)?\s*tests?\b|\btable[\s-]?driven\b|\bparametri[sz]e\b|\btest\.each\b|\beliminate\s*test\s*waste\b|\btest\s*(quality|improvement|cleanup)\b|\btdd\b|test[\s-]?first|red[\s-]?green[\s-]?refactor|write\s*(the\s*)?test\s*first'; then
+if echo "$PROMPT_LOWER" | grep -qE '\bimprove\s*(my|the|these)?\s*tests?\b|\brefactor\s*(my|the|these)?\s*tests?\b|\btest\s*coverage\b|\bcombine\s*(the|my)?\s*tests?\b|\btable[[:space:]-]?driven\b|\bparametri[sz]e\b|\btest\.each\b|\beliminate\s*test\s*waste\b|\btest\s*(quality|improvement|cleanup)\b|\btdd\b|test[[:space:]-]?first|red[[:space:]-]?green[[:space:]-]?refactor|write\s*(the\s*)?test\s*first'; then
 	skills+="improving-tests "
 fi
 
 # learning-patterns: Extract learnings and generate customizations/domain docs
 # Triggers: learn, learnings, adapt config, session patterns, domain language capture
-if echo "$PROMPT_LOWER" | grep -qE '\blearn\b.*\b(from|session|pattern|conversation)\b|\bextract\s*(the)?\s*learnings?\b|\bwhat\s*did\s*(we|i)\s*learn\b|\bsave\s*(the)?\s*learnings?\b|\badapt\s*(the|my)?\s*(config|configuration|settings)\b|\bsession\s*learnings?\b|\bimprove\s*claude\s*code\b|\bcustomiz.*(claude|config)\b|\b(learn|record)\s*from\s*(this|the|our)\s*(session|conversation|chat)\b|capture\s*(domain|term|language)|save\s*(domain|term|language)|record\s*(ADR|decision|out[\s-]?of[\s-]?scope)'; then
+if echo "$PROMPT_LOWER" | grep -qE '\blearn\b.*\b(from|session|pattern|conversation)\b|\bextract\s*(the)?\s*learnings?\b|\bwhat\s*did\s*(we|i)\s*learn\b|\bsave\s*(the)?\s*learnings?\b|\badapt\s*(the|my)?\s*(config|configuration|settings)\b|\bsession\s*learnings?\b|\bimprove\s*claude\s*code\b|\bcustomiz.*(claude|config)\b|\b(learn|record)\s*from\s*(this|the|our)\s*(session|conversation|chat)\b|capture\s*(domain|term|language)|save\s*(domain|term|language)|record\s*(ADR|decision|out[[:space:]-]?of[[:space:]-]?scope)'; then
 	skills+="learning-patterns "
 fi
 
@@ -190,13 +190,13 @@ fi
 
 # spec:help: Quick methodology guide for spec-driven development
 # Triggers: how does spec work, spec guide, spec methodology
-if echo "$PROMPT_LOWER" | grep -qE '\bhow\s*does\s*spec\b|\bspec\s*(guide|help|methodology|workflow|reference)\b|\bspec[\s-]driven\s*(guide|help|how)\b|\bwhat\s*(are|is)\s*(the)?\s*spec\s*(command|workflow|phase)'; then
+if echo "$PROMPT_LOWER" | grep -qE '\bhow\s*does\s*spec\b|\bspec\s*(guide|help|methodology|workflow|reference)\b|\bspec[[:space:]-]driven\s*(guide|help|how)\b|\bwhat\s*(are|is)\s*(the)?\s*spec\s*(command|workflow|phase)'; then
 	skills+="spec:help "
 fi
 
 # spec:interview: Requirement extraction with domain/out-of-scope context
 # Triggers: gather requirements, PRD, interview, out-of-scope triage
-if echo "$PROMPT_LOWER" | grep -qE '\b(requirements?|prd|product\s*requirements?)\b|spec\s*interview|interview\s*(me|for|about)|out[\s-]?of[\s-]?scope|triage\s*(issue|request|feature)'; then
+if echo "$PROMPT_LOWER" | grep -qE '\b(requirements?|prd|product\s*requirements?)\b|spec\s*interview|interview\s*(me|for|about)|out[[:space:]-]?of[[:space:]-]?scope|triage\s*(issue|request|feature)'; then
 	skills+="spec:interview "
 fi
 
@@ -204,14 +204,14 @@ fi
 # Triggers: implementation plan, break into tasks/issues, vertical slices
 if echo "$PROMPT_LOWER" | grep -qE 'spec\s*plan|implementation\s*plan|break\s*(this|it)?\s*(into)?\s*(tasks|issues|tickets)|vertical\s*slice|tracer\s*bullet|create\s*(tasks|issues)'; then
 	# Plan review/grilling belongs to brainstorming-ideas, not task generation.
-	if ! echo "$PROMPT_LOWER" | grep -qE '\b(grill|stress[\s-]?test|challenge|review)\b.*\bplan\b|\bplan\b.*\b(grill|stress[\s-]?test|challenge|review)\b'; then
+	if ! echo "$PROMPT_LOWER" | grep -qE '\b(grill|stress[[:space:]-]?test|challenge|review)\b.*\bplan\b|\bplan\b.*\b(grill|stress[[:space:]-]?test|challenge|review)\b'; then
 		skills+="spec:plan "
 	fi
 fi
 
 # spec:work: Main workflow - select, plan, implement, verify
 # Triggers: start/continue spec work, next task
-if echo "$PROMPT_LOWER" | grep -qE '\b(start|begin|continue|resume)\s*(spec\s*)?(work|task|implementation)\b|\bnext\s*(ready\s*)?(task|work)\b|\bwork\s*on\s*(the\s*)?(next|a)\s*task\b|\bspec[\s:]work\b|\bpick\s*up\s*(a\s*)?(new\s*)?task\b'; then
+if echo "$PROMPT_LOWER" | grep -qE '\b(start|begin|continue|resume)\s*(spec\s*)?(work|task|implementation)\b|\bnext\s*(ready\s*)?(task|work)\b|\bwork\s*on\s*(the\s*)?(next|a)\s*task\b|\bspec[[:space:]:]work\b|\bpick\s*up\s*(a\s*)?(new\s*)?task\b'; then
 	skills+="spec:work "
 fi
 
@@ -223,13 +223,20 @@ fi
 
 # debating-ideas: Dialectic agents stress-test design decisions
 # Triggers: debate, argue both sides, devil's advocate, stress test idea
-if echo "$PROMPT_LOWER" | grep -qE '\bdebate\b|\bargue\s*(both)?\s*sides\b|\bdevil.?s?\s*advocate\b|\bstress[\s-]?test\s*(this|the|my|an?)?\s*(idea|approach|design|decision|claim)\b|\bpros\s*(and|&)\s*cons\s*(of)?\s*(this|the|my)?\s*(approach|design|decision)\b|\bchallenge\s*(this|the|my)?\s*(idea|approach|assumption)\b|\brigorous\s*(evaluat|review|analys)\b|\bdialectic\b'; then
+if echo "$PROMPT_LOWER" | grep -qE '\bdebate\b|\bargue\s*(both)?\s*sides\b|\bdevil.?s?\s*advocate\b|\bstress[[:space:]-]?test\s*(this|the|my|an?)?\s*(idea|approach|design|decision|claim)\b|\bpros\s*(and|&)\s*cons\s*(of)?\s*(this|the|my)?\s*(approach|design|decision)\b|\bchallenge\s*(this|the|my)?\s*(idea|approach|assumption)\b|\brigorous\s*(evaluat|review|analys)\b|\bdialectic\b'; then
 	skills+="debating-ideas "
+fi
+
+# sequential-thinking: Externalized stepwise reasoning with revisions and branches
+# Triggers: explicit "step by step" / "sequential thinking" / revise-and-branch language
+# NOT for "think through" (brainstorming-ideas) or "stress test" (debating-ideas)
+if echo "$PROMPT_LOWER" | grep -qE '\bsequential[[:space:]-]?thinking\b|\bstep[[:space:]-]?by[[:space:]-]?step\b|\breason\s*through\s*(this|it|the)\b|\bplan\s*(this|it)\s*out\b|\bwalk\s*(me\s*)?through\s*(this|the|your)?\s*reasoning\b|\bbranch\s*(this|the|an?)\s*(idea|approach|reasoning|thought)\b|\brevise\s*(my|the|your)?\s*(reasoning|thought|earlier\s*step)\b|\bnumbered\s*thoughts?\b|\bshow\s*(your|the)?\s*reasoning\s*steps?\b'; then
+	skills+="sequential-thinking "
 fi
 
 # evolving-config: Audit Claude Code config against latest features
 # Triggers: evolve, self-improve, audit config, what's new in claude code
-if echo "$PROMPT_LOWER" | grep -qE '\bevolve\b|\bself[\s-]?improv\b|\baudit\s*(my|the)?\s*(config|configuration|settings|setup)\b|\bwhat.?s\s*new\s*in\s*claude\s*code\b|\bupgrade\s*(my|the)?\s*(config|configuration|settings)\b|\bcheck\s*(for)?\s*(improvement|update)s?\b|\bare\s*(we|my\s*settings?)\s*up[\s-]?to[\s-]?date\b|\blatest\s*(claude|features)\b|\bimprove\s*(my|the)?\s*(claude|config|setup)\b'; then
+if echo "$PROMPT_LOWER" | grep -qE '\bevolve\b|\bself[[:space:]-]?improv\b|\baudit\s*(my|the)?\s*(config|configuration|settings|setup)\b|\bwhat.?s\s*new\s*in\s*claude\s*code\b|\bupgrade\s*(my|the)?\s*(config|configuration|settings)\b|\bcheck\s*(for)?\s*(improvement|update)s?\b|\bare\s*(we|my\s*settings?)\s*up[[:space:]-]?to[[:space:]-]?date\b|\blatest\s*(claude|features)\b|\bimprove\s*(my|the)?\s*(claude|config|setup)\b'; then
 	skills+="evolving-config "
 fi
 
@@ -247,7 +254,7 @@ fi
 
 # smart-explore: AST-based code navigation via claude-mem
 # Triggers: code structure, file outline, structural exploration
-if echo "$PROMPT_LOWER" | grep -qE '\b(code|file)\s*structure\b|\boutline\b.*\b(file|code|class|module)\b|\bstructural\s*(view|map|overview)\b|\bwhat.?s\s*in\s*this\s*file\b|\bexplore\s*(the\s*)?(code|codebase)\s*(structure)?\b|\bshow\s*(me\s*)?(the\s*)?(file|code)\s*structure\b|\bast\s*(pars|view|explor)\b|\bsmart[\s_-]?explore\b'; then
+if echo "$PROMPT_LOWER" | grep -qE '\b(code|file)\s*structure\b|\boutline\b.*\b(file|code|class|module)\b|\bstructural\s*(view|map|overview)\b|\bwhat.?s\s*in\s*this\s*file\b|\bexplore\s*(the\s*)?(code|codebase)\s*(structure)?\b|\bshow\s*(me\s*)?(the\s*)?(file|code)\s*structure\b|\bast\s*(pars|view|explor)\b|\bsmart[[:space:]_-]?explore\b'; then
 	skills+="smart-explore "
 fi
 
@@ -259,7 +266,7 @@ fi
 
 # ccgram-messaging: Inter-agent messaging via ccgram swarm
 # Triggers: ccgram commands, peer messaging, inbox, broadcast, swarm collaboration, agent-to-agent
-if echo "$PROMPT_LOWER" | grep -qE '\bccgram\b|\binbox\b.*\b(message|agent|peer)\b|\bmessage\s*(other|another|peer|agent|window)\b|\bbroadcast\b.*\b(agent|peer|team|status)\b|\bswarm\b|\blist[\s-]?peers\b|\bpeer\s*(message|discovery|status)\b|\binter[\s-]?agent\b|\bagent[\s-]?to[\s-]?agent\b|\bsend\s*(a\s*)?(message|msg)\s*(to)?\s*(agent|peer|window|@)\b|\bask\s*(another|other|the)\s*agent\b|\breply\s*(to)?\s*(the)?\s*(message|msg|agent)\b|\bspawn\s*(a\s*)?(new\s*)?(agent|window)\b|\bagent\s*(collaborat|communicat|coordinat)\b|\btmux\s*messag\b|\bcheck\s*(my|the)?\s*inbox\b'; then
+if echo "$PROMPT_LOWER" | grep -qE '\bccgram\b|\binbox\b.*\b(message|agent|peer)\b|\bmessage\s*(other|another|peer|agent|window)\b|\bbroadcast\b.*\b(agent|peer|team|status)\b|\bswarm\b|\blist[[:space:]-]?peers\b|\bpeer\s*(message|discovery|status)\b|\binter[[:space:]-]?agent\b|\bagent[[:space:]-]?to[[:space:]-]?agent\b|\bsend\s*(a\s*)?(message|msg)\s*(to)?\s*(agent|peer|window|@)\b|\bask\s*(another|other|the)\s*agent\b|\breply\s*(to)?\s*(the)?\s*(message|msg|agent)\b|\bspawn\s*(a\s*)?(new\s*)?(agent|window)\b|\bagent\s*(collaborat|communicat|coordinat)\b|\btmux\s*messag\b|\bcheck\s*(my|the)?\s*inbox\b'; then
 	skills+="ccgram-messaging "
 fi
 
@@ -271,7 +278,7 @@ fi
 
 # mem-history: Query project history via claude-mem
 # Triggers: past sessions, previous decisions, project timeline, memory search
-if echo "$PROMPT_LOWER" | grep -qE '\blast\s*session\b|\bdid\s*we\s*already\b|\bprevious\s*session\b|\bremember\s*when\b|\bwhat\s*did\s*we\s*decide\b|\bpast\s*(issue|bug|decision|fix)\b|\brecurring\s*bug\b|\bproject\s*(history|timeline)\b|\btimeline\b.*\b(project|feature|change)\b|\bwhat\s*happened\s*with\b|\bmem[\s-]?history\b|\bmem[\s-]?search\b|\bclaude[\s-]?mem\b'; then
+if echo "$PROMPT_LOWER" | grep -qE '\blast\s*session\b|\bdid\s*we\s*already\b|\bprevious\s*session\b|\bremember\s*when\b|\bwhat\s*did\s*we\s*decide\b|\bpast\s*(issue|bug|decision|fix)\b|\brecurring\s*bug\b|\bproject\s*(history|timeline)\b|\btimeline\b.*\b(project|feature|change)\b|\bwhat\s*happened\s*with\b|\bmem[[:space:]-]?history\b|\bmem[[:space:]-]?search\b|\bclaude[[:space:]-]?mem\b'; then
 	skills+="mem-history "
 fi
 
