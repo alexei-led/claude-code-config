@@ -1,7 +1,7 @@
 {
   "name": "dev-workflow",
   "description": "Core development loop: code review, fixes, commits, linting hooks, and 24 language-specific review agents",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "author": {
     "name": "Alexei Ledenev",
     "email": "alexei.led@gmail.com",

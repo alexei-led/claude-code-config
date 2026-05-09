@@ -6,7 +6,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 major = breaking config/hook changes, minor = new skills/features, patch = fixes.
 
-## [Unreleased]
+## [2.2.0] - 2026-05-09
 
 ### Added
 
@@ -150,11 +150,15 @@ and an overhauled skill-enforcer hook.
 - **Pi users (new)**: install `@tintinweb/pi-subagents` then run
   `scripts/install-pi-exports.sh --apply`. See README "Pi" section.
 
+## [2.2.0] - 2026-05-09
+
 ## [1.10.1] - 2026-05-08
 
 ### Fixed
 
 - **CI workflow startup**: moved skill-eval workspace configuration out of the invalid `runner.temp` job-level context so GitHub Actions can start CI jobs.
+
+## [2.2.0] - 2026-05-09
 
 ## [1.10.0] - 2026-05-08
 
@@ -175,6 +179,8 @@ and an overhauled skill-enforcer hook.
 - **Gemini drift**: `GEMINI.md` now includes all 35 flat Codex/Gemini skills and the root Gemini extension version/count is current.
 - **Overlay portability**: stripped Claude-specific MCP/tool names from generated Codex/Gemini skill overlays.
 
+## [2.2.0] - 2026-05-09
+
 ## [1.9.1] - 2026-05-03
 
 ### Added
@@ -188,6 +194,8 @@ and an overhauled skill-enforcer hook.
 
 - `lint_shell()` now skips `.claude-hooks-config.sh` files. They are sourced (not executed) and routinely written without shebangs, so shellcheck's `SC2148` was incorrectly blocking edits when a project added per-project hook config.
 
+## [2.2.0] - 2026-05-09
+
 ## [1.9.0] - 2026-05-03
 
 ### Added
@@ -198,6 +206,8 @@ and an overhauled skill-enforcer hook.
 ### Changed
 
 - **`brainstorming-ideas`** description: routes pure "grill me" requests on a single plan to the new `grill-me` skill; brainstorming-ideas remains the broader brainstorm/design/grill flow.
+
+## [2.2.0] - 2026-05-09
 
 ## [1.8.0] - 2026-04-30
 
@@ -218,7 +228,11 @@ and an overhauled skill-enforcer hook.
 
 - **Spec completion docs**: removed references to unsupported `specctl done --evidence` usage and aligned examples with the actual CLI flags.
 
+## [2.2.0] - 2026-05-09
+
 ## [1.9.1] - 2026-05-03
+
+## [2.2.0] - 2026-05-09
 
 ## [1.7.1] - 2026-04-19
 
@@ -241,7 +255,11 @@ and an overhauled skill-enforcer hook.
 - All 9 plugins bumped to 1.7.1 to align with marketplace tag
 - PR #6 (yogesh-tessl) closed without merge: the "frontmatter validation fix" was based on a third-party Tessl validator, not the Claude Code spec — which explicitly accepts both YAML lists and space-separated strings for `allowed-tools`. Useful prose changes (verify loops) cherry-picked manually
 
+## [2.2.0] - 2026-05-09
+
 ## [1.9.1] - 2026-05-03
+
+## [2.2.0] - 2026-05-09
 
 ## [1.7.0] - 2026-04-17
 
@@ -255,7 +273,11 @@ and an overhauled skill-enforcer hook.
 - **Plugin manifests**: All `plugin.json` and `marketplace.json` files enriched with full metadata — `author.email`, `author.url`, `homepage` URLs, expanded `keywords` arrays across all 9 plugins
 - **`make push`**: Simplified to plain dual-push (`origin` + mirror remotes); CI on mirror repos handles manifest rewrites automatically
 
+## [2.2.0] - 2026-05-09
+
 ## [1.9.1] - 2026-05-03
+
+## [2.2.0] - 2026-05-09
 
 ## [1.6.3] - 2026-04-16
 
@@ -264,7 +286,11 @@ and an overhauled skill-enforcer hook.
 - **`coding` skill**: Language-agnostic process discipline for all implementation tasks — surfaces assumptions before coding, defines verifiable success criteria first. Complements writing-go/python/typescript/web with process guardrails. Auto-activates on implement/write/create/build/add/develop intent; wired into go-engineer, python-engineer, typescript-engineer, web-engineer agents.
 - **`smart-lint.sh` skip gate**: Skip auto-linting via `SKIP_LINT=1 <command>` (transient) or `.nolint` file in project root (persistent, add to `.gitignore`). Useful when editing repos you don't own and want to avoid auto-formatting side-effects.
 
+## [2.2.0] - 2026-05-09
+
 ## [1.9.1] - 2026-05-03
+
+## [2.2.0] - 2026-05-09
 
 ## [1.6.2] - 2026-04-12
 
@@ -282,7 +308,11 @@ and an overhauled skill-enforcer hook.
 - **Skill descriptions**: Added trigger phrases and NOT-for exclusions to `looking-up-docs`, `researching-web`, `writing-web`, `reviewing-code` for cleaner routing
 - **skill-enforcer.sh**: Added negative patterns for 3 overlapping pairs (code/config review, docs/research, web/typescript) — all disambiguation tests pass
 
+## [2.2.0] - 2026-05-09
+
 ## [1.9.1] - 2026-05-03
+
+## [2.2.0] - 2026-05-09
 
 ## [1.6.0] - 2026-04-07
 
@@ -294,7 +324,11 @@ and an overhauled skill-enforcer hook.
 - Skill-enforcer trigger patterns for "review config", "config review", "context review", "review skills/agents/hooks"
 - Skill count: 31 → 32 (dev-tools: 14 → 15)
 
+## [2.2.0] - 2026-05-09
+
 ## [1.9.1] - 2026-05-03
+
+## [2.2.0] - 2026-05-09
 
 ## [1.5.0] - 2026-04-03
 
@@ -309,7 +343,11 @@ New skill: explore public GitHub repositories via DeepWiki AI-generated document
 - Clear DeepWiki vs Context7 decision table (architecture understanding vs API references)
 - Skill-enforcer trigger patterns for "explore repo", "deepwiki", "repo architecture", "how does owner/repo work"
 
+## [2.2.0] - 2026-05-09
+
 ## [1.9.1] - 2026-05-03
+
+## [2.2.0] - 2026-05-09
 
 ## [1.4.0] - 2026-04-02
 
@@ -336,7 +374,11 @@ AGENTS.md adoption and CC-first rebrand.
 
 - GEMINI.md skill drift: added 6 missing skills (`evolving-config`, `learning-patterns`, `linting-instructions`, `mem-history`, `smart-explore`, `using-gemini`) — now lists all 29 skills
 
+## [2.2.0] - 2026-05-09
+
 ## [1.9.1] - 2026-05-03
+
+## [2.2.0] - 2026-05-09
 
 ## [1.3.0] - 2026-04-02
 
@@ -372,7 +414,11 @@ Cross-platform plugin support for OpenAI Codex CLI and Google Gemini CLI.
 - README structure diagram expanded to show dual-manifest layout
 - CONTRIBUTING directory structure shows all 3 platform manifests
 
+## [2.2.0] - 2026-05-09
+
 ## [1.9.1] - 2026-05-03
+
+## [2.2.0] - 2026-05-09
 
 ## [1.2.2] - 2026-04-01
 
@@ -388,7 +434,11 @@ Documentation accuracy fixes for README.
 - Narrow linting-instructions enforcer triggers to skill/agent authoring context
 - Clarify linting-instructions description: references Anthropic model cards
 
+## [2.2.0] - 2026-05-09
+
 ## [1.9.1] - 2026-05-03
+
+## [2.2.0] - 2026-05-09
 
 ## [1.2.1] - 2026-04-01
 
@@ -421,7 +471,11 @@ System card-derived instruction hardening for all agents and skills.
 - Skill count: 29 → 30 (new linting-instructions in dev-tools)
 - All instruction fixes derived from Claude Opus 4.6 and Sonnet 4.6 system cards
 
+## [2.2.0] - 2026-05-09
+
 ## [1.9.1] - 2026-05-03
+
+## [2.2.0] - 2026-05-09
 
 ## [1.2.0] - 2026-03-31
 
@@ -444,7 +498,11 @@ Optional claude-mem integration for AST-based code navigation and cross-session 
 - All review agent frontmatter converted to multi-line tools format
 - Engineer agents gain `### Memory (claude-mem)` body section
 
+## [2.2.0] - 2026-05-09
+
 ## [1.9.1] - 2026-05-03
+
+## [2.2.0] - 2026-05-09
 
 ## [1.1.1] - 2026-03-31
 
@@ -484,7 +542,11 @@ Full repository review and cleanup.
 - Orphaned root files: claude-powerline.json, MCP_Sequential.md, .claude-hooks-config.sh, .claude-hooks-ignore
 - install-tools.sh (user-specific, not marketplace-related)
 
+## [2.2.0] - 2026-05-09
+
 ## [1.9.1] - 2026-05-03
+
+## [2.2.0] - 2026-05-09
 
 ## [1.1.0] - 2026-03-30
 
@@ -503,7 +565,11 @@ Restructured as a 9-plugin marketplace for community sharing.
 - Updated README with correct installation syntax per official plugin docs
 - Updated GUIDE with plugin-relative paths and companion tool notes
 
+## [2.2.0] - 2026-05-09
+
 ## [1.9.1] - 2026-05-03
+
+## [2.2.0] - 2026-05-09
 
 ## [1.0.0] - 2026-02-28
 
