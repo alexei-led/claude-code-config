@@ -1,5 +1,5 @@
 {
-  "name": "web-dev",
+  "name": "vanilla-web-htmx",
   "description": "Web frontend development with vanilla HTML, CSS, JavaScript, and HTMX",
   "version": "2.2.0",
   "author": {
@@ -7,7 +7,7 @@
     "email": "alexei.led@gmail.com",
     "url": "https://github.com/alexei-led"
   },
-  "repository": "https://github.com/alexei-led/cc-thingz",
+  "repository": "https://github.com/alexei-led/cc-forge",
   "license": "MIT",
   "keywords": [
     "html",
@@ -20,5 +20,5 @@
     "accessibility",
     "responsive"
   ],
-  "homepage": "https://github.com/alexei-led/cc-thingz/tree/master/plugins/web-dev"
+  "homepage": "https://github.com/alexei-led/cc-forge/tree/master/plugins/web-dev"
 }

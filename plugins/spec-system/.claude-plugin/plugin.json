@@ -1,5 +1,5 @@
 {
-  "name": "spec-system",
+  "name": "spec-driven-planning",
   "description": "Spec-driven development: structured requirements, tasks, and planning workflows",
   "version": "2.2.0",
   "author": {
@@ -7,7 +7,7 @@
     "email": "alexei.led@gmail.com",
     "url": "https://github.com/alexei-led"
   },
-  "repository": "https://github.com/alexei-led/cc-thingz",
+  "repository": "https://github.com/alexei-led/cc-forge",
   "license": "MIT",
   "keywords": [
     "spec",
@@ -20,5 +20,5 @@
     "project-management",
     "workflow"
   ],
-  "homepage": "https://github.com/alexei-led/cc-thingz/tree/master/plugins/spec-system"
+  "homepage": "https://github.com/alexei-led/cc-forge/tree/master/plugins/spec-system"
 }

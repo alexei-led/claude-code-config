@@ -1,5 +1,5 @@
 {
-  "name": "typescript-dev",
+  "name": "typescript-react-dev",
   "description": "TypeScript development with strict typing, React patterns, and modern tooling",
   "version": "2.2.0",
   "author": {
@@ -7,7 +7,7 @@
     "email": "alexei.led@gmail.com",
     "url": "https://github.com/alexei-led"
   },
-  "repository": "https://github.com/alexei-led/cc-thingz",
+  "repository": "https://github.com/alexei-led/cc-forge",
   "license": "MIT",
   "keywords": [
     "typescript",
@@ -19,5 +19,5 @@
     "frontend",
     "development"
   ],
-  "homepage": "https://github.com/alexei-led/cc-thingz/tree/master/plugins/typescript-dev"
+  "homepage": "https://github.com/alexei-led/cc-forge/tree/master/plugins/typescript-dev"
 }

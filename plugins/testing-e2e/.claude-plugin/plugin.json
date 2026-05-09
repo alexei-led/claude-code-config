@@ -1,5 +1,5 @@
 {
-  "name": "testing-e2e",
+  "name": "playwright-e2e",
   "description": "End-to-end testing with Playwright: browser automation, test generation, and UI testing",
   "version": "2.2.0",
   "author": {
@@ -7,7 +7,7 @@
     "email": "alexei.led@gmail.com",
     "url": "https://github.com/alexei-led"
   },
-  "repository": "https://github.com/alexei-led/cc-thingz",
+  "repository": "https://github.com/alexei-led/cc-forge",
   "license": "MIT",
   "keywords": [
     "playwright",
@@ -18,5 +18,5 @@
     "accessibility",
     "typescript"
   ],
-  "homepage": "https://github.com/alexei-led/cc-thingz/tree/master/plugins/testing-e2e"
+  "homepage": "https://github.com/alexei-led/cc-forge/tree/master/plugins/testing-e2e"
 }

@@ -1,5 +1,5 @@
 {
-  "name": "infra-ops",
+  "name": "k8s-terraform-ops",
   "description": "Infrastructure and cloud operations: Kubernetes, Terraform, Helm, GitHub Actions, AWS, GCP",
   "version": "2.2.0",
   "author": {
@@ -7,7 +7,7 @@
     "email": "alexei.led@gmail.com",
     "url": "https://github.com/alexei-led"
   },
-  "repository": "https://github.com/alexei-led/cc-thingz",
+  "repository": "https://github.com/alexei-led/cc-forge",
   "license": "MIT",
   "keywords": [
     "kubernetes",
@@ -22,5 +22,5 @@
     "ci-cd",
     "docker"
   ],
-  "homepage": "https://github.com/alexei-led/cc-thingz/tree/master/plugins/infra-ops"
+  "homepage": "https://github.com/alexei-led/cc-forge/tree/master/plugins/infra-ops"
 }
