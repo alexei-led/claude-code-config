@@ -1,0 +1,18 @@
+{
+  "hooks": {
+    "AfterTool": [
+      {
+        "matcher": "write_file|replace",
+        "sequential": true,
+        "hooks": [
+          {
+            "type": "command",
+            "name": "smart-lint",
+            "command": "${extensionPath}/plugins/dev-workflow/hooks/smart-lint.sh",
+            "timeout": 60000
+          }
+        ]
+      }
+    ]
+  }
+}

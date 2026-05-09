@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "^apply_patch$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PLUGIN_ROOT/hooks/smart-lint.sh\"",
+            "timeout": 60,
+            "statusMessage": "Running smart-lint"
+          }
+        ]
+      }
+    ]
+  }
+}

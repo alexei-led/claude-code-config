@@ -92,8 +92,8 @@ skill-evals-summary: ## Print summary for latest skill eval workspace
 
 # --- Validate ---
 
-.PHONY: validate validate-config validate-flat validate-overlays validate-pi-overlays validate-pi-agents validate-agents-md validate-gemini-md validate-executables validate-no-plugin-evals lint-instructions
-validate: validate-no-plugin-evals validate-config validate-flat validate-overlays validate-pi-overlays validate-pi-agents validate-agents-md validate-gemini-md validate-executables ## Run all validation checks
+.PHONY: validate validate-config validate-flat validate-overlays validate-pi-overlays validate-pi-agents validate-agents-md validate-gemini-md validate-executables validate-hooks-synced validate-no-plugin-evals lint-instructions
+validate: validate-no-plugin-evals validate-config validate-flat validate-overlays validate-pi-overlays validate-pi-agents validate-agents-md validate-gemini-md validate-executables validate-hooks-synced ## Run all validation checks
 
 validate-config: ## Validate plugin configs and frontmatter
 	uv run python scripts/validate-config.py
@@ -134,6 +134,18 @@ validate-executables: ## Check shell scripts have executable bit
 	done; \
 	[ $$fail -eq 0 ] || exit 1
 
+validate-hooks-synced: ## Check smart-lint.sh copies are in sync with the canonical
+	@canonical=plugins/dev-workflow/hooks/smart-lint.sh; \
+	fail=0; \
+	for copy in platforms/pi/extensions/smart-lint.sh; do \
+		if ! diff -q "$$canonical" "$$copy" >/dev/null 2>&1; then \
+			echo "ERROR: $$copy is out of sync with $$canonical"; \
+			echo "  Run: make sync-hooks"; \
+			fail=1; \
+		fi; \
+	done; \
+	[ $$fail -eq 0 ] || exit 1
+
 # --- Format ---
 
 .PHONY: fmt
@@ -148,6 +160,16 @@ fmt: ## Auto-format Python and shell files
 .PHONY: flat
 flat: ## Sync flat/ symlinks with plugin contents
 	bash scripts/generate-flat.sh
+
+# --- Hooks (smart-lint.sh distribution) ---
+
+.PHONY: sync-hooks
+sync-hooks: ## Copy canonical smart-lint.sh to Pi extensions
+	@canonical=plugins/dev-workflow/hooks/smart-lint.sh; \
+	mkdir -p platforms/pi/extensions; \
+	cp "$$canonical" platforms/pi/extensions/smart-lint.sh; \
+	chmod +x platforms/pi/extensions/smart-lint.sh; \
+	echo "synced smart-lint.sh -> platforms/pi/extensions/"
 
 # --- Overlays ---
 

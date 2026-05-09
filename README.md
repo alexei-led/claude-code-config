@@ -48,6 +48,9 @@ Every skill has been manually crafted and refined through real-world use — not
 
 Use `--scope project` to install into `.claude/settings.json` for team sharing.
 
+The `dev-workflow` plugin wires `smart-lint.sh` as a `PostToolUse` hook so
+formatters and linters run automatically after every `Edit` / `Write`.
+
 ### OpenAI Codex CLI
 
 ```bash
@@ -70,6 +73,10 @@ instead:
 }
 ```
 
+`dev-workflow` ships a `PostToolUse` hook (`plugins/dev-workflow/hooks/codex.hooks.json`)
+that runs `smart-lint.sh` after every `apply_patch`. Codex injects
+`$CLAUDE_PLUGIN_ROOT` so the hook command resolves regardless of cwd.
+
 ### Google Gemini CLI
 
 ```bash
@@ -86,12 +93,24 @@ Gemini reads `gemini-extension.json` at the repo root, loads context from
 `GEMINI.md` (auto-generated), and discovers per-skill SKILL.md files under
 `flat/skills-codex/` (Gemini and Codex share the same overlay format).
 
+The `hooks/hooks.json` at the repo root registers an `AfterTool` hook that
+runs `smart-lint.sh` after every `write_file` or `replace`.
+
 ### Pi
 
-Pi uses generated skills and agents. The `Agent`/`get_subagent_result`/`steer_subagent`
-tools are provided by [`@tintinweb/pi-subagents`](https://github.com/tintinweb/pi-subagents) —
-install it (or the [pinned fork](https://github.com/alexei-led/pi-subagents/tree/fix/pi-skill-discovery))
-before running Pi against these exports.
+Pi uses generated skills, agents, **and TypeScript extensions** that mirror
+Claude-Code-native features (plan mode, todos, AskUserQuestion, subagents,
+file/path protection, post-edit lint). Two third-party packages are
+prerequisites — Pi pulls one in transitively, the other you must install:
+
+- **[`@tintinweb/pi-subagents`](https://github.com/tintinweb/pi-subagents)** (or the
+  [pinned fork](https://github.com/alexei-led/pi-subagents/tree/fix/pi-skill-discovery))
+  provides the `Agent` / `get_subagent_result` / `steer_subagent` tools used
+  by the `subagent` extension.
+- **[`@mariozechner/pi-coding-agent`](https://www.npmjs.com/package/@mariozechner/pi-coding-agent)**
+  is the `ExtensionAPI` that the bundled extensions import from. Pi pulls
+  this in as a dependency; it's named here so you know where the API
+  surface comes from.
 
 ```bash
 git clone https://github.com/alexei-led/cc-thingz.git ~/src/cc-thingz
@@ -113,11 +132,25 @@ The script symlinks:
 
 - `~/.pi/agent/skills` → `~/src/cc-thingz/flat/skills-pi` (40 skills)
 - `~/.pi/agent/agents` → `~/src/cc-thingz/flat/agents-pi` (5 agents)
+- `~/.pi/agent/extensions` → `~/src/cc-thingz/flat/extensions-pi` (8 TypeScript extensions)
 
-Existing `~/.pi/agent/skills` or `agents` paths are moved to timestamped
-backups before the symlinks are created. Override target with
+Existing `~/.pi/agent/skills`, `agents`, or `extensions` paths are moved to
+timestamped backups before the symlinks are created. Override target with
 `--target-dir <DIR>` or `PI_CODING_AGENT_DIR=<DIR>`. Restart Pi or run
 `/reload` after applying.
+
+**Bundled Pi extensions** (`platforms/pi/extensions/`):
+
+| Extension              | Role                                                     |
+| ---------------------- | -------------------------------------------------------- |
+| `smart-lint.ts`        | Runs `smart-lint.sh` after every turn that wrote a file  |
+| `ask-user-question.ts` | `ask_user_question` tool with structured options         |
+| `permission-gate.ts`   | Confirms dangerous bash (rm -rf, sudo, chmod 777)        |
+| `protected-paths.ts`   | Blocks writes to `.env`, `.git/`, `node_modules/`        |
+| `plan-mode/`           | `/plan` toggle for read-only exploration, step tracking  |
+| `todo.ts`              | `todo` tool + `/todos` command, branch-aware state       |
+| `subagent/`            | Spawns isolated `pi` processes (single, parallel, chain) |
+| `structured-output.ts` | `structured_output` tool that terminates the agent loop  |
 
 For a chezmoi-managed alternative, see
 [docs/pi-skill-export.md#chezmoi-install](docs/pi-skill-export.md#chezmoi-install).

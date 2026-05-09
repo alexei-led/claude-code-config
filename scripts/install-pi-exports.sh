@@ -8,8 +8,9 @@ usage() {
 Usage: scripts/install-pi-exports.sh [--apply] [--build] [--target-dir DIR]
 
 Links:
-  DIR/skills -> <repo>/flat/skills-pi
-  DIR/agents -> <repo>/flat/agents-pi
+  DIR/skills     -> <repo>/flat/skills-pi
+  DIR/agents     -> <repo>/flat/agents-pi
+  DIR/extensions -> <repo>/flat/extensions-pi
 
 Defaults:
   DIR = ${PI_CODING_AGENT_DIR:-$HOME/.pi/agent}
@@ -62,6 +63,7 @@ done
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 skills_src="$repo_root/flat/skills-pi"
 agents_src="$repo_root/flat/agents-pi"
+extensions_src="$repo_root/flat/extensions-pi"
 timestamp="$(date +%Y%m%d%H%M%S)"
 
 if [[ "$build" -eq 1 ]]; then
@@ -72,7 +74,7 @@ if [[ "$build" -eq 1 ]]; then
 	fi
 fi
 
-for required in "$skills_src" "$agents_src"; do
+for required in "$skills_src" "$agents_src" "$extensions_src"; do
 	if [[ ! -d "$required" ]]; then
 		echo "ERROR: missing generated export: $required" >&2
 		echo "Run: make -C '$repo_root' pi-overlays pi-agents flat" >&2
@@ -117,6 +119,7 @@ link_export() {
 
 link_export skills "$skills_src"
 link_export agents "$agents_src"
+link_export extensions "$extensions_src"
 
 if [[ "$apply" -eq 0 ]]; then
 	echo "No changes made. Re-run with --apply to link Pi exports."

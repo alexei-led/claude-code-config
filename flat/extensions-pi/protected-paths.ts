@@ -1,0 +1,1 @@
+../../platforms/pi/extensions/protected-paths.ts

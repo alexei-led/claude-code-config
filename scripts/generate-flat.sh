@@ -49,6 +49,15 @@ if [ -d "$src" ]; then
 	done
 fi
 
+src="platforms/pi/extensions"
+if [ -d "$src" ]; then
+	for item in "$src"/*; do
+		[ -e "$item" ] || continue
+		name="$(basename "$item")"
+		add_desired "flat/extensions-pi/$name" "../../$src/$name"
+	done
+fi
+
 for src in plugins/*/agents-pi platforms/pi/agents; do
 	[ -d "$src" ] || continue
 	for item in "$src"/*; do

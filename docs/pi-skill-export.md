@@ -10,6 +10,7 @@ one-off test. Generated exports are committed and deployable.
 | --------------- | ---------------------------------- | --------------------------------------------------------------- |
 | Pi skills       | `flat/skills-pi/`                  | Pi-compatible Agent Skills directories                          |
 | Pi agents       | `flat/agents-pi/`                  | Flat `pi-subagents` `.md` agent files                           |
+| Pi extensions   | `flat/extensions-pi/`              | TypeScript extensions for `pi.on(...)` events and tools         |
 | Codex CLI       | `plugins/*/skills-codex/`          | Plugin skill payloads referenced by `.codex-plugin/plugin.json` |
 | Gemini CLI      | `GEMINI.md` + `flat/skills-codex/` | Extension context with linked skill files                       |
 | AGENTS.md tools | `AGENTS.md` + `flat/skills-codex/` | Generated catalog for tools that read AGENTS.md                 |
@@ -17,9 +18,14 @@ one-off test. Generated exports are committed and deployable.
 Regenerate everything after changing source skills or agents:
 
 ```bash
-make overlays pi-overlays pi-agents flat agents-md gemini-md
+make overlays pi-overlays pi-agents sync-hooks flat agents-md gemini-md
 make validate
 ```
+
+`sync-hooks` copies the canonical `plugins/dev-workflow/hooks/smart-lint.sh`
+into `platforms/pi/extensions/` so the Pi extension can shell out to it.
+`make validate-hooks-synced` (run by `make validate`) keeps the copies
+honest in CI.
 
 `make validate` checks that generated Pi exports are in sync, Pi frontmatter is
 valid, banned tool names are absent, local links resolve, support scripts keep
@@ -70,13 +76,47 @@ scripts/install-pi-exports.sh --apply
 This creates:
 
 ```text
-~/.pi/agent/skills -> <repo>/flat/skills-pi
-~/.pi/agent/agents -> <repo>/flat/agents-pi
+~/.pi/agent/skills     -> <repo>/flat/skills-pi
+~/.pi/agent/agents     -> <repo>/flat/agents-pi
+~/.pi/agent/extensions -> <repo>/flat/extensions-pi
 ```
 
-Existing `skills` or `agents` paths are moved to timestamped backups before the
-symlinks are created. The script does not install packages, edit settings, or run
-Pi. Restart Pi or run `/reload` after applying.
+Existing `skills`, `agents`, or `extensions` paths are moved to timestamped
+backups before the symlinks are created. The script does not install packages,
+edit settings, or run Pi. Restart Pi or run `/reload` after applying.
+
+### Bundled custom extensions
+
+`platforms/pi/extensions/` ships TypeScript extensions that mirror
+Claude-Code-native features in Pi. Pi auto-discovers them once
+`~/.pi/agent/extensions` resolves to `flat/extensions-pi/`.
+
+| Extension              | Role                                                     | Closest Claude Code analog |
+| ---------------------- | -------------------------------------------------------- | -------------------------- |
+| `smart-lint.ts`        | Runs `smart-lint.sh` after every turn that wrote a file  | PostToolUse hook           |
+| `ask-user-question.ts` | `ask_user_question` tool with structured options         | AskUserQuestion            |
+| `permission-gate.ts`   | Confirms dangerous bash (rm -rf, sudo, chmod 777)        | git-guardrails hook        |
+| `protected-paths.ts`   | Blocks writes to `.env`, `.git/`, `node_modules/`        | file-protector hook        |
+| `plan-mode/`           | `/plan` toggle for read-only exploration, step tracking  | Plan mode                  |
+| `todo.ts`              | `todo` tool + `/todos` command, branch-aware state       | TaskCreate / TaskUpdate    |
+| `subagent/`            | Spawns isolated `pi` processes (single, parallel, chain) | Agent / subagents          |
+| `structured-output.ts` | `structured_output` tool that terminates the agent loop  | (none)                     |
+
+All extensions import from `@mariozechner/pi-coding-agent`. `smart-lint.ts`
+also reads `smart-lint.sh` from the same directory, kept in sync via
+`make sync-hooks`.
+
+[`apmantza/pi-lens`](https://github.com/apmantza/pi-lens) is a richer
+post-edit pipeline (LSP, type-check, structural analysis) that overlaps
+with `smart-lint.ts`. It is not bundled here — install it separately if
+you prefer that stack.
+
+### Standard third-party packages
+
+| Package                             | Why                                                                        | Install                                  |
+| ----------------------------------- | -------------------------------------------------------------------------- | ---------------------------------------- |
+| `@tintinweb/pi-subagents` (or fork) | Provides `Agent` / `get_subagent_result` / `steer_subagent` for subagents  | `pi install npm:@tintinweb/pi-subagents` |
+| `@mariozechner/pi-coding-agent`     | The `ExtensionAPI` that bundled extensions import from (transitive Pi dep) | (resolved by Pi)                         |
 
 If you want the script to regenerate exports first:
 
