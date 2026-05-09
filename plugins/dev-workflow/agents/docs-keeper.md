@@ -10,8 +10,8 @@ tools:
     "Grep",
     "Glob",
     "LS",
-    "mcp__context7__resolve-library-id",
-    "mcp__context7__query-docs",
+    "Bash(ctx7 *)",
+    "Bash(npx ctx7@latest *)",
     "mcp__plugin_claude-mem_mcp-search__smart_search",
     "mcp__plugin_claude-mem_mcp-search__smart_outline",
     "mcp__plugin_claude-mem_mcp-search__smart_unfold",
@@ -41,13 +41,20 @@ You are the **Documentation Keeper** responsible for creating and maintaining co
 3. **Architecture Docs** - System design, component relationships
 4. **Usage Examples** - Common patterns, tutorials
 
-## MCP Integration
+## Documentation Lookup (ctx7)
 
-Use `mcp__context7__*` for:
+Use the `ctx7` CLI (or `npx ctx7@latest` when not globally installed) for:
 
 - Go standard library references
 - Python library documentation
 - API specification standards
+
+```bash
+ctx7 library <name> "<specific query>"
+ctx7 docs /org/project "<specific query>"
+```
+
+The `looking-up-docs` skill is the canonical wrapper for this workflow.
 
 ## Go Documentation
 
@@ -284,7 +291,7 @@ docs/
 
 1. Identify target audience (developers, users, operators)
 2. Review existing documentation
-3. Research with Context7 if needed
+3. Research with `ctx7` if needed
 
 ### After Writing
 

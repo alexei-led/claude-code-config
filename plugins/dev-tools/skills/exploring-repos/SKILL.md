@@ -19,8 +19,8 @@ allowed-tools:
   - mcp__deepwiki__read_wiki_structure
   - mcp__deepwiki__read_wiki_contents
   - mcp__deepwiki__ask_question
-  - mcp__context7__resolve-library-id
-  - mcp__context7__query-docs
+  - Bash(ctx7 *)
+  - Bash(npx ctx7@latest *)
   - mcp__perplexity-ask__perplexity_ask
 ---
 
@@ -170,15 +170,15 @@ DeepWiki returns empty or error?
    searching code patterns, checking recent activity. Combine multiple `gh` calls
    to build a mental model when DeepWiki is unavailable.
 
-2. **Context7** — for library API documentation:
-   <!-- CC-ONLY: begin -->
+2. **ctx7** — for library API documentation:
 
-   ```
-   mcp__context7__resolve-library-id({ "libraryName": "fastify" })
-   mcp__context7__query-docs({ "context7CompatibleLibraryID": "/fastify/fastify", "topic": "middleware" })
+   ```bash
+   ctx7 library fastify "middleware"
+   ctx7 docs /fastify/fastify "middleware"
    ```
 
-   <!-- CC-ONLY: end -->
+   Use `npx ctx7@latest` when `ctx7` is not globally installed. The
+   `looking-up-docs` skill wraps this workflow.
 
 3. **Perplexity** — for repos not in DeepWiki or Context7:
    <!-- CC-ONLY: begin -->

@@ -16,8 +16,8 @@ tools:
     "Bash(npx *)",
     "LSP",
     "mcp__perplexity-ask__perplexity_ask",
-    "mcp__context7__resolve-library-id",
-    "mcp__context7__query-docs",
+    "Bash(ctx7 *)",
+    "Bash(npx ctx7@latest *)",
     "mcp__plugin_claude-mem_mcp-search__smart_search",
     "mcp__plugin_claude-mem_mcp-search__smart_outline",
     "mcp__plugin_claude-mem_mcp-search__smart_unfold",
@@ -55,7 +55,7 @@ Avoid over-simplification that could:
 Before reviewing, consider researching current TypeScript best practices:
 
 - **Use Perplexity** (`mcp__perplexity-ask__perplexity_ask`) for questions like "TypeScript 5.x simplification patterns" or "modern TypeScript idioms 2025"
-- **Use Context7** to query latest TypeScript/library docs for newer features that simplify code
+- **Use ctx7** (`ctx7 library <name>` then `ctx7 docs /org/project "<topic>"`) for current TypeScript/library docs on newer features that simplify code
 - Stay current with `satisfies`, `as const`, improved inference, decorators, and new utility types
 
 ## Required: Run Tooling First

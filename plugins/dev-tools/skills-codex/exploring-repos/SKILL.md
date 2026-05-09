@@ -5,6 +5,8 @@ allowed-tools:
 - Bash(gh search *)
 - Bash(gh release *)
 - Bash(gh issue *)
+- Bash(ctx7 *)
+- Bash(npx ctx7@latest *)
 description: Explore public GitHub repositories via DeepWiki AI-generated documentation.
   Use for understanding architecture, patterns, design decisions, and code organization
   of popular open-source projects. Use when user asks "how does X repo work", "explain
@@ -127,7 +129,15 @@ DeepWiki returns empty or error?
    searching code patterns, checking recent activity. Combine multiple `gh` calls
    to build a mental model when DeepWiki is unavailable.
 
-2. **Context7** — for library API documentation:
+2. **ctx7** — for library API documentation:
+
+   ```bash
+   ctx7 library fastify "middleware"
+   ctx7 docs /fastify/fastify "middleware"
+   ```
+
+   Use `npx ctx7@latest` when `ctx7` is not globally installed. The
+   `looking-up-docs` skill wraps this workflow.
 
 3. **Perplexity** — for repos not in DeepWiki or Context7:
 

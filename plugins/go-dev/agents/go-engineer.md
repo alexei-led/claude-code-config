@@ -8,8 +8,8 @@ tools:
     "Grep",
     "Glob",
     "LS",
-    "mcp__context7__resolve-library-id",
-    "mcp__context7__query-docs",
+    "Bash(ctx7 *)",
+    "Bash(npx ctx7@latest *)",
     "mcp__sequential-thinking__sequentialthinking",
     "mcp__morphllm__warpgrep_codebase_search",
     "mcp__morphllm__codebase_search",
@@ -92,16 +92,23 @@ For MODIFY actions, include enough context (function signatures, surrounding cod
 - **Single Responsibility**: Each package/struct/function has one job
 - **Performance Awareness**: Write efficient code without premature optimization
 
-## MCP Integration
+## Research Tools
 
-### Context7 Research
+### Documentation Lookup (ctx7)
 
-Use `mcp__context7__resolve-library-id` and `mcp__context7__query-docs` for:
+Use the `ctx7` CLI (or `npx ctx7@latest` when not globally installed) for:
 
 - Go standard library best practices
 - Third-party library documentation
 - Implementation approach validation
 - API references and code examples
+
+```bash
+ctx7 library <name> "<specific query>"
+ctx7 docs /org/project "<specific query>"
+```
+
+The `looking-up-docs` skill is the canonical wrapper for this workflow.
 
 ### Sequential Thinking
 
@@ -204,7 +211,7 @@ store.EXPECT().
 
 ### Research Workflow
 
-1. Use Context7 to research Go standard library approaches
+1. Use `ctx7` to research Go standard library approaches
 2. Apply sequential thinking for complex architectural decisions
 
 ### Performance Guidelines
@@ -325,7 +332,7 @@ func (h *Handler) UpdateItem(w http.ResponseWriter, r *http.Request) {
      - Mock setup and EXPECT patterns
    - **Match existing patterns over your defaults**
 
-2. Research via Context7 for standard library solutions
+2. Research via `ctx7` for standard library solutions
 3. Use sequential thinking for complex design decisions
 4. Plan interfaces at consumer points
 

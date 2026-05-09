@@ -8,8 +8,8 @@ tools:
     "Grep",
     "Glob",
     "LS",
-    "mcp__context7__resolve-library-id",
-    "mcp__context7__query-docs",
+    "Bash(ctx7 *)",
+    "Bash(npx ctx7@latest *)",
     "mcp__sequential-thinking__sequentialthinking",
     "mcp__morphllm__warpgrep_codebase_search",
     "mcp__morphllm__codebase_search",
@@ -111,15 +111,22 @@ For MODIFY actions, include enough context (function signatures, surrounding cod
 - **Full variable names**: `window_id` not `wid`, `session_id` not `sid`
 - **Module docstrings**: Purpose clear within 10 lines
 
-## MCP Integration
+## Research Tools
 
-### Context7 Research
+### Documentation Lookup (ctx7)
 
-Use `mcp__context7__resolve-library-id` and `mcp__context7__query-docs` for:
+Use the `ctx7` CLI (or `npx ctx7@latest` when not globally installed) for:
 
 - Python standard library best practices
 - Third-party library documentation (Click, httpx, structlog, etc.)
 - Implementation approach validation
+
+```bash
+ctx7 library <name> "<specific query>"
+ctx7 docs /org/project "<specific query>"
+```
+
+The `looking-up-docs` skill is the canonical wrapper for this workflow.
 
 ### Sequential Thinking
 
@@ -264,7 +271,7 @@ select = ["E", "W", "F", "I", "B", "C4", "UP", "SIM", "RUF", "ARG", "G", "BLE", 
    - Check Makefile for project-specific targets
    - **Match existing patterns over your defaults**
 
-2. Research via Context7 for standard library solutions
+2. Research via `ctx7` for standard library solutions
 3. Use sequential thinking for complex design decisions
 4. Define types and interfaces first
 

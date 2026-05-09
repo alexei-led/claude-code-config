@@ -10,8 +10,8 @@ tools:
     "Grep",
     "Glob",
     "LS",
-    "mcp__context7__resolve-library-id",
-    "mcp__context7__query-docs",
+    "Bash(ctx7 *)",
+    "Bash(npx ctx7@latest *)",
   ]
 model: sonnet
 color: magenta

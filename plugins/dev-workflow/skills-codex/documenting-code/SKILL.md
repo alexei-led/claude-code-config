@@ -8,6 +8,8 @@ allowed-tools:
 - Bash(go test *)
 - Bash(pytest *)
 - Bash(uv *)
+- Bash(ctx7 *)
+- Bash(npx ctx7@latest *)
 description: Update project documentation based on recent changes. Use when user says
   "update docs", "document", "add documentation", "update readme", "write docs", or
   wants to improve documentation.

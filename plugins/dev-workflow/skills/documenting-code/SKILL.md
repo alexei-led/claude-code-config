@@ -17,8 +17,8 @@ allowed-tools:
   - Bash(go test *)
   - Bash(pytest *)
   - Bash(uv *)
-  - mcp__context7__resolve-library-id
-  - mcp__context7__query-docs
+  - Bash(ctx7 *)
+  - Bash(npx ctx7@latest *)
 ---
 
 # Documentation Update

@@ -8,8 +8,8 @@ tools:
     "Grep",
     "Glob",
     "LS",
-    "mcp__context7__resolve-library-id",
-    "mcp__context7__query-docs",
+    "Bash(ctx7 *)",
+    "Bash(npx ctx7@latest *)",
     "mcp__sequential-thinking__sequentialthinking",
     "mcp__morphllm__warpgrep_codebase_search",
     "mcp__morphllm__codebase_search",
@@ -93,15 +93,22 @@ For MODIFY actions, include enough context (function signatures, surrounding cod
    - Discriminated union for success/failure
    - Custom Error subclasses for instanceof
 
-## MCP Integration
+## Research Tools
 
-### Context7 Research
+### Documentation Lookup (ctx7)
 
-Use `mcp__context7__resolve-library-id` and `mcp__context7__query-docs` for:
+Use the `ctx7` CLI (or `npx ctx7@latest` when not globally installed) for:
 
 - TypeScript/JavaScript library documentation
 - React, Node.js best practices
 - Implementation approach validation
+
+```bash
+ctx7 library <name> "<specific query>"
+ctx7 docs /org/project "<specific query>"
+```
+
+The `looking-up-docs` skill is the canonical wrapper for this workflow.
 
 ### Sequential Thinking
 
@@ -322,7 +329,7 @@ bun run format           # Format (prettier)
      - test.each usage for similar cases
    - **Match existing patterns over your defaults**
 
-2. Research via Context7 for library best practices
+2. Research via `ctx7` for library best practices
 3. Use sequential thinking for complex design decisions
 4. Define types and interfaces first
 

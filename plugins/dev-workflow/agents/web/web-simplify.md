@@ -13,8 +13,8 @@ tools:
     "Bash(stylelint *)",
     LSP,
     mcp__perplexity-ask__perplexity_ask,
-    "mcp__context7__resolve-library-id",
-    "mcp__context7__query-docs",
+    "Bash(ctx7 *)",
+    "Bash(npx ctx7@latest *)",
     "mcp__plugin_claude-mem_mcp-search__smart_search",
     "mcp__plugin_claude-mem_mcp-search__smart_outline",
     "mcp__plugin_claude-mem_mcp-search__smart_unfold",
@@ -54,7 +54,7 @@ Avoid over-simplification that could:
 Before reviewing, consider researching current web best practices:
 
 - **Use Perplexity** (`mcp__perplexity-ask__perplexity_ask`) for questions like "modern HTML5 features replacing JavaScript 2025" or "CSS features that replace JS"
-- **Use Context7** to query latest MDN/web platform docs for newer features
+- **Use ctx7** (`ctx7 library <name>` then `ctx7 docs /org/project "<topic>"`) for current MDN/web platform docs on newer features
 - Stay current with: `<dialog>`, `<details>`, CSS `@layer`, `:has()`, `@container`, `popover`, `<search>`, anchor positioning
 
 ## Focus Areas

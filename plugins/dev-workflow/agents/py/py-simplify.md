@@ -15,8 +15,8 @@ tools:
     "Bash(python *)",
     "LSP",
     "mcp__perplexity-ask__perplexity_ask",
-    "mcp__context7__resolve-library-id",
-    "mcp__context7__query-docs",
+    "Bash(ctx7 *)",
+    "Bash(npx ctx7@latest *)",
     "mcp__plugin_claude-mem_mcp-search__smart_search",
     "mcp__plugin_claude-mem_mcp-search__smart_outline",
     "mcp__plugin_claude-mem_mcp-search__smart_unfold",
@@ -54,7 +54,7 @@ Avoid over-simplification that could:
 Before reviewing, consider researching current Python best practices:
 
 - **Use Perplexity** (`mcp__perplexity-ask__perplexity_ask`) for questions like "Python 3.12+ simplification patterns" or "modern Python typing idioms 2025"
-- **Use Context7** to query latest Python docs for newer stdlib features that simplify code
+- **Use ctx7** (`ctx7 library python` then `ctx7 docs /python/cpython "<topic>"`) for current Python docs on newer stdlib features that simplify code
 - Stay current with structural pattern matching, modern type hints, pathlib enhancements, and stdlib additions
 
 ## Required: Run Tooling First

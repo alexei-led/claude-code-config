@@ -13,8 +13,8 @@ tools:
     "Bash(gofmt *)",
     "LSP",
     "mcp__perplexity-ask__perplexity_ask",
-    "mcp__context7__resolve-library-id",
-    "mcp__context7__query-docs",
+    "Bash(ctx7 *)",
+    "Bash(npx ctx7@latest *)",
     "mcp__plugin_claude-mem_mcp-search__smart_search",
     "mcp__plugin_claude-mem_mcp-search__smart_outline",
     "mcp__plugin_claude-mem_mcp-search__smart_unfold",
@@ -52,7 +52,7 @@ Avoid over-simplification that could:
 Before reviewing, consider researching current Go best practices:
 
 - **Use Perplexity** (`mcp__perplexity-ask__perplexity_ask`) for questions like "Go 1.22+ simplification patterns" or "modern Go error handling idioms 2025"
-- **Use Context7** to query latest Go stdlib docs for newer APIs that simplify code
+- **Use ctx7** (`ctx7 library go` then `ctx7 docs /golang/go "<topic>"`) for current Go stdlib docs on newer APIs that simplify code
 - Stay current with range-over-func, improved iterators, and stdlib additions
 
 ## Required: Run Tooling First
