@@ -6,6 +6,55 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 major = breaking config/hook changes, minor = new skills/features, patch = fixes.
 
+## [Unreleased]
+
+### Added
+
+- **`sequential-thinking` skill** (`plugins/dev-tools/skills/sequential-thinking/`).
+  Replaces the `sequential-thinking` MCP server with a pure-prompting skill
+  that produces numbered Thought blocks with explicit `(revises N)` and
+  `Branch X from N` markers, terminating in a `### Final` block. Portable
+  across Claude Code, Codex, Gemini, and Pi. Eval at
+  `tests/skill-evals/dev-tools/sequential-thinking/` (3 cases including a
+  trivial-lookup boundary that confirms the skill correctly does NOT activate).
+- **Regression test** `tests/test_no_mcp_sequential_thinking_in_plugins.py`
+  blocks `mcp__sequential-thinking__` from re-appearing in source plugins.
+- **Skill-enforcer trigger** for the new `sequential-thinking` skill (matches
+  "step by step", "sequential thinking", "reason through this", "plan this out",
+  "branch this approach", revise-and-branch language).
+
+### Changed
+
+- **Skill-enforcer regex bugfix**: replaced `[\s-]` (literal `\`/`s`/`-` in BSD
+  grep) with `[[:space:]-]` so optional whitespace-or-hyphen separators in
+  patterns like `up-to-date`, `end-to-end`, `step-by-step`, and `stress-test`
+  actually match space variants when `/usr/bin/grep` is used. Affected
+  previously-broken triggers: `researching-web`, `testing-e2e`, `grill-me`,
+  `debating-ideas`, `improve-codebase-architecture`, `improving-tests`,
+  `searching-code`, `refactoring-code`, `learning-patterns`, `evolving-config`,
+  `mem-history`, `ccgram-messaging`, `smart-explore`, `spec:work`, `spec:help`,
+  `spec:interview`.
+- **Agent skills lists** for `python-engineer`, `go-engineer`,
+  `typescript-engineer`, `infra-engineer`, `spec-planner`: dropped
+  `mcp__sequential-thinking__sequentialthinking` from `tools`/`allowed-tools`,
+  added `sequential-thinking` to `skills`, rewrote body refs to invoke the
+  skill instead of the MCP tool.
+- **`/spec:work` command**: dropped `mcp__sequential-thinking__sequentialthinking`
+  from `allowed-tools`.
+
+### Removed
+
+- **`MCP_Sequential.md`** (orphaned root doc that described the now-replaced
+  MCP). README integrations table updated to point at the skill.
+
+### Fixed
+
+- **`claude-mem` 13.0.0 `PreToolUse:Read` crash**: the upstream `bun.lock`
+  ships without `zod` (which `worker-service.cjs` requires as `zod/v3`). The
+  SessionStart patch script (`~/.claude/scripts/patch-claude-mem-async.sh`,
+  chezmoi-tracked) now runs `bun install --no-save` for any cached version
+  whose `node_modules/zod` is missing — durable across machines, idempotent.
+
 ## [2.1.0] - 2026-05-09
 
 ### Added

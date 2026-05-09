@@ -200,12 +200,15 @@ Claude Code agents can also use optional MCP servers for enhanced capabilities.
 These are optional — plugins degrade gracefully without them. Pi exports do not
 assume MCP tools.
 
-| MCP Server                                                                                              | Purpose                                     | Used By                                                    |
-| ------------------------------------------------------------------------------------------------------- | ------------------------------------------- | ---------------------------------------------------------- |
-| [DeepWiki](https://cognition.ai/blog/deepwiki-mcp-server)                                               | AI-generated wiki for public GitHub repos   | Claude Code dev-tools                                      |
-| [Perplexity](https://github.com/ppl-ai/modelcontextprotocol)                                            | Web research and technical comparisons      | Claude Code dev-workflow, dev-tools, infra-ops             |
-| [Sequential Thinking](https://github.com/modelcontextprotocol/servers/tree/main/src/sequentialthinking) | Step-by-step reasoning for complex planning | Claude Code language, infra, and spec agents               |
-| [MorphLLM](https://github.com/morphllm/morph-claude-code)                                               | Fast codebase search and batch file editing | Claude Code dev-workflow, language, infra, and spec agents |
+| MCP Server                                                   | Purpose                                     | Used By                                                    |
+| ------------------------------------------------------------ | ------------------------------------------- | ---------------------------------------------------------- |
+| [DeepWiki](https://cognition.ai/blog/deepwiki-mcp-server)    | AI-generated wiki for public GitHub repos   | Claude Code dev-tools                                      |
+| [Perplexity](https://github.com/ppl-ai/modelcontextprotocol) | Web research and technical comparisons      | Claude Code dev-workflow, dev-tools, infra-ops             |
+| [MorphLLM](https://github.com/morphllm/morph-claude-code)    | Fast codebase search and batch file editing | Claude Code dev-workflow, language, infra, and spec agents |
+
+> Stepwise reasoning previously came from the
+> [Sequential Thinking MCP](https://github.com/modelcontextprotocol/servers/tree/main/src/sequentialthinking).
+> It now ships as the [`sequential-thinking` skill](plugins/dev-tools/skills/sequential-thinking/SKILL.md) — no MCP install required and portable across Claude Code, Codex, Gemini, and Pi.
 
 ### Claude-Mem Integration
 
