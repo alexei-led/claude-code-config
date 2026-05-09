@@ -346,18 +346,20 @@ tools can consume them without running Python first.
 | Codex/Gemini/AGENTS.md | `plugins/*/skills-codex/`, `flat/skills-codex/`                   | Claude-only frontmatter stripped; platform preamble added       |
 | Pi skills              | `plugins/*/skills-pi/`, `platforms/pi/skills/`, `flat/skills-pi/` | Pi tool names, ctx7 CLI docs, no MCP assumptions                |
 | Pi agents              | `platforms/pi/agents/`, `flat/agents-pi/`                         | Flat `.md` files for `pi-subagents`; filename is the agent name |
+| Pi extensions          | `platforms/pi/extensions/`, `flat/extensions-pi/`                 | TypeScript extensions for `pi.on(...)` events and custom tools  |
 
 ### Pi Export and Deployment
 
 Pi uses generated flat exports as the source of truth:
 
 ```text
-~/.pi/agent/skills -> ~/.local/share/cc-thingz/flat/skills-pi
-~/.pi/agent/agents -> ~/.local/share/cc-thingz/flat/agents-pi
+~/.pi/agent/skills      -> <repo>/flat/skills-pi
+~/.pi/agent/agents      -> <repo>/flat/agents-pi
+~/.pi/agent/extensions  -> <repo>/flat/extensions-pi
 ```
 
-The symlinks are managed from chezmoi source, not by copying individual skills or
-agents into `dot_pi/agent/skills` or `dot_pi/agent/agents`. See
+The symlinks are created by `scripts/install-pi-exports.sh --apply` (no chezmoi
+needed). A chezmoi-managed alternative is described in
 [docs/pi-skill-export.md](docs/pi-skill-export.md).
 
 ### Structure
@@ -388,7 +390,8 @@ plugins/
 
 `flat/` provides a unified symlink view of all plugin components for tools that
 need flat directory access. `AGENTS.md` and `GEMINI.md` are generated from
-`flat/skills-codex/`. Pi deploys from `flat/skills-pi/` and `flat/agents-pi/`.
+`flat/skills-codex/`. Pi deploys from `flat/skills-pi/`, `flat/agents-pi/`, and
+`flat/extensions-pi/`.
 
 Regenerate with:
 

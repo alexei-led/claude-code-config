@@ -8,6 +8,30 @@ major = breaking config/hook changes, minor = new skills/features, patch = fixes
 
 ## [Unreleased]
 
+### Added
+
+- **Pi TypeScript extensions** (`platforms/pi/extensions/`). 8 extensions that
+  mirror Claude-Code-native features in Pi: `smart-lint.ts` (post-edit lint),
+  `ask-user-question.ts` (structured ask), `permission-gate.ts` (dangerous bash
+  guard), `protected-paths.ts` (blocks writes to `.env`, `.git/`,
+  `node_modules/`), `plan-mode/` (`/plan` toggle with step tracking), `todo.ts`
+  (`todo` tool + `/todos`, branch-aware state), `subagent/` (single, parallel,
+  and chain subprocess spawning), and `structured-output.ts` (terminates the
+  agent loop with structured JSON). Deploy via `scripts/install-pi-exports.sh`,
+  which now also symlinks `~/.pi/agent/extensions → flat/extensions-pi/`.
+- **Gemini CLI hooks** (`hooks/hooks.json`). `BeforeTool` on `write_file|replace`
+  → `file-protector.sh`; `BeforeTool` on `run_shell_command` → `git-guardrails.sh`;
+  `SessionStart` → `session-start.sh`. All commands resolve via `${extensionPath}`.
+- **Codex CLI hooks** (`plugins/dev-workflow/hooks/codex.hooks.json`).
+  `PreToolUse` on `Bash` → `git-guardrails.sh`; `SessionStart` → `session-start.sh`.
+
+### Changed
+
+- **Codex hook command paths** switched from `$CLAUDE_PLUGIN_ROOT` to `$PLUGIN_ROOT`.
+  `$PLUGIN_ROOT` is the variable Codex injects for plugin-sourced hooks; the old
+  `$CLAUDE_PLUGIN_ROOT` alias still works as a compatibility alias but `$PLUGIN_ROOT`
+  is now canonical.
+
 ## [2.0.0] - 2026-05-09
 
 First-class Pi support, ctx7 CLI replacing context7 MCP, Bun runner coverage,
