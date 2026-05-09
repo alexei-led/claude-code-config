@@ -54,6 +54,7 @@ Total skills: 36
 @flat/skills-codex/mem-history/SKILL.md
 @flat/skills-codex/researching-web/SKILL.md
 @flat/skills-codex/reviewing-cc-config/SKILL.md
+@flat/skills-codex/sequential-thinking/SKILL.md
 @flat/skills-codex/smart-explore/SKILL.md
 @flat/skills-codex/using-gemini/SKILL.md
 @flat/skills-codex/using-git-worktrees/SKILL.md

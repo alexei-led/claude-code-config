@@ -1,0 +1,43 @@
+{
+  "skill_name": "sequential-thinking",
+  "evals": [
+    {
+      "id": "trigger-hard-multi-constraint",
+      "name": "trigger on hard multi-constraint design",
+      "prompt": "Think this through step by step. We need to add rate limiting to our public API. Constraints: 1) some users have paid plans with higher quotas, 2) we run on three regions and don't want a global Redis dependency, 3) bursty traffic from CI is normal. Walk through the design, branch alternatives, and pick one.",
+      "expected_output": "Numbered Thought blocks, at least one branch with a clear rejection or selection, and a terminating Final block with a named recommendation.",
+      "assertions": [
+        "The output begins with a brief Plan line stating an estimated thought count and the subject.",
+        "The output contains numbered '### Thought N' blocks rather than free-form paragraphs.",
+        "At least one alternative is explored using a 'Branch' marker, then either selected or explicitly rejected with a one-line reason.",
+        "The output ends with a '### Final' block that names a specific rate-limiting approach (not just a list of options).",
+        "Constraints from the prompt (paid quotas, no global Redis, bursty CI) each appear in at least one Thought."
+      ]
+    },
+    {
+      "id": "boundary-trivial-lookup",
+      "name": "boundary on trivial single-fact question",
+      "prompt": "What HTTP status code does a successful POST that creates a resource typically return?",
+      "expected_output": "A direct one-line answer (201 Created), without Thought blocks or a Plan line, because the question is a trivial lookup.",
+      "assertions": [
+        "The output answers directly with the HTTP status code (201) within the first sentence.",
+        "The output does not contain a 'Plan:' line.",
+        "The output does not contain '### Thought' headings.",
+        "The output does not invoke the sequential-thinking protocol on a single-fact lookup."
+      ]
+    },
+    {
+      "id": "revision-on-new-evidence",
+      "name": "revises an earlier thought when new evidence contradicts it",
+      "prompt": "Think this through step by step. I'm picking a queue for a fan-out workload: SQS, Kafka, or NATS JetStream. Start by assuming we need exactly-once delivery. Halfway through, realize that our consumers are idempotent so at-least-once is fine. Walk through the reasoning and show how that changes the recommendation.",
+      "expected_output": "The protocol records an early Thought taking exactly-once as a constraint, then a later Thought with '(revises N)' marker that supersedes it after the idempotency observation, leading to a different Final recommendation than the initial direction would have produced.",
+      "assertions": [
+        "An early Thought treats exactly-once delivery as a constraint.",
+        "A later Thought is explicitly marked '(revises N)' pointing at the earlier exactly-once constraint Thought.",
+        "The revision states in one sentence why the prior thought was wrong (idempotent consumers make at-least-once acceptable).",
+        "The Final recommendation reflects the revised constraint, not the original.",
+        "The output ends with a '### Final' block naming a specific queue choice."
+      ]
+    }
+  ]
+}
