@@ -28,8 +28,8 @@ lint-python: ## Lint Python files with ruff
 lint-shell: ## Lint shell scripts with shellcheck + shfmt
 	@command -v shellcheck >/dev/null 2>&1 || { echo "shellcheck not installed"; exit 1; }
 	@command -v shfmt >/dev/null 2>&1 || { echo "shfmt not installed"; exit 1; }
-	find plugins scripts -name '*.sh' -exec shellcheck {} +
-	find plugins scripts -name '*.sh' -exec shfmt -i 0 -d {} +
+	find plugins platforms scripts -name '*.sh' -exec shellcheck {} +
+	find plugins platforms scripts -name '*.sh' -exec shfmt -i 0 -d {} +
 	@# Check non-.sh shell scripts (pre-commit, release-tag)
 	shfmt -i 0 -d scripts/pre-commit scripts/release-tag
 
@@ -129,7 +129,7 @@ lint-instructions: ## Lint agent/skill instructions (advisory)
 
 validate-executables: ## Check shell scripts have executable bit
 	@fail=0; \
-	for f in $$(find plugins scripts -name '*.sh') scripts/pre-commit scripts/release-tag; do \
+	for f in $$(find plugins platforms scripts -name '*.sh') scripts/pre-commit scripts/release-tag; do \
 		[ -x "$$f" ] || { echo "ERROR: $$f is not executable"; fail=1; }; \
 	done; \
 	[ $$fail -eq 0 ] || exit 1
@@ -152,7 +152,7 @@ validate-hooks-synced: ## Check smart-lint.sh copies are in sync with the canoni
 fmt: ## Auto-format Python and shell files
 	uv run ruff check --fix .
 	uv run ruff format .
-	find plugins scripts -name '*.sh' -exec shfmt -i 0 -w {} +
+	find plugins platforms scripts -name '*.sh' -exec shfmt -i 0 -w {} +
 	shfmt -i 0 -w scripts/pre-commit scripts/release-tag
 
 # --- Flat ---
