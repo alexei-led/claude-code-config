@@ -28,6 +28,16 @@ Every skill has been manually crafted and refined through real-world use — not
 
 ## Installation
 
+> Each section below assumes the corresponding CLI is already installed and on
+> `PATH`. If you don't have the CLI yet, install it first
+> ([Claude Code](https://docs.anthropic.com/en/docs/claude-code/quickstart),
+> [Codex CLI](https://github.com/openai/codex),
+> [Gemini CLI](https://github.com/google-gemini/gemini-cli),
+> [Pi](https://pi.dev/docs/latest/quickstart)).
+> The Pi flow does **not** require chezmoi by default — `scripts/install-pi-exports.sh`
+> handles the symlinks. Chezmoi is an optional alternative described in
+> [docs/pi-skill-export.md](docs/pi-skill-export.md#chezmoi-install).
+
 ### Claude Code
 
 ```bash
@@ -41,14 +51,24 @@ Use `--scope project` to install into `.claude/settings.json` for team sharing.
 ### OpenAI Codex CLI
 
 ```bash
-git clone https://github.com/alexei-led/cc-thingz.git
-cd cc-thingz
+git clone https://github.com/alexei-led/cc-thingz.git ~/src/cc-thingz
+cd ~/src/cc-thingz
 codex
-# inside Codex: /plugins
+# inside Codex: /plugins  → install plugins from this local marketplace
 ```
 
-Install from the `cc-thingz` repo marketplace. Codex plugins use
-`plugins/*/.codex-plugin/plugin.json` and `plugins/*/skills-codex/`.
+The marketplace manifest lives at `.agents/plugins/marketplace.json`; each
+plugin has its own `plugins/<plugin>/.codex-plugin/plugin.json` and ships
+SKILL.md files under `plugins/<plugin>/skills-codex/`. To use the skills
+without the plugin marketplace, point Codex at the flat skill directory
+instead:
+
+```jsonc
+// ~/.codex/config.json (excerpt)
+{
+  "skills": ["~/src/cc-thingz/flat/skills-codex"],
+}
+```
 
 ### Google Gemini CLI
 
@@ -62,7 +82,9 @@ For local development, link the checkout instead of copying it:
 gemini extensions link /path/to/cc-thingz
 ```
 
-Gemini uses `gemini-extension.json`, `GEMINI.md`, and `flat/skills-codex/`.
+Gemini reads `gemini-extension.json` at the repo root, loads context from
+`GEMINI.md` (auto-generated), and discovers per-skill SKILL.md files under
+`flat/skills-codex/` (Gemini and Codex share the same overlay format).
 
 ### Pi
 
@@ -72,19 +94,33 @@ install it (or the [pinned fork](https://github.com/alexei-led/pi-subagents/tree
 before running Pi against these exports.
 
 ```bash
-git clone https://github.com/alexei-led/cc-thingz.git
-cd cc-thingz
+git clone https://github.com/alexei-led/cc-thingz.git ~/src/cc-thingz
+cd ~/src/cc-thingz
+
+# 1. Install the subagent runtime (pick one):
 pi install npm:@tintinweb/pi-subagents
-# or, for unreleased fixes:
+# or for unreleased fixes:
 # pi install git:github.com/alexei-led/pi-subagents@fix/pi-skill-discovery
-scripts/install-pi-exports.sh        # dry-run
-scripts/install-pi-exports.sh --apply
+
+# 2. Preview, then apply (no chezmoi needed):
+scripts/install-pi-exports.sh                    # dry-run, prints plan
+scripts/install-pi-exports.sh --apply            # creates symlinks
+# optional: rebuild outputs first
+scripts/install-pi-exports.sh --build --apply
 ```
 
-This links `~/.pi/agent/skills` to `flat/skills-pi` and
-`~/.pi/agent/agents` to `flat/agents-pi`. See
-[Deploy cc-thingz Skills and Agents](docs/pi-skill-export.md) for chezmoi and
-no-chezmoi instructions.
+The script symlinks:
+
+- `~/.pi/agent/skills` → `~/src/cc-thingz/flat/skills-pi` (40 skills)
+- `~/.pi/agent/agents` → `~/src/cc-thingz/flat/agents-pi` (5 agents)
+
+Existing `~/.pi/agent/skills` or `agents` paths are moved to timestamped
+backups before the symlinks are created. Override target with
+`--target-dir <DIR>` or `PI_CODING_AGENT_DIR=<DIR>`. Restart Pi or run
+`/reload` after applying.
+
+For a chezmoi-managed alternative, see
+[docs/pi-skill-export.md#chezmoi-install](docs/pi-skill-export.md#chezmoi-install).
 
 **Pi gets**: 36 skills mirrored from plugins, plus 4 Pi-only planning skills
 (`planning-common`, `planning-make`, `planning-exec`, `planning-review`) and
@@ -100,8 +136,13 @@ Portable docs lookup uses the [Context7 CLI](https://github.com/upstash/context7
 
 ```bash
 npm install -g ctx7@latest
-# or one-shot
+# or with Bun:
+bun add -g ctx7@latest
+
+# one-shot (no global install):
 npx ctx7@latest docs /facebook/react "React hooks"
+# or with Bun:
+bunx ctx7@latest docs /facebook/react "React hooks"
 ```
 
 Claude Code agents can also use optional MCP servers for enhanced capabilities.
