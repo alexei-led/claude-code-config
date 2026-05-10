@@ -25,12 +25,13 @@ lint-python: ## Lint Python files with ruff
 	uv run ruff check .
 	uv run ruff format --check .
 
-lint-shell: ## Lint shell scripts with shellcheck + shfmt
+lint-shell: ## Lint shell scripts with shellcheck + shfmt (matches CI's action-sh-checker scope)
 	@command -v shellcheck >/dev/null 2>&1 || { echo "shellcheck not installed"; exit 1; }
 	@command -v shfmt >/dev/null 2>&1 || { echo "shfmt not installed"; exit 1; }
 	find plugins platforms scripts -name '*.sh' -exec shellcheck {} +
 	find plugins platforms scripts -name '*.sh' -exec shfmt -i 0 -d {} +
-	@# Check non-.sh shell scripts (pre-commit, release-tag)
+	@# Cover .bats test files and extension-less shell scripts CI also lints
+	find tests -name '*.bats' -exec shfmt -i 0 -d {} +
 	shfmt -i 0 -d scripts/pre-commit scripts/release-tag
 
 lint-markdown: ## Lint Markdown files
