@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Setup a new git worktree as a sibling directory
 # Usage: setup-worktree.sh <branch-name> [base-branch]
 

@@ -31,7 +31,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$PLUGIN_ROOT/hooks/session-start.sh\"",
+            "command": "\"$PLUGIN_ROOT/hooks/session-start.py\"",
             "timeout": 5,
             "statusMessage": "Loading session context"
           }

@@ -13,7 +13,7 @@ postedit:
     name: smart-lint
     status_message: Running smart-lint
 sessionstart:
-  - script: session-start.sh
+  - script: session-start.py
     timeout: 5
     name: session-start
     status_message: Loading session context
