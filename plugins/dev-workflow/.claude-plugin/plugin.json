@@ -1,5 +1,5 @@
 {
-  "name": "dev-workflow",
+  "name": "review-lint-commit",
   "description": "Core development loop: code review, fixes, commits, linting hooks, and 24 language-specific review agents",
   "version": "2.2.0",
   "author": {
@@ -7,7 +7,7 @@
     "email": "alexei.led@gmail.com",
     "url": "https://github.com/alexei-led"
   },
-  "repository": "https://github.com/alexei-led/cc-thingz",
+  "repository": "https://github.com/alexei-led/cc-forge",
   "license": "MIT",
   "keywords": [
     "code-review",
@@ -22,5 +22,5 @@
     "security",
     "testing"
   ],
-  "homepage": "https://github.com/alexei-led/cc-thingz/tree/master/plugins/dev-workflow"
+  "homepage": "https://github.com/alexei-led/cc-forge/tree/master/plugins/dev-workflow"
 }

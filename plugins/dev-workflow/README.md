@@ -14,7 +14,7 @@ Core development loop: code review, fixes, commits, linting hooks, and 24 langua
 | `improving-tests`               | yes       | Refactor tests: combine to tabular, fill gaps                                  |
 | `improve-codebase-architecture` | yes       | Find deepening opportunities; module/seam/depth vocabulary                     |
 | `refactoring-code`              | auto      | Behavior-preserving multi-file refactoring                                     |
-| `searching-code`                | auto      | Scoped codebase search and zoom-out maps                                      |
+| `searching-code`                | auto      | Scoped codebase search and zoom-out maps                                       |
 | `coding`                        | auto      | Process discipline: surface assumptions, define verifiable goals before coding |
 
 ## Agents (25)
@@ -27,16 +27,15 @@ Core development loop: code review, fixes, commits, linting hooks, and 24 langua
 
 ## Hooks (8)
 
-| Hook                     | Event            | What It Does                                 |
-| ------------------------ | ---------------- | -------------------------------------------- |
-| `skill-enforcer.sh`      | UserPromptSubmit | Pattern-matches prompt and suggests skills   |
-| `file-protector.sh`      | PreToolUse       | Blocks edits to settings.json, secrets       |
-| `git-guardrails.sh`      | PreToolUse       | Blocks destructive git commands              |
-| `smart-lint.sh`          | PostToolUse      | Auto-runs linter after file edits            |
-| `test-runner.sh`         | PostToolUse      | Auto-runs tests after implementation changes |
-| `session-start.sh`       | SessionStart     | Shows git branch, last commit, file context  |
-| `notify.sh`              | Notification     | Desktop notifications for long operations    |
-| `performance-monitor.sh` | PostCompact      | Tracks context compaction metrics            |
+| Hook                | Event            | What It Does                                 |
+| ------------------- | ---------------- | -------------------------------------------- |
+| `skill-enforcer.sh` | UserPromptSubmit | Pattern-matches prompt and suggests skills   |
+| `file-protector.sh` | PreToolUse       | Blocks edits to settings.json, secrets       |
+| `git-guardrails.sh` | PreToolUse       | Blocks destructive git commands              |
+| `smart-lint.sh`     | PostToolUse      | Auto-runs linter after file edits            |
+| `test-runner.sh`    | PostToolUse      | Auto-runs tests after implementation changes |
+| `session-start.py`  | SessionStart     | Shows git branch, last commit, file context  |
+| `notify.sh`         | Notification     | Desktop notifications for long operations    |
 
 ### Hook Configuration
 
@@ -46,10 +45,10 @@ See [`docs/lint-tools.md`](docs/lint-tools.md) for the full tool list, install c
 
 ## External Providers
 
-| Provider | Used For |
-| --- | --- |
-| Context7 CLI (`ctx7`) | Portable docs lookup from skills |
-| Perplexity/web providers | Research and current facts where available |
-| MorphLLM MCP | Claude Code-only source workflows that use semantic search/editing |
+| Provider                 | Used For                                                           |
+| ------------------------ | ------------------------------------------------------------------ |
+| Context7 CLI (`ctx7`)    | Portable docs lookup from skills                                   |
+| Perplexity/web providers | Research and current facts where available                         |
+| MorphLLM MCP             | Claude Code-only source workflows that use semantic search/editing |
 
 Pi exports use local search/edit tools and do not assume MCP providers.

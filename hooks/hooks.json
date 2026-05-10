@@ -46,7 +46,7 @@
           {
             "type": "command",
             "name": "session-start",
-            "command": "${extensionPath}/plugins/dev-workflow/hooks/session-start.sh",
+            "command": "${extensionPath}/plugins/dev-workflow/hooks/session-start.py",
             "timeout": 5000
           }
         ]

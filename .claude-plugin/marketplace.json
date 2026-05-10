@@ -5,15 +5,15 @@
     "email": "alexei.led@gmail.com"
   },
   "metadata": {
-    "description": "A Claude Code plugin suite for development workflows, language tooling, infrastructure ops, and more — with portable skill export for Codex CLI and Gemini CLI",
+    "description": "A Claude Code plugin suite for development workflows, language tooling, infrastructure ops, and more \u2014 with portable skill export for Codex CLI and Gemini CLI",
     "version": "2.2.0",
-    "homepage": "https://github.com/alexei-led/cc-thingz",
-    "repository": "https://github.com/alexei-led/cc-thingz",
+    "homepage": "https://github.com/alexei-led/cc-forge",
+    "repository": "https://github.com/alexei-led/cc-forge",
     "license": "MIT"
   },
   "plugins": [
     {
-      "name": "dev-workflow",
+      "name": "review-lint-commit",
       "source": "./plugins/dev-workflow",
       "description": "Core development loop: code review, fixes, commits, linting hooks, and 24 language-specific review agents",
       "category": "workflow",
@@ -29,8 +29,8 @@
         "email": "alexei.led@gmail.com",
         "url": "https://github.com/alexei-led"
       },
-      "homepage": "https://github.com/alexei-led/cc-thingz/tree/master/plugins/dev-workflow",
-      "repository": "https://github.com/alexei-led/cc-thingz",
+      "homepage": "https://github.com/alexei-led/cc-forge/tree/master/plugins/dev-workflow",
+      "repository": "https://github.com/alexei-led/cc-forge",
       "license": "MIT",
       "keywords": [
         "code-review",
@@ -61,8 +61,8 @@
         "email": "alexei.led@gmail.com",
         "url": "https://github.com/alexei-led"
       },
-      "homepage": "https://github.com/alexei-led/cc-thingz/tree/master/plugins/go-dev",
-      "repository": "https://github.com/alexei-led/cc-thingz",
+      "homepage": "https://github.com/alexei-led/cc-forge/tree/master/plugins/go-dev",
+      "repository": "https://github.com/alexei-led/cc-forge",
       "license": "MIT",
       "keywords": [
         "go",
@@ -76,7 +76,7 @@
       ]
     },
     {
-      "name": "python-dev",
+      "name": "python-3-dev",
       "source": "./plugins/python-dev",
       "description": "Python 3.12+ development with uv/ruff/pyright toolchain and modern patterns",
       "category": "language",
@@ -91,8 +91,8 @@
         "email": "alexei.led@gmail.com",
         "url": "https://github.com/alexei-led"
       },
-      "homepage": "https://github.com/alexei-led/cc-thingz/tree/master/plugins/python-dev",
-      "repository": "https://github.com/alexei-led/cc-thingz",
+      "homepage": "https://github.com/alexei-led/cc-forge/tree/master/plugins/python-dev",
+      "repository": "https://github.com/alexei-led/cc-forge",
       "license": "MIT",
       "keywords": [
         "python",
@@ -106,7 +106,7 @@
       ]
     },
     {
-      "name": "typescript-dev",
+      "name": "typescript-react-dev",
       "source": "./plugins/typescript-dev",
       "description": "TypeScript development with strict typing, React patterns, and modern tooling",
       "category": "language",
@@ -121,8 +121,8 @@
         "email": "alexei.led@gmail.com",
         "url": "https://github.com/alexei-led"
       },
-      "homepage": "https://github.com/alexei-led/cc-thingz/tree/master/plugins/typescript-dev",
-      "repository": "https://github.com/alexei-led/cc-thingz",
+      "homepage": "https://github.com/alexei-led/cc-forge/tree/master/plugins/typescript-dev",
+      "repository": "https://github.com/alexei-led/cc-forge",
       "license": "MIT",
       "keywords": [
         "typescript",
@@ -136,7 +136,7 @@
       ]
     },
     {
-      "name": "web-dev",
+      "name": "vanilla-web-htmx",
       "source": "./plugins/web-dev",
       "description": "Web frontend development with vanilla HTML, CSS, JavaScript, and HTMX",
       "category": "language",
@@ -152,8 +152,8 @@
         "email": "alexei.led@gmail.com",
         "url": "https://github.com/alexei-led"
       },
-      "homepage": "https://github.com/alexei-led/cc-thingz/tree/master/plugins/web-dev",
-      "repository": "https://github.com/alexei-led/cc-thingz",
+      "homepage": "https://github.com/alexei-led/cc-forge/tree/master/plugins/web-dev",
+      "repository": "https://github.com/alexei-led/cc-forge",
       "license": "MIT",
       "keywords": [
         "html",
@@ -168,7 +168,7 @@
       ]
     },
     {
-      "name": "infra-ops",
+      "name": "k8s-terraform-ops",
       "source": "./plugins/infra-ops",
       "description": "Infrastructure and cloud operations: Kubernetes, Terraform, Helm, GitHub Actions, AWS, GCP",
       "category": "infrastructure",
@@ -185,8 +185,8 @@
         "email": "alexei.led@gmail.com",
         "url": "https://github.com/alexei-led"
       },
-      "homepage": "https://github.com/alexei-led/cc-thingz/tree/master/plugins/infra-ops",
-      "repository": "https://github.com/alexei-led/cc-thingz",
+      "homepage": "https://github.com/alexei-led/cc-forge/tree/master/plugins/infra-ops",
+      "repository": "https://github.com/alexei-led/cc-forge",
       "license": "MIT",
       "keywords": [
         "kubernetes",
@@ -203,7 +203,7 @@
       ]
     },
     {
-      "name": "dev-tools",
+      "name": "cli-research-tools",
       "source": "./plugins/dev-tools",
       "description": "Developer utilities: modern CLI tools, git worktrees, docs lookup, web research, brainstorming",
       "category": "utilities",
@@ -219,8 +219,8 @@
         "email": "alexei.led@gmail.com",
         "url": "https://github.com/alexei-led"
       },
-      "homepage": "https://github.com/alexei-led/cc-thingz/tree/master/plugins/dev-tools",
-      "repository": "https://github.com/alexei-led/cc-thingz",
+      "homepage": "https://github.com/alexei-led/cc-forge/tree/master/plugins/dev-tools",
+      "repository": "https://github.com/alexei-led/cc-forge",
       "license": "MIT",
       "keywords": [
         "cli",
@@ -235,7 +235,7 @@
       ]
     },
     {
-      "name": "spec-system",
+      "name": "spec-driven-planning",
       "source": "./plugins/spec-system",
       "description": "Spec-driven development: structured requirements, tasks, and planning workflows",
       "category": "workflow",
@@ -251,8 +251,8 @@
         "email": "alexei.led@gmail.com",
         "url": "https://github.com/alexei-led"
       },
-      "homepage": "https://github.com/alexei-led/cc-thingz/tree/master/plugins/spec-system",
-      "repository": "https://github.com/alexei-led/cc-thingz",
+      "homepage": "https://github.com/alexei-led/cc-forge/tree/master/plugins/spec-system",
+      "repository": "https://github.com/alexei-led/cc-forge",
       "license": "MIT",
       "keywords": [
         "spec",
@@ -267,7 +267,7 @@
       ]
     },
     {
-      "name": "testing-e2e",
+      "name": "playwright-e2e",
       "source": "./plugins/testing-e2e",
       "description": "End-to-end testing with Playwright: browser automation, test generation, and UI testing",
       "category": "testing",
@@ -282,8 +282,8 @@
         "email": "alexei.led@gmail.com",
         "url": "https://github.com/alexei-led"
       },
-      "homepage": "https://github.com/alexei-led/cc-thingz/tree/master/plugins/testing-e2e",
-      "repository": "https://github.com/alexei-led/cc-thingz",
+      "homepage": "https://github.com/alexei-led/cc-forge/tree/master/plugins/testing-e2e",
+      "repository": "https://github.com/alexei-led/cc-forge",
       "license": "MIT",
       "keywords": [
         "playwright",

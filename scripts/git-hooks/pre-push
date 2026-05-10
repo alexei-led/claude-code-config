@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# Pre-push: heavier checks that catch what CI catches before pushing.
+# Runs the full build pipeline so drift, generator bugs, and broken tests
+# are caught locally instead of blocking a PR.
+# Install: make setup (uses core.hooksPath, no copy needed)
+#
+# Hook contract (per githooks(5)):
+#   args: <remote-name> <remote-url>
+#   stdin: lines of "<local-ref> <local-oid> <remote-ref> <remote-oid>"
+#          local-ref is "(delete)" for deletions; oid is all-zeroes
+#          when the ref does not yet exist on the remote.
+#   exit non-zero aborts the push.
+set -euo pipefail
+
+# Skip when only deleting refs — nothing to validate.
+all_deletes=1
+have_input=0
+while read -r local_ref _ _ _; do
+	have_input=1
+	[[ "$local_ref" == "(delete)" ]] || all_deletes=0
+done
+
+if [[ $have_input -eq 1 && $all_deletes -eq 1 ]]; then
+	echo "pre-push: deletion-only push, skipping checks"
+	exit 0
+fi
+
+echo "=== Pre-push (full) ==="
+
+# Regenerate derived artifacts and fail on drift (matches CI's `make check`)
+make check || {
+	echo "FAIL: make check — generated artifacts drifted; commit them"
+	exit 1
+}
+
+# Full test suite
+make test || {
+	echo "FAIL: make test"
+	exit 1
+}
+
+echo "=== Pre-push passed ==="

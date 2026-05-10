@@ -34,7 +34,7 @@ Every skill has been manually crafted and refined through real-world use — not
 > [Codex CLI](https://github.com/openai/codex),
 > [Gemini CLI](https://github.com/google-gemini/gemini-cli),
 > [Pi](https://pi.dev/docs/latest/quickstart)).
-> The Pi flow does **not** require chezmoi by default — `scripts/install-pi-exports.sh`
+> The Pi flow does **not** require chezmoi by default — `scripts/release/install-pi-exports.sh`
 > handles the symlinks. Chezmoi is an optional alternative described in
 > [docs/pi-skill-export.md](docs/pi-skill-export.md#chezmoi-install).
 
@@ -98,8 +98,9 @@ gemini extensions link /path/to/cc-thingz
 ```
 
 Gemini reads `gemini-extension.json` at the repo root, loads context from
-`GEMINI.md` (auto-generated), and discovers per-skill SKILL.md files under
-`flat/skills-codex/` (Gemini and Codex share the same overlay format).
+`AGENTS.md` (auto-generated; shared with Codex and other AGENTS.md-aware
+tools), and discovers per-skill SKILL.md files under `flat/skills-codex/`
+(Gemini and Codex share the same overlay format).
 
 `hooks/hooks.json` at the repo root registers:
 
@@ -140,10 +141,10 @@ pi install npm:@tintinweb/pi-subagents
 # pi install git:github.com/alexei-led/pi-subagents@fix/pi-skill-discovery
 
 # 2. Preview, then apply (no chezmoi needed):
-scripts/install-pi-exports.sh                    # dry-run, prints plan
-scripts/install-pi-exports.sh --apply            # creates symlinks
+scripts/release/install-pi-exports.sh                    # dry-run, prints plan
+scripts/release/install-pi-exports.sh --apply            # creates symlinks
 # optional: rebuild outputs first
-scripts/install-pi-exports.sh --build --apply
+scripts/release/install-pi-exports.sh --build --apply
 ```
 
 The script symlinks:
@@ -361,15 +362,14 @@ Pi uses generated flat exports as the source of truth:
 ~/.pi/agent/extensions  -> <repo>/flat/extensions-pi
 ```
 
-The symlinks are created by `scripts/install-pi-exports.sh --apply` (no chezmoi
+The symlinks are created by `scripts/release/install-pi-exports.sh --apply` (no chezmoi
 needed). A chezmoi-managed alternative is described in
 [docs/pi-skill-export.md](docs/pi-skill-export.md).
 
 ### Structure
 
 ```text
-AGENTS.md                            # AGENTS.md standard (generated)
-GEMINI.md                            # Gemini context file (generated)
+AGENTS.md                            # AGENTS.md standard (generated; serves Codex, Gemini, Pi)
 .claude-plugin/marketplace.json      # Claude Code marketplace
 .agents/plugins/marketplace.json     # Codex CLI marketplace
 gemini-extension.json                # Gemini CLI extension manifest
@@ -392,14 +392,14 @@ plugins/
 ## Flat Directory
 
 `flat/` provides a unified symlink view of all plugin components for tools that
-need flat directory access. `AGENTS.md` and `GEMINI.md` are generated from
+need flat directory access. `AGENTS.md` is generated from
 `flat/skills-codex/`. Pi deploys from `flat/skills-pi/`, `flat/agents-pi/`, and
 `flat/extensions-pi/`.
 
 Regenerate with:
 
 ```bash
-make flat overlays pi-overlays pi-agents agents-md gemini-md
+make build
 ```
 
 Validate with:

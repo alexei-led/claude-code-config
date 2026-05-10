@@ -7,7 +7,7 @@
     "email": "alexei.led@gmail.com",
     "url": "https://github.com/alexei-led"
   },
-  "repository": "https://github.com/alexei-led/cc-thingz",
+  "repository": "https://github.com/alexei-led/cc-forge",
   "license": "MIT",
   "keywords": [
     "go",
@@ -19,5 +19,5 @@
     "patterns",
     "architecture"
   ],
-  "homepage": "https://github.com/alexei-led/cc-thingz/tree/master/plugins/go-dev"
+  "homepage": "https://github.com/alexei-led/cc-forge/tree/master/plugins/go-dev"
 }

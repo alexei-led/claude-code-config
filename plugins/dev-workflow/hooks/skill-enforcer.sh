@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Skill-enforcer hook - detects relevant skills from prompt and suggests activation
 # Outputs minimal context only when skills detected; silent otherwise
 

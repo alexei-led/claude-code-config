@@ -25,13 +25,14 @@ lint-python: ## Lint Python files with ruff
 	uv run ruff check .
 	uv run ruff format --check .
 
-lint-shell: ## Lint shell scripts with shellcheck + shfmt
+lint-shell: ## Lint shell scripts with shellcheck + shfmt (matches CI's action-sh-checker scope)
 	@command -v shellcheck >/dev/null 2>&1 || { echo "shellcheck not installed"; exit 1; }
 	@command -v shfmt >/dev/null 2>&1 || { echo "shfmt not installed"; exit 1; }
 	find plugins platforms scripts -name '*.sh' -exec shellcheck {} +
 	find plugins platforms scripts -name '*.sh' -exec shfmt -i 0 -d {} +
-	@# Check non-.sh shell scripts (pre-commit, release-tag)
-	shfmt -i 0 -d scripts/pre-commit scripts/release-tag
+	@# Cover .bats test files and extension-less shell scripts CI also lints
+	find tests -name '*.bats' -exec shfmt -i 0 -d {} +
+	shfmt -i 0 -d scripts/git-hooks/pre-commit scripts/git-hooks/pre-push scripts/release/release-tag
 
 lint-markdown: ## Lint Markdown files
 	@command -v markdownlint-cli2 >/dev/null 2>&1 || { echo "markdownlint-cli2 not installed — skipping"; exit 0; }
@@ -44,7 +45,7 @@ test: ## Run pytest
 	uv run --extra test python -m pytest tests/ -v
 
 skill-evals-prepare: ## Build temporary Agent Skills eval tree under /tmp
-	uv run python scripts/prepare-skill-evals.py --out $(SKILL_EVAL_ROOT) --source-dir $(SKILL_EVAL_SOURCE)
+	uv run python scripts/evals/prepare-skill-evals.py --out $(SKILL_EVAL_ROOT) --source-dir $(SKILL_EVAL_SOURCE)
 
 skill-evals: skill-evals-prepare ## Run paid Agent Skills evals and print fix-focused summary
 	@set -u; \
@@ -70,7 +71,7 @@ skill-evals: skill-evals-prepare ## Run paid Agent Skills evals and print fix-fo
 		--strict \
 		$$report_flag; \
 	status=$$?; \
-	uv run python scripts/summarize-skill-evals.py $(SKILL_EVAL_WORKSPACE) --markdown $(SKILL_EVAL_REPORT) || true; \
+	uv run python scripts/evals/summarize-skill-evals.py $(SKILL_EVAL_WORKSPACE) --markdown $(SKILL_EVAL_REPORT) || true; \
 	if [ "$(SKILL_EVAL_STRICT)" = "0" ]; then exit 0; fi; \
 	exit $$status
 
@@ -88,15 +89,20 @@ skill-evals-both: ## Run source and Codex/Gemini overlay evals in parallel with 
 	[ $$status1 -eq 0 ] && [ $$status2 -eq 0 ]
 
 skill-evals-summary: ## Print summary for latest skill eval workspace
-	uv run python scripts/summarize-skill-evals.py $(SKILL_EVAL_WORKSPACE) --markdown $(SKILL_EVAL_REPORT)
+	uv run python scripts/evals/summarize-skill-evals.py $(SKILL_EVAL_WORKSPACE) --markdown $(SKILL_EVAL_REPORT)
 
 # --- Validate ---
 
-.PHONY: validate validate-config validate-flat validate-overlays validate-pi-overlays validate-pi-agents validate-agents-md validate-gemini-md validate-executables validate-hooks-synced validate-no-plugin-evals lint-instructions
-validate: validate-no-plugin-evals validate-config validate-flat validate-overlays validate-pi-overlays validate-pi-agents validate-agents-md validate-gemini-md validate-executables validate-hooks-synced ## Run all validation checks
+# `make build` regenerates every derived artifact idempotently and `make check`
+# fails if anything diverges from canonical sources. Per-artifact --check
+# targets are gone — they duplicated what `make check` already proves
+# end-to-end, and disagreed with each other when generators changed.
+
+.PHONY: validate validate-config validate-executables validate-no-plugin-evals lint-instructions
+validate: validate-no-plugin-evals validate-config validate-executables ## Validate canonical sources (frontmatter, executable bits, plugin layout)
 
 validate-config: ## Validate plugin configs and frontmatter
-	uv run python scripts/validate-config.py
+	uv run python scripts/validate/validate-config.py
 
 validate-no-plugin-evals: ## Ensure eval fixtures are not inside deployable plugin skill dirs
 	@bad=$$(find plugins -path '*/skills/*/evals' -type d); \
@@ -106,43 +112,17 @@ validate-no-plugin-evals: ## Ensure eval fixtures are not inside deployable plug
 		exit 1; \
 	fi
 
-validate-flat: ## Check flat/ symlinks are in sync
-	bash scripts/generate-flat.sh --check
-
-validate-overlays: ## Check skills-codex/ overlays are in sync
-	uv run python scripts/generate-overlays.py --check
-
-validate-pi-overlays: ## Check skills-pi/ overlays are in sync
-	uv run python scripts/generate-overlays.py --platform pi --check
-
-validate-pi-agents: ## Check agents-pi/ overlays are in sync
-	uv run python scripts/generate-pi-agents.py --check
-
-validate-agents-md: ## Check AGENTS.md is in sync with skills
-	uv run python scripts/generate-agents-md.py --check
-
-validate-gemini-md: ## Check GEMINI.md is in sync with skills
-	uv run python scripts/generate-gemini-md.py --check
-
 lint-instructions: ## Lint agent/skill instructions (advisory)
-	@uv run python scripts/lint-instructions.py
+	@uv run python scripts/validate/lint-instructions.py
 
-validate-executables: ## Check shell scripts have executable bit
+validate-executables: ## Check shell + Python entry scripts have executable bit
 	@fail=0; \
-	for f in $$(find plugins platforms scripts -name '*.sh') scripts/pre-commit scripts/release-tag; do \
+	for f in $$(find plugins platforms scripts -name '*.sh') \
+		plugins/dev-workflow/hooks/session-start.py \
+		plugins/infra-ops/skills/using-cloud-cli/scripts/bq-cost-check.py \
+		plugins/infra-ops/skills-pi/using-cloud-cli/scripts/bq-cost-check.py \
+		scripts/git-hooks/pre-commit scripts/git-hooks/pre-push scripts/release/release-tag; do \
 		[ -x "$$f" ] || { echo "ERROR: $$f is not executable"; fail=1; }; \
-	done; \
-	[ $$fail -eq 0 ] || exit 1
-
-validate-hooks-synced: ## Check smart-lint.sh copies are in sync with the canonical
-	@canonical=plugins/dev-workflow/hooks/smart-lint.sh; \
-	fail=0; \
-	for copy in platforms/pi/extensions/smart-lint.sh; do \
-		if ! diff -q "$$canonical" "$$copy" >/dev/null 2>&1; then \
-			echo "ERROR: $$copy is out of sync with $$canonical"; \
-			echo "  Run: make sync-hooks"; \
-			fail=1; \
-		fi; \
 	done; \
 	[ $$fail -eq 0 ] || exit 1
 
@@ -153,58 +133,72 @@ fmt: ## Auto-format Python and shell files
 	uv run ruff check --fix .
 	uv run ruff format .
 	find plugins platforms scripts -name '*.sh' -exec shfmt -i 0 -w {} +
-	shfmt -i 0 -w scripts/pre-commit scripts/release-tag
+	shfmt -i 0 -w scripts/git-hooks/pre-commit scripts/git-hooks/pre-push scripts/release/release-tag
 
 # --- Flat ---
 
 .PHONY: flat
 flat: ## Sync flat/ symlinks with plugin contents
-	bash scripts/generate-flat.sh
+	bash scripts/build/generate-flat.sh
 
 # --- Hooks (smart-lint.sh distribution) ---
 
-.PHONY: sync-hooks
-sync-hooks: ## Copy canonical smart-lint.sh to Pi extensions
-	@canonical=plugins/dev-workflow/hooks/smart-lint.sh; \
-	mkdir -p platforms/pi/extensions; \
-	cp "$$canonical" platforms/pi/extensions/smart-lint.sh; \
+.PHONY: sync-hooks generate-hooks
+sync-hooks: ## Copy canonical smart-lint.sh and smart-lint/ modules to Pi extensions
+	@mkdir -p platforms/pi/extensions/smart-lint; \
+	cp plugins/dev-workflow/hooks/smart-lint.sh platforms/pi/extensions/smart-lint.sh; \
 	chmod +x platforms/pi/extensions/smart-lint.sh; \
-	echo "synced smart-lint.sh -> platforms/pi/extensions/"
+	cp plugins/dev-workflow/hooks/smart-lint/*.sh platforms/pi/extensions/smart-lint/; \
+	chmod +x platforms/pi/extensions/smart-lint/*.sh; \
+	echo "synced smart-lint.sh + smart-lint/ -> platforms/pi/extensions/"
+
+generate-hooks: ## Regenerate hook configs from hooks.source.yaml
+	uv run python scripts/build/generate-hooks.py
 
 # --- Overlays ---
 
 .PHONY: overlays pi-overlays pi-agents
 overlays: ## Build platform-specific skill overlays (skills-codex/)
-	uv run python scripts/generate-overlays.py
+	uv run python scripts/build/generate-skills.py
 
 pi-overlays: ## Build Pi skill overlays (skills-pi/)
-	uv run python scripts/generate-overlays.py --platform pi
+	uv run python scripts/build/generate-skills.py --platform pi
 
 pi-agents: ## Build Pi subagent overlays (agents-pi/)
-	uv run python scripts/generate-pi-agents.py
+	uv run python scripts/build/generate-subagents.py
 
 # --- Generated docs ---
 
-.PHONY: agents-md gemini-md
+.PHONY: agents-md
 agents-md: ## Generate AGENTS.md from skill overlays
-	uv run python scripts/generate-agents-md.py
+	uv run python scripts/build/generate-agents-md.py
 
-gemini-md: ## Generate GEMINI.md from skill overlays
-	uv run python scripts/generate-gemini-md.py
+# --- One-shot build: regenerate everything derived from canonical sources ---
+
+.PHONY: build check
+build: overlays pi-overlays pi-agents agents-md flat sync-hooks generate-hooks ## Regenerate all derived artifacts from canonical sources
+
+check: build ## Build, then fail if any tracked file changed (drift detection)
+	@if ! git diff --quiet --exit-code; then \
+		echo "ERROR: derived artifacts drifted. See diff above for either updated sources or hand-edited generated files."; \
+		echo "  Hand-edits to generated files are overwritten by 'make build' — edit canonical sources or add SKILL.codex.md/SKILL.pi.md sidecars instead."; \
+		git --no-pager diff --stat; \
+		exit 1; \
+	fi
+	@echo "check: clean (all derived artifacts match canonical sources)"
 
 # --- CI (runs everything) ---
 
 .PHONY: ci
-ci: lint overlays agents-md gemini-md validate test ## Run full CI pipeline locally
+ci: lint validate check test ## Run full CI pipeline locally (lint + validate sources, build & check drift, run tests)
 
 # --- Setup ---
 
 .PHONY: setup
-setup: ## Install pre-commit hook and dev dependencies
-	cp scripts/pre-commit .git/hooks/pre-commit
-	chmod +x .git/hooks/pre-commit
+setup: ## Install repo-tracked git hooks (pre-commit + pre-push) and dev deps
+	git config core.hooksPath scripts/git-hooks
 	uv sync --extra test
-	@echo "Setup complete — pre-commit hook installed"
+	@echo "Setup complete — git hooks active via core.hooksPath=scripts/git-hooks"
 
 # --- Push ---
 
@@ -220,7 +214,7 @@ release: ## Create release tag (usage: make release V=1.2.0)
 ifndef V
 	$(error Usage: make release V=1.2.0)
 endif
-	scripts/release-tag v$(V)
+	scripts/release/release-tag v$(V)
 	@echo "Push with: git push origin master v$(V)"
 
 # --- Help ---

@@ -55,5 +55,8 @@ MCP_Sequential.md
 .claude-hooks-config.sh
 .claude-hooks-ignore
 
+# === Local working state (ralphex sessions, progress logs) ===
+.ralphex/
+
 # === OS artifacts ===
 .DS_Store

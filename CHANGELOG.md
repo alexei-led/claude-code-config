@@ -6,6 +6,47 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 major = breaking config/hook changes, minor = new skills/features, patch = fixes.
 
+## [Unreleased]
+
+### Changed
+
+- **`scripts/` reorganized** into thematic subdirectories so the three
+  audiences are no longer mixed:
+  `scripts/build/` (codegen + `_common.py` + `preambles/`),
+  `scripts/validate/` (config & instruction linters),
+  `scripts/evals/` (paid OpenAI skill-eval workflow),
+  `scripts/release/` (`install-pi-exports.sh`, `rewrite-mirror.py`,
+  `release-tag`), `scripts/git-hooks/` (versioned commit/push hooks).
+  All Makefile targets, CI workflows, docs, tests, and watermarks updated.
+  Generated overlays got a one-time watermark refresh.
+- **`scripts/build/_common.py`** — extracted shared helpers (`ROOT`,
+  `iter_plugin_dirs`, `strip_cc_body`, `remove_empty_dirs`, `sync_files`,
+  `DesiredFile`, frontmatter import guard) used by `generate-skills.py`,
+  `generate-subagents.py`, `generate-hooks.py`, `generate-agents-md.py`,
+  `validate-config.py`. ~180 LOC of duplication removed.
+- **`tests/conftest.py`** — adds a `load_script(name)` fixture for new
+  tests; replaces ad-hoc `importlib` boilerplate going forward.
+- **Shell hygiene** — standardized all shell scripts on
+  `#!/usr/bin/env bash`; added `set -uo pipefail` to `notify.sh`
+  (previously had no error guard).
+- **`session-start` hook** — ported from bash to Python (`session-start.py`).
+  Added a proper pytest suite with broader coverage than the prior bats
+  smoke test (git context, `.spec/`, `feature_list.json`, project hints,
+  malformed stdin).
+- **`bq-cost-check`** — ported from bash to Python
+  (`bq-cost-check.py`). Replaces brittle `grep -oP` of `bq` text output
+  with `bq --format=json` + `json.loads`, and drops the `bc` dependency.
+- **Git hooks** — split into `scripts/git-hooks/pre-commit` (fast: lint +
+  validate-config + gitleaks staged, ~3 s) and `scripts/git-hooks/pre-push`
+  (heavy: drift detection + full test suite). `make setup` now sets
+  `core.hooksPath = scripts/git-hooks` so hooks are version-tracked
+  instead of copied to `.git/hooks/`.
+
+### Removed
+
+- **`performance-monitor.sh`** — never wired into `hooks.source.yaml` and
+  the README's "PostCompact" claim did not match any registered event.
+
 ## [2.2.0] - 2026-05-09
 
 ### Added

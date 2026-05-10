@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
-SCRIPT = ROOT / "scripts" / "install-pi-exports.sh"
+SCRIPT = ROOT / "scripts" / "release" / "install-pi-exports.sh"
 SKILLS_SRC = ROOT / "flat" / "skills-pi"
 AGENTS_SRC = ROOT / "flat" / "agents-pi"
 
@@ -28,10 +28,7 @@ def _run(script_args: list[str], target_dir: Path) -> subprocess.CompletedProces
 
 def _require_flat_artifacts() -> None:
     if not SKILLS_SRC.is_dir() or not AGENTS_SRC.is_dir():
-        pytest.skip(
-            "flat/skills-pi or flat/agents-pi missing; run `make pi-overlays "
-            "pi-agents flat` first"
-        )
+        pytest.skip("flat/skills-pi or flat/agents-pi missing; run `make build` first")
 
 
 def test_dry_run_reports_intended_symlinks(tmp_path: Path) -> None:

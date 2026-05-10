@@ -10,6 +10,8 @@
 #   TERM_PROGRAM                                   - fallback terminal detection
 #   CLAUDE_TERMINAL_BUNDLE_ID                      - manual override
 
+set -uo pipefail
+
 # --- Parse input ---
 json_input="${1:-$(cat)}"
 
