@@ -9,7 +9,10 @@ import pytest
 
 _spec = importlib.util.spec_from_file_location(
     "prepare_skill_evals",
-    Path(__file__).resolve().parent.parent / "scripts" / "prepare-skill-evals.py",
+    Path(__file__).resolve().parent.parent
+    / "scripts"
+    / "evals"
+    / "prepare-skill-evals.py",
 )
 assert _spec is not None and _spec.loader is not None
 prepare_skill_evals = importlib.util.module_from_spec(_spec)

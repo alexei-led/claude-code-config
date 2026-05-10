@@ -1,15 +1,15 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Sync flat/ symlinks with plugin contents.
 #
 # flat/ provides a unified view of all plugin skills/agents/hooks/commands/scripts
 # for tools that need flat directory access (chezmoi, Codex CLI, Gemini CLI).
 #
 # Usage:
-#   scripts/generate-flat.sh          # sync flat/ (add/remove/update links)
-#   scripts/generate-flat.sh --check  # exit 1 if flat/ is out of sync (for CI)
-#   scripts/generate-flat.sh --hook   # sync + git add flat/ (for pre-commit)
+#   scripts/build/generate-flat.sh          # sync flat/ (add/remove/update links)
+#   scripts/build/generate-flat.sh --check  # exit 1 if flat/ is out of sync (for CI)
+#   scripts/build/generate-flat.sh --hook   # sync + git add flat/ (for pre-commit)
 set -euo pipefail
-cd "$(dirname "$0")/.."
+cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel)"
 
 MODE="${1:-sync}"
 
@@ -101,7 +101,7 @@ total=$((${#stale[@]} + ${#missing[@]} + ${#wrong[@]}))
 if [ "$MODE" = "--check" ]; then
 	if [ "$total" -gt 0 ]; then
 		echo "flat/ is out of sync: +${#missing[@]} -${#stale[@]} ~${#wrong[@]}"
-		echo "Run: scripts/generate-flat.sh"
+		echo "Run: scripts/build/generate-flat.sh"
 		exit 1
 	fi
 	echo "flat/ is in sync"

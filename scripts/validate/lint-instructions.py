@@ -20,7 +20,9 @@ from pathlib import Path
 
 import frontmatter
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = next(
+    p for p in Path(__file__).resolve().parents if (p / "pyproject.toml").is_file()
+)
 
 
 # -------------------------------------------------------------------

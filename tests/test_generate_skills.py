@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 _spec = importlib.util.spec_from_file_location(
     "generate_skills",
-    Path(__file__).resolve().parent.parent / "scripts" / "generate-skills.py",
+    Path(__file__).resolve().parent.parent / "scripts" / "build" / "generate-skills.py",
 )
 assert _spec is not None and _spec.loader is not None
 generate_skills = importlib.util.module_from_spec(_spec)
@@ -31,7 +31,7 @@ def _write_skill(
 
 
 def _write_pi_preamble(root: Path, body: str = "<!-- pi preamble -->") -> None:
-    preamble = root / "scripts" / "preambles" / "pi.md"
+    preamble = root / "scripts" / "build" / "preambles" / "pi.md"
     preamble.parent.mkdir(parents=True)
     preamble.write_text(body)
 

@@ -18,7 +18,7 @@ Each entry requires: script, timeout (seconds).
 Optional: name (defaults to script without .sh), status_message.
 
 Usage:
-  scripts/generate-hooks.py           # sync configs
+  scripts/build/generate-hooks.py           # sync configs
 
 Drift detection lives in `make check` (build + git diff --exit-code).
 """
@@ -35,7 +35,11 @@ except ImportError:
     print("ERROR: pip install pyyaml", file=sys.stderr)
     sys.exit(1)
 
-ROOT = Path(__file__).resolve().parent.parent
+_REPO = next(
+    p for p in Path(__file__).resolve().parents if (p / "pyproject.toml").is_file()
+)
+sys.path.insert(0, str(_REPO / "scripts"))
+from _common import ROOT, iter_plugin_dirs  # noqa: E402
 
 # (cc_event, cc_matcher, codex_event, codex_matcher)
 # None matcher → no matcher field. None codex_event → CC-only, skip for Codex.
@@ -51,14 +55,6 @@ _EVENT_MAP: dict[str, tuple[str, str | None, str | None, str | None]] = {
 _CC_SEQUENTIAL = {"BeforeTool", "AfterTool"}
 _CC_EVENT_ORDER = ["BeforeTool", "AfterTool", "SessionStart", "UserPromptSubmit"]
 _CODEX_EVENT_ORDER = ["PreToolUse", "PostToolUse", "SessionStart"]
-
-
-def _iter_plugin_dirs() -> list[tuple[str, Path]]:
-    return sorted(
-        (d.name, d)
-        for d in (ROOT / "plugins").iterdir()
-        if d.is_dir() and not d.name.startswith(".")
-    )
 
 
 def _load_source(plugin_dir: Path) -> dict | None:
@@ -182,7 +178,7 @@ def compute_desired() -> dict[Path, bytes]:
     desired: dict[Path, bytes] = {}
     cc_plugins: list[tuple[str, dict]] = []
 
-    for plugin_name, plugin_dir in _iter_plugin_dirs():
+    for plugin_name, plugin_dir in ((p.name, p) for p in iter_plugin_dirs(ROOT)):
         source = _load_source(plugin_dir)
         if source is None:
             continue
@@ -204,7 +200,7 @@ def compute_desired() -> dict[Path, bytes]:
 def _all_generated_paths() -> list[Path]:
     """All hook output files that currently exist on disk."""
     paths: list[Path] = []
-    for _, plugin_dir in _iter_plugin_dirs():
+    for _, plugin_dir in ((p.name, p) for p in iter_plugin_dirs(ROOT)):
         p = plugin_dir / "hooks" / "codex.hooks.json"
         if p.exists():
             paths.append(p)

@@ -6,7 +6,9 @@ import json
 import shutil
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = next(
+    p for p in Path(__file__).resolve().parents if (p / "pyproject.toml").is_file()
+)
 PLUGINS_DIR = ROOT / "plugins"
 EVALS_DIR = ROOT / "tests" / "skill-evals"
 DEFAULT_OUT = Path("/tmp/cc-thingz-skill-eval-root")

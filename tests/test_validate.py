@@ -9,7 +9,10 @@ from unittest.mock import patch
 
 _spec = importlib.util.spec_from_file_location(
     "validate_config",
-    Path(__file__).resolve().parent.parent / "scripts" / "validate-config.py",
+    Path(__file__).resolve().parent.parent
+    / "scripts"
+    / "validate"
+    / "validate-config.py",
 )
 assert _spec is not None and _spec.loader is not None
 validate_config = importlib.util.module_from_spec(_spec)

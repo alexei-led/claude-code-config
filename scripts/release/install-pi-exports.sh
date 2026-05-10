@@ -1,11 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Link generated cc-thingz Pi exports into a Pi agent config directory.
 # Dry-run by default. Pass --apply to modify files.
 set -euo pipefail
 
 usage() {
 	cat <<'EOF'
-Usage: scripts/install-pi-exports.sh [--apply] [--build] [--target-dir DIR]
+Usage: scripts/release/install-pi-exports.sh [--apply] [--build] [--target-dir DIR]
 
 Links:
   DIR/skills     -> <repo>/flat/skills-pi
@@ -60,7 +60,7 @@ while [[ $# -gt 0 ]]; do
 	esac
 done
 
-repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
+repo_root="$(git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --show-toplevel)"
 skills_src="$repo_root/flat/skills-pi"
 agents_src="$repo_root/flat/agents-pi"
 extensions_src="$repo_root/flat/extensions-pi"

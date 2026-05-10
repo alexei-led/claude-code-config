@@ -64,13 +64,13 @@ pi install git:github.com/alexei-led/pi-subagents@fix/pi-skill-discovery
 Use the helper script from the repository root. It is dry-run by default:
 
 ```bash
-scripts/install-pi-exports.sh
+scripts/release/install-pi-exports.sh
 ```
 
 Apply after reviewing the plan:
 
 ```bash
-scripts/install-pi-exports.sh --apply
+scripts/release/install-pi-exports.sh --apply
 ```
 
 This creates:
@@ -121,7 +121,7 @@ you prefer that stack.
 If you want the script to regenerate exports first:
 
 ```bash
-scripts/install-pi-exports.sh --build --apply
+scripts/release/install-pi-exports.sh --build --apply
 ```
 
 Manual equivalent:

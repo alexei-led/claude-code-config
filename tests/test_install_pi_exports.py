@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
-SCRIPT = ROOT / "scripts" / "install-pi-exports.sh"
+SCRIPT = ROOT / "scripts" / "release" / "install-pi-exports.sh"
 SKILLS_SRC = ROOT / "flat" / "skills-pi"
 AGENTS_SRC = ROOT / "flat" / "agents-pi"
 

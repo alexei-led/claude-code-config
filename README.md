@@ -34,7 +34,7 @@ Every skill has been manually crafted and refined through real-world use — not
 > [Codex CLI](https://github.com/openai/codex),
 > [Gemini CLI](https://github.com/google-gemini/gemini-cli),
 > [Pi](https://pi.dev/docs/latest/quickstart)).
-> The Pi flow does **not** require chezmoi by default — `scripts/install-pi-exports.sh`
+> The Pi flow does **not** require chezmoi by default — `scripts/release/install-pi-exports.sh`
 > handles the symlinks. Chezmoi is an optional alternative described in
 > [docs/pi-skill-export.md](docs/pi-skill-export.md#chezmoi-install).
 
@@ -141,10 +141,10 @@ pi install npm:@tintinweb/pi-subagents
 # pi install git:github.com/alexei-led/pi-subagents@fix/pi-skill-discovery
 
 # 2. Preview, then apply (no chezmoi needed):
-scripts/install-pi-exports.sh                    # dry-run, prints plan
-scripts/install-pi-exports.sh --apply            # creates symlinks
+scripts/release/install-pi-exports.sh                    # dry-run, prints plan
+scripts/release/install-pi-exports.sh --apply            # creates symlinks
 # optional: rebuild outputs first
-scripts/install-pi-exports.sh --build --apply
+scripts/release/install-pi-exports.sh --build --apply
 ```
 
 The script symlinks:
@@ -362,7 +362,7 @@ Pi uses generated flat exports as the source of truth:
 ~/.pi/agent/extensions  -> <repo>/flat/extensions-pi
 ```
 
-The symlinks are created by `scripts/install-pi-exports.sh --apply` (no chezmoi
+The symlinks are created by `scripts/release/install-pi-exports.sh --apply` (no chezmoi
 needed). A chezmoi-managed alternative is described in
 [docs/pi-skill-export.md](docs/pi-skill-export.md).
 

@@ -9,7 +9,7 @@ import pytest
 
 _spec = importlib.util.spec_from_file_location(
     "generate_hooks",
-    Path(__file__).resolve().parent.parent / "scripts" / "generate-hooks.py",
+    Path(__file__).resolve().parent.parent / "scripts" / "build" / "generate-hooks.py",
 )
 assert _spec is not None and _spec.loader is not None
 gen = importlib.util.module_from_spec(_spec)

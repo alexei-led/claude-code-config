@@ -42,8 +42,19 @@
 ## Setup
 
 ```bash
-make setup    # Install pre-commit hook and dev dependencies (uv-managed)
+make setup    # Activate repo-tracked git hooks + install dev deps (uv-managed)
 ```
+
+`make setup` sets `git config core.hooksPath scripts/git-hooks` so the
+versioned hooks in `scripts/git-hooks/` run on every commit/push. The split:
+
+- `pre-commit` — fast path (~3 s): ruff + shellcheck + shfmt + markdownlint
+  - plugin frontmatter validation + gitleaks on staged changes.
+- `pre-push` — heavy path (~30 s): regenerate all derived artifacts, fail
+  on drift, run the full pytest suite. Mirrors what GitHub Actions does.
+
+Skip a hook only when truly necessary: `git commit --no-verify` /
+`git push --no-verify`. CI will still enforce.
 
 Required tools on `PATH`:
 
@@ -68,7 +79,25 @@ cc-thingz/
 │   ├── hooks/                         # Claude Code only
 │   └── commands/                      # Claude Code only
 ├── platforms/pi/                      # Pi-only runtime skills/agents
-├── scripts/                           # Build, validate, install scripts
+├── scripts/
+│   ├── build/                         # Codegen run by `make build`
+│   │   ├── _common.py                 # Shared helpers for generators
+│   │   ├── generate-{skills,subagents,hooks,agents-md}.py
+│   │   ├── generate-flat.sh
+│   │   └── preambles/                 # Platform preambles consumed by generators
+│   ├── validate/                      # Run by `make validate` / CI
+│   │   ├── validate-config.py
+│   │   └── lint-instructions.py
+│   ├── evals/                         # Paid OpenAI skill-eval workflow
+│   │   ├── prepare-skill-evals.py
+│   │   └── summarize-skill-evals.py
+│   ├── release/                       # Distribution + mirroring + tagging
+│   │   ├── install-pi-exports.sh
+│   │   ├── rewrite-mirror.py
+│   │   └── release-tag
+│   └── git-hooks/                     # Activated by `make setup`
+│       ├── pre-commit
+│       └── pre-push
 ├── flat/                              # Generated symlink trees for chezmoi/Pi
 ├── tests/                             # pytest + bats
 ├── AGENTS.md                          # Generated — AGENTS.md standard output
@@ -154,12 +183,33 @@ changed — commit them. Never use `--no-verify` to bypass hooks.
   description frontmatter. Codex, Gemini, and Pi versions are generated.
 - **Agents:** add `plugins/<plugin>/agents/<agent>.md`. Add
   `<agent>.pi.md` only if Pi cannot run the canonical version.
-- **Hooks:** add the script under `plugins/<plugin>/hooks/`. Hook
+- **Hooks:** add the script under `plugins/<plugin>/hooks/`. Prefer Python
+  (`.py`, stdlib only) for anything beyond a few lines of plumbing — hooks
+  must run on every Claude Code session start and Python startup is well
+  under the 5 s timeout. Use bash only for thin command wrappers. Hook
   registration is generated from `hooks.source.yaml` — run
   `make generate-hooks` after editing the source.
 - **Commands:** Claude Code only — add under `plugins/<plugin>/commands/`.
 
 After any of the above, run `make build && make ci`.
+
+## Scripts and Tests
+
+- Python scripts in `scripts/` are kebab-cased CLI entry points. Shared
+  helpers (`ROOT`, `iter_plugin_dirs`, `strip_cc_body`, `sync_files`,
+  `DesiredFile`, the `frontmatter` import guard) live in `scripts/_common.py`.
+  New generators should import from there instead of redefining.
+- Tests use `pytest`. Use the `load_script` fixture from `tests/conftest.py`
+  to load a kebab-named script as a module:
+
+  ```python
+  def test_x(load_script):
+      mod = load_script("generate-skills.py")
+      assert mod.main([]) == 0
+  ```
+
+- The remaining `tests/hooks/*.bats` files exercise pure-bash hooks; new
+  hooks should be Python and tested with pytest under `tests/hooks/`.
 
 ## Pi Exports
 

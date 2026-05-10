@@ -11,7 +11,10 @@ import frontmatter
 
 _spec = importlib.util.spec_from_file_location(
     "generate_agents_md",
-    Path(__file__).resolve().parent.parent / "scripts" / "generate-agents-md.py",
+    Path(__file__).resolve().parent.parent
+    / "scripts"
+    / "build"
+    / "generate-agents-md.py",
 )
 assert _spec is not None and _spec.loader is not None
 gen = importlib.util.module_from_spec(_spec)

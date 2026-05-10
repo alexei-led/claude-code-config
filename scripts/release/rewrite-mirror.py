@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Rewrite plugin manifests for private mirror repos.
 
-Usage: python scripts/rewrite-mirror.py <owner>/<repo>
+Usage: python scripts/release/rewrite-mirror.py <owner>/<repo>
 
 Runs in CI on mirror repos (condition-gated in workflow). Safe to run
 on the source repo — exits immediately when repo matches SOURCE_REPO.

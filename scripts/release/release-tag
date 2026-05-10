@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Create a release tag with automatic version bumping.
 #
-# Usage: scripts/release-tag v1.2.0
+# Usage: scripts/release/release-tag v1.2.0
 #
 # This script:
 # 1. Validates the version format (vX.Y.Z)
@@ -12,8 +12,8 @@
 set -euo pipefail
 
 if [ $# -ne 1 ]; then
-	echo "Usage: scripts/release-tag <version>"
-	echo "Example: scripts/release-tag v1.2.0"
+	echo "Usage: scripts/release/release-tag <version>"
+	echo "Example: scripts/release/release-tag v1.2.0"
 	exit 1
 fi
 

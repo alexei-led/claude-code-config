@@ -8,7 +8,7 @@ allowed-tools:
   - Read
   - Glob
   - Grep
-  - Bash(uv run python scripts/lint-instructions.py*)
+  - Bash(uv run python scripts/validate/lint-instructions.py*)
   - Agent
   - AskUserQuestion
 ---
@@ -51,7 +51,7 @@ This contains model-behavior and skill-structure rules:
 Run the fast regex linter for a structural baseline:
 
 ```bash
-uv run python scripts/lint-instructions.py
+uv run python scripts/validate/lint-instructions.py
 ```
 
 Note which files have structural issues. These are heuristic — the model review in Step 3 is authoritative.

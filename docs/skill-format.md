@@ -239,7 +239,7 @@ Required per eval item: `id`, `name`, `prompt`, `assertions` (non-empty).
 Validate:
 
 ```sh
-uv run python scripts/prepare-skill-evals.py --validate-only
+uv run python scripts/evals/prepare-skill-evals.py --validate-only
 ```
 
 Run full LLM evals:
@@ -272,7 +272,7 @@ elsewhere.
 ## Validating config
 
 ```sh
-uv run python scripts/validate-config.py
+uv run python scripts/validate/validate-config.py
 ```
 
 Checks:

@@ -23,13 +23,18 @@ import sys
 import tomllib
 from pathlib import Path
 
-try:
-    import frontmatter
-except ImportError:
-    print("ERROR: pip install python-frontmatter", file=sys.stderr)
-    sys.exit(1)
-
-ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(
+    0,
+    str(
+        next(
+            p
+            for p in Path(__file__).resolve().parents
+            if (p / "pyproject.toml").is_file()
+        )
+        / "scripts"
+    ),
+)
+from _common import ROOT, frontmatter  # noqa: E402
 
 KEBAB_CASE_RE = re.compile(r"^[a-z][a-z0-9]*(-[a-z0-9]+)*$")
 

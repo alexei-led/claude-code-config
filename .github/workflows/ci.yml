@@ -40,12 +40,12 @@ jobs:
             config:
               - '**/*.json'
               - '**/*.toml'
-              - 'scripts/validate-config.py'
+              - 'scripts/validate/validate-config.py'
             skill_evals:
               - 'plugins/**/skills/**'
               - 'tests/skill-evals/**'
-              - 'scripts/prepare-skill-evals.py'
-              - 'scripts/summarize-skill-evals.py'
+              - 'scripts/evals/prepare-skill-evals.py'
+              - 'scripts/evals/summarize-skill-evals.py'
               - 'docs/skill-eval*.md'
               - 'Makefile'
               - '.node-version'
