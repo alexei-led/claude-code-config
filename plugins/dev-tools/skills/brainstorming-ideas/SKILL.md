@@ -154,6 +154,8 @@ After understanding requirements, **ask before spawning any agents**:
 
 ### If user chooses "Explore codebase":
 
+<!-- CC-ONLY: begin -->
+
 ```
 Task(
   subagent_type="Explore",
@@ -162,16 +164,22 @@ Task(
 )
 ```
 
+<!-- CC-ONLY: end -->
+
 Then summarize findings and ask: "Based on this, should we also research external solutions?"
 
 ### If user chooses "Check project history":
 
 If claude-mem tools are available:
 
+<!-- CC-ONLY: begin -->
+
 ```
 search({ query: "[topic keywords]", limit: 10 })
 timeline({ query: "[topic keywords]", depth_before: 5, depth_after: 5 })
 ```
+
+<!-- CC-ONLY: end -->
 
 Summarize past decisions, known issues, and relevant context. Then ask if they want to also explore or research.
 
@@ -191,6 +199,8 @@ Only run when user explicitly chose research in Phase 3.
 
 ### 4a. Perplexity Query
 
+<!-- CC-ONLY: begin -->
+
 ```
 mcp__perplexity-ask__perplexity_ask({
   messages: [{
@@ -200,13 +210,19 @@ mcp__perplexity-ask__perplexity_ask({
 })
 ```
 
+<!-- CC-ONLY: end -->
+
 ### 4b. Follow Citations
 
 After Perplexity response, WebFetch top 2-3 relevant sources:
 
+<!-- CC-ONLY: begin -->
+
 ```
 WebFetch(url="<citation-url>", prompt="Extract implementation details, code patterns, and lessons learned for [feature]")
 ```
+
+<!-- CC-ONLY: end -->
 
 ### 4c. Synthesize Findings
 

@@ -6,6 +6,7 @@ Checks:
 - plugin.json: required fields, kebab-case names, valid JSON
 - Skills, agents, commands have valid YAML frontmatter with required fields
 - Every skill folder has a SKILL.md
+- SKILL.pi.md / SKILL.codex.md sidecars contain no CC-only keys or mcp__* tools
 - User-invocable skills appear in skill-enforcer.sh (warning)
 - Config files (JSON, TOML) are valid
 - allowed-tools in commands uses list format
@@ -65,7 +66,6 @@ CODEX_PLUGIN_JSON_REQUIRED = ["name", "version", "description"]
 
 # Gemini CLI extension validation constants
 GEMINI_EXT_REQUIRED = ["name", "version", "description"]
-GEMINI_SKILL_LINK_RE = re.compile(r"@flat/skills-codex/([^/]+)/SKILL\.md")
 GEMINI_DESCRIPTION_COUNT_RE = re.compile(r"^(\d+)\s+portable development skills\b")
 PLATFORM_LEAK_RE = re.compile(
     r"\b(AskUserQuestion|TaskCreate|TaskUpdate|TaskList|TaskOutput|TodoWrite)\b|mcp__"
@@ -95,6 +95,22 @@ PI_AGENT_THINKING = {"off", "minimal", "low", "medium", "high", "xhigh"}
 PI_AGENT_PROMPT_MODES = {"replace", "append"}
 PI_AGENT_ISOLATION = {"worktree"}
 KNOWN_PI_PACKAGE_SKILLS = {"revdiff"}
+
+# Frontmatter keys that are CC-only and must not appear in platform sidecars.
+CC_ONLY_FRONTMATTER_KEYS = {
+    "model",
+    "effort",
+    "context",
+    "agent",
+    "when_to_use",
+    "argument-hint",
+    "arguments",
+    "paths",
+    "memory",
+    "hooks",
+    "shell",
+}
+
 PI_EXPORT_LEAK_RE = re.compile(
     r"\b(AskUserQuestion|TaskCreate|TaskUpdate|TaskList|TaskOutput|TodoWrite|"
     r"WebSearch|WebFetch|web_contents)\b|mcp__|Context7 MCP|DeepWiki MCP|"
@@ -113,43 +129,6 @@ def flat_skill_names() -> set[str]:
         for path in flat_dir.iterdir()
         if (path.is_dir() or path.is_symlink()) and (path / "SKILL.md").exists()
     }
-
-
-def gemini_skill_links() -> list[str]:
-    """Return skill names referenced by root GEMINI.md."""
-    gemini_md = ROOT / "GEMINI.md"
-    if not gemini_md.is_file():
-        return []
-    return GEMINI_SKILL_LINK_RE.findall(gemini_md.read_text())
-
-
-def validate_gemini_skill_links() -> list[str]:
-    """Check GEMINI.md references every flat Codex/Gemini skill exactly once."""
-    errors: list[str] = []
-    expected = flat_skill_names()
-    actual_list = gemini_skill_links()
-    actual = set(actual_list)
-    gemini_md = ROOT / "GEMINI.md"
-
-    if not expected:
-        return errors
-    if not gemini_md.is_file():
-        return ["ERROR: GEMINI.md not found"]
-
-    missing = sorted(expected - actual)
-    stale = sorted(actual - expected)
-    duplicates = sorted({name for name in actual_list if actual_list.count(name) > 1})
-    if missing:
-        errors.append(
-            "ERROR: GEMINI.md missing flat skill link(s): " + ", ".join(missing)
-        )
-    if stale:
-        errors.append("ERROR: GEMINI.md stale flat skill link(s): " + ", ".join(stale))
-    if duplicates:
-        errors.append(
-            "ERROR: GEMINI.md duplicate flat skill link(s): " + ", ".join(duplicates)
-        )
-    return errors
 
 
 def validate_platform_overlays() -> list[str]:
@@ -380,6 +359,41 @@ def validate_ctx7_skill_refs() -> list[str]:
                 errors.append(
                     f"ERROR: {looking_up.relative_to(ROOT)}: missing '{token}'"
                 )
+    return errors
+
+
+def validate_skill_sidecars() -> list[str]:
+    """Check SKILL.pi.md and SKILL.codex.md sidecars contain no CC-only content."""
+    errors: list[str] = []
+    plugins_dir = ROOT / "plugins"
+    if not plugins_dir.is_dir():
+        return errors
+
+    pi_sidecars: list[Path] = list(plugins_dir.glob("*/skills/*/SKILL.pi.md"))
+    codex_sidecars: list[Path] = list(plugins_dir.glob("*/skills/*/SKILL.codex.md"))
+    for sidecar in sorted(pi_sidecars + codex_sidecars):
+        rel = sidecar.relative_to(ROOT)
+        try:
+            post = frontmatter.load(str(sidecar))
+        except Exception as exc:
+            errors.append(f"ERROR: {rel}: invalid frontmatter: {exc}")
+            continue
+
+        # No CC-only frontmatter keys
+        for key in CC_ONLY_FRONTMATTER_KEYS:
+            if key in post.metadata:
+                errors.append(
+                    f"ERROR: {rel}: CC-only frontmatter key '{key}' in platform sidecar"
+                )
+
+        # No mcp__* in allowed-tools
+        for tool in split_csv_or_list(post.metadata.get("allowed-tools")):
+            if str(tool).startswith("mcp__"):
+                errors.append(
+                    f"ERROR: {rel}: mcp__* tool '{tool}' in platform sidecar "
+                    f"allowed-tools (CC-only)"
+                )
+
     return errors
 
 
@@ -899,7 +913,7 @@ def validate_agents_md() -> list[str]:
     warnings: list[str] = []
     agents_md = ROOT / "AGENTS.md"
     if not agents_md.exists():
-        warnings.append("WARNING: AGENTS.md not found (run: make agents-md)")
+        warnings.append("WARNING: AGENTS.md not found (run: make build)")
     return warnings
 
 
@@ -931,8 +945,8 @@ def main() -> int:
     gemini_errors, gemini_warnings = validate_gemini_extensions()
     all_errors.extend(gemini_errors)
     all_warnings.extend(gemini_warnings)
-    all_errors.extend(validate_gemini_skill_links())
     all_errors.extend(validate_platform_overlays())
+    all_errors.extend(validate_skill_sidecars())
     all_errors.extend(validate_pi_exports())
 
     # Frontmatter validation

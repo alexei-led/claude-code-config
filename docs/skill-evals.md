@@ -2,8 +2,6 @@
 
 Skill evals are paid LLM regression tests for `SKILL.md` behavior. Keep them out of deployable plugin skill directories.
 
-See `docs/skill-eval-roadmap.md` for skill groups and the next test cases to add.
-
 ## Layout
 
 Store fixtures under `tests/skill-evals/<plugin>/<skill>/`:
@@ -126,7 +124,12 @@ Use `tool_assertions` when the target model returns OpenAI tool calls and you wa
   ],
   "tool_assertions": [
     { "type": "tool-called", "name": "search" },
-    { "type": "tool-arg-contains", "name": "search", "path": "query", "value": "TODO" }
+    {
+      "type": "tool-arg-contains",
+      "name": "search",
+      "path": "query",
+      "value": "TODO"
+    }
   ]
 }
 ```
@@ -156,7 +159,7 @@ make skill-evals SKILL_EVAL_SOURCE=skills-codex
 Validate Pi exports without paid model calls:
 
 ```bash
-make pi-overlays pi-agents flat validate
+make build validate
 ```
 
 The target writes event logs to JSONL and prints a fix-focused summary:
@@ -241,7 +244,15 @@ Reports are written to:
 - Include edge cases where the baseline likely fails.
 - Keep prompts realistic, not keyword traps.
 - Keep IDs stable so reports can be compared across runs.
+- Boundary/routing tests (which skill should fire?) find the most useful failures.
+- If a skill has good instructions but the model omits them, the prompt probably needs to demand command-level detail.
 - If the judge makes a bad call, rewrite the assertion to be more concrete instead of trusting vibes. Obviously.
+
+## Reading a run
+
+- `WITH-SKILL FAILURES TO FIX` is the action list — fix these.
+- `WITHOUT-SKILL FAILURES` are lift signal, not bugs to chase.
+- `LOWEST WITH-SKILL PASS RATES` flags skills to inspect first.
 
 ## Cost and CI policy
 

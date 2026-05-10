@@ -60,7 +60,7 @@ class TestCollectSkills:
         with patch.object(gen, "FLAT_SKILLS", flat):
             groups = gen.collect_skills()
         assert "go-dev" in groups
-        assert groups["go-dev"] == [("writing-go", "Idiomatic Go")]
+        assert groups["go-dev"] == [("writing-go", "Idiomatic Go", "writing-go")]
 
     def test_multiple_plugins(self, tmp_path: Path) -> None:
         flat = tmp_path / "flat" / "skills-codex"
@@ -114,10 +114,11 @@ class TestBuildContent:
         assert "AGENTS.md" in content
 
     def test_with_skills(self) -> None:
-        groups = {"go-dev": [("writing-go", "Go development")]}
+        groups = {"go-dev": [("writing-go", "Go development", "writing-go")]}
         content = gen.build_content(groups)
         assert "## Go Development" in content
         assert "| writing-go | Go development |" in content
+        assert "@flat/skills-codex/writing-go/SKILL.md" in content
 
     def test_empty_plugin_skipped(self) -> None:
         groups = {"spec-system": []}
@@ -125,7 +126,7 @@ class TestBuildContent:
         assert "Spec-Driven" not in content
 
     def test_unknown_plugin_skipped(self) -> None:
-        groups = {"nonexistent": [("foo", "bar")]}
+        groups = {"nonexistent": [("foo", "bar", "foo")]}
         content = gen.build_content(groups)
         assert "foo" not in content
 

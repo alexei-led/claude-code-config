@@ -18,7 +18,7 @@ Defaults:
 
 Options:
   --apply          Make changes. Without this, only prints the plan.
-  --build          Run make pi-overlays pi-agents flat before linking.
+  --build          Run make build before linking (regenerates all derived artifacts).
   --target-dir DIR Override the Pi agent directory.
   -h, --help       Show this help.
 
@@ -68,16 +68,16 @@ timestamp="$(date +%Y%m%d%H%M%S)"
 
 if [[ "$build" -eq 1 ]]; then
 	if [[ "$apply" -eq 1 ]]; then
-		make -C "$repo_root" pi-overlays pi-agents flat
+		make -C "$repo_root" build
 	else
-		echo "DRY-RUN build: make -C $repo_root pi-overlays pi-agents flat"
+		echo "DRY-RUN build: make -C $repo_root build"
 	fi
 fi
 
 for required in "$skills_src" "$agents_src" "$extensions_src"; do
 	if [[ ! -d "$required" ]]; then
 		echo "ERROR: missing generated export: $required" >&2
-		echo "Run: make -C '$repo_root' pi-overlays pi-agents flat" >&2
+		echo "Run: make -C '$repo_root' build" >&2
 		exit 1
 	fi
 done

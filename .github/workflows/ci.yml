@@ -93,7 +93,7 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
-      - run: make overlays validate
+      - run: make validate check
   test:
     name: Tests
     needs: changes
@@ -109,9 +109,8 @@ jobs:
   skill-evals:
     name: Skill Evals
     needs: changes
-    if: >
-      (github.event_name == 'workflow_dispatch' || needs.changes.outputs.skill_evals == 'true') &&
-      (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+    if: |
+      (github.event_name == 'workflow_dispatch' || needs.changes.outputs.skill_evals == 'true') && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     env:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}

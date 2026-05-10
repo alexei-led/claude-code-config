@@ -7,13 +7,13 @@ from pathlib import Path
 from unittest.mock import patch
 
 _spec = importlib.util.spec_from_file_location(
-    "generate_overlays",
-    Path(__file__).resolve().parent.parent / "scripts" / "generate-overlays.py",
+    "generate_skills",
+    Path(__file__).resolve().parent.parent / "scripts" / "generate-skills.py",
 )
 assert _spec is not None and _spec.loader is not None
-generate_overlays = importlib.util.module_from_spec(_spec)
-sys.modules[_spec.name] = generate_overlays
-_spec.loader.exec_module(generate_overlays)
+generate_skills = importlib.util.module_from_spec(_spec)
+sys.modules[_spec.name] = generate_skills
+_spec.loader.exec_module(generate_skills)
 
 
 def _write_skill(
@@ -60,8 +60,8 @@ def test_pi_overlay_prefers_pi_then_codex_then_source(tmp_path):
         "---\nname: docs\ndescription: Pi\nallowed-tools: [Read]\n---\npi body\n",
     )
 
-    with patch.object(generate_overlays, "ROOT", tmp_path):
-        desired = generate_overlays.compute_desired_state("pi")
+    with patch.object(generate_skills, "ROOT", tmp_path):
+        desired = generate_skills.compute_desired_state("pi")
 
     out = tmp_path / "plugins" / "demo" / "skills-pi" / "docs" / "SKILL.md"
     content = desired[out].data.decode()
@@ -90,8 +90,8 @@ def test_pi_overlay_uses_codex_overlay_when_pi_overlay_is_missing(tmp_path):
         "---\nname: docs\ndescription: Codex\n---\ncodex body\n",
     )
 
-    with patch.object(generate_overlays, "ROOT", tmp_path):
-        desired = generate_overlays.compute_desired_state("pi")
+    with patch.object(generate_skills, "ROOT", tmp_path):
+        desired = generate_skills.compute_desired_state("pi")
 
     out = tmp_path / "plugins" / "demo" / "skills-pi" / "docs" / "SKILL.md"
     content = desired[out].data.decode()
@@ -120,8 +120,8 @@ def test_pi_transform_strips_frontmatter_and_cc_only_blocks(tmp_path):
         "<!-- CC-ONLY: end -->\n",
     )
 
-    with patch.object(generate_overlays, "ROOT", tmp_path):
-        desired = generate_overlays.compute_desired_state("pi")
+    with patch.object(generate_skills, "ROOT", tmp_path):
+        desired = generate_skills.compute_desired_state("pi")
 
     out = tmp_path / "plugins" / "demo" / "skills-pi" / "review" / "SKILL.md"
     content = desired[out].data.decode()
@@ -156,8 +156,8 @@ def test_pi_support_files_are_copied_with_executable_bits(tmp_path):
     (skill_dir / "evals" / "fixture.md").write_text("fixture\n")
     (skill_dir / "scratch.tmp").write_text("tmp\n")
 
-    with patch.object(generate_overlays, "ROOT", tmp_path):
-        desired = generate_overlays.compute_desired_state("pi")
+    with patch.object(generate_skills, "ROOT", tmp_path):
+        desired = generate_skills.compute_desired_state("pi")
 
     out_dir = tmp_path / "plugins" / "demo" / "skills-pi" / "runner"
     assert desired[out_dir / "scripts" / "run.sh"].mode == 0o755
@@ -181,9 +181,9 @@ def test_sync_removes_stale_pi_overlay_files(tmp_path):
     stale_file.parent.mkdir(parents=True)
     stale_file.write_text("stale\n")
 
-    with patch.object(generate_overlays, "ROOT", tmp_path):
-        desired = generate_overlays.compute_desired_state("pi")
-        changes = generate_overlays.sync("pi", desired)
+    with patch.object(generate_skills, "ROOT", tmp_path):
+        desired = generate_skills.compute_desired_state("pi")
+        changes = generate_skills.sync("pi", desired)
 
     out_file = tmp_path / "plugins" / "demo" / "skills-pi" / "runner" / "SKILL.md"
     assert changes > 0
@@ -206,9 +206,9 @@ def test_sync_preserves_support_executable_mode(tmp_path):
     script.write_text("#!/bin/sh\n")
     script.chmod(0o755)
 
-    with patch.object(generate_overlays, "ROOT", tmp_path):
-        desired = generate_overlays.compute_desired_state("pi")
-        generate_overlays.sync("pi", desired)
+    with patch.object(generate_skills, "ROOT", tmp_path):
+        desired = generate_skills.compute_desired_state("pi")
+        generate_skills.sync("pi", desired)
 
     out_script = (
         tmp_path / "plugins" / "demo" / "skills-pi" / "runner" / "scripts" / "run.sh"

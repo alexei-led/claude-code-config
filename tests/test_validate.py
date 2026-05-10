@@ -340,54 +340,11 @@ class TestTomlValidation:
         assert any("invalid TOML" in e for e in errors)
 
 
-class TestGeminiSkillLinks:
+class TestGeminiExtension:
     def _write_flat_skill(self, tmp_path, skill):
         skill_dir = tmp_path / "flat" / "skills-codex" / skill
         skill_dir.mkdir(parents=True)
         (skill_dir / "SKILL.md").write_text("---\nname: test\n---\n")
-
-    def test_gemini_links_match_flat_skills(self, tmp_path):
-        self._write_flat_skill(tmp_path, "writing-go")
-        (tmp_path / "GEMINI.md").write_text("@flat/skills-codex/writing-go/SKILL.md\n")
-
-        with patch.object(validate_config, "ROOT", tmp_path):
-            errors = validate_config.validate_gemini_skill_links()
-
-        assert not errors
-
-    def test_missing_gemini_link_is_error(self, tmp_path):
-        self._write_flat_skill(tmp_path, "writing-go")
-        self._write_flat_skill(tmp_path, "writing-python")
-        (tmp_path / "GEMINI.md").write_text("@flat/skills-codex/writing-go/SKILL.md\n")
-
-        with patch.object(validate_config, "ROOT", tmp_path):
-            errors = validate_config.validate_gemini_skill_links()
-
-        assert any("writing-python" in error for error in errors)
-
-    def test_stale_gemini_link_is_error(self, tmp_path):
-        self._write_flat_skill(tmp_path, "writing-go")
-        (tmp_path / "GEMINI.md").write_text(
-            "@flat/skills-codex/writing-go/SKILL.md\n"
-            "@flat/skills-codex/missing-skill/SKILL.md\n"
-        )
-
-        with patch.object(validate_config, "ROOT", tmp_path):
-            errors = validate_config.validate_gemini_skill_links()
-
-        assert any("missing-skill" in error for error in errors)
-
-    def test_duplicate_gemini_link_is_error(self, tmp_path):
-        self._write_flat_skill(tmp_path, "writing-go")
-        (tmp_path / "GEMINI.md").write_text(
-            "@flat/skills-codex/writing-go/SKILL.md\n"
-            "@flat/skills-codex/writing-go/SKILL.md\n"
-        )
-
-        with patch.object(validate_config, "ROOT", tmp_path):
-            errors = validate_config.validate_gemini_skill_links()
-
-        assert any("duplicate" in error and "writing-go" in error for error in errors)
 
     def test_root_gemini_count_must_match_flat_skill_count(self, tmp_path):
         self._write_flat_skill(tmp_path, "writing-go")

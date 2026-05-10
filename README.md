@@ -98,8 +98,9 @@ gemini extensions link /path/to/cc-thingz
 ```
 
 Gemini reads `gemini-extension.json` at the repo root, loads context from
-`GEMINI.md` (auto-generated), and discovers per-skill SKILL.md files under
-`flat/skills-codex/` (Gemini and Codex share the same overlay format).
+`AGENTS.md` (auto-generated; shared with Codex and other AGENTS.md-aware
+tools), and discovers per-skill SKILL.md files under `flat/skills-codex/`
+(Gemini and Codex share the same overlay format).
 
 `hooks/hooks.json` at the repo root registers:
 
@@ -368,8 +369,7 @@ needed). A chezmoi-managed alternative is described in
 ### Structure
 
 ```text
-AGENTS.md                            # AGENTS.md standard (generated)
-GEMINI.md                            # Gemini context file (generated)
+AGENTS.md                            # AGENTS.md standard (generated; serves Codex, Gemini, Pi)
 .claude-plugin/marketplace.json      # Claude Code marketplace
 .agents/plugins/marketplace.json     # Codex CLI marketplace
 gemini-extension.json                # Gemini CLI extension manifest
@@ -392,14 +392,14 @@ plugins/
 ## Flat Directory
 
 `flat/` provides a unified symlink view of all plugin components for tools that
-need flat directory access. `AGENTS.md` and `GEMINI.md` are generated from
+need flat directory access. `AGENTS.md` is generated from
 `flat/skills-codex/`. Pi deploys from `flat/skills-pi/`, `flat/agents-pi/`, and
 `flat/extensions-pi/`.
 
 Regenerate with:
 
 ```bash
-make flat overlays pi-overlays pi-agents agents-md gemini-md
+make build
 ```
 
 Validate with:

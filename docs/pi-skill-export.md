@@ -6,30 +6,30 @@ one-off test. Generated exports are committed and deployable.
 
 ## Generated Outputs
 
-| Consumer        | Output                             | Contains                                                        |
-| --------------- | ---------------------------------- | --------------------------------------------------------------- |
-| Pi skills       | `flat/skills-pi/`                  | Pi-compatible Agent Skills directories                          |
-| Pi agents       | `flat/agents-pi/`                  | Flat `pi-subagents` `.md` agent files                           |
-| Pi extensions   | `flat/extensions-pi/`              | TypeScript extensions for `pi.on(...)` events and tools         |
-| Codex CLI       | `plugins/*/skills-codex/`          | Plugin skill payloads referenced by `.codex-plugin/plugin.json` |
-| Gemini CLI      | `GEMINI.md` + `flat/skills-codex/` | Extension context with linked skill files                       |
-| AGENTS.md tools | `AGENTS.md` + `flat/skills-codex/` | Generated catalog for tools that read AGENTS.md                 |
+| Consumer        | Output                             | Contains                                                                                  |
+| --------------- | ---------------------------------- | ----------------------------------------------------------------------------------------- |
+| Pi skills       | `flat/skills-pi/`                  | Pi-compatible Agent Skills directories                                                    |
+| Pi agents       | `flat/agents-pi/`                  | Flat `pi-subagents` `.md` agent files                                                     |
+| Pi extensions   | `flat/extensions-pi/`              | TypeScript extensions for `pi.on(...)` events and tools                                   |
+| Codex CLI       | `plugins/*/skills-codex/`          | Plugin skill payloads referenced by `.codex-plugin/plugin.json`                           |
+| Gemini CLI      | `AGENTS.md` + `flat/skills-codex/` | Extension context with linked skill files (via `gemini-extension.json` `contextFileName`) |
+| AGENTS.md tools | `AGENTS.md` + `flat/skills-codex/` | Generated catalog for Codex, Gemini, and other AGENTS.md-aware tools                      |
 
 Regenerate everything after changing source skills or agents:
 
 ```bash
-make overlays pi-overlays pi-agents sync-hooks flat agents-md gemini-md
-make validate
+make build
+make check
 ```
 
-`sync-hooks` copies the canonical `plugins/dev-workflow/hooks/smart-lint.sh`
-into `platforms/pi/extensions/` so the Pi extension can shell out to it.
-`make validate-hooks-synced` (run by `make validate`) keeps the copies
-honest in CI.
+`make build` copies the canonical `plugins/dev-workflow/hooks/smart-lint.sh`
+and the `smart-lint/` modules into `platforms/pi/extensions/` so the Pi
+extension can shell out to them. `make check` (= build + git diff) catches
+any drift between canonical and copy in CI.
 
-`make validate` checks that generated Pi exports are in sync, Pi frontmatter is
-valid, banned tool names are absent, local links resolve, support scripts keep
-executable bits, and `context7-cli` references exist.
+`make validate` checks canonical sources only — frontmatter, executable bits,
+plugin layout, and banned tool names. Drift between canonical and generated
+artifacts is caught by `make check`.
 
 ## Pi
 
@@ -104,7 +104,7 @@ Claude-Code-native features in Pi. Pi auto-discovers them once
 
 All extensions import from `@mariozechner/pi-coding-agent`. `smart-lint.ts`
 also reads `smart-lint.sh` from the same directory, kept in sync via
-`make sync-hooks`.
+`make build` (which runs `sync-hooks` as part of regenerating every derived artifact).
 
 [`apmantza/pi-lens`](https://github.com/apmantza/pi-lens) is a richer
 post-edit pipeline (LSP, type-check, structural analysis) that overlaps
@@ -218,13 +218,11 @@ by design and not deployed by `install-pi-exports.sh`. See
 [.pi/subagent-schedules/README.md](../.pi/subagent-schedules/README.md) for the
 intended layout when schedules are introduced.
 
-### Outstanding MCP migrations
+### MCP references in source
 
-Skills source still ships `mcp__perplexity-ask`, `mcp__morphllm`,
-`mcp__deepwiki`, `mcp__plugin_claude-mem_mcp-search`, and
-`mcp__sequential-thinking` references for Claude Code. The Pi overlay generator
-strips them, so Pi exports remain MCP-free. Tracking and per-namespace status:
-[docs/mcp-migration-backlog.md](mcp-migration-backlog.md).
+Canonical skills ship `mcp__perplexity-ask`, `mcp__morphllm`, `mcp__deepwiki`,
+and `mcp__plugin_claude-mem_mcp-search` for Claude Code. The Pi overlay
+generator strips them, so Pi exports remain MCP-free.
 
 ## Codex CLI
 
@@ -273,7 +271,7 @@ those only after confirming they map to the same marketplace entries.
 For local development, regenerate first:
 
 ```bash
-make overlays flat validate-overlays validate-flat
+make build check
 ```
 
 Codex installs plugins into its own cache. If you change `skills-codex/`, update
@@ -285,7 +283,7 @@ Gemini consumes extensions. The root extension uses:
 
 ```text
 gemini-extension.json
-GEMINI.md
+AGENTS.md
 flat/skills-codex/<skill>/SKILL.md
 ```
 
@@ -293,12 +291,15 @@ flat/skills-codex/<skill>/SKILL.md
 
 ```json
 {
-  "contextFileName": "GEMINI.md"
+  "contextFileName": "AGENTS.md"
 }
 ```
 
-`GEMINI.md` links every exported skill with `@flat/skills-codex/...` references.
-Install the full repository extension, not only `flat/`, so those links resolve.
+`AGENTS.md` links every exported skill with `@flat/skills-codex/...` references
+under the `## Skill files` section, so Gemini auto-loads each SKILL.md as
+extension context. The same file serves Codex CLI and other AGENTS.md-aware
+tools without needing a separate `GEMINI.md`. Install the full repository
+extension, not only `flat/`, so those links resolve.
 
 Install from GitHub:
 
@@ -334,7 +335,7 @@ Inside Gemini:
 After source changes:
 
 ```bash
-make overlays flat gemini-md validate-gemini-md validate-flat
+make build check
 gemini extensions update
 ```
 
