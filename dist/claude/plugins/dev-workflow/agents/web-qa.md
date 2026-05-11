@@ -78,9 +78,7 @@ Review only the focus areas listed above. Do not expand scope to other concerns.
 
 If clean: "No issues found."
 
----
-
-**Example:**
+### Example
 
 - `index.html:23` - Image missing alt. Add `alt="description"`
 - `form.html:45` - Input without label. Add `<label for="email">`

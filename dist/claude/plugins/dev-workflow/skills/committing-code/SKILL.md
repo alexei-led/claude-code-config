@@ -40,7 +40,7 @@ Group files by: feature (impl+tests), fix (bug+test), refactor, docs, config.
 
 Match commit style from recent history.
 
-**Present proposed commits:**
+### Present proposed commits
 
 ```
 Proposed commits:

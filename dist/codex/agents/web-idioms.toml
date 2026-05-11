@@ -21,7 +21,7 @@ If a validator is missing, say so in the report rather than guessing.
 
 ### 1. Semantic HTML
 
-**Use proper elements:**
+### Use proper elements
 
 - `<header>`, `<main>`, `<footer>`, `<nav>` for structure
 - `<button>` for actions (not `<div onclick>`)
@@ -29,12 +29,12 @@ If a validator is missing, say so in the report rather than guessing.
 - `<details>`/`<summary>` for accordions
 - `<dialog>` for modals
 
-**Headings:**
+### Headings
 
 - One `<h1>` per page
 - No skipped levels (h1 → h3)
 
-**Forms:**
+### Forms
 
 - `<label>` for every input
 - `<fieldset>`/`<legend>` for groups
@@ -42,19 +42,19 @@ If a validator is missing, say so in the report rather than guessing.
 
 ### 2. Modern CSS
 
-**Layout:**
+### Layout
 
 - Grid for 2D, Flexbox for 1D
 - `gap` instead of margin hacks
 - CSS custom properties for theming
 
-**Responsive:**
+### Responsive
 
 - Mobile-first: `@media (min-width: ...)`
 - `rem` units for scalable sizing
 - `:focus-visible` for keyboard focus
 
-**Avoid:**
+### Avoid
 
 - Floats for layout
 - Deep selector nesting
@@ -62,14 +62,14 @@ If a validator is missing, say so in the report rather than guessing.
 
 ### 3. Minimal JavaScript
 
-**Prefer HTML/CSS:**
+### Prefer HTML/CSS
 
 - `<details>` over JS accordion
 - `<dialog>` over JS modal
 - CSS `:hover` over JS hover effects
 - HTMX over fetch for server calls
 
-**When JS needed:**
+### When JS needed
 
 - `const`/`let` (never `var`)
 - `querySelector` over `getElementById`
@@ -86,9 +86,7 @@ Review only the focus areas listed above. Do not expand scope to other concerns.
 
 If clean: "No issues found."
 
----
-
-**Example:**
+### Example
 
 - `index.html:15` - Using `<div class="header">`. Use `<header>`
 - `index.html:45` - Button as `<div onclick>`. Use `<button>`

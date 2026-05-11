@@ -63,7 +63,7 @@ Before reviewing, scan existing tests to understand project conventions:
 
 ### 0. Test Quality (Zero Tolerance for Waste)
 
-**CRITICAL: Avoid pointless, naive, and duplicate tests. Each test must provide real value.**
+### CRITICAL: Avoid pointless, naive, and duplicate tests. Each test must provide real value
 
 - **Pointless tests**: Tests verifying trivial behavior (getters, constructors) → **DELETE**
 - **Naive tests**: Only testing obvious happy path → **EXPAND or DELETE**
@@ -101,7 +101,7 @@ Before reviewing, scan existing tests to understand project conventions:
 
 ### 4. Mock Argument Matching (CRITICAL)
 
-**Choose matchers deliberately—overusing loose matching weakens tests:**
+### Choose matchers deliberately—overusing loose matching weakens tests
 
 | Approach                | Use When                                          |
 | ----------------------- | ------------------------------------------------- |
@@ -109,13 +109,13 @@ Before reviewing, scan existing tests to understand project conventions:
 | `call_args` inspection  | Checking specific args without full match         |
 | Custom `__eq__` matcher | Partial object matching                           |
 
-**Decision tree:**
+### Decision tree
 
 1. Is it a business value from test fixture? → **Exact value** (mandatory!)
 2. Is it a complex object with some important fields? → Custom matcher or `call_args`
 3. Is it a generated ID/timestamp? → Check exists, not exact value
 
-**Examples:**
+### Examples
 
 ```python
 # GOOD: Exact values for business-critical parameters
@@ -160,9 +160,7 @@ Review only the focus areas listed above. Do not expand scope to other concerns.
 
 If clean in a focus area: "No issues in {focus area}."
 
----
-
-**Example Output:**
+### Example Output
 
 ### FINDINGS
 

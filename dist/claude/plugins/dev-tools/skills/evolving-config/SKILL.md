@@ -34,8 +34,6 @@ Audit Claude Code config against latest capabilities. Conservative by default �
 5. Present report
 6. Apply changes
 
----
-
 ## Phase 1: Snapshot Current Configuration
 
 Read ALL config files in parallel:
@@ -63,8 +61,6 @@ Build inventory summary:
 
 Note any staleness indicators (outdated model names, deprecated patterns).
 
----
-
 ## Phase 2: Fetch Latest Capabilities
 
 Fetch the Claude Code changelog:
@@ -78,8 +74,6 @@ WebFetch(
 
 If WebFetch fails or returns insufficient data, note the gap and rely on Phase 3.
 
----
-
 ## Phase 3: Research Best Practices
 
 Run two targeted web research queries:
@@ -88,8 +82,6 @@ Run two targeted web research queries:
 2. **Ecosystem and integrations** — "Claude Code CLI advanced configuration 2026: MCP server recommendations, hook patterns, permission optimization, context fork strategies, agent orchestration patterns, skill design best practices. What are experienced users doing?"
 
 If Perplexity returns cited URLs with high-value content, WebFetch top 2 for deeper details.
-
----
 
 ## Phase 4: Gap Analysis
 
@@ -121,8 +113,6 @@ For each finding, assign ONE rating:
 **Critical rule**: Default classification is **STILL GOOD**. A finding must clear the bar: "Is this worth the disruption?" Changing working config has real cost — context relearning, potential breakage, testing overhead. Only promote to WORTH ADOPTING when the benefit clearly exceeds that cost.
 
 **Cap**: Maximum 10 recommendations across WORTH ADOPTING + DEPRECATED. If more exist, prioritize by impact and note the overflow.
-
----
 
 ## Phase 5: Present Report
 
@@ -164,15 +154,13 @@ Format the report:
 - {Z} items informational
 ```
 
-**STOP here.**
+### STOP here
 
 Use `AskUserQuestion`. Ask one question at a time:
 
 - **Action** — How should we proceed with the audit results? Options: Apply all recommended / Select items to apply / Dry run only (show diffs) / Skip (report only)
 
 If `$ARGUMENTS` contains `--dry-run`: Skip the question, show diffs only, do not apply.
-
----
 
 ## Phase 6: Apply Changes
 
@@ -188,8 +176,6 @@ Based on user selection:
 When describing how to avoid overreach, include this explicit gate: "I will not make major/risky config changes unless you confirm the named files and risks."
 
 If user selected "Dry run only": show what each edit would look like, then stop.
-
----
 
 ## Edge Cases
 

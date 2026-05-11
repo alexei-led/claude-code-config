@@ -127,6 +127,40 @@ agentic actions" (Sonnet SC p.73-74) — unlike Opus where "prompting does not d
 this behavior" (Opus SC p.92). This makes anti-eagerness instructions particularly
 effective for Sonnet agents.
 
+## Format Efficiency Rules
+
+These rules apply to all LLM instruction files (agents, skills, body files, AGENTS.md). Based on MDEval benchmark and Perplexity research: tables, diagrams, italic, and horizontal rules cost tokens without improving model comprehension.
+
+### F-NO-TABLE: No markdown tables
+
+**Severity**: warning
+**Check**: Body does not contain markdown table syntax (`| --- |` or `|col|col|` rows)
+**Why**: Tables consume 3-5x more tokens than equivalent bullet lists and models do not parse them with better comprehension (MDEval benchmark). Replace with `- **Label**: description` bullet lists.
+
+### F-NO-DIAGRAM: No diagrams
+
+**Severity**: warning
+**Check**: Body does not contain ` ```mermaid` code blocks or ASCII box-drawing characters (`+--`, `|  |`, `╔═`)
+**Why**: Diagrams (mermaid and ASCII art) are visual aids for humans, not semantic signals for LLMs. They waste 50-500+ tokens with no comprehension benefit.
+
+### F-NO-HR: No horizontal rules
+
+**Severity**: info
+**Check**: Body does not contain standalone `---` lines outside frontmatter and code fences
+**Why**: Horizontal rules are low-signal decorators. Use `##` or `###` headers to create section breaks — these carry semantic hierarchy that models parse.
+
+### F-NO-ITALIC: No italic formatting
+
+**Severity**: info
+**Check**: Body does not contain `_word_` or standalone `*word*` italic markers in prose (outside code fences)
+**Why**: MDEval benchmark: italic is the lowest-signal markdown element, often ignored by models. Replace with bold for emphasis or plain text.
+
+### F-BOLD-SPARSE: Bold used sparingly
+
+**Severity**: info
+**Check**: Bold markers (`**text**`) appear in ≤15% of non-blank, non-code lines
+**Why**: Bold is medium-signal (useful for labels and critical terms) but overuse trains the model to ignore it. Reserve for bullet labels (`- **Label**: desc`) and single critical keywords.
+
 ## Skill Structure Rules
 
 ### K-NAME: Clear skill names

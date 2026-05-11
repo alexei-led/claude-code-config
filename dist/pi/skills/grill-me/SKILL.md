@@ -19,5 +19,3 @@ Interview the user relentlessly about every aspect of this plan until you reach 
 Ask the questions one at a time.
 
 If a question can be answered by exploring the codebase, explore the codebase instead.
-
-See [CREDITS.md](references/CREDITS.md) for source attribution.

@@ -110,9 +110,7 @@ Review only the focus areas listed above. Do not expand scope to other concerns.
 
 If clean in a focus area: "No issues in {focus area}."
 
----
-
-**Example Output:**
+### Example Output
 
 ### FINDINGS
 

@@ -41,7 +41,7 @@ Include tool output in findings. If tools are not installed, skip and proceed wi
 
 ### 1. Comments
 
-**Good comments explain WHY:**
+### Good comments explain WHY
 
 ```javascript
 // BAD: obvious
@@ -55,20 +55,20 @@ for (const user of users) {
 }
 ```
 
-**When to comment:**
+### When to comment
 
 - Non-obvious logic
 - Browser workarounds
 - Complex regex
 
-**Don't comment:**
+### Don't comment
 
 - Obvious code
 - Every function
 
 ### 2. ARIA Labels
 
-**Required:**
+### Required
 
 - Icon buttons need `aria-label`
 - Form hints need `aria-describedby`
@@ -82,7 +82,7 @@ for (const user of users) {
 <span id="email-hint">We won't share your email</span>
 ```
 
-**Don't:**
+### Don't
 
 - Add redundant ARIA to semantic HTML
 - Use `aria-hidden` on focusable elements
@@ -110,9 +110,7 @@ for (const user of users) {
 
 If clean: "No issues found."
 
----
-
-**Example:**
+### Example
 
 - `app.js:45` - Comment states obvious. Remove or explain WHY
 - `nav.html:12` - Icon button missing aria-label. Add `aria-label="Menu"`

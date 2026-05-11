@@ -271,9 +271,7 @@ Review only the focus areas listed above. Do not expand scope to other concerns.
 
 If clean: "No issues found."
 
----
-
-**Example Output:**
+### Example Output
 
 ### FINDINGS
 

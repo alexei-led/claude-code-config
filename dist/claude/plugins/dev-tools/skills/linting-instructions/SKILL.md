@@ -29,8 +29,6 @@ Review agent and skill instructions against rules derived from the Claude Opus 4
 - Every report must explicitly include context budget/token efficiency and safety/irreversible-action guidance, even when the verdict is PASS.
 - Every finding must cite the exact file/section or missing evidence and include a concrete fix that can be reviewed or tested.
 
----
-
 ## Step 1: Read the Rules
 
 Read the lint rules rubric:
@@ -46,8 +44,6 @@ This contains model-behavior and skill-structure rules:
 - **Sonnet-specific (S-\*)**: Leverage Sonnet 4.6's documented steerability advantages
 - **Skill structure (K-\*, I-\*)**: Check names, trigger descriptions, progressive disclosure, and sequential interaction
 
----
-
 ## Step 2: Run Regex Pre-Pass (optional baseline)
 
 Run the fast regex linter for a structural baseline:
@@ -58,13 +54,11 @@ uv run python scripts/validate/lint-instructions.py
 
 Note which files have structural issues. These are heuristic — the model review in Step 3 is authoritative.
 
----
-
 ## Step 3: Model-Based Review
 
 For each model tier, spawn a review agent that reads the actual instruction files and evaluates them semantically against the rules. The agent should understand INTENT, not just keyword presence.
 
-**Parse `$ARGUMENTS`:**
+### Parse `$ARGUMENTS`
 
 - No args → review all plugins
 - Plugin name (e.g., `go-dev`) → review only that plugin
@@ -97,6 +91,13 @@ rules derived from the Opus 4.6 and Sonnet 4.6 system cards.
 - S-NO-LECTURE: Must NOT contain lecture-inducing patterns (Sonnet tends to lecture)
 - S-DECISIVE: Should include decisive action language
 - S-ANTI-EAGER: Should include anti-over-eagerness (Sonnet is steerable here)
+
+### Format efficiency (all files)
+- F-NO-TABLE: No markdown tables — replace with `- **Label**: desc` bullets
+- F-NO-DIAGRAM: No mermaid or ASCII diagrams — zero LLM signal, pure token cost
+- F-NO-HR: No standalone `---` horizontal rules — use `##` headers for section breaks
+- F-NO-ITALIC: No `_italic_` or `*italic*` — LLMs ignore it; use bold or plain text
+- F-BOLD-SPARSE: Bold on ≤15% of prose lines — reserve for bullet labels and critical keywords
 
 ### Skill structure
 - K-NAME: Skill names should be kebab-case and clear
@@ -138,8 +139,6 @@ Then at the end, output a summary:
 - Launch agents in parallel where possible (up to 3 concurrent)
 - Each agent reads its batch of files using Read tool
 
----
-
 ## Step 4: Aggregate and Present
 
 Collect results from all review agents. Present:
@@ -148,8 +147,6 @@ Collect results from all review agents. Present:
 2. **Critical findings**: Any FAIL verdicts with specific fix suggestions
 3. **Top improvements**: Ranked by impact (how many files affected x severity)
 4. **Model-specific patterns**: Are opus agents missing efficiency guards? Sonnet agents missing anti-eagerness?
-
----
 
 ## Output
 

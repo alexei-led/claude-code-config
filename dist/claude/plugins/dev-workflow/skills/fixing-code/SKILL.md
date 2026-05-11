@@ -28,7 +28,7 @@ user-invocable: true
 
 Fix until clean. For hard bugs, diagnose before editing. No guessing. Confirm before any destructive command; never use `git reset --hard`, `git clean`, or force push as a fix.
 
-**Parse `$ARGUMENTS`:**
+## Parse `$ARGUMENTS`
 
 - `diagnose` or `investigate` → hard-bug workflow: feedback loop, repro, hypotheses, probes, regression test.
 - `team` → parallel analysis agents challenge root causes before fixes.

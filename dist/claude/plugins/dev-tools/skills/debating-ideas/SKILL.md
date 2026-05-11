@@ -23,7 +23,7 @@ user-invocable: true
 
 Stress-test ideas by spawning competing perspectives, then synthesize and ground-truth against code.
 
-**`$ARGUMENTS` is the question or topic to debate.**
+## `$ARGUMENTS` is the question or topic to debate
 
 If no argument provided, ask the user what they want to evaluate.
 
@@ -35,8 +35,6 @@ Routing rule: if the user wants open-ended idea generation, option discovery, or
 2. Spawn thesis + antithesis agents
 3. Synthesize positions
 4. Verify claims against code
-
----
 
 ## Phase 1: Frame the Debate
 
@@ -51,8 +49,6 @@ Frame as a clear binary or spectrum question. Examples:
 - "Should we use microservices or a monolith for X?"
 - "Is caching worth the complexity here?"
 - "Should this be a library or an inline implementation?"
-
----
 
 ## Phase 2: Spawn Thesis + Antithesis (Parallel)
 
@@ -94,8 +90,6 @@ Task(
 )
 ```
 
----
-
 ## Phase 3: Synthesize
 
 Collect both results:
@@ -113,8 +107,6 @@ Synthesize into a structured verdict:
 4. **Verdict** — which position has stronger grounding, and why
 5. **Conditions** — when would the other position win instead?
 
----
-
 ## Phase 4: Verify Claims
 
 For any factual claims made by either side (file references, pattern assertions, dependency claims):
@@ -122,8 +114,6 @@ For any factual claims made by either side (file references, pattern assertions,
 - Read the cited files to confirm accuracy
 - Flag any misrepresentations or hallucinated evidence
 - Adjust verdict if verification changes the balance
-
----
 
 ## Output
 
@@ -145,8 +135,6 @@ Caveat: {position} would win if {conditions}
 Verified claims: {N}/{M} checked, {K} corrected
 ```
 
----
-
 ## Examples
 
 ```
@@ -155,8 +143,6 @@ Verified claims: {N}/{M} checked, {K} corrected
 /debating-ideas Monorepo vs polyrepo for our frontend packages
 ```
 
----
-
 If the debate reaches no clear conclusion, present both positions with evidence and let the user decide.
 
-**Frame the debate now.**
+### Frame the debate now

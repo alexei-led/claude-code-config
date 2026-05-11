@@ -48,7 +48,7 @@ ccgram msg inbox --json   # machine-readable
 ccgram msg read <msg-id>  # mark as read + display full message
 ```
 
-**When you have peer messages:**
+### When you have peer messages
 
 1. Summarize them to the user
 2. Ask before processing (unless spawned with `--auto`)
@@ -72,7 +72,7 @@ ccgram msg send <peer-id> "question?" --wait
 ccgram msg reply <msg-id> "your answer"
 ```
 
-**Message types:**
+### Message types
 
 - `send` — request to a specific peer (TTL: 60min)
 - `reply` — response to a received message (TTL: 120min)
@@ -122,8 +122,6 @@ ccgram msg reply <msg-id> "your answer"
 ccgram msg sweep   # remove expired messages from all inboxes
 ```
 
----
-
 ## Output Format
 
 When reporting messaging status to the user, include what command was run or why no message was sent:
@@ -154,4 +152,4 @@ When reporting messaging status to the user, include what command was run or why
 /ccgram-messaging spawn              # spawn a new agent for a subtask
 ```
 
-**Execute this workflow now.**
+### Execute this workflow now

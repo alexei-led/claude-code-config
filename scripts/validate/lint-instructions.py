@@ -93,31 +93,27 @@ class InstructionFile:
 
 def discover_files() -> list[InstructionFile]:
     files: list[InstructionFile] = []
-    plugins_dir = ROOT / "plugins"
-    if not plugins_dir.is_dir():
-        return files
 
-    for plugin_dir in sorted(plugins_dir.iterdir()):
-        if not plugin_dir.is_dir() or plugin_dir.name.startswith("."):
-            continue
-
-        agents_dir = plugin_dir / "agents"
-        if agents_dir.is_dir():
-            for md in sorted(agents_dir.rglob("*.md")):
-                if md.name == "README.md":
-                    continue
+    agents_dir = ROOT / "src" / "agents"
+    if agents_dir.is_dir():
+        for agent_dir in sorted(agents_dir.iterdir()):
+            if not agent_dir.is_dir() or agent_dir.name.startswith("."):
+                continue
+            md = agent_dir / "AGENT.md"
+            if md.exists():
                 if f := _load(md, "agent"):
                     files.append(f)
 
-        skills_dir = plugin_dir / "skills"
-        if skills_dir.is_dir():
-            for sd in sorted(skills_dir.iterdir()):
-                if not sd.is_dir() or sd.name.startswith("."):
-                    continue
-                sm = sd / "SKILL.md"
-                if sm.exists():
-                    if f := _load(sm, "skill"):
-                        files.append(f)
+    skills_dir = ROOT / "src" / "skills"
+    if skills_dir.is_dir():
+        for skill_dir in sorted(skills_dir.iterdir()):
+            if not skill_dir.is_dir() or skill_dir.name.startswith("."):
+                continue
+            sm = skill_dir / "SKILL.md"
+            if sm.exists():
+                if f := _load(sm, "skill"):
+                    files.append(f)
+
     return files
 
 
@@ -484,6 +480,101 @@ def check_progressive_disclosure(f: InstructionFile) -> Finding | None:
     )
 
 
+def check_f_no_table(f: InstructionFile) -> Finding | None:
+    """Tables waste tokens; bullet lists carry same info."""
+    table_pat = _P(r"^\|.+\|.+\|", re.MULTILINE)
+    if not table_pat.search(f.body):
+        return None
+    return Finding(
+        f.rel,
+        "F-NO-TABLE",
+        "warning",
+        "Contains markdown tables — replace with bullet lists (`- **Label**: desc`). "
+        "Tables are 3-5x token-heavier with no comprehension gain for LLMs.",
+    )
+
+
+def check_f_no_diagram(f: InstructionFile) -> Finding | None:
+    """Mermaid/ASCII diagrams are visual-only; no LLM signal."""
+    mermaid_pat = _P(r"```mermaid", re.MULTILINE)
+    ascii_pat = _P(r"[+][─\-]+[+]|╔|╗|╚|╝|║", re.MULTILINE)
+    if mermaid_pat.search(f.body) or ascii_pat.search(f.body):
+        return Finding(
+            f.rel,
+            "F-NO-DIAGRAM",
+            "warning",
+            "Contains mermaid or ASCII diagram — remove, no LLM signal.",
+        )
+    return None
+
+
+def check_f_no_hr(f: InstructionFile) -> Finding | None:
+    """Horizontal rules are low-signal; use ## headers instead."""
+    lines = f.body.splitlines()
+    in_fence = False
+    for line in lines:
+        if line.startswith("```") or line.startswith("~~~~"):
+            in_fence = not in_fence
+        if not in_fence and line.strip() == "---":
+            return Finding(
+                f.rel,
+                "F-NO-HR",
+                "info",
+                "Contains standalone --- horizontal rule — use ## headers instead.",
+            )
+    return None
+
+
+def check_f_no_italic(f: InstructionFile) -> Finding | None:
+    """Italic is the lowest-signal markdown element; LLMs ignore it."""
+    lines = f.body.splitlines()
+    in_fence = False
+    italic_pat = _P(r"(?<!\*)\*(?!\*)[\w].*?[\w]\*(?!\*)|(?<!_)_(?!_)[\w].*?[\w]_(?!_)")
+    for line in lines:
+        if line.startswith("```") or line.startswith("~~~~"):
+            in_fence = not in_fence
+            continue
+        if not in_fence and italic_pat.search(line):
+            return Finding(
+                f.rel,
+                "F-NO-ITALIC",
+                "info",
+                "Italic (`_text_`) — LLMs ignore it; use bold or plain text.",
+            )
+    return None
+
+
+def check_f_bold_sparse(f: InstructionFile) -> Finding | None:
+    """Bold overuse trains models to ignore it."""
+    lines = f.body.splitlines()
+    in_fence = False
+    prose_lines = 0
+    bold_lines = 0
+    bold_pat = _P(r"\*\*[^*]+\*\*")
+    for line in lines:
+        s = line.strip()
+        if s.startswith("```") or s.startswith("~~~~"):
+            in_fence = not in_fence
+            continue
+        if in_fence or not s:
+            continue
+        prose_lines += 1
+        if bold_pat.search(line):
+            bold_lines += 1
+    if prose_lines == 0:
+        return None
+    ratio = bold_lines / prose_lines
+    if ratio > 0.15:
+        return Finding(
+            f.rel,
+            "F-BOLD-SPARSE",
+            "info",
+            f"Bold appears on {bold_lines}/{prose_lines} prose lines ({ratio:.0%}) — "
+            "keep to ≤15% of lines; reserve for bullet labels and keywords.",
+        )
+    return None
+
+
 def check_one_question_at_a_time(f: InstructionFile) -> Finding | None:
     """Interactive skills should avoid batched interrogation."""
     if not f.has_ask_user_question:
@@ -522,6 +613,11 @@ ALL_CHECKS = [
     check_skill_description_triggers,
     check_progressive_disclosure,
     check_one_question_at_a_time,
+    check_f_no_table,
+    check_f_no_diagram,
+    check_f_no_hr,
+    check_f_no_italic,
+    check_f_bold_sparse,
 ]
 
 

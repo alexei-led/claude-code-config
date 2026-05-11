@@ -85,9 +85,7 @@ golangci-lint linters --json  # Machine-readable linter list
 
 If clean: "No issues found."
 
----
-
-**Example Output:**
+### Example Output
 
 ### FINDINGS
 

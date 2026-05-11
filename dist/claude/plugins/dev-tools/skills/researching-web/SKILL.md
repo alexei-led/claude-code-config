@@ -45,13 +45,13 @@ For research output, include:
 
 ## Default Mode: Direct Web Research
 
-**Use this for 90% of research requests.** When user says "ask Perplexity", "research", "look up", etc., use the available web research tool with a scoped research question.
+Use this for 90% of research requests. When user says "ask Perplexity", "research", "look up", etc., use the available web research tool with a scoped research question.
 
 This is fast, reliable, and what users expect.
 
 ## Deep Mode: Agent (Rare)
 
-**Only use when user explicitly asks to compare research with their current code.**
+### Only use when user explicitly asks to compare research with their current code
 
 Trigger phrases that warrant agent:
 
@@ -63,7 +63,7 @@ Trigger phrases that warrant agent:
 Task(subagent_type="perplexity-researcher", prompt="Research: <topic>", run_in_background=true)
 ```
 
-**DO NOT use agent for:**
+### DO NOT use agent for
 
 - Simple "ask Perplexity about X" requests
 - General research questions

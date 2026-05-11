@@ -167,7 +167,7 @@ type queue interface {
 }
 ```
 
-**Why this is correct:**
+### Why this is correct
 
 - Wrapper is concrete (no interface at producer)
 - Each consumer defines minimal interface it needs
@@ -215,9 +215,7 @@ Review only the focus areas listed above. Do not expand scope to other concerns.
 
 If clean: "No issues found."
 
----
-
-**Example Output:**
+### Example Output
 
 ### FINDINGS
 

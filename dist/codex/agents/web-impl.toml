@@ -29,13 +29,13 @@ If a validator is missing, say so in the report rather than guessing.
 
 ### 2. Responsive Design
 
-**Breakpoints:**
+### Breakpoints
 
 - Mobile (<640px): Single column, touch-friendly
 - Tablet (640-1024px): Adapted layouts
 - Desktop (>1024px): Full layouts
 
-**Check:**
+### Check
 
 - Navigation works on mobile (hamburger or stack)
 - Images scale with container
@@ -44,19 +44,19 @@ If a validator is missing, say so in the report rather than guessing.
 
 ### 3. States
 
-**UI states:**
+### UI states
 
 - Loading indicators where needed
 - Empty state messages
 - Error feedback
 
-**Form states:**
+### Form states
 
 - Validation feedback
 - Disabled during submit
 - Clear error messages
 
-**HTMX states:**
+### HTMX states
 
 - `hx-indicator` for loading
 - Error handling with `hx-on::error`
@@ -79,9 +79,7 @@ Review only the focus areas listed above. Do not expand scope to other concerns.
 
 If clean: "No issues found."
 
----
-
-**Example:**
+### Example
 
 - `index.html:45` - No empty state for list. Add "No items" message
 - `form.html:23` - No loading indicator. Add `hx-indicator`

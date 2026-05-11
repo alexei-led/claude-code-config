@@ -73,27 +73,27 @@ mcp__deepwiki__ask_question({
 
 ## Query Strategies
 
-**Start broad, then narrow:**
+### Start broad, then narrow
 
 1. `read_wiki_structure` — scan available topics
 2. `read_wiki_contents` — read the full wiki for an overview
 3. `ask_question` — drill into specifics
 
-**For architecture understanding:**
+### For architecture understanding
 
 - "What is the high-level architecture?"
 - "How do the core modules interact?"
 - "What design patterns are used?"
 - "How is error handling structured?"
 
-**For implementation reference:**
+### For implementation reference
 
 - "How does X feature handle Y edge case?"
 - "What is the authentication/authorization flow?"
 - "How are database migrations managed?"
 - "What testing patterns are used?"
 
-**For cross-repo comparison:**
+### For cross-repo comparison
 
 - Pass multiple repos to `ask_question`
 - Ask about specific architectural differences

@@ -40,14 +40,14 @@ sphinx-build -b html docs/ docs/_build/
 
 **Style**: lowercase, no trailing dots—lean and informal is fine
 
-**What makes a comment valuable:**
+### What makes a comment valuable
 
 - explains why, not what
 - captures reasoning, constraints, or trade-offs
 - documents non-obvious behavior or edge cases
 - references external context (tickets, specs, API limits)
 
-**Delete if:**
+### Delete if
 
 - competent dev would understand without it
 - paraphrases the code
@@ -92,9 +92,7 @@ sphinx-build -b html docs/ docs/_build/
 
 If clean in a focus area: "No issues in {focus area}."
 
----
-
-**Example Output:**
+### Example Output
 
 ### FINDINGS
 
