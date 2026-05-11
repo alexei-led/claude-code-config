@@ -8,6 +8,41 @@ major = breaking config/hook changes, minor = new skills/features, patch = fixes
 
 ## [Unreleased]
 
+## [4.0.1] - 2026-05-11
+
+### Fixed
+
+- **Marketplace identifier** renamed from `cc-thingz` to `alexei-led-cc-thingz` to match
+  the key registered in `settings.json`. Eliminates `/doctor` errors reporting
+  "plugin not found in marketplace alexei-led-cc-thingz".
+- **Plugin metadata URLs** corrected in all nine plugin manifests — `homepage` and
+  `repository` fields now reference the `cc-thingz` repository instead of the old
+  `cc-forge` URL.
+
+## [4.0.0] - 2026-05-11
+
+### Added
+
+- **Multi-target skill compiler** (`scripts/build/compile_skills.py`). Single source
+  of truth under `src/plugins/*/` compiles to three independent target trees:
+  `dist/claude/`, `dist/codex/`, `dist/pi/`. Per-target overlays (e.g.
+  `src/plugins/foo/skills/bar/claude/SKILL.md`) merge cleanly over the base without
+  polluting other targets.
+- **Per-plugin Claude manifests** (`.claude-plugin/plugin.json` in each
+  `dist/claude/plugins/<name>/`). Each plugin now ships its own manifest with
+  name, version, description, and homepage — enabling per-plugin installs and
+  future independent versioning.
+- **Codex agent support** — 13 role agents (go-_, py-_, ts-\* impl/docs/tests/idioms/
+  simplify/qa + docs-keeper) compiled to `dist/codex/` with Codex-compatible frontmatter
+  (drops `model`, renames `effort` → `reasoning_effort`).
+- **Pi extension support** — Pi-specific skills and agents compiled to `dist/pi/`
+  with smart-home and raspi-cam tooling preserved separately from Claude/Codex targets.
+- **Gemini extension improvements** — `gemini-extension.json` regenerated from
+  `src/` with consistent structure; `scripts/build/generate_gemini.py` replaces
+  the old ad-hoc script.
+- **New skills**: `context7-cli` (library docs lookup), `learning-patterns`
+  (code pattern extraction), `looking-up-docs` (multi-source doc research).
+
 ### Removed
 
 - **Old source paths and scattered generators retired.** The skill compiler
