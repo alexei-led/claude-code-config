@@ -176,7 +176,9 @@ def _multiline_string(body: str) -> str:
     """
     text = body.replace("\\", "\\\\")
     text = text.replace('"""', '""\\"')
-    return f'"""\n{text}\n"""'
+    # `"""\n` opens; TOML strips that first newline. No extra `\n` before the
+    # closing `"""` so a body that ends with `\n` round-trips byte-identically.
+    return f'"""\n{text}"""'
 
 
 def _bare_key(key: Any) -> str:

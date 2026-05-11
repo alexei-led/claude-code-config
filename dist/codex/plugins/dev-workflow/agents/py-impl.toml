@@ -114,5 +114,4 @@ If clean in a focus area: "No issues in {focus area}."
 - `src/worker.py:89` - Shared state `_cache` accessed from threads. Add `threading.Lock` for free-threaded safety
 - `src/client.py:102` - No timeout on HTTP request. Add: `async with asyncio.timeout(30.0):`
 
-No issues in Protocol implementations.
-"""
+No issues in Protocol implementations."""

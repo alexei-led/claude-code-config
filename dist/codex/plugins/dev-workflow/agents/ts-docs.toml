@@ -130,5 +130,4 @@ If clean in a focus area: "No issues in {focus area}."
 - `tests/api.test.ts:34` - Comment in test `// setup mock`. Delete—use descriptive test name instead
 - `README.md:45` - Example shows `new Client(url)` but API is `createClient({ url })`. Update
 
-No issues in deprecation notices.
-"""
+No issues in deprecation notices."""

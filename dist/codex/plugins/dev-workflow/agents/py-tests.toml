@@ -178,5 +178,4 @@ If clean in a focus area: "No issues in {focus area}."
 - `tests/test_handler.py:78` - Mock never verified. Add `mock_repo.save.assert_called_once_with(...)`
 - `tests/test_order.py:90` - No exact values for business params. Use `assert_called_with("order-123", "customer-456")`
 
-No issues in test isolation.
-"""
+No issues in test isolation."""

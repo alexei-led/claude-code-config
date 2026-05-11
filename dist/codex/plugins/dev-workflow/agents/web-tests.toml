@@ -90,5 +90,4 @@ If clean: "No issues found."
 **Example:**
 
 - `test.spec.js:23` - Using `.btn-submit`. Use `getByRole('button', { name: 'Submit' })`
-- `test.spec.js:45` - `waitForTimeout(3000)`. Remove; use `toBeVisible()`
-"""
+- `test.spec.js:45` - `waitForTimeout(3000)`. Remove; use `toBeVisible()`"""

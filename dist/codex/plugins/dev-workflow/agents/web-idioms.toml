@@ -93,5 +93,4 @@ If clean: "No issues found."
 - `index.html:15` - Using `<div class="header">`. Use `<header>`
 - `index.html:45` - Button as `<div onclick>`. Use `<button>`
 - `styles.css:23` - Float layout. Use Flexbox or Grid
-- `app.js:12` - Using `var`. Use `const`
-"""
+- `app.js:12` - Using `var`. Use `const`"""

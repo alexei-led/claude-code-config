@@ -101,5 +101,4 @@ If clean in a focus area: "No issues in {focus area}."
 - `src/worker.py:89` - Shared global `_cache` dict accessed from threads without lock. Add `threading.Lock`
 - `src/api.py:102` - N+1 query: fetching users in loop. Batch fetch with `WHERE id IN (...)`
 
-No issues in path traversal.
-"""
+No issues in path traversal."""

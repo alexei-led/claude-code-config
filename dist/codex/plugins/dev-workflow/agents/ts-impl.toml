@@ -174,5 +174,4 @@ If clean in a focus area: "No issues in {focus area}."
 - `src/worker.ts:89` - `forEach(async ...)` won't await. Use `Promise.all(items.map(...))`
 - `src/client.ts:102` - Floating promise `sendEmail(user)`. Either `await` or handle fire-and-forget explicitly
 
-No issues in interface compliance.
-"""
+No issues in interface compliance."""

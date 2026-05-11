@@ -206,5 +206,4 @@ If clean: "No issues found."
 - `worker/pool.go:89` - Using logrus. Prefer stdlib: `slog`
 - `config/config.go:23` - One-line wrapper `GetTimeout()` just returns field. Make field public or inline
 
-No issues in error handling.
-"""
+No issues in error handling."""

@@ -240,5 +240,4 @@ If clean in a focus area: "No issues in {focus area}."
 - `src/worker.ts:34` - N+1 query: fetching users in loop. Batch with `WHERE id IN (...)`
 - `src/config.ts:12` - CORS allows all origins with credentials. Whitelist specific origins
 
-No issues in prototype pollution.
-"""
+No issues in prototype pollution."""

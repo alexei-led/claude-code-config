@@ -104,5 +104,4 @@ If clean in a focus area: "No issues in {focus area}."
 - `src/__init__.py:1` - Missing `__all__` definition. Add: `__all__ = ["User", "UserService", "Config"]`
 - `README.md:34` - Example shows `User.create()` but actual API is `User()` constructor. Update example
 
-No issues in deprecation notices.
-"""
+No issues in deprecation notices."""

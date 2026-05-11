@@ -239,10 +239,18 @@ def test_discover_base_files(vg, tmp_path: Path) -> None:
     _write(tmp_path / "src" / "skills" / "a" / "SKILL.md", "---\nname: a\n---\n")
     _write(tmp_path / "src" / "agents" / "b" / "AGENT.md", "---\nname: b\n---\n")
     _write(tmp_path / "src" / "skills" / "a" / "claude" / "body.md", "junk")
+    _write(tmp_path / "src" / "skills" / "a" / "codex" / "body.md", "codex body")
+    _write(tmp_path / "src" / "skills" / "a" / "pi" / "body.md", "pi body")
+    _write(tmp_path / "src" / "agents" / "b" / "gemini" / "body.md", "gemini body")
     found = vg.discover_base_files(tmp_path)
-    assert len(found) == 2
-    assert any(p.name == "SKILL.md" for p in found)
-    assert any(p.name == "AGENT.md" for p in found)
+    names = {str(p.relative_to(tmp_path)) for p in found}
+    assert "src/skills/a/SKILL.md" in names
+    assert "src/agents/b/AGENT.md" in names
+    assert "src/skills/a/codex/body.md" in names
+    assert "src/skills/a/pi/body.md" in names
+    assert "src/agents/b/gemini/body.md" in names
+    # claude/body.md is intentionally excluded — Claude syntax is allowed there.
+    assert not any("claude/body.md" in str(p) for p in found)
 
 
 def test_repo_baselines_pass(vg) -> None:

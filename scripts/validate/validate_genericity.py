@@ -116,13 +116,23 @@ def scan_file(path: Path) -> list[str]:
 
 
 def discover_base_files(root: Path = ROOT) -> list[Path]:
-    """Return sorted base SKILL.md and AGENT.md files under src/."""
+    """Return sorted vendor-neutral source files under src/.
+
+    Includes base SKILL.md / AGENT.md plus non-Claude overlay bodies
+    (`<target>/body.md` for codex, gemini, pi). The `claude/body.md`
+    overlay is intentionally excluded — it is allowed to use Claude
+    syntax.
+    """
     src = root / "src"
     if not src.is_dir():
         return []
     skills = sorted(src.glob("skills/*/SKILL.md"))
     agents = sorted(src.glob("agents/*/AGENT.md"))
-    return skills + agents
+    overlays: list[Path] = []
+    for target in ("codex", "gemini", "pi"):
+        overlays.extend(sorted(src.glob(f"skills/*/{target}/body.md")))
+        overlays.extend(sorted(src.glob(f"agents/*/{target}/body.md")))
+    return skills + agents + overlays
 
 
 def main() -> int:

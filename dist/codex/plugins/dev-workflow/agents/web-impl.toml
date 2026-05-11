@@ -85,5 +85,4 @@ If clean: "No issues found."
 
 - `index.html:45` - No empty state for list. Add "No items" message
 - `form.html:23` - No loading indicator. Add `hx-indicator`
-- `nav.css:12` - No mobile menu. Add hamburger for small screens
-"""
+- `nav.css:12` - No mobile menu. Add hamburger for small screens"""

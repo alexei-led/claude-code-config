@@ -260,5 +260,4 @@ If clean: "No issues found."
 - `src/utils.ts:34` - Using `||` for default. Use `??` to preserve falsy values
 - `src/api.ts:56` - Non-null assertion `user!.name`. Add type guard or optional chaining
 
-No issues in interface/type usage.
-"""
+No issues in interface/type usage."""

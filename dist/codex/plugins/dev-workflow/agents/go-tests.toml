@@ -267,5 +267,4 @@ If clean: "No issues found."
 ### REFACTORING RECOMMENDATIONS
 
 - `service_test.go:23` - Test requires 5 mocks. Extract `OrderProcessor` interface with only needed methods (Interface Segregation)
-- `handler_test.go:89` - Complex 40-line setup. Define private interface in handler package, mock only what handler needs
-"""
+- `handler_test.go:89` - Complex 40-line setup. Define private interface in handler package, mock only what handler needs"""

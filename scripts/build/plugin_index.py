@@ -84,7 +84,28 @@ def build_plugin_index(root: Path) -> PluginIndex:
     for kind in KINDS:
         for owners in index[kind].values():
             owners.sort()
+
     return index
+
+
+def validate_artifacts_exist(root: Path, index: PluginIndex) -> None:
+    """Fail fast when a `plugin.yaml` references a missing source directory.
+
+    Kept separate from `build_plugin_index` so tests can construct a
+    synthetic index without needing matching `src/<kind>/<name>/` trees.
+    """
+    src = root / "src"
+    missing: list[str] = []
+    for kind, mapping in index.items():
+        src_dir = src / kind
+        for name, owners_list in mapping.items():
+            if not (src_dir / name).is_dir():
+                owners_str = ", ".join(owners_list)
+                missing.append(f"{kind}/{name} (referenced by {owners_str})")
+    if missing:
+        raise ValueError(
+            "plugin.yaml references missing source(s):\n  - " + "\n  - ".join(missing)
+        )
 
 
 def owners(

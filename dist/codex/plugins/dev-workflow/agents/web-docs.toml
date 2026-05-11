@@ -94,5 +94,4 @@ If clean: "No issues found."
 **Example:**
 
 - `app.js:45` - Comment states obvious. Remove or explain WHY
-- `nav.html:12` - Icon button missing aria-label. Add `aria-label="Menu"`
-"""
+- `nav.html:12` - Icon button missing aria-label. Add `aria-label="Menu"`"""

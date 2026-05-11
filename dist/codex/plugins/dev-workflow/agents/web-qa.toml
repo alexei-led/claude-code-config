@@ -62,5 +62,4 @@ If clean: "No issues found."
 
 - `index.html:23` - Image missing alt. Add `alt="description"`
 - `form.html:45` - Input without label. Add `<label for="email">`
-- `app.js:12` - Using innerHTML with user data. Use textContent
-"""
+- `app.js:12` - Using innerHTML with user data. Use textContent"""

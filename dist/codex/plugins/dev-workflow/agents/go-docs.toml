@@ -136,5 +136,4 @@ If clean: "No issues found."
 - `config/config.go:89` - Magic number comment `// 30 seconds`. Better: `// 30s matches upstream API timeout SLA`
 - `README.md:34` - Example shows `NewClient(url)` but API is `NewClient(ctx, url)`. Update
 
-No issues in package comments.
-"""
+No issues in package comments."""

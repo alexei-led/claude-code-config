@@ -99,5 +99,4 @@ If clean in a focus area: "No issues in {focus area}."
 - `src/service.py:67` - Bare `except:`. Catch specific: `except ValueError | TypeError:`
 - `src/interfaces.py:12` - Using ABC for interface. Use Protocol for structural typing
 
-No issues in f-strings.
-"""
+No issues in f-strings."""

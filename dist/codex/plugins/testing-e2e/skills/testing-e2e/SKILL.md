@@ -1,7 +1,7 @@
 ---
-description: Sequential E2E workflow for Pi. Use when running existing Playwright
-  tests, generating browser checks, recording a visible session, or verifying a user
-  flow end-to-end.
+description: Sequential E2E workflow. Use when running existing Playwright tests,
+  generating browser checks, recording a visible session, or verifying a user flow
+  end-to-end.
 name: testing-e2e
 ---
 
@@ -14,175 +14,72 @@ name: testing-e2e
 
 # E2E Testing with Playwright
 
-Generate and run end-to-end tests using Playwright. Work through the steps sequentially. Keep going after failures — read the error, fix the script, and re-run until all tests pass.
+Run browser tests against real user flows. Keep scripts temporary unless the
+user asks to add permanent tests.
 
-## Step 1: Parse arguments
+## Workflow
 
-Check `$ARGUMENTS`:
+1. Ask what to run if the user did not specify: existing tests, generate a new
+   check, record a session, or verify a feature.
+2. Read existing test context:
+   - `playwright.config.*`
+   - `package.json` scripts
+   - `**/*.spec.ts`, `**/*.test.ts`, `**/e2e/**`
+   - fixture, seed, and database reset docs
+3. Detect or start the dev server from project docs/scripts.
+4. Use deterministic fixtures. No production data, random order, wall-clock
+   dependence, or leftover state.
+5. Generate temporary scripts under `/tmp` when needed.
+6. Prefer semantic locators: role, label, text, test id, CSS last.
+7. Run the test, read the full output, fix failures, and rerun.
 
-- `run` — run existing E2E tests in the project
-- `record` — generate a script that launches a visible browser for recording
-- `generate <description>` — generate a new test for the described flow
-- `verify <feature>` — verify a specific feature works end-to-end
-- (empty) — ask the user in plain prose: "What E2E task should I run — execute existing tests, generate a new test, record a session, or verify a feature?"
+## Playwright Helper Skill
 
-Wait for their answer if nothing was supplied.
-
-## Step 2: Find existing test context
-
-Use Glob and Read to understand what already exists. Do not assume. Any E2E workflow or generated-test plan must explicitly include dev-server detection/startup and deterministic test data setup before browser actions.
-
-Look for:
-
-- Existing test files: `**/*.spec.ts`, `**/*.test.ts`, `**/e2e/**`
-- A `playwright.config.ts` or `playwright.config.js` — read it to understand base URLs, timeouts, projects, traces, screenshots, and webServer settings
-- A dev server start command in `package.json` scripts (`dev`, `start`, `serve`) or project docs
-- Existing fixtures, seed scripts, test users, mocked services, and database reset commands
-
-Note the base URL the app runs on. Detect whether the dev server is already reachable; if tests require a server and none is running, start the documented command or report the blocker. Note whether Playwright is already installed (`node_modules/@playwright/test`).
-
-Use deterministic fixtures: seeded users, fixed dates, stable IDs, known database state, reset commands, and mocked external services where needed. Do not depend on production data, random order, wall-clock time, or previous test runs.
-
-## Step 3: Execute based on action
-
-### Run existing tests
+If the bundled `playwright-skill` helper is installed alongside this skill,
+find its directory from the loaded skill path and run helper scripts from
+there:
 
 ```bash
-npx playwright test --reporter=list 2>&1
+cd <playwright-skill-dir> && node run.js /tmp/e2e-check.js
 ```
 
-For a specific file:
+If the helper is unavailable, use project-local Playwright commands instead:
 
 ```bash
-npx playwright test <path-to-spec> --reporter=list 2>&1
+npx playwright test --reporter=list
+npx playwright test /tmp/e2e-check.spec.ts --reporter=list
 ```
 
-If Playwright is not installed, install it first:
+## Generated Test Rules
 
-```bash
-npm install --save-dev @playwright/test && npx playwright install chromium
-```
+- Write temporary tests to `/tmp/e2e-<name>.spec.ts` or `/tmp/e2e-<name>.js`.
+- Never use fixed `waitForTimeout` delays.
+- Use `waitForSelector`, `waitForURL`, or assertions on visible UI state.
+- Capture screenshots, traces, or HTML reports when failures need evidence.
+- Do not declare success while tests fail.
 
-### Generate a new test
+## Output Contract
 
-For manual flows, first define deterministic fixtures such as seeded users/items/coupons, fixed dates, stable IDs, reset database state, and mocked external services where needed. Then translate each manual step into Playwright actions and observable assertions.
+```markdown
+## E2E Result
 
-Write a Playwright test script to `/tmp/e2e-<name>.spec.ts`. Use this structure:
+### Target
 
-```typescript
-import { test, expect } from "@playwright/test";
+<app/flow tested>
 
-test("<description of what is verified>", async ({ page }) => {
-  await page.goto("http://localhost:<port>");
+### Commands
 
-  // Navigate and interact using semantic locators
-  await page.getByRole("button", { name: "Submit" }).click();
-  await page.waitForURL("**/success");
+- `<command>`
 
-  // Assert outcomes
-  await expect(page.getByRole("heading", { name: "Done" })).toBeVisible();
-});
-```
+### Result
 
-Locator rules — always prefer in this order:
+pass | fail | blocked
 
-1. `getByRole` — accessible role + name
-2. `getByLabel` — form label
-3. `getByText` — visible text
-4. `getByTestId` — `data-testid` attribute
-5. CSS selector last resort only
+### Evidence
 
-Never use fixed `waitForTimeout` delays. Use `waitForSelector`, `waitForURL`, or `waitForLoadState` instead.
+- screenshot/trace/output path or key failure line
 
-For HTMX applications, verify partial page updates explicitly:
+### Next Fix
 
-- Check that the swapped target element changed
-- Assert `hx-swap` results by checking the updated DOM region, not the full page
-
-### Record a session
-
-Write a recording script to `/tmp/e2e-record.js`:
-
-```javascript
-const { chromium } = require("playwright");
-(async () => {
-  const browser = await chromium.launch({ headless: false, slowMo: 100 });
-  const page = await browser.newPage();
-  await page.goto("http://localhost:<port>");
-  // Browser stays open — user interacts manually
-  // Close the browser window to end the session
-  await page.waitForEvent("close", { timeout: 300000 });
-  await browser.close();
-})();
-```
-
-Run it:
-
-```bash
-cd ~/.claude/skills/playwright-skill && node /tmp/e2e-record.js
-```
-
-Save the resulting test, screenshots, trace, or notes as artifacts when useful.
-
-### Verify a feature
-
-Write a focused verification script to `/tmp/e2e-verify-<feature>.spec.ts` that:
-
-1. Navigates to the relevant page
-2. Executes the user flow step by step
-3. Asserts the expected outcome at each step
-4. Captures a screenshot or trace on failure
-
-## Step 4: Run the generated test
-
-```bash
-cd ~/.claude/skills/playwright-skill && node run.js /tmp/e2e-<name>.spec.ts 2>&1
-```
-
-Or if running from the project root with a config:
-
-```bash
-npx playwright test /tmp/e2e-<name>.spec.ts --reporter=list 2>&1
-```
-
-Read the full output. Note which assertions failed and on which line.
-
-## Step 5: Fix failures and re-run
-
-For each failure, diagnose before editing:
-
-| Failure type      | Likely cause                           | Fix                                             |
-| ----------------- | -------------------------------------- | ----------------------------------------------- |
-| Locator not found | Selector doesn't match DOM             | Use accessible role/label instead of CSS class  |
-| Timeout           | Element not visible or action too slow | Add `waitForSelector` or `waitForLoadState`     |
-| Wrong assertion   | Page state differs from expectation    | Read the actual page state and update assertion |
-| Navigation error  | Wrong URL or server not running        | Verify base URL and that dev server is up       |
-
-Fix the script, re-run, and repeat until all tests pass. Do not declare done with failing tests. Preserve failure evidence with Playwright traces, screenshots, videos, or HTML reports when available.
-
-## Step 6: Report results
-
-Always report PASS/FAIL/BLOCKED, dev server status, fixture/reset summary, test results, and artifact paths for traces/screenshots/videos/reports when relevant. If tests were not run, report BLOCKED or explain exactly why; do not imply success.
-
-```
-E2E TESTING
-===========
-Action: <run|generate|record|verify>
-Result: PASS | FAIL | BLOCKED
-Tests written: <count>
-Pass: <count>
-Fail: <count>
-Dev server: <reused|started|not needed|blocked: reason>
-Fixtures: <deterministic data/reset summary>
-Artifacts: <trace/screenshots/videos/report paths or none>
-
-Results:
-- <test name>: PASS
-- <test name>: FAIL — <brief reason>
-
-Coverage added:
-- <user flow now tested>
-
-Next steps:
-- <additional flows worth testing>
+- <if failing>
 ```

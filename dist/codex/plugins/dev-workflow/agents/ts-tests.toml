@@ -200,5 +200,4 @@ If clean in a focus area: "No issues in {focus area}."
 - `tests/order.test.ts:90` - No exact values for business params. Use `.toHaveBeenCalledWith("order-123", "customer-456")`
 - `tests/user.test.ts:102` - Using vi.spyOn for isolation. Prefer full `vi.mock()` for unit tests
 
-No issues in mock verification.
-"""
+No issues in mock verification."""

@@ -209,5 +209,4 @@ If clean: "No issues found."
 - `worker/pool.go:89` - No nil check before `config.Workers`. Add guard clause
 - `client/http.go:102` - HTTP request without timeout. Add: `ctx, cancel := context.WithTimeout(ctx, 30*time.Second)`
 
-No issues in interface compliance.
-"""
+No issues in interface compliance."""

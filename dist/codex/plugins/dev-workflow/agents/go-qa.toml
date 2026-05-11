@@ -97,5 +97,4 @@ If clean: "No issues found."
 - `auth/token.go:102` - Using `==` to compare secrets. Use: `subtle.ConstantTimeCompare()`
 - `server/main.go:34` - `resp.Body` not closed. Add: `defer resp.Body.Close()`
 
-No issues in path traversal.
-"""
+No issues in path traversal."""

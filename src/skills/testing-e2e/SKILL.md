@@ -1,12 +1,11 @@
 ---
-description:
-  Sequential E2E workflow for Pi. Use when running existing Playwright
+description: Sequential E2E workflow. Use when running existing Playwright
   tests, generating browser checks, recording a visible session, or verifying a user
   flow end-to-end.
 name: testing-e2e
 ---
 
-# E2E Testing with Playwright in Pi
+# E2E Testing with Playwright
 
 Run browser tests against real user flows. Keep scripts temporary unless the
 user asks to add permanent tests.
@@ -29,17 +28,12 @@ user asks to add permanent tests.
 
 ## Playwright Helper Skill
 
-If using the bundled `playwright-skill`, first find its directory from the loaded
-skill path. Common Pi deployments place it at:
-
-```text
-~/.pi/agent/skills/playwright-skill
-```
-
-Then run helper scripts from that directory:
+If the bundled `playwright-skill` helper is installed alongside this skill,
+find its directory from the loaded skill path and run helper scripts from
+there:
 
 ```bash
-cd ~/.pi/agent/skills/playwright-skill && node run.js /tmp/e2e-check.js
+cd <playwright-skill-dir> && node run.js /tmp/e2e-check.js
 ```
 
 If the helper is unavailable, use project-local Playwright commands instead:

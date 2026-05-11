@@ -3,7 +3,6 @@ version: 2.2.0
 description: Code review, fixes, commits, and linting for development workflows
 skills:
   - ccgram-messaging
-  - coding
   - committing-code
   - documenting-code
   - fixing-code

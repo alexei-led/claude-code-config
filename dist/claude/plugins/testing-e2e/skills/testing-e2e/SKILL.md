@@ -22,9 +22,9 @@ allowed-tools:
 - AskUserQuestion
 argument-hint: '[run|record|generate|verify <feature>]'
 context: fork
-description: Sequential E2E workflow for Pi. Use when running existing Playwright
-  tests, generating browser checks, recording a visible session, or verifying a user
-  flow end-to-end.
+description: Sequential E2E workflow. Use when running existing Playwright tests,
+  generating browser checks, recording a visible session, or verifying a user flow
+  end-to-end.
 name: testing-e2e
 user-invocable: true
 ---
