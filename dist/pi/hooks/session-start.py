@@ -217,17 +217,22 @@ def main() -> int:
     if not cwd.is_dir():
         return 0
 
-    pid = os.fork() if hasattr(os, "fork") else 0
-    if pid == 0 and hasattr(os, "fork"):
-        # Child: run cleanup silently and exit
+    if hasattr(os, "fork"):
         try:
-            os.setsid()
+            pid = os.fork()
         except OSError:
-            pass
-        try:
-            _cleanup_old_files()
-        finally:
-            os._exit(0)
+            # Process/memory pressure — skip background cleanup, stay in parent
+            pid = 1
+        if pid == 0:
+            # Child: run cleanup silently and exit
+            try:
+                os.setsid()
+            except OSError:
+                pass
+            try:
+                _cleanup_old_files()
+            finally:
+                os._exit(0)
 
     _show_git(cwd)
     if not _show_feature_list(cwd):
