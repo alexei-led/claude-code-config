@@ -21,13 +21,20 @@ Body pipeline:
   anywhere; otherwise mirror mode is used. Any header-path overlap (even one)
   forces mirror mode — this is the documented "mixed mode" resolution.
 
-Support-file overlay lands in a later task.
+Support-file pipeline:
+
+- `apply_support_files` copies the base `scripts/`, `references/`, `assets/`
+  subtrees into the output, then layers per-target overrides from
+  `<target>/scripts/` etc. on top. Same relative path → replace; new path →
+  add. Executable bits are preserved. There is no deletion mechanism in v1
+  (per design): a target cannot remove a base support file.
 """
 
 from __future__ import annotations
 
 import logging
 import re
+import shutil
 from collections.abc import Iterator, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -503,3 +510,56 @@ def _header_paths(
         path = (*prefix, key)
         yield path
         yield from _header_paths(child, path)
+
+
+# --- Support-file overlay ----------------------------------------------------
+
+SUPPORT_DIRS: tuple[str, ...] = ("scripts", "references", "assets")
+
+
+def apply_support_files(
+    base_dir: Path,
+    target: str,
+    output_dir: Path,
+) -> list[Path]:
+    """Copy base support trees, then layer the target's overrides on top.
+
+    Walks `scripts/`, `references/`, `assets/` under `base_dir` and copies each
+    file into `output_dir` at the same relative path. Then walks the same
+    subtrees under `base_dir/<target>/` and copies on top (same relative path
+    replaces an existing file; a new relative path adds one). File mode is
+    preserved via `shutil.copystat` so the executable bit survives.
+
+    Missing subtrees are silently skipped (no support files of that kind).
+    Returns the list of written destination paths for logging/testing.
+    """
+    written: list[Path] = []
+    for sub in SUPPORT_DIRS:
+        base_src = base_dir / sub
+        if base_src.is_dir():
+            written.extend(_copy_tree(base_src, output_dir / sub))
+    for sub in SUPPORT_DIRS:
+        overlay_src = base_dir / target / sub
+        if overlay_src.is_dir():
+            written.extend(_copy_tree(overlay_src, output_dir / sub))
+    return written
+
+
+def _copy_tree(src: Path, dst: Path) -> list[Path]:
+    """Copy every regular file under `src` to the matching path under `dst`.
+
+    Uses `shutil.copy2` for content + mtime, then `shutil.copystat` so the
+    executable bit propagates. Directories are created lazily. Same-path files
+    in `dst` are overwritten — this is how the overlay semantics work.
+    """
+    written: list[Path] = []
+    for entry in src.rglob("*"):
+        if not entry.is_file() or entry.is_symlink():
+            continue
+        rel = entry.relative_to(src)
+        out = dst / rel
+        out.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(entry, out)
+        shutil.copystat(entry, out)
+        written.append(out)
+    return written
