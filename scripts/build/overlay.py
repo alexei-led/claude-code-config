@@ -8,7 +8,7 @@ Frontmatter pipeline:
   the base via `mergedeep.merge` with overlay-side wins, strips the `targets`
   renderer metadata, and filters out keys not allowed for the target.
 
-Body pipeline (mirror mode):
+Body pipeline:
 
 - `parse_sections` splits markdown into a tree keyed by `#+` headers, ignoring
   fenced code blocks.
@@ -16,15 +16,19 @@ Body pipeline (mirror mode):
   an anchor; the suffix selects the operation (`(_+)` append, `(+_)` prepend,
   no suffix → replace if base has the anchor, otherwise add as a new
   subsection). Append/prepend without a matching base anchor is a build error.
+- `apply_body_overlay` auto-detects mode. Full replacement is used when the
+  overlay has no header paths matching base and no append/prepend suffixes
+  anywhere; otherwise mirror mode is used. Any header-path overlap (even one)
+  forces mirror mode — this is the documented "mixed mode" resolution.
 
-Full-replacement detection and support-file overlay land in later tasks.
+Support-file overlay lands in a later task.
 """
 
 from __future__ import annotations
 
 import logging
 import re
-from collections.abc import Mapping
+from collections.abc import Iterator, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -437,3 +441,65 @@ def _render(section: Section) -> str:
     for child in section.children:
         parts.append(_render(child))
     return "".join(parts)
+
+
+# --- Body overlay mode detection ---------------------------------------------
+
+
+def apply_body_overlay(
+    base_body: str,
+    overlay_body: str,
+    *,
+    overlay_filename: str = "<overlay>",
+) -> str:
+    """Apply overlay to base, auto-detecting mirror vs full-replacement.
+
+    Full-replacement mode emits `overlay_body` as-is (base is dropped). It is
+    selected when the overlay has no header paths matching base and no
+    `(_+)`/`(+_)` operations anywhere — typical of a target whose body diverges
+    by 50%+ from the base (e.g. terser Pi variants).
+
+    Mirror mode is selected when the overlay shares at least one header path
+    with the base, OR when it contains any append/prepend suffix. Mixed cases
+    (some headers match, some don't) resolve to mirror — non-matching overlay
+    headers are added as new sections under their parent, per `apply_mirror`.
+
+    Empty overlay returns base unchanged.
+    """
+    if not overlay_body.strip():
+        return base_body
+    base_tree = parse_sections(base_body)
+    overlay_tree = parse_sections(overlay_body)
+    if _is_full_replacement(base_tree, overlay_tree):
+        return overlay_body
+    return apply_mirror(base_body, overlay_body, overlay_filename=overlay_filename)
+
+
+def _is_full_replacement(base: Section, overlay: Section) -> bool:
+    if _has_op_suffix(overlay):
+        return False
+    overlay_paths = set(_header_paths(overlay, ()))
+    if not overlay_paths:
+        return True
+    base_paths = set(_header_paths(base, ()))
+    return overlay_paths.isdisjoint(base_paths)
+
+
+def _has_op_suffix(section: Section) -> bool:
+    for child in section.children:
+        _, op = _normalize(child.title)
+        if op != "replace":
+            return True
+        if _has_op_suffix(child):
+            return True
+    return False
+
+
+def _header_paths(
+    section: Section, prefix: tuple[str, ...]
+) -> Iterator[tuple[str, ...]]:
+    for child in section.children:
+        key, _ = _normalize(child.title)
+        path = (*prefix, key)
+        yield path
+        yield from _header_paths(child, path)
