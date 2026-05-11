@@ -70,9 +70,7 @@ Start with dialogue, not agents. Ask the user directly.
 
 Use AskUserQuestion:
 
-| Header    | Question                           | Options                                                                                                                                                                                                                                           |
-| --------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Idea type | What would you like to brainstorm? | 1. **New feature** - Add new functionality 2. **Modification** - Change existing behavior 3. **Integration** - Connect with an external system 4. **Plan grill** - Stress-test an existing plan 5. **Exploration** - Not sure yet, let's discover |
+- **Idea type** — What would you like to brainstorm? Options: 1. **New feature** - Add new functionality 2. **Modification** - Change existing behavior 3. **Integration** - Connect with an external system 4. **Plan grill** - Stress-test an existing plan 5. **Exploration** - Not sure yet, let's discover
 
 ### 1b. Follow-up (based on response)
 
@@ -90,13 +88,11 @@ Ask questions **one at a time** using AskUserQuestion. Adapt based on idea type.
 
 ### Question Framework (5WH)
 
-| Question Type | When to Ask                    | Example AskUserQuestion                                                              |
-| ------------- | ------------------------------ | ------------------------------------------------------------------------------------ |
-| **WHO**       | Always first                   | "Who will use this?" → Options: Existing users, New segment, Internal, API consumers |
-| **WHY**       | After WHO                      | "What problem does this solve?" → Options based on detected pain points              |
-| **WHAT**      | After WHY is clear             | "What's the core capability?" → Open or options based on research                    |
-| **WHERE**     | For integrations/modifications | "Where should this live?" → Options based on codebase exploration                    |
-| **HOW**       | After approach research        | "How should we implement?" → Present 2-3 technical approaches                        |
+- **WHO** — Always first; "Who will use this?" → Options: Existing users, New segment, Internal, API consumers
+- **WHY** — After WHO; "What problem does this solve?" → Options based on detected pain points
+- **WHAT** — After WHY is clear; "What's the core capability?" → Open or options based on research
+- **WHERE** — For integrations/modifications; "Where should this live?" → Options based on codebase exploration
+- **HOW** — After approach research; "How should we implement?" → Present 2-3 technical approaches
 
 ### Adaptive Questioning
 
@@ -139,9 +135,7 @@ Based on our discussion, here are the assumptions I'm seeing:
 
 Use AskUserQuestion:
 
-| Header      | Question                                 | Options                                                                                                                             |
-| ----------- | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| Assumptions | Any of these assumptions wrong or risky? | 1. **All correct** - Proceed as-is 2. **Some wrong** - I'll clarify 3. **Not sure** - Let's validate the risky ones during research |
+- **Assumptions** — Any of these assumptions wrong or risky? Options: 1. **All correct** - Proceed as-is 2. **Some wrong** - I'll clarify 3. **Not sure** - Let's validate the risky ones during research
 
 If "Some wrong": ask which ones and adjust requirements.
 If "Not sure": flag risky assumptions for verification in Phase 4.
@@ -152,9 +146,7 @@ If "Not sure": flag risky assumptions for verification in Phase 4.
 
 After understanding requirements, **ask before spawning any agents**:
 
-| Header    | Question               | Options                                                                                                                                                                                                                                                                                      |
-| --------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Next step | How should we proceed? | 1. **Explore codebase** - Check existing patterns and tech stack 2. **Research solutions** - Look up how others solve this 3. **Check project history** - Query past decisions on this topic (claude-mem) 4. **Both** - Explore then research 5. **Skip to approaches** - I know what I want |
+- **Next step** — How should we proceed? Options: 1. **Explore codebase** - Check existing patterns and tech stack 2. **Research solutions** - Look up how others solve this 3. **Check project history** - Query past decisions on this topic (claude-mem) 4. **Both** - Explore then research 5. **Skip to approaches** - I know what I want
 
 ### If user chooses "Explore codebase":
 
@@ -233,9 +225,7 @@ Present research summary before asking approach preference:
 
 Use AskUserQuestion with 2-4 options:
 
-| Header   | Question                  | Options                                                                                                                              |
-| -------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| Approach | Which approach fits best? | 1. **[Recommended]** - Description + key trade-off 2. **[Alternative]** - Description + key trade-off 3. **Minimal** - YAGNI version |
+- **Approach** — Which approach fits best? Options: 1. **[Recommended]** - Description + key trade-off 2. **[Alternative]** - Description + key trade-off 3. **Minimal** - YAGNI version
 
 ### Approach Template
 
@@ -251,9 +241,7 @@ For each option, briefly cover:
 
 Present design in sections (~200-300 words each). After each section, use AskUserQuestion:
 
-| Header   | Question                        | Options                                                                                                                    |
-| -------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| Validate | Does this [section] look right? | 1. **Yes, continue** - Move to next section 2. **Needs changes** - I'll explain 3. **Go back** - Revisit earlier decisions |
+- **Validate** — Does this [section] look right? Options: 1. **Yes, continue** - Move to next section 2. **Needs changes** - I'll explain 3. **Go back** - Revisit earlier decisions
 
 ### Design Sections
 
@@ -311,9 +299,7 @@ Include only: Problem, Chosen approach, Trade-offs, Open questions, Testing stra
 
 Use AskUserQuestion:
 
-| Header     | Question                              | Options                                                                                                                                                           |
-| ---------- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Next steps | Ready to proceed with implementation? | 1. **Create worktree** - Isolated workspace via using-git-worktrees 2. **Create plan** - Detailed implementation steps 3. **Done for now** - Just save the design |
+- **Next steps** — Ready to proceed with implementation? Options: 1. **Create worktree** - Isolated workspace via using-git-worktrees 2. **Create plan** - Detailed implementation steps 3. **Done for now** - Just save the design
 
 ---
 
@@ -321,13 +307,11 @@ Use AskUserQuestion:
 
 This skill incorporates proven brainstorming techniques:
 
-| Technique                 | How It's Used                                                                               |
-| ------------------------- | ------------------------------------------------------------------------------------------- |
-| **Starbursting (5WH)**    | Structured questions in Phase 2                                                             |
-| **Design Thinking**       | Empathize (context) → Define (WHY) → Ideate → Prototype (design sections)                   |
-| **SCAMPER**               | For modifications: Substitute, Combine, Adapt, Modify, Put to other use, Eliminate, Reverse |
-| **Reverse Brainstorming** | "How could this fail?" during validation                                                    |
-| **Mind Mapping**          | Architecture section visualizes relationships                                               |
+- **Starbursting (5WH)** — Structured questions in Phase 2
+- **Design Thinking** — Empathize (context) → Define (WHY) → Ideate → Prototype (design sections)
+- **SCAMPER** — For modifications: Substitute, Combine, Adapt, Modify, Put to other use, Eliminate, Reverse
+- **Reverse Brainstorming** — "How could this fail?" during validation
+- **Mind Mapping** — Architecture section visualizes relationships
 
 ---
 

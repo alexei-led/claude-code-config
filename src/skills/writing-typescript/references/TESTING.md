@@ -56,12 +56,10 @@ describe("fetchUser", () => {
 
 ### Mock Functions
 
-| Function      | Use When                                                      |
-| ------------- | ------------------------------------------------------------- |
-| `vi.fn()`     | Standalone mock function for return values and assertions     |
-| `vi.spyOn()`  | Spy on existing method while keeping original (use sparingly) |
-| `vi.mock()`   | Mock entire module (hoisted, applies module-wide)             |
-| `vi.mocked()` | Wrap for type-safe access: `vi.mocked(fn)`                    |
+- **`vi.fn()`** — Standalone mock function for return values and assertions
+- **`vi.spyOn()`** — Spy on existing method while keeping original (use sparingly)
+- **`vi.mock()`** — Mock entire module (hoisted, applies module-wide)
+- **`vi.mocked()`** — Wrap for type-safe access: `vi.mocked(fn)`
 
 ```typescript
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
@@ -77,12 +75,10 @@ afterEach(() => {
 
 **Choose matchers deliberately—don't over-match or under-match:**
 
-| Matcher                     | Use When                                                   |
-| --------------------------- | ---------------------------------------------------------- |
-| Exact value                 | Business-critical values (IDs, keys, table names)          |
-| `expect.any(Type)`          | Type check without exact value (generated IDs, timestamps) |
-| `expect.objectContaining()` | Partial object matching                                    |
-| `expect.stringContaining()` | Partial string matching                                    |
+- **Exact value** — Business-critical values (IDs, keys, table names)
+- **`expect.any(Type)`** — Type check without exact value (generated IDs, timestamps)
+- **`expect.objectContaining()`** — Partial object matching
+- **`expect.stringContaining()`** — Partial string matching
 
 ```typescript
 describe("UserService", () => {

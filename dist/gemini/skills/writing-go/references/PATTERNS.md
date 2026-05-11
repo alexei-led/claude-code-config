@@ -247,14 +247,12 @@ func Retry[T any](ctx context.Context, fn func() (T, error), maxAttempts int) (T
 
 ### Generics vs Concrete: Decision Guide
 
-| Use Case              | Choice         |
-| --------------------- | -------------- |
-| Business logic        | Concrete types |
-| Domain entities       | Concrete types |
-| Hot paths             | Concrete types |
-| Utility functions     | Generics       |
-| Collection helpers    | Generics       |
-| Retry/circuit breaker | Generics       |
+- **Business logic** — Concrete types
+- **Domain entities** — Concrete types
+- **Hot paths** — Concrete types
+- **Utility functions** — Generics
+- **Collection helpers** — Generics
+- **Retry/circuit breaker** — Generics
 
 ## Error Handling
 

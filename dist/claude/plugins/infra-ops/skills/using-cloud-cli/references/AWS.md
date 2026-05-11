@@ -101,13 +101,11 @@ aws iam list-attached-role-policies --role-name ROLE
 
 ## Common Flags
 
-| Flag                         | Purpose             |
-| ---------------------------- | ------------------- |
-| `--region REGION`            | Explicit region     |
-| `--output json\|table\|text` | Output format       |
-| `--query 'JMESPath'`         | Filter results      |
-| `--profile PROFILE`          | Named profile       |
-| `--dry-run`                  | Preview (EC2, etc.) |
+- **`--region REGION`** — Explicit region
+- **`--output json|table|text`** — Output format
+- **`--query 'JMESPath'`** — Filter results
+- **`--profile PROFILE`** — Named profile
+- **`--dry-run`** — Preview (EC2, etc.)
 
 ## JMESPath Examples
 

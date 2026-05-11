@@ -117,11 +117,9 @@ For refactoring brittle private-helper tests, state the public behavior surface 
 
 Preferred consolidation patterns:
 
-| Language   | Pattern                                          |
-| ---------- | ------------------------------------------------ |
-| Go         | table-driven with `t.Run(tc.name, ...)`          |
-| Python     | `@pytest.mark.parametrize` with `pytest.param()` |
-| TypeScript | `it.each([{ input, expected, name }])`           |
+- **Go** — table-driven with `t.Run(tc.name, ...)`
+- **Python** — `@pytest.mark.parametrize` with `pytest.param()`
+- **TypeScript** — `it.each([{ input, expected, name }])`
 
 Extract helpers only after 3+ repetitions and only when the helper improves readability. Hide setup noise; do not hide the behavior under test.
 

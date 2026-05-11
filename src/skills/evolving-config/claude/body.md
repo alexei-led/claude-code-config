@@ -31,14 +31,12 @@ hooks/*                             # Hook scripts
 
 Build inventory summary:
 
-| Category    | Count | Details                       |
-| ----------- | ----- | ----------------------------- |
-| Skills      | N     | list names                    |
-| Agents      | N     | list names                    |
-| Commands    | N     | list names                    |
-| Hooks       | N     | list events                   |
-| MCP servers | N     | list names                    |
-| Model refs  | list  | which models referenced where |
+- **Skills** — N (list names)
+- **Agents** — N (list names)
+- **Commands** — N (list names)
+- **Hooks** — N (list events)
+- **MCP servers** — N (list names)
+- **Model refs** — list (which models referenced where)
 
 Note any staleness indicators (outdated model names, deprecated patterns).
 
@@ -76,30 +74,26 @@ Compare current config against latest capabilities. For EACH category below, pro
 
 ### Audit Categories
 
-| Category          | What to Check                                                                  |
-| ----------------- | ------------------------------------------------------------------------------ |
-| **Model routing** | Are model assignments optimal? New models available? Effort levels configured? |
-| **Hooks**         | New hook events available? Async hooks? Hook v2 features?                      |
-| **Skills**        | Stale patterns? New tool types to leverage? Missing `context: fork`?           |
-| **Agents**        | New subagent types? Agent features (memory, skills)?                           |
-| **MCP servers**   | New useful servers? Deprecated transports? OAuth improvements?                 |
-| **Permissions**   | New permission syntax? Over-permissive rules? Missing deny rules?              |
-| **Settings**      | New settings fields? Deprecated options? Sandbox improvements?                 |
-| **CLAUDE.md**     | Outdated instructions? Stale references? Missing new patterns?                 |
-| **Teams**         | New team features? Configuration improvements?                                 |
-| **Commands**      | Deprecated command patterns? New frontmatter fields?                           |
+- **Model routing** — Are model assignments optimal? New models available? Effort levels configured?
+- **Hooks** — New hook events available? Async hooks? Hook v2 features?
+- **Skills** — Stale patterns? New tool types to leverage? Missing `context: fork`?
+- **Agents** — New subagent types? Agent features (memory, skills)?
+- **MCP servers** — New useful servers? Deprecated transports? OAuth improvements?
+- **Permissions** — New permission syntax? Over-permissive rules? Missing deny rules?
+- **Settings** — New settings fields? Deprecated options? Sandbox improvements?
+- **CLAUDE.md** — Outdated instructions? Stale references? Missing new patterns?
+- **Teams** — New team features? Configuration improvements?
+- **Commands** — Deprecated command patterns? New frontmatter fields?
 
 ### Classification Rules
 
 For each finding, assign ONE rating:
 
-| Rating             | Criteria                                        | Action           |
-| ------------------ | ----------------------------------------------- | ---------------- |
-| **STILL GOOD**     | Current config matches or exceeds best practice | No change needed |
-| **DEPRECATED**     | Feature removed or replaced upstream            | Must update      |
-| **WORTH ADOPTING** | Clear value, low disruption, proven stable      | Recommend        |
-| **NICE-TO-HAVE**   | Minor improvement, some disruption              | Mention only     |
-| **NOT YET**        | Too experimental or doesn't fit workflow        | Skip or note     |
+- **STILL GOOD** — Current config matches or exceeds best practice; no change needed
+- **DEPRECATED** — Feature removed or replaced upstream; must update
+- **WORTH ADOPTING** — Clear value, low disruption, proven stable; recommend
+- **NICE-TO-HAVE** — Minor improvement, some disruption; mention only
+- **NOT YET** — Too experimental or doesn't fit workflow; skip or note
 
 **Critical rule**: Default classification is **STILL GOOD**. A finding must clear the bar: "Is this worth the disruption?" Changing working config has real cost — context relearning, potential breakage, testing overhead. Only promote to WORTH ADOPTING when the benefit clearly exceeds that cost.
 
@@ -151,9 +145,7 @@ Format the report:
 
 Use `AskUserQuestion`. Ask one question at a time:
 
-| Header | Question                                      | Options                                                                                                      |
-| ------ | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Action | How should we proceed with the audit results? | Apply all recommended (Recommended) / Select items to apply / Dry run only (show diffs) / Skip (report only) |
+- **Action** — How should we proceed with the audit results? Options: Apply all recommended / Select items to apply / Dry run only (show diffs) / Skip (report only)
 
 If `$ARGUMENTS` contains `--dry-run`: Skip the question, show diffs only, do not apply.
 

@@ -26,9 +26,7 @@ Execute E2E testing workflows using Playwright scripts (via playwright-skill). D
 
 If no argument provided, use AskUserQuestion. Ask one question at a time:
 
-| Header | Question                      | Options                                                                                                                                                                      |
-| ------ | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Action | What E2E testing task to run? | 1. **Run tests** - Execute existing Playwright tests 2. **Record** - Record browser session 3. **Generate** - Create test from URL/description 4. **Verify** - Check feature |
+- **Action** — What E2E testing task to run? Options: 1. **Run tests** - Execute existing Playwright tests 2. **Record** - Record browser session 3. **Generate** - Create test from URL/description 4. **Verify** - Check feature
 
 ---
 
@@ -205,11 +203,9 @@ if ((await btn.count()) === 0) {
 
 ### Timeout Errors
 
-| Error              | Cause                    | Solution                          |
-| ------------------ | ------------------------ | --------------------------------- |
-| Navigation timeout | Slow page load           | Increase timeout, check network   |
-| Action timeout     | Element not interactable | Wait for visibility/enabled state |
-| Expect timeout     | Assertion failed         | Verify DOM state with snapshot    |
+- **Navigation timeout** — Slow page load; increase timeout, check network
+- **Action timeout** — Element not interactable; wait for visibility/enabled state
+- **Expect timeout** — Assertion failed; verify DOM state with snapshot
 
 ```typescript
 // Configure timeouts

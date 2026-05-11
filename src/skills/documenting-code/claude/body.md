@@ -16,9 +16,7 @@ Update project documentation to reflect current code state. Do not delete or ove
 
 Ask one question at a time:
 
-| Header    | Question                            | Options                                                                                                                                                                                                        |
-| --------- | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Doc scope | What documentation should I update? | 1. **Auto-detect** - Scan for outdated docs based on recent changes 2. **README** - Update project README 3. **API docs** - Update API/function documentation 4. **All** - Comprehensive documentation refresh |
+- **Doc scope** — What documentation should I update? Options: 1. **Auto-detect** - Scan for outdated docs based on recent changes 2. **README** - Update project README 3. **API docs** - Update API/function documentation 4. **All** - Comprehensive documentation refresh
 
 ## Phase 2-4: Analyze and Update Documentation
 

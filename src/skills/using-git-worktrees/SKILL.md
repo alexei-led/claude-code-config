@@ -59,11 +59,9 @@ Worktrees are **sibling directories** (not nested inside the repo):
 
 `<project>-<branch-slug>` — slashes become dashes, self-documenting.
 
-| Branch             | Worktree Directory          |
-| ------------------ | --------------------------- |
-| `fix-cron`         | `../myproject-fix-cron`     |
-| `feature/auth`     | `../myproject-feature-auth` |
-| `bugfix/issue-123` | `../myproject-bugfix-123`   |
+- **`fix-cron`** — `../myproject-fix-cron`
+- **`feature/auth`** — `../myproject-feature-auth`
+- **`bugfix/issue-123`** — `../myproject-bugfix-123`
 
 ## When to Suggest Worktrees
 

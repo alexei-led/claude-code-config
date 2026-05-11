@@ -90,12 +90,10 @@ class PostgresStore:
 
 ### Protocol vs ABC
 
-| Use Case                    | Choice   |
-| --------------------------- | -------- |
-| Duck typing with hints      | Protocol |
-| Runtime isinstance() checks | ABC      |
-| Implicit satisfaction       | Protocol |
-| Explicit method enforcement | ABC      |
+- **Duck typing with hints** — Protocol
+- **Runtime isinstance() checks** — ABC
+- **Implicit satisfaction** — Protocol
+- **Explicit method enforcement** — ABC
 
 ## Dataclasses
 

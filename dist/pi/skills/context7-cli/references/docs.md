@@ -51,12 +51,10 @@ Use the resolved ID exactly. The ID must start with `/`.
 
 Use specific queries:
 
-| Quality | Query                                                    |
-| ------- | -------------------------------------------------------- |
-| Good    | `React useEffect cleanup function with async operations` |
-| Good    | `FastAPI dependency overrides in pytest tests`           |
-| Bad     | `hooks`                                                  |
-| Bad     | `auth`                                                   |
+- **Good** — `React useEffect cleanup function with async operations`
+- **Good** — `FastAPI dependency overrides in pytest tests`
+- **Bad** — `hooks`
+- **Bad** — `auth`
 
 Limit: do not call `ctx7 docs` more than 3 times for one question.
 

@@ -30,14 +30,12 @@ package.json
 
 ### When to Use Each
 
-| Use Case             | Choice    |
-| -------------------- | --------- |
-| Object shapes        | interface |
-| React props          | interface |
-| Public APIs          | interface |
-| Unions/intersections | type      |
-| Mapped types         | type      |
-| Utility types        | type      |
+- **Object shapes** — interface
+- **React props** — interface
+- **Public APIs** — interface
+- **Unions/intersections** — type
+- **Mapped types** — type
+- **Utility types** — type
 
 ```typescript
 // interface: object shapes, extensible

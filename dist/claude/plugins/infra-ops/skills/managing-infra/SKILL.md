@@ -31,15 +31,13 @@ If the user explicitly asks to apply, confirm before executing.
 
 ## When to Use What
 
-| Tool               | Use For                                             |
-| ------------------ | --------------------------------------------------- |
-| **Raw K8s YAML**   | Simple deployments, one-off resources               |
-| **Kustomize**      | Environment variations, overlays without templating |
-| **Helm**           | Complex apps, third-party charts, heavy templating  |
-| **Terraform**      | Cloud resources, infrastructure lifecycle           |
-| **GitHub Actions** | CI/CD, automated testing, releases                  |
-| **Makefile**       | Build automation, self-documenting targets          |
-| **Dockerfile**     | Container builds, multi-stage, multi-arch           |
+- **Raw K8s YAML** — Simple deployments, one-off resources
+- **Kustomize** — Environment variations, overlays without templating
+- **Helm** — Complex apps, third-party charts, heavy templating
+- **Terraform** — Cloud resources, infrastructure lifecycle
+- **GitHub Actions** — CI/CD, automated testing, releases
+- **Makefile** — Build automation, self-documenting targets
+- **Dockerfile** — Container builds, multi-stage, multi-arch
 
 ## Quick Decisions
 

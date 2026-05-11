@@ -74,11 +74,9 @@ Look for:
 
 For refactoring brittle private-helper tests, state the public behavior surface first. Example: `create_user(payload)` is the primary test surface; `_normalize_user_payload()` is not. Replace duplicate helper tests and internal call-count assertions with behavior checks through the public API. Mock only system boundaries. Delete shallow duplicates once the public behavior tests cover them.
 
-| Language   | Pattern                                          |
-| ---------- | ------------------------------------------------ |
-| Go         | table-driven with `t.Run(tc.name, ...)`          |
-| Python     | `@pytest.mark.parametrize` with `pytest.param()` |
-| TypeScript | `it.each([{ input, expected, name }])`           |
+- **Go** — table-driven with `t.Run(tc.name, ...)`
+- **Python** — `@pytest.mark.parametrize` with `pytest.param()`
+- **TypeScript** — `it.each([{ input, expected, name }])`
 
 Extract helpers only after 3+ repetitions and only when the helper improves readability.
 

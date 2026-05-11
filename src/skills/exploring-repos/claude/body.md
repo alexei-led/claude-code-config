@@ -4,13 +4,11 @@ DeepWiki provides AI-generated wiki documentation for 30,000+ popular public Git
 
 ## When to Use DeepWiki vs Context7
 
-| Need                                                       | Tool                                              | Why                                           |
-| ---------------------------------------------------------- | ------------------------------------------------- | --------------------------------------------- |
-| Repo architecture, design patterns, how components connect | **DeepWiki**                                      | AI-generated wiki from full codebase analysis |
-| API references, code examples, version-specific docs       | **Context7**                                      | Sourced from official library documentation   |
-| "How does this repo work?"                                 | **DeepWiki**                                      | Codebase-level understanding                  |
-| "How do I use this library?"                               | **Context7**                                      | Usage-level documentation                     |
-| Cross-repo comparison                                      | **DeepWiki** (`ask_question` with multiple repos) | Accepts up to 10 repos                        |
+- **Repo architecture, design patterns, how components connect** — DeepWiki (AI-generated wiki from full codebase analysis)
+- **API references, code examples, version-specific docs** — Context7 (sourced from official library documentation)
+- **"How does this repo work?"** — DeepWiki (codebase-level understanding)
+- **"How do I use this library?"** — Context7 (usage-level documentation)
+- **Cross-repo comparison** — DeepWiki `ask_question` with multiple repos (accepts up to 10 repos)
 
 ## Workflow
 

@@ -4,15 +4,13 @@
 
 Both are production-ready. Choose based on project needs.
 
-| Aspect      | Cobra                        | urfave/cli               |
-| ----------- | ---------------------------- | ------------------------ |
-| Community   | Larger (kubectl, hugo, gh)   | Solid (many cloud tools) |
-| Code gen    | `cobra-cli` scaffolding      | Manual                   |
-| Completions | Built-in shell completions   | Add-on                   |
-| Docs gen    | Auto man pages, markdown     | Manual                   |
-| Structure   | File-per-command scales well | Single file works        |
-| Learning    | More boilerplate initially   | Simpler start            |
-| Env vars    | Viper integration            | Built-in `EnvVars` field |
+- **Community** — Cobra: Larger (kubectl, hugo, gh); urfave/cli: Solid (many cloud tools)
+- **Code gen** — Cobra: `cobra-cli` scaffolding; urfave/cli: Manual
+- **Completions** — Cobra: Built-in shell completions; urfave/cli: Add-on
+- **Docs gen** — Cobra: Auto man pages, markdown; urfave/cli: Manual
+- **Structure** — Cobra: File-per-command scales well; urfave/cli: Single file works
+- **Learning** — Cobra: More boilerplate initially; urfave/cli: Simpler start
+- **Env vars** — Cobra: Viper integration; urfave/cli: Built-in `EnvVars` field
 
 **Cobra fits well:**
 

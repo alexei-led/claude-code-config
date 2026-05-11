@@ -22,13 +22,11 @@ Query cross-session history via claude-mem.
 
 ## When to Use
 
-| Scenario                        | Action                                            |
-| ------------------------------- | ------------------------------------------------- |
-| "What did we fix last session?" | `search` with file path or feature name           |
-| "Did we try this before?"       | `search` with approach keywords                   |
-| Past decisions on a feature     | `search` → `get_observations` on relevant IDs     |
-| Recurring bug investigation     | `search` type filter for gotchas/problem-solution |
-| Full project timeline           | `timeline` with broad query                       |
+- **"What did we fix last session?"** — `search` with file path or feature name
+- **"Did we try this before?"** — `search` with approach keywords
+- **Past decisions on a feature** — `search` → `get_observations` on relevant IDs
+- **Recurring bug investigation** — `search` type filter for gotchas/problem-solution
+- **Full project timeline** — `timeline` with broad query
 
 ## Search Tips
 

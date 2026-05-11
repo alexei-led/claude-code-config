@@ -22,13 +22,21 @@ Critical rule: preserve existing behavior unless the user explicitly asks for a 
 
 ## When to Use edit_file
 
-| Use edit_file                   | Use Built-in Edit/MultiEdit      |
-| ------------------------------- | -------------------------------- |
-| Multi-file batch refactoring    | Single file, clear edit          |
-| Style/pattern update everywhere | 2-3 targeted replacements        |
-| Complex prompt → many changes   | Need clear diff to review/tune   |
-| Structural refactoring at scale | Simple rename (replace_all)      |
-| 5+ files need same pattern      | Straightforward single-file work |
+Use `edit_file` when:
+
+- Multi-file batch refactoring
+- Style/pattern update everywhere
+- Complex prompt → many changes
+- Structural refactoring at scale
+- 5+ files need same pattern
+
+Use Built-in Edit/MultiEdit when:
+
+- Single file, clear edit
+- 2-3 targeted replacements
+- Need clear diff to review/tune
+- Simple rename (replace_all)
+- Straightforward single-file work
 
 ## Key Features
 

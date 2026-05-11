@@ -101,9 +101,7 @@ gcloud projects add-iam-policy-binding PROJECT \
 
 ## Common Flags
 
-| Flag                      | Purpose                 |
-| ------------------------- | ----------------------- |
-| `--project=PROJECT`       | Explicit project        |
-| `--format=json`           | JSON output for parsing |
-| `--quiet`                 | No prompts (automation) |
-| `--filter="name:pattern"` | Server-side filter      |
+- **`--project=PROJECT`** — Explicit project
+- **`--format=json`** — JSON output for parsing
+- **`--quiet`** — No prompts (automation)
+- **`--filter="name:pattern"`** — Server-side filter

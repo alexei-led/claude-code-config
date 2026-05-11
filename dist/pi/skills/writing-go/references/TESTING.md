@@ -113,11 +113,9 @@ type userStore interface {
 
 **CRITICAL: Choose argument matchers deliberately—overusing `mock.Anything` weakens tests.**
 
-| Matcher              | Use When                                                       | Example                                             |
-| -------------------- | -------------------------------------------------------------- | --------------------------------------------------- |
-| **Exact value**      | Business-critical values from test fixtures                    | `"project.dataset.table"`, `"wu-123"`, `customerId` |
-| **`mock.Anything`**  | Don't-care values: `context.Context`, loggers, tracing spans   | `mock.Anything` for ctx                             |
-| **`mock.MatchedBy`** | Partial matching: SQL patterns, complex structs, generated IDs | `mock.MatchedBy(func(q string) bool { ... })`       |
+- **Exact value** — Business-critical values from test fixtures (e.g. `"project.dataset.table"`, `"wu-123"`, `customerId`)
+- **`mock.Anything`** — Don't-care values: `context.Context`, loggers, tracing spans
+- **`mock.MatchedBy`** — Partial matching: SQL patterns, complex structs, generated IDs (e.g. `mock.MatchedBy(func(q string) bool { ... })`)
 
 **Examples:**
 

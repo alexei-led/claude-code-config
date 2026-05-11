@@ -48,13 +48,29 @@ Return a bounded code map:
 
 ## When to Use Which Tool
 
-| Use WarpGrep                | Use Smart Explore (claude-mem)     | Use Built-in Grep        |
-| --------------------------- | ---------------------------------- | ------------------------ |
-| "How does auth flow work?"  | "What functions are in this file?" | "Find class UserService" |
-| "Trace data from API to DB" | "Show me this function's source"   | Simple regex patterns    |
-| "Find all error handling"   | "Find all types matching X"        | "Where is X defined?"    |
-| Large repos (1000+ files)   | File structure at a glance         | Known file patterns      |
-| Before major refactoring    | Targeted function extraction       | Quick needle lookups     |
+WarpGrep:
+
+- "How does auth flow work?"
+- "Trace data from API to DB"
+- "Find all error handling"
+- Large repos (1000+ files)
+- Before major refactoring
+
+Smart Explore (claude-mem):
+
+- "What functions are in this file?"
+- "Show me this function's source"
+- "Find all types matching X"
+- File structure at a glance
+- Targeted function extraction
+
+Built-in Grep:
+
+- "Find class UserService"
+- Simple regex patterns
+- "Where is X defined?"
+- Known file patterns
+- Quick needle lookups
 
 **When available**, prefer Smart Explore for structural queries (10-20x fewer tokens). Use WarpGrep for semantic/reasoning queries across files.
 

@@ -42,13 +42,11 @@ ENTRYPOINT ["python", "-m", "src.main"]
 
 ## Base Image Selection
 
-| Use Case         | Image                                       |
-| ---------------- | ------------------------------------------- |
-| Go static binary | `gcr.io/distroless/static-debian12:nonroot` |
-| Go with cgo      | `gcr.io/distroless/base-debian12:nonroot`   |
-| Minimal scratch  | `scratch`                                   |
-| Python           | `python:3.14-slim`                          |
-| Debug needed     | `alpine` or `debian:bookworm-slim`          |
+- **Go static binary** — `gcr.io/distroless/static-debian12:nonroot`
+- **Go with cgo** — `gcr.io/distroless/base-debian12:nonroot`
+- **Minimal scratch** — `scratch`
+- **Python** — `python:3.14-slim`
+- **Debug needed** — `alpine` or `debian:bookworm-slim`
 
 ## Security Best Practices
 

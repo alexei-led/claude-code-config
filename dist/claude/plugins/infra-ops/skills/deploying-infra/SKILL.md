@@ -178,9 +178,7 @@ mcp__perplexity-ask__perplexity_ask with:
 
 **STOP**: `AskUserQuestion`
 
-| Header     | Question              | Options                                                                                                            |
-| ---------- | --------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Production | Deploy to PRODUCTION? | 1. **Yes, deploy** - Apply changes now<br>2. **Review again** - Show full diff<br>3. **Cancel** - Abort deployment |
+- **Production** — Deploy to PRODUCTION? Options: 1. **Yes, deploy** - Apply changes now 2. **Review again** - Show full diff 3. **Cancel** - Abort deployment
 
 ---
 

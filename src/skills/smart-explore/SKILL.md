@@ -12,13 +12,11 @@ Use these tools **when available** (requires claude-mem plugin). Fall back to Re
 
 ## When to Use Which
 
-| Task                          | Tool            | Tokens    |
-| ----------------------------- | --------------- | --------- |
-| File structure at a glance    | `smart_outline` | ~1,500    |
-| Cross-file symbol discovery   | `smart_search`  | ~3,500    |
-| Read a specific function/type | `smart_unfold`  | ~400-2100 |
-| Simple string search          | Grep            | varies    |
-| Full file needed              | Read            | ~8,000+   |
+- **File structure at a glance** — `smart_outline` (~1,500 tokens)
+- **Cross-file symbol discovery** — `smart_search` (~3,500 tokens)
+- **Read a specific function/type** — `smart_unfold` (~400-2100 tokens)
+- **Simple string search** — Grep (varies)
+- **Full file needed** — Read (~8,000+ tokens)
 
 ## Progressive Disclosure Workflow
 

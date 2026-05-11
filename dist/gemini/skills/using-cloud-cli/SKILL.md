@@ -119,12 +119,10 @@ aws sso login --profile my-sso-profile
 
 **Common auth errors:**
 
-| Error                  | Cause             | Fix                     |
-| ---------------------- | ----------------- | ----------------------- |
-| `UNAUTHENTICATED`      | No credentials    | Run `gcloud auth login` |
-| `AccessDenied`         | Wrong permissions | Check IAM roles         |
-| `ExpiredToken`         | Session expired   | Re-authenticate         |
-| `InvalidClientTokenId` | Bad AWS key       | Verify credentials file |
+- **`UNAUTHENTICATED`** — No credentials; run `gcloud auth login`
+- **`AccessDenied`** — Wrong permissions; check IAM roles
+- **`ExpiredToken`** — Session expired; re-authenticate
+- **`InvalidClientTokenId`** — Bad AWS key; verify credentials file
 
 ### Rate Limiting
 

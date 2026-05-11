@@ -115,15 +115,13 @@ git worktree list --verbose
 
 ## Quick Reference
 
-| Situation                  | Action                                  |
-| -------------------------- | --------------------------------------- |
-| Creating worktree          | Sibling: `../<project>-<branch-slug>`   |
-| CLAUDE.md has preference   | Use specified location                  |
-| Path already exists        | Report conflict, ask user               |
-| Branch already checked out | Report, suggest existing worktree       |
-| Tests fail during baseline | Report failures + ask                   |
-| Done with feature          | `git worktree remove` + `git branch -d` |
-| Stale worktrees            | `git worktree prune`                    |
+- **Creating worktree** — Sibling: `../<project>-<branch-slug>`
+- **CLAUDE.md has preference** — Use specified location
+- **Path already exists** — Report conflict, ask user
+- **Branch already checked out** — Report, suggest existing worktree
+- **Tests fail during baseline** — Report failures + ask
+- **Done with feature** — `git worktree remove` + `git branch -d`
+- **Stale worktrees** — `git worktree prune`
 
 ## Common Commands
 

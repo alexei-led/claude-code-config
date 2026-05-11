@@ -94,12 +94,10 @@ Startup Budget = CLAUDE.md tokens
 
 ### Thresholds
 
-| Budget     | Rating  | Action                                |
-| ---------- | ------- | ------------------------------------- |
-| <2K tokens | LEAN    | Ideal — maximum attention available   |
-| 2K-4K      | OK      | Acceptable for complex projects       |
-| 4K-6K      | HEAVY   | Consider moving content to skills     |
-| >6K        | BLOATED | Urgent — context rot risk from turn 1 |
+- **<2K tokens** — LEAN: Ideal — maximum attention available
+- **2K-4K** — OK: Acceptable for complex projects
+- **4K-6K** — HEAVY: Consider moving content to skills
+- **>6K** — BLOATED: Urgent — context rot risk from turn 1
 
 Count CLAUDE.md lines and estimate tokens. Flag if CLAUDE.md exceeds 150
 lines or ~3K tokens.
@@ -189,9 +187,7 @@ Report structure:
 
 If `--fix` is NOT present, use `AskUserQuestion`. Ask one question at a time:
 
-| Header | Question                     | Options                                                         |
-| ------ | ---------------------------- | --------------------------------------------------------------- |
-| Action | Apply fixes from the review? | Fix all errors / Fix errors + warnings / Show diffs only / Skip |
+- **Action** — Apply fixes from the review? Options: Fix all errors / Fix errors + warnings / Show diffs only / Skip
 
 Apply only approved fixes. Confirm before deleting files, removing hooks, broad rewrites, or changing permissions:
 

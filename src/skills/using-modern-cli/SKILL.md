@@ -16,16 +16,14 @@ Use faster, ergonomic command-line tools installed on this system.
 
 ## Quick Reference
 
-| Task         | Modern  | Traditional | Why Modern                          |
-| ------------ | ------- | ----------- | ----------------------------------- |
-| Search text  | `rg`    | grep        | 10-100x faster, respects .gitignore |
-| Find files   | `fd`    | find        | Simpler syntax, ignores .git        |
-| View files   | `bat`   | cat         | Syntax highlighting, line numbers   |
-| List files   | `eza`   | ls          | Icons, git status, tree view        |
-| Replace text | `sd`    | sed         | Intuitive regex, preview mode       |
-| Disk usage   | `dust`  | du          | Visual tree, sorted by size         |
-| Processes    | `procs` | ps          | Tree view, sortable columns         |
-| Diff files   | `delta` | diff        | Syntax highlighting, side-by-side   |
+- **Search text** — `rg` (vs grep): 10-100x faster, respects .gitignore
+- **Find files** — `fd` (vs find): Simpler syntax, ignores .git
+- **View files** — `bat` (vs cat): Syntax highlighting, line numbers
+- **List files** — `eza` (vs ls): Icons, git status, tree view
+- **Replace text** — `sd` (vs sed): Intuitive regex, preview mode
+- **Disk usage** — `dust` (vs du): Visual tree, sorted by size
+- **Processes** — `procs` (vs ps): Tree view, sortable columns
+- **Diff files** — `delta` (vs diff): Syntax highlighting, side-by-side
 
 ## Examples
 

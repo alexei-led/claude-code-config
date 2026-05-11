@@ -38,11 +38,9 @@ exclude_lines = ["pragma: no cover", "if __name__ == .__main__.", "logger\\."]
 
 ## Tiered Testing
 
-| Tier        | Scope                     | Command                 | Speed  |
-| ----------- | ------------------------- | ----------------------- | ------ |
-| Unit        | Mocked, isolated          | `make test`             | Fast   |
-| Integration | Real filesystem/processes | `make test-integration` | Medium |
-| E2E         | Full system               | `make test-e2e`         | Slow   |
+- **Unit** — Mocked, isolated; `make test` (Fast)
+- **Integration** — Real filesystem/processes; `make test-integration` (Medium)
+- **E2E** — Full system; `make test-e2e` (Slow)
 
 ## Basic Tests
 
@@ -143,20 +141,16 @@ from unittest.mock import Mock, MagicMock, AsyncMock, patch, create_autospec
 
 ### Mock Types
 
-| Type                   | Use When                                                     |
-| ---------------------- | ------------------------------------------------------------ |
-| `Mock()`               | Basic mock, no magic methods                                 |
-| `MagicMock()`          | Needs magic methods (`__len__`, `__iter__`, context manager) |
-| `AsyncMock()`          | Async functions (`async def`)                                |
-| `create_autospec(cls)` | Type-safe mock that validates signatures                     |
+- **`Mock()`** — Basic mock, no magic methods
+- **`MagicMock()`** — Needs magic methods (`__len__`, `__iter__`, context manager)
+- **`AsyncMock()`** — Async functions (`async def`)
+- **`create_autospec(cls)`** — Type-safe mock that validates signatures
 
 ### Argument Matching (CRITICAL)
 
-| Approach                | Use When                                          |
-| ----------------------- | ------------------------------------------------- |
-| Exact value             | Business-critical values (IDs, table names, keys) |
-| `call_args` inspection  | Checking specific args without full match         |
-| Custom `__eq__` matcher | Partial object matching                           |
+- **Exact value** — Business-critical values (IDs, table names, keys)
+- **`call_args` inspection** — Checking specific args without full match
+- **Custom `__eq__` matcher** — Partial object matching
 
 ```python
 def test_with_exact_values():
