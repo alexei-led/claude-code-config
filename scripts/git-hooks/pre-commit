@@ -27,9 +27,10 @@ if git diff --cached --name-only --diff-filter=ACMR | grep -qE '^src/'; then
 		echo "FAIL: make build"
 		exit 1
 	}
-	if ! git diff --quiet -- dist/; then
-		git add -- dist/
-		echo "re-staged regenerated dist/ files"
+	regen_paths=(dist/ .claude-plugin/marketplace.json .agents/plugins/marketplace.json gemini-extension.json)
+	if ! git diff --quiet -- "${regen_paths[@]}"; then
+		git add -- "${regen_paths[@]}"
+		echo "re-staged regenerated dist/ and root manifests"
 	fi
 fi
 

@@ -144,6 +144,10 @@ def write_claude_marketplace(plugins: Sequence[Mapping[str, Any]], root: Path) -
     entries: list[dict[str, Any]] = []
     for plugin in plugins:
         name = plugin["name"]
+        plugin_root = root / "dist" / "claude" / "plugins" / name
+        if not plugin_root.is_dir():
+            # plugin contributes no claude artifacts — omit from marketplace
+            continue
         entry: dict[str, Any] = {
             "name": plugin.get("marketplace_name") or name,
             "source": f"./dist/claude/plugins/{name}",

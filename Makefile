@@ -140,6 +140,12 @@ check: build ## Build, then fail if any tracked file changed (drift detection)
 		git --no-pager diff --stat; \
 		exit 1; \
 	fi
+	@untracked=$$(git ls-files --others --exclude-standard -- dist/ .claude-plugin/ .agents/plugins/ gemini-extension.json); \
+	if [ -n "$$untracked" ]; then \
+		echo "ERROR: build produced untracked derived files — add them or remove a stale src/ entry:"; \
+		echo "$$untracked" | sed 's/^/  /'; \
+		exit 1; \
+	fi
 	@echo "check: clean (all derived artifacts match canonical sources)"
 
 # --- CI (runs everything) ---

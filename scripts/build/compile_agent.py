@@ -66,9 +66,8 @@ def output_paths(
     Agents are single files (not directories), so the path is
     `<dist>/<...>/<agent_dir>/<name><extension>`. Plugin-grouped targets
     (`claude`, `codex`) emit once per owning plugin from `plugin_index`; agents
-    with no owning plugin fall back to a flat-style path under
-    `<dist>/<target>/<agent_dir>/`. Flat targets (`gemini`, `pi`) always emit
-    to the flat path.
+    with no owning plugin emit nothing for that target. Flat targets
+    (`gemini`, `pi`) always emit to the flat path.
     """
     cfg = _compile.OUTPUT[target]
     dist = root / "dist" / target

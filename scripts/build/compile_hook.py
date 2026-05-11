@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 import shutil
 import sys
 from collections.abc import Mapping, Sequence
@@ -90,6 +91,11 @@ CODEX_EVENT_ORDER: tuple[str, ...] = ("PreToolUse", "PostToolUse", "SessionStart
 
 _TARGET_SUBDIRS: frozenset[str] = frozenset({"claude", "codex", "gemini", "pi"})
 
+# Hook names land directly in output paths, manifest entries, and command
+# substitutions. Anything outside this character class would either escape the
+# hooks directory (`../`) or break manifest JSON.
+_SAFE_NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]*$")
+
 
 @dataclass(frozen=True)
 class HookSpec:
@@ -145,8 +151,14 @@ def load_hook(hook_dir: Path) -> HookSpec:
             f"{meta_path}: unknown event {event!r}; valid: {sorted(EVENT_MAP)}"
         )
 
+    name = meta["name"]
+    if not isinstance(name, str) or not _SAFE_NAME_RE.match(name):
+        raise ValueError(
+            f"{meta_path}: name {name!r} must match {_SAFE_NAME_RE.pattern}"
+        )
+
     return HookSpec(
-        name=meta["name"],
+        name=name,
         event=event,
         timeout=int(meta["timeout"]),
         script_path=scripts[0],
@@ -162,9 +174,9 @@ def hook_output_assignments(
 ) -> list[tuple[Path, str | None]]:
     """Resolve per-target hook directories paired with their owning plugin.
 
-    Plugin-grouped targets emit once per owning plugin; with an empty plugin
-    index the hook lands at the flat fallback path (plugin = `None`). Flat
-    targets always use the flat path.
+    Plugin-grouped targets emit once per owning plugin; an unowned hook on a
+    plugin-grouped target is skipped (no consumer would find it). Flat targets
+    always use the flat path.
     """
     cfg = _compile.OUTPUT[target]
     dist = root / "dist" / target

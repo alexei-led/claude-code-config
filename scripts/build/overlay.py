@@ -88,6 +88,8 @@ ALLOWED_KEYS: dict[str, frozenset[str]] = {
             "metadata",
             "model",
             "model_reasoning_effort",
+            # Vendor-neutral alias renamed to model_reasoning_effort by codex_toml.
+            "effort",
             "sandbox_mode",
             "nickname_candidates",
             "mcp_servers",

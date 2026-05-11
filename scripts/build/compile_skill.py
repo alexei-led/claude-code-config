@@ -76,9 +76,10 @@ def output_dirs(
     """Resolve per-target dist directories for a skill.
 
     Plugin-grouped targets (`claude`, `codex`) emit once per owning plugin from
-    `plugin_index`; skills with no owning plugin fall back to the flat path
-    (used until Task 11 introduces the real plugin index). Flat targets
-    (`gemini`, `pi`) always emit to the flat path.
+    `plugin_index`; skills with no owning plugin fall back to the flat path so
+    tests with synthetic indexes still get an output (production builds always
+    pass a complete index via `build_plugin_index`). Flat targets (`gemini`,
+    `pi`) always emit to the flat path.
     """
     cfg = _compile.OUTPUT[target]
     dist = root / "dist" / target

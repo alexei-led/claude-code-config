@@ -56,13 +56,14 @@ def fake_root(tmp_path: Path) -> Path:
     # Plugin dir without manifest — must be skipped.
     (plugins / "skipme").mkdir()
 
-    # Codex marketplace generator filters out plugins without a matching
-    # dist/codex/plugins/<name>/ dir; create the dirs so alpha and beta
-    # both appear in the manifest under test.
-    for name in ("alpha", "beta"):
-        (tmp_path / "dist" / "codex" / "plugins" / name).mkdir(
-            parents=True, exist_ok=True
-        )
+    # Both marketplace generators filter out plugins without a matching
+    # dist/<target>/plugins/<name>/ dir; create the dirs so alpha and beta
+    # both appear in the manifests under test.
+    for target in ("claude", "codex"):
+        for name in ("alpha", "beta"):
+            (tmp_path / "dist" / target / "plugins" / name).mkdir(
+                parents=True, exist_ok=True
+            )
 
     return tmp_path
 
