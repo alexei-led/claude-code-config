@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-HOOK="$BATS_TEST_DIRNAME/../../plugins/dev-workflow/hooks/file-protector.sh"
+HOOK="$BATS_TEST_DIRNAME/../../src/hooks/file-protector/HOOK.sh"
 FIXTURES="$BATS_TEST_DIRNAME/fixtures"
 
 @test "file-protector: safe file path is allowed (exits 0)" {

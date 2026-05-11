@@ -1,1 +1,0 @@
-../../platforms/pi/agents/reviewer.md

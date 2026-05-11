@@ -1,0 +1,12 @@
+tools:
+  - Read
+  - Grep
+  - Glob
+  - LS
+  - Bash(rg *)
+  - Bash(fd *)
+  - Bash(git log *)
+model: sonnet
+color: green
+skills:
+  - sequential-thinking

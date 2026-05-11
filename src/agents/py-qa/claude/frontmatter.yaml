@@ -1,0 +1,23 @@
+tools:
+  - Read
+  - Grep
+  - Glob
+  - LS
+  - Bash(ruff *)
+  - Bash(mypy *)
+  - Bash(pyright *)
+  - Bash(pytest *)
+  - Bash(uv *)
+  - Bash(python *)
+  - LSP
+  - mcp__perplexity-ask__perplexity_ask
+  - mcp__plugin_claude-mem_mcp-search__smart_search
+  - mcp__plugin_claude-mem_mcp-search__smart_outline
+  - mcp__plugin_claude-mem_mcp-search__smart_unfold
+model: sonnet
+effort: high
+maxTurns: 15
+color: yellow
+skills:
+  - writing-python
+  - smart-explore

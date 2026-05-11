@@ -1,0 +1,8 @@
+context: fork
+allowed-tools:
+  - Task
+  - Read
+  - Grep
+  - Glob
+  - WebFetch
+  - mcp__perplexity-ask__perplexity_ask

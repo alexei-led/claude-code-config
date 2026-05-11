@@ -1,0 +1,48 @@
+name: dev-workflow
+version: 2.2.0
+description: Code review, fixes, commits, and linting for development workflows
+skills:
+  - ccgram-messaging
+  - committing-code
+  - documenting-code
+  - fixing-code
+  - improve-codebase-architecture
+  - improving-tests
+  - refactoring-code
+  - reviewing-code
+  - searching-code
+  - watch-team
+agents:
+  - docs-keeper
+  - go-docs
+  - go-idioms
+  - go-impl
+  - go-qa
+  - go-simplify
+  - go-tests
+  - py-docs
+  - py-idioms
+  - py-impl
+  - py-qa
+  - py-simplify
+  - py-tests
+  - ts-docs
+  - ts-idioms
+  - ts-impl
+  - ts-qa
+  - ts-simplify
+  - ts-tests
+  - web-docs
+  - web-idioms
+  - web-impl
+  - web-qa
+  - web-simplify
+  - web-tests
+hooks:
+  - file-protector
+  - git-guardrails
+  - notify
+  - session-start
+  - skill-enforcer
+  - smart-lint
+  - test-runner

@@ -1,0 +1,19 @@
+tools:
+  - Read
+  - Grep
+  - Glob
+  - LS
+  - Bash(go *)
+  - Bash(golangci-lint *)
+  - Bash(staticcheck *)
+  - Bash(gofmt *)
+  - LSP
+  - mcp__plugin_claude-mem_mcp-search__smart_search
+  - mcp__plugin_claude-mem_mcp-search__smart_outline
+  - mcp__plugin_claude-mem_mcp-search__smart_unfold
+model: sonnet
+effort: high
+color: orange
+skills:
+  - writing-go
+  - smart-explore

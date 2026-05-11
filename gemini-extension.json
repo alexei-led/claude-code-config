@@ -1,6 +1,6 @@
 {
   "name": "cc-thingz",
-  "version": "2.2.0",
-  "description": "37 portable development skills exported from cc-thingz — Go, Python, TypeScript, web, infrastructure, code review, testing, and more",
+  "version": "4.0.0",
+  "description": "Portable development skills for Claude Code, Codex CLI, Gemini CLI, and Pi \u2014 code review, language tooling, infrastructure, testing, and more",
   "contextFileName": "AGENTS.md"
 }

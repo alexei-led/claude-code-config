@@ -1,0 +1,4 @@
+name: smart-lint
+event: postedit
+timeout: 60
+status_message: Running smart-lint

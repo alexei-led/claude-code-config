@@ -19,10 +19,8 @@ prepare_skill_evals = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(prepare_skill_evals)
 
 
-def _write_skill(
-    root: Path, plugin: str, source_dir: str, skill: str, body: str
-) -> None:
-    skill_dir = root / "plugins" / plugin / source_dir / skill
+def _write_skill(root: Path, target: str, plugin: str, skill: str, body: str) -> None:
+    skill_dir = root / "dist" / target / "plugins" / plugin / "skills" / skill
     skill_dir.mkdir(parents=True)
     (skill_dir / "SKILL.md").write_text(body, encoding="utf-8")
 
@@ -48,20 +46,20 @@ def _write_eval(root: Path, plugin: str, skill: str, count: int = 2) -> None:
 def _patch_roots(tmp_path: Path):
     return (
         patch.object(prepare_skill_evals, "ROOT", tmp_path),
-        patch.object(prepare_skill_evals, "PLUGINS_DIR", tmp_path / "plugins"),
+        patch.object(prepare_skill_evals, "DIST_DIR", tmp_path / "dist"),
         patch.object(
             prepare_skill_evals, "EVALS_DIR", tmp_path / "tests" / "skill-evals"
         ),
     )
 
 
-def test_prepare_copies_source_skill_and_evals(tmp_path):
-    _write_skill(tmp_path, "dev-tools", "skills", "using-modern-cli", "source skill")
+def test_prepare_copies_claude_skill_and_evals(tmp_path):
+    _write_skill(tmp_path, "claude", "dev-tools", "using-modern-cli", "source skill")
     _write_eval(tmp_path, "dev-tools", "using-modern-cli")
     out = tmp_path.parent / "skill-eval-out-source"
 
-    root_patch, plugins_patch, evals_patch = _patch_roots(tmp_path)
-    with root_patch, plugins_patch, evals_patch:
+    root_patch, dist_patch, evals_patch = _patch_roots(tmp_path)
+    with root_patch, dist_patch, evals_patch:
         skills, evals = prepare_skill_evals.prepare(out, "skills")
 
     assert (skills, evals) == (1, 2)
@@ -71,19 +69,13 @@ def test_prepare_copies_source_skill_and_evals(tmp_path):
 
 
 def test_prepare_can_copy_codex_overlay_while_preserving_eval_layout(tmp_path):
-    _write_skill(tmp_path, "dev-tools", "skills", "using-modern-cli", "source skill")
-    _write_skill(
-        tmp_path,
-        "dev-tools",
-        "skills-codex",
-        "using-modern-cli",
-        "codex overlay",
-    )
+    _write_skill(tmp_path, "claude", "dev-tools", "using-modern-cli", "source skill")
+    _write_skill(tmp_path, "codex", "dev-tools", "using-modern-cli", "codex overlay")
     _write_eval(tmp_path, "dev-tools", "using-modern-cli", count=1)
     out = tmp_path.parent / "skill-eval-out-codex"
 
-    root_patch, plugins_patch, evals_patch = _patch_roots(tmp_path)
-    with root_patch, plugins_patch, evals_patch:
+    root_patch, dist_patch, evals_patch = _patch_roots(tmp_path)
+    with root_patch, dist_patch, evals_patch:
         skills, evals = prepare_skill_evals.prepare(out, "skills-codex")
 
     assert (skills, evals) == (1, 1)

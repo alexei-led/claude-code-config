@@ -18,10 +18,10 @@ import pytest
 
 HOOK = (
     Path(__file__).resolve().parent.parent.parent
-    / "plugins"
-    / "dev-workflow"
+    / "src"
     / "hooks"
-    / "session-start.py"
+    / "session-start"
+    / "HOOK.py"
 )
 
 ANSI = re.compile(r"\x1b\[[0-9;]*m")

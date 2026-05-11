@@ -1,5 +1,0 @@
-{
-  "name": "infra-ops",
-  "version": "2.2.0",
-  "description": "Kubernetes, Terraform, Helm, GitHub Actions, AWS, and GCP operations"
-}

@@ -8,18 +8,12 @@ BANNED = ("mcp__context7", "WebFetch", "WebSearch")
 
 def _docs_lookup_files() -> list[Path]:
     roots = [
-        ROOT / "plugins" / "dev-tools" / "skills" / "context7-cli",
-        ROOT / "plugins" / "dev-tools" / "skills" / "looking-up-docs",
-        ROOT / "plugins" / "dev-tools" / "skills-codex" / "context7-cli",
-        ROOT / "plugins" / "dev-tools" / "skills-codex" / "looking-up-docs",
-        ROOT / "plugins" / "dev-tools" / "skills-pi" / "context7-cli",
-        ROOT / "plugins" / "dev-tools" / "skills-pi" / "looking-up-docs",
+        ROOT / "src" / "skills" / "context7-cli",
+        ROOT / "src" / "skills" / "looking-up-docs",
     ]
     files: list[Path] = []
     for root in roots:
-        if root.is_file():
-            files.append(root)
-        elif root.is_dir():
+        if root.is_dir():
             files.extend(path for path in root.rglob("*.md") if path.is_file())
     return sorted(files)
 
@@ -34,9 +28,7 @@ def test_docs_lookup_skills_do_not_reference_removed_tools():
 
 
 def test_context7_cli_skill_documents_required_commands():
-    skill = (
-        ROOT / "plugins" / "dev-tools" / "skills" / "context7-cli" / "SKILL.md"
-    ).read_text()
+    skill = (ROOT / "src" / "skills" / "context7-cli" / "SKILL.md").read_text()
 
     assert "ctx7 library <name>" in skill
     assert "ctx7 docs /org/project" in skill

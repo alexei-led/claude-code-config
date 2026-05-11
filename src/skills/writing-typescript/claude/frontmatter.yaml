@@ -1,0 +1,8 @@
+user-invocable: false
+context: fork
+agent: typescript-engineer
+allowed-tools:
+  - Read
+  - Bash
+  - Grep
+  - Glob

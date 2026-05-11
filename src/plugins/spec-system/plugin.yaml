@@ -1,0 +1,8 @@
+name: spec-system
+version: 2.2.0
+description: Spec-driven development with structured requirements and planning
+skills:
+  - spec
+agents:
+  - spec-planner
+hooks: []

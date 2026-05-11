@@ -1,0 +1,6 @@
+context: fork
+allowed-tools:
+  - Read
+  - Bash
+  - Grep
+  - Glob

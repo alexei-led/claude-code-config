@@ -1,1 +1,0 @@
-../../platforms/pi/extensions/smart-lint.ts

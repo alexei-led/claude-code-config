@@ -1,0 +1,12 @@
+{
+  "name": "infra-ops",
+  "version": "2.2.0",
+  "description": "Kubernetes, Terraform, Helm, GitHub Actions, AWS, and GCP operations",
+  "author": {
+    "name": "Alexei Ledenev",
+    "email": "alexei.led@gmail.com"
+  },
+  "homepage": "https://github.com/alexei-led/cc-forge",
+  "repository": "https://github.com/alexei-led/cc-forge",
+  "license": "MIT"
+}

@@ -5,10 +5,12 @@
 #
 # This script:
 # 1. Validates the version format (vX.Y.Z)
-# 2. Bumps Claude, Codex, and Gemini manifests to the new version
-# 3. Updates CHANGELOG.md with a placeholder entry
-# 4. Commits the version bump
-# 5. Creates an annotated git tag
+# 2. Bumps versions in the YAML source of truth (src/plugins/marketplace.yaml
+#    and src/plugins/*/plugin.yaml)
+# 3. Runs `make build` to regenerate root manifests and dist/
+# 4. Updates CHANGELOG.md with a placeholder entry
+# 5. Commits the version bump
+# 6. Creates an annotated git tag
 set -euo pipefail
 
 if [ $# -ne 1 ]; then
@@ -40,17 +42,24 @@ fi
 
 echo "Bumping versions to $VERSION..."
 
-# Bump marketplace.json
-sed -i '' "s/\"version\": \"[^\"]*\"/\"version\": \"$VERSION\"/" .claude-plugin/marketplace.json
+# Bump src/plugins/marketplace.yaml (top-level version)
+sed -i '' "s/^version:.*/version: $VERSION/" src/plugins/marketplace.yaml
 
-# Bump all plugin and extension manifests
-for f in \
-	plugins/*/.claude-plugin/plugin.json \
-	plugins/*/.codex-plugin/plugin.json \
-	plugins/*/gemini-extension.json \
-	gemini-extension.json; do
-	sed -i '' "s/\"version\": \"[^\"]*\"/\"version\": \"$VERSION\"/" "$f"
+# Bump per-plugin src/plugins/*/plugin.yaml versions
+shopt -s nullglob
+plugin_yamls=(src/plugins/*/plugin.yaml)
+shopt -u nullglob
+if [ ${#plugin_yamls[@]} -eq 0 ]; then
+	echo "ERROR: no src/plugins/*/plugin.yaml files found"
+	exit 1
+fi
+for f in "${plugin_yamls[@]}"; do
+	sed -i '' "s/^version:.*/version: $VERSION/" "$f"
 done
+
+# Regenerate dist/ and root manifests from the bumped YAML sources
+echo "Running 'make build' to regenerate manifests..."
+make build
 
 # Add CHANGELOG entry if not already present
 if ! grep -q "\[$VERSION\]" CHANGELOG.md; then
@@ -65,21 +74,17 @@ fi
 # Show what changed
 echo ""
 echo "Version bumped to $VERSION in:"
-grep -rl "\"$VERSION\"" \
-	.claude-plugin/marketplace.json \
-	gemini-extension.json \
-	plugins/*/.claude-plugin/plugin.json \
-	plugins/*/.codex-plugin/plugin.json \
-	plugins/*/gemini-extension.json | sed 's/^/  /'
+git diff --name-only | sed 's/^/  /'
 echo ""
 
 # Commit and tag
 git add \
+	src/plugins/marketplace.yaml \
+	"${plugin_yamls[@]}" \
 	.claude-plugin/marketplace.json \
+	.agents/plugins/marketplace.json \
 	gemini-extension.json \
-	plugins/*/.claude-plugin/plugin.json \
-	plugins/*/.codex-plugin/plugin.json \
-	plugins/*/gemini-extension.json \
+	dist/ \
 	CHANGELOG.md
 git commit -m "chore: bump version to $VERSION"
 git tag -a "$TAG" -m "Release $VERSION"

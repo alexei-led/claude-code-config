@@ -5,296 +5,67 @@
     "email": "alexei.led@gmail.com"
   },
   "metadata": {
-    "description": "A Claude Code plugin suite for development workflows, language tooling, infrastructure ops, and more \u2014 with portable skill export for Codex CLI and Gemini CLI",
-    "version": "2.2.0",
+    "description": "Portable development skills for Claude Code, Codex CLI, Gemini CLI, and Pi \u2014 code review, language tooling, infrastructure, testing, and more",
     "homepage": "https://github.com/alexei-led/cc-forge",
     "repository": "https://github.com/alexei-led/cc-forge",
-    "license": "MIT"
+    "license": "MIT",
+    "version": "4.0.0"
   },
   "plugins": [
     {
-      "name": "review-lint-commit",
-      "source": "./plugins/dev-workflow",
-      "description": "Core development loop: code review, fixes, commits, linting hooks, and 24 language-specific review agents",
-      "category": "workflow",
-      "tags": [
-        "code-review",
-        "linting",
-        "commit",
-        "hooks"
-      ],
-      "version": "2.2.0",
-      "author": {
-        "name": "Alexei Ledenev",
-        "email": "alexei.led@gmail.com",
-        "url": "https://github.com/alexei-led"
-      },
-      "homepage": "https://github.com/alexei-led/cc-forge/tree/master/plugins/dev-workflow",
-      "repository": "https://github.com/alexei-led/cc-forge",
-      "license": "MIT",
-      "keywords": [
-        "code-review",
-        "linting",
-        "commit",
-        "workflow",
-        "hooks",
-        "agents",
-        "go",
-        "python",
-        "typescript",
-        "security",
-        "testing"
-      ]
+      "name": "dev-tools",
+      "source": "./dist/claude/plugins/dev-tools",
+      "description": "Modern CLI tools, git worktrees, docs lookup, research, and brainstorming",
+      "version": "2.2.0"
+    },
+    {
+      "name": "dev-workflow",
+      "source": "./dist/claude/plugins/dev-workflow",
+      "description": "Code review, fixes, commits, and linting for development workflows",
+      "version": "2.2.0"
     },
     {
       "name": "go-dev",
-      "source": "./plugins/go-dev",
-      "description": "Idiomatic Go development with stdlib-first patterns, testing, and CLI tooling",
-      "category": "language",
-      "tags": [
-        "go",
-        "golang"
-      ],
-      "version": "2.2.0",
-      "author": {
-        "name": "Alexei Ledenev",
-        "email": "alexei.led@gmail.com",
-        "url": "https://github.com/alexei-led"
-      },
-      "homepage": "https://github.com/alexei-led/cc-forge/tree/master/plugins/go-dev",
-      "repository": "https://github.com/alexei-led/cc-forge",
-      "license": "MIT",
-      "keywords": [
-        "go",
-        "golang",
-        "development",
-        "testing",
-        "cli",
-        "stdlib",
-        "patterns",
-        "architecture"
-      ]
+      "source": "./dist/claude/plugins/go-dev",
+      "description": "Idiomatic Go 1.25+ development with stdlib-first patterns",
+      "version": "2.2.0"
     },
     {
-      "name": "python-3-dev",
-      "source": "./plugins/python-dev",
-      "description": "Python 3.12+ development with uv/ruff/pyright toolchain and modern patterns",
-      "category": "language",
-      "tags": [
-        "python",
-        "uv",
-        "ruff"
-      ],
-      "version": "2.2.0",
-      "author": {
-        "name": "Alexei Ledenev",
-        "email": "alexei.led@gmail.com",
-        "url": "https://github.com/alexei-led"
-      },
-      "homepage": "https://github.com/alexei-led/cc-forge/tree/master/plugins/python-dev",
-      "repository": "https://github.com/alexei-led/cc-forge",
-      "license": "MIT",
-      "keywords": [
-        "python",
-        "uv",
-        "ruff",
-        "pyright",
-        "type-hints",
-        "development",
-        "testing",
-        "fastapi"
-      ]
+      "name": "infra-ops",
+      "source": "./dist/claude/plugins/infra-ops",
+      "description": "Kubernetes, Terraform, Helm, GitHub Actions, AWS, and GCP operations",
+      "version": "2.2.0"
     },
     {
-      "name": "typescript-react-dev",
-      "source": "./plugins/typescript-dev",
-      "description": "TypeScript development with strict typing, React patterns, and modern tooling",
-      "category": "language",
-      "tags": [
-        "typescript",
-        "react",
-        "nodejs"
-      ],
-      "version": "2.2.0",
-      "author": {
-        "name": "Alexei Ledenev",
-        "email": "alexei.led@gmail.com",
-        "url": "https://github.com/alexei-led"
-      },
-      "homepage": "https://github.com/alexei-led/cc-forge/tree/master/plugins/typescript-dev",
-      "repository": "https://github.com/alexei-led/cc-forge",
-      "license": "MIT",
-      "keywords": [
-        "typescript",
-        "react",
-        "nodejs",
-        "strict-typing",
-        "bun",
-        "vite",
-        "frontend",
-        "development"
-      ]
+      "name": "python-dev",
+      "source": "./dist/claude/plugins/python-dev",
+      "description": "Python 3.12+ with uv/ruff/pyright toolchain and modern patterns",
+      "version": "2.2.0"
     },
     {
-      "name": "vanilla-web-htmx",
-      "source": "./plugins/web-dev",
-      "description": "Web frontend development with vanilla HTML, CSS, JavaScript, and HTMX",
-      "category": "language",
-      "tags": [
-        "html",
-        "css",
-        "javascript",
-        "htmx"
-      ],
-      "version": "2.2.0",
-      "author": {
-        "name": "Alexei Ledenev",
-        "email": "alexei.led@gmail.com",
-        "url": "https://github.com/alexei-led"
-      },
-      "homepage": "https://github.com/alexei-led/cc-forge/tree/master/plugins/web-dev",
-      "repository": "https://github.com/alexei-led/cc-forge",
-      "license": "MIT",
-      "keywords": [
-        "html",
-        "css",
-        "javascript",
-        "htmx",
-        "web",
-        "frontend",
-        "vanilla",
-        "accessibility",
-        "responsive"
-      ]
+      "name": "spec-system",
+      "source": "./dist/claude/plugins/spec-system",
+      "description": "Spec-driven development with structured requirements and planning",
+      "version": "2.2.0"
     },
     {
-      "name": "k8s-terraform-ops",
-      "source": "./plugins/infra-ops",
-      "description": "Infrastructure and cloud operations: Kubernetes, Terraform, Helm, GitHub Actions, AWS, GCP",
-      "category": "infrastructure",
-      "tags": [
-        "kubernetes",
-        "terraform",
-        "helm",
-        "aws",
-        "gcp"
-      ],
-      "version": "2.2.0",
-      "author": {
-        "name": "Alexei Ledenev",
-        "email": "alexei.led@gmail.com",
-        "url": "https://github.com/alexei-led"
-      },
-      "homepage": "https://github.com/alexei-led/cc-forge/tree/master/plugins/infra-ops",
-      "repository": "https://github.com/alexei-led/cc-forge",
-      "license": "MIT",
-      "keywords": [
-        "kubernetes",
-        "terraform",
-        "helm",
-        "kustomize",
-        "github-actions",
-        "aws",
-        "gcp",
-        "infrastructure",
-        "devops",
-        "ci-cd",
-        "docker"
-      ]
+      "name": "testing-e2e",
+      "source": "./dist/claude/plugins/testing-e2e",
+      "description": "End-to-end testing with Playwright for browser automation and UI testing",
+      "version": "2.2.0"
     },
     {
-      "name": "cli-research-tools",
-      "source": "./plugins/dev-tools",
-      "description": "Developer utilities: modern CLI tools, git worktrees, docs lookup, web research, brainstorming",
-      "category": "utilities",
-      "tags": [
-        "cli",
-        "worktrees",
-        "research",
-        "documentation"
-      ],
-      "version": "2.2.0",
-      "author": {
-        "name": "Alexei Ledenev",
-        "email": "alexei.led@gmail.com",
-        "url": "https://github.com/alexei-led"
-      },
-      "homepage": "https://github.com/alexei-led/cc-forge/tree/master/plugins/dev-tools",
-      "repository": "https://github.com/alexei-led/cc-forge",
-      "license": "MIT",
-      "keywords": [
-        "cli",
-        "modern-cli",
-        "worktrees",
-        "git-worktrees",
-        "research",
-        "web-search",
-        "documentation",
-        "brainstorming",
-        "utilities"
-      ]
+      "name": "typescript-dev",
+      "source": "./dist/claude/plugins/typescript-dev",
+      "description": "TypeScript with strict typing, React patterns, and modern tooling",
+      "version": "2.2.0"
     },
     {
-      "name": "spec-driven-planning",
-      "source": "./plugins/spec-system",
-      "description": "Spec-driven development: structured requirements, tasks, and planning workflows",
-      "category": "workflow",
-      "tags": [
-        "spec",
-        "planning",
-        "requirements",
-        "tasks"
-      ],
-      "version": "2.2.0",
-      "author": {
-        "name": "Alexei Ledenev",
-        "email": "alexei.led@gmail.com",
-        "url": "https://github.com/alexei-led"
-      },
-      "homepage": "https://github.com/alexei-led/cc-forge/tree/master/plugins/spec-system",
-      "repository": "https://github.com/alexei-led/cc-forge",
-      "license": "MIT",
-      "keywords": [
-        "spec",
-        "spec-driven",
-        "planning",
-        "requirements",
-        "tasks",
-        "epic",
-        "agile",
-        "project-management",
-        "workflow"
-      ]
-    },
-    {
-      "name": "playwright-e2e",
-      "source": "./plugins/testing-e2e",
-      "description": "End-to-end testing with Playwright: browser automation, test generation, and UI testing",
-      "category": "testing",
-      "tags": [
-        "playwright",
-        "e2e",
-        "browser-automation"
-      ],
-      "version": "2.2.0",
-      "author": {
-        "name": "Alexei Ledenev",
-        "email": "alexei.led@gmail.com",
-        "url": "https://github.com/alexei-led"
-      },
-      "homepage": "https://github.com/alexei-led/cc-forge/tree/master/plugins/testing-e2e",
-      "repository": "https://github.com/alexei-led/cc-forge",
-      "license": "MIT",
-      "keywords": [
-        "playwright",
-        "e2e",
-        "testing",
-        "browser-automation",
-        "ui-testing",
-        "accessibility",
-        "typescript"
-      ]
+      "name": "web-dev",
+      "source": "./dist/claude/plugins/web-dev",
+      "description": "Web frontend with vanilla HTML, CSS, JavaScript, and HTMX",
+      "version": "2.2.0"
     }
   ],
-  "version": "2.2.0"
+  "version": "4.0.0"
 }

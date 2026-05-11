@@ -5,112 +5,103 @@
   },
   "plugins": [
     {
-      "name": "dev-workflow",
+      "name": "dev-tools",
       "source": {
         "source": "local",
-        "path": "./plugins/dev-workflow"
+        "path": "./dist/codex/plugins/dev-tools"
       },
       "policy": {
         "installation": "AVAILABLE",
         "authentication": "ON_FIRST_USE"
+      }
+    },
+    {
+      "name": "dev-workflow",
+      "source": {
+        "source": "local",
+        "path": "./dist/codex/plugins/dev-workflow"
       },
-      "category": "Productivity"
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_FIRST_USE"
+      }
     },
     {
       "name": "go-dev",
       "source": {
         "source": "local",
-        "path": "./plugins/go-dev"
+        "path": "./dist/codex/plugins/go-dev"
       },
       "policy": {
         "installation": "AVAILABLE",
         "authentication": "ON_FIRST_USE"
-      },
-      "category": "Development"
-    },
-    {
-      "name": "python-dev",
-      "source": {
-        "source": "local",
-        "path": "./plugins/python-dev"
-      },
-      "policy": {
-        "installation": "AVAILABLE",
-        "authentication": "ON_FIRST_USE"
-      },
-      "category": "Development"
-    },
-    {
-      "name": "typescript-dev",
-      "source": {
-        "source": "local",
-        "path": "./plugins/typescript-dev"
-      },
-      "policy": {
-        "installation": "AVAILABLE",
-        "authentication": "ON_FIRST_USE"
-      },
-      "category": "Development"
-    },
-    {
-      "name": "web-dev",
-      "source": {
-        "source": "local",
-        "path": "./plugins/web-dev"
-      },
-      "policy": {
-        "installation": "AVAILABLE",
-        "authentication": "ON_FIRST_USE"
-      },
-      "category": "Development"
+      }
     },
     {
       "name": "infra-ops",
       "source": {
         "source": "local",
-        "path": "./plugins/infra-ops"
+        "path": "./dist/codex/plugins/infra-ops"
       },
       "policy": {
         "installation": "AVAILABLE",
         "authentication": "ON_FIRST_USE"
-      },
-      "category": "Infrastructure"
+      }
     },
     {
-      "name": "dev-tools",
+      "name": "python-dev",
       "source": {
         "source": "local",
-        "path": "./plugins/dev-tools"
+        "path": "./dist/codex/plugins/python-dev"
       },
       "policy": {
         "installation": "AVAILABLE",
         "authentication": "ON_FIRST_USE"
-      },
-      "category": "Productivity"
+      }
     },
     {
       "name": "spec-system",
       "source": {
         "source": "local",
-        "path": "./plugins/spec-system"
+        "path": "./dist/codex/plugins/spec-system"
       },
       "policy": {
         "installation": "AVAILABLE",
         "authentication": "ON_FIRST_USE"
-      },
-      "category": "Productivity"
+      }
     },
     {
       "name": "testing-e2e",
       "source": {
         "source": "local",
-        "path": "./plugins/testing-e2e"
+        "path": "./dist/codex/plugins/testing-e2e"
       },
       "policy": {
         "installation": "AVAILABLE",
         "authentication": "ON_FIRST_USE"
+      }
+    },
+    {
+      "name": "typescript-dev",
+      "source": {
+        "source": "local",
+        "path": "./dist/codex/plugins/typescript-dev"
       },
-      "category": "Testing"
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_FIRST_USE"
+      }
+    },
+    {
+      "name": "web-dev",
+      "source": {
+        "source": "local",
+        "path": "./dist/codex/plugins/web-dev"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_FIRST_USE"
+      }
     }
   ]
 }

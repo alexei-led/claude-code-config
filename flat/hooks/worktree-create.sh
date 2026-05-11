@@ -1,1 +1,0 @@
-../../plugins/dev-tools/hooks/worktree-create.sh

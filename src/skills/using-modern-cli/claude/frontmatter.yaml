@@ -1,0 +1,3 @@
+user-invocable: false
+allowed-tools:
+  - Bash

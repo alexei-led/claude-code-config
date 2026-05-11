@@ -1,0 +1,8 @@
+user-invocable: true
+context: fork
+allowed-tools:
+  - Bash(git status *)
+  - Bash(git diff *)
+  - Bash(git log *)
+  - Bash(git show *)
+  - Bash(git branch *)

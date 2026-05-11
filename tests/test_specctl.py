@@ -11,8 +11,9 @@ import pytest
 
 SPECCTL = (
     Path(__file__).resolve().parent.parent
-    / "plugins"
-    / "spec-system"
+    / "src"
+    / "skills"
+    / "spec"
     / "scripts"
     / "specctl.py"
 )
