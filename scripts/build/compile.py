@@ -147,28 +147,28 @@ def main(argv: list[str] | None = None) -> int:
         log.info("--dry-run: skipping dist/ writes")
         return 0
 
-    # Plugin index lands in Task 11; until then skills go to the flat fallback
-    # path for every target.
-    plugin_index: dict[str, list[str]] = {}
-
     _here = Path(__file__).resolve().parent
     if str(_here) not in sys.path:
         sys.path.insert(0, str(_here))
     from compile_agent import compile_agent  # local imports: avoid cycle at top
     from compile_hook import compile_hook, write_hook_manifests
     from compile_skill import compile_skill
+    from manifests import write_all as write_manifests
+    from plugin_index import build_plugin_index
+
+    plugin_index = build_plugin_index(root)
 
     total_skill_writes = 0
     for target in TARGETS:
         for skill in skills:
-            written = compile_skill(skill, target, plugin_index, root)
+            written = compile_skill(skill, target, plugin_index["skills"], root)
             total_skill_writes += len(written)
     log.info("wrote %d skill file(s) under dist/", total_skill_writes)
 
     total_agent_writes = 0
     for target in TARGETS:
         for agent in agents:
-            written = compile_agent(agent, target, plugin_index, root)
+            written = compile_agent(agent, target, plugin_index["agents"], root)
             total_agent_writes += len(written)
     log.info("wrote %d agent file(s) under dist/", total_agent_writes)
 
@@ -176,12 +176,21 @@ def main(argv: list[str] | None = None) -> int:
     for target in TARGETS:
         results = []
         for hook in hooks:
-            result = compile_hook(hook, target, plugin_index, root)
+            result = compile_hook(hook, target, plugin_index["hooks"], root)
             total_hook_writes += len(result.placements)
             results.append(result)
         manifest_paths = write_hook_manifests(results, target, root)
         total_hook_writes += len(manifest_paths)
     log.info("wrote %d hook file(s) under dist/", total_hook_writes)
+
+    manifest_paths_meta = write_manifests(root)
+    log.info(
+        "wrote root manifests: claude=%s codex=%s gemini=%s, %d symlink(s)",
+        manifest_paths_meta["claude"].relative_to(root),
+        manifest_paths_meta["codex"].relative_to(root),
+        manifest_paths_meta["gemini"].relative_to(root),
+        len(manifest_paths_meta["symlinks"]),
+    )
     return 0
 
 

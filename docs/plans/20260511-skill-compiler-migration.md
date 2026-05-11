@@ -245,12 +245,12 @@ The migration is mechanical given the design is settled: bulk-migrate the remain
 - Create: `tests/test_manifests.py`
 - Modify: `scripts/build/compile.py` (call after compilation)
 
-- [ ] implement `write_claude_marketplace(plugins, root)` → `.claude-plugin/marketplace.json` with plugins listing sources at `./dist/claude/plugins/<plugin>`
-- [ ] implement `write_codex_marketplace(plugins, root)` → `.agents/plugins/marketplace.json` with source.path at `./dist/codex/plugins/<plugin>`
-- [ ] implement `write_gemini_extension(plugins, root)` → `gemini-extension.json` at repo root, references `${extensionPath}/dist/gemini/`
-- [ ] implement `ensure_gemini_symlinks(root)` → create root-level `skills`, `hooks` symlinks pointing into `dist/gemini/`
-- [ ] write tests: manifests well-formed JSON / sources point to correct dist paths / Gemini symlinks created / idempotent (running twice produces no diff)
-- [ ] run tests — must pass before task 13
+- [x] implement `write_claude_marketplace(plugins, root)` → `.claude-plugin/marketplace.json` with plugins listing sources at `./dist/claude/plugins/<plugin>`
+- [x] implement `write_codex_marketplace(plugins, root)` → `.agents/plugins/marketplace.json` with source.path at `./dist/codex/plugins/<plugin>`
+- [x] implement `write_gemini_extension(plugins, root)` → `gemini-extension.json` at repo root, references `${extensionPath}/dist/gemini/`
+- [x] implement `ensure_gemini_symlinks(root)` → create root-level `skills`, `hooks` symlinks pointing into `dist/gemini/`
+- [x] write tests: manifests well-formed JSON / sources point to correct dist paths / Gemini symlinks created / idempotent (running twice produces no diff)
+- [x] run tests — must pass before task 13
 
 ### Task 13: Add base-content validator (CC-only token detector)
 
