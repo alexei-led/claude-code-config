@@ -183,16 +183,16 @@ The migration is mechanical given the design is settled: bulk-migrate the remain
 - Modify: `scripts/build/compile.py`
 - Create: `tests/test_compile_agent.py`
 
-- [ ] implement `compile_agent(agent_dir, target, plugin_index, root)`:
+- [x] implement `compile_agent(agent_dir, target, plugin_index, root)`:
   1. load base + per-target frontmatter overlay → merged frontmatter
   2. apply target restriction (`targets:` field)
   3. apply body overlay (mirror or full)
   4. for Codex target: convert to TOML via `codex_toml.to_toml`; for others: emit as markdown + YAML
   5. write to dist output path with correct extension (`.md` or `.toml`)
-- [ ] integrate into `compile.py` main loop
-- [ ] write fixture tests: compile `src/agents/go-engineer` for all 4 targets (4 outputs: 3 .md + 1 .toml), snapshot
-- [ ] write fixture test: compile `src/agents/scout` (Pi-only, has `targets: [pi]`) — produces output only in dist/pi/, skipped for others
-- [ ] run tests — must pass before task 9
+- [x] integrate into `compile.py` main loop
+- [x] write fixture tests: compile `src/agents/go-engineer` for all 4 targets (4 outputs: 3 .md + 1 .toml), snapshot
+- [x] write fixture test: compile `src/agents/scout` (Pi-only, has `targets: [pi]`) — produces output only in dist/pi/, skipped for others
+- [x] run tests — must pass before task 9
 
 ### Task 9: Migrate hooks to src/hooks/ structure
 

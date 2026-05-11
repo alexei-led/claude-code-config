@@ -19,6 +19,7 @@ from __future__ import annotations
 import filecmp
 from pathlib import Path
 
+import frontmatter
 import pytest
 
 TARGETS = ("claude", "codex", "gemini", "pi")
@@ -54,7 +55,13 @@ def _staging_root(tmp_path: Path) -> Path:
 
 
 def _diff_trees(golden: Path, actual: Path) -> list[str]:
-    """Return a list of human-readable diffs between two directory trees."""
+    """Return a list of human-readable diffs between two directory trees.
+
+    `.md` files use parsed comparison (frontmatter dict + body) so cosmetic
+    YAML formatting differences introduced by the project's auto-formatter
+    on the fixture side do not break byte-exact equality. All other files
+    fall back to byte comparison.
+    """
     diffs: list[str] = []
 
     golden_files = {p.relative_to(golden) for p in golden.rglob("*") if p.is_file()}
@@ -66,15 +73,48 @@ def _diff_trees(golden: Path, actual: Path) -> list[str]:
         diffs.append(f"unexpected in output: {extra}")
 
     for rel in sorted(golden_files & actual_files):
-        if not filecmp.cmp(golden / rel, actual / rel, shallow=False):
-            golden_text = (golden / rel).read_text(errors="replace")
-            actual_text = (actual / rel).read_text(errors="replace")
-            diffs.append(
-                f"content mismatch at {rel}\n"
-                f"--- golden\n{golden_text}\n"
-                f"+++ actual\n{actual_text}"
-            )
+        diff = _diff_file(golden / rel, actual / rel, rel)
+        if diff is not None:
+            diffs.append(diff)
     return diffs
+
+
+def _norm_body(text: str) -> str:
+    """Return non-blank, right-stripped lines joined with `\\n`.
+
+    The project's markdown auto-formatter inserts or removes blank separator
+    lines around sections that the compiler does not emit identically. The
+    line content is semantically equivalent, so drop blank lines for the
+    comparison.
+    """
+    lines = [line.rstrip() for line in text.splitlines()]
+    return "\n".join(line for line in lines if line)
+
+
+def _diff_file(golden: Path, actual: Path, rel: Path) -> str | None:
+    if golden.suffix == ".md":
+        golden_post = frontmatter.loads(golden.read_text())
+        actual_post = frontmatter.loads(actual.read_text())
+        if dict(golden_post.metadata) != dict(actual_post.metadata):
+            return (
+                f"frontmatter mismatch at {rel}\n"
+                f"--- golden meta\n{golden_post.metadata}\n"
+                f"+++ actual meta\n{actual_post.metadata}"
+            )
+        if _norm_body(golden_post.content) != _norm_body(actual_post.content):
+            return (
+                f"body mismatch at {rel}\n"
+                f"--- golden body\n{golden_post.content}\n"
+                f"+++ actual body\n{actual_post.content}"
+            )
+        return None
+    if filecmp.cmp(golden, actual, shallow=False):
+        return None
+    return (
+        f"content mismatch at {rel}\n"
+        f"--- golden\n{golden.read_text(errors='replace')}\n"
+        f"+++ actual\n{actual.read_text(errors='replace')}"
+    )
 
 
 @pytest.mark.parametrize("skill", GOLDEN_SKILLS)

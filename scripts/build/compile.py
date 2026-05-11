@@ -154,7 +154,8 @@ def main(argv: list[str] | None = None) -> int:
     _here = Path(__file__).resolve().parent
     if str(_here) not in sys.path:
         sys.path.insert(0, str(_here))
-    from compile_skill import compile_skill  # local import: avoids cycle at top
+    from compile_agent import compile_agent  # local imports: avoid cycle at top
+    from compile_skill import compile_skill
 
     total_skill_writes = 0
     for target in TARGETS:
@@ -163,11 +164,16 @@ def main(argv: list[str] | None = None) -> int:
             total_skill_writes += len(written)
     log.info("wrote %d skill file(s) under dist/", total_skill_writes)
 
-    if agents or hooks:
+    total_agent_writes = 0
+    for target in TARGETS:
+        for agent in agents:
+            written = compile_agent(agent, target, plugin_index, root)
+            total_agent_writes += len(written)
+    log.info("wrote %d agent file(s) under dist/", total_agent_writes)
+
+    if hooks:
         log.warning(
-            "agent/hook pipelines not wired yet; %d agent(s) and %d hook(s) "
-            "skipped (Tasks 7–10)",
-            len(agents),
+            "hook pipeline not wired yet; %d hook(s) skipped (Tasks 9–10)",
             len(hooks),
         )
     return 0
