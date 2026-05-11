@@ -56,6 +56,14 @@ def fake_root(tmp_path: Path) -> Path:
     # Plugin dir without manifest — must be skipped.
     (plugins / "skipme").mkdir()
 
+    # Codex marketplace generator filters out plugins without a matching
+    # dist/codex/plugins/<name>/ dir; create the dirs so alpha and beta
+    # both appear in the manifest under test.
+    for name in ("alpha", "beta"):
+        (tmp_path / "dist" / "codex" / "plugins" / name).mkdir(
+            parents=True, exist_ok=True
+        )
+
     return tmp_path
 
 
@@ -135,6 +143,18 @@ def test_write_codex_marketplace_paths(manifests, fake_root):
             "installation": "AVAILABLE",
             "authentication": "ON_FIRST_USE",
         }
+
+
+def test_write_codex_marketplace_skips_plugins_without_dist_dir(manifests, fake_root):
+    """Plugins lacking a dist/codex/plugins/<name>/ dir are omitted."""
+    # Remove beta's codex dist dir; only alpha should remain.
+    import shutil
+
+    shutil.rmtree(fake_root / "dist" / "codex" / "plugins" / "beta")
+    plugins = manifests.load_plugins(fake_root)
+    out = manifests.write_codex_marketplace(plugins, fake_root)
+    data = json.loads(out.read_text())
+    assert [p["name"] for p in data["plugins"]] == ["alpha"]
 
 
 def test_write_codex_marketplace_categories(manifests, fake_root):

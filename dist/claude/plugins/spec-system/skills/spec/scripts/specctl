@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Wrapper script for specctl.py
+exec "$(dirname "$0")/specctl.py" "$@"

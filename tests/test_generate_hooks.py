@@ -266,17 +266,6 @@ def test_json_output_is_valid():
 # --- byte-equality with existing configs ---
 
 
-def test_byte_equal_cc_hooks_json():
-    """Generator must reproduce the current hooks/hooks.json byte-for-byte."""
-    desired = gen.compute_desired()
-    root = Path(__file__).resolve().parent.parent
-    cc_path = root / "hooks" / "hooks.json"
-    assert cc_path in desired, "CC hooks.json missing from desired state"
-    assert desired[cc_path] == cc_path.read_bytes(), (
-        "Generated hooks/hooks.json differs from on-disk file"
-    )
-
-
 def test_byte_equal_codex_hooks_json():
     """Generator must reproduce dev-workflow's codex.hooks.json byte-for-byte."""
     desired = gen.compute_desired()

@@ -89,8 +89,8 @@ init → interview → plan → work → done
 
 When a workflow says:
 
-- _"Ask the user a multi-choice question"_ — use the runtime's native question facility (`AskUserQuestion`, `ask_user`, `ask_user_question`, or plain prose with explicit options).
-- _"Delegate to a planning / exploration / implementation specialist"_ — spawn the runtime's subagent (`Task`, `spawn_agent`, `invoke_agent`, `Agent`) with the right role.
+- _"Ask the user a multi-choice question"_ — use the runtime's native question facility, or fall back to plain prose with explicit options.
+- _"Delegate to a planning / exploration / implementation specialist"_ — spawn the runtime's subagent with the right role.
 - _"Track progress through phases"_ — use the runtime's task-tracking tool if available.
 
 Each reference keeps these phrasings generic; the model maps them to native tooling.

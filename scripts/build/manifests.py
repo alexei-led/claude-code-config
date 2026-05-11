@@ -188,6 +188,10 @@ def write_codex_marketplace(plugins: Sequence[Mapping[str, Any]], root: Path) ->
     entries: list[dict[str, Any]] = []
     for plugin in plugins:
         name = plugin["name"]
+        plugin_root = root / "dist" / "codex" / "plugins" / name
+        if not plugin_root.is_dir():
+            # plugin contributes no codex artifacts — omit from marketplace
+            continue
         entry: dict[str, Any] = {
             "name": name,
             "source": {

@@ -272,12 +272,12 @@ The migration is mechanical given the design is settled: bulk-migrate the remain
 - Modify: `Makefile`
 - Modify: `.gitattributes`
 
-- [ ] add `make build` target invoking `uv run python scripts/build/compile.py`
-- [ ] `make check` = `make build && git diff --exit-code` (drift detection)
-- [ ] keep `make ci` chain intact (lint → validate → check → test)
-- [ ] update `.gitattributes` with `dist/** linguist-generated=true`, `dist/** binary` for the symlink targets, and root-generated files
-- [ ] (no test task — verified manually by running `make build` and checking dist/ exists and is non-empty after Tasks 1–13)
-- [ ] commit a snapshot of `dist/` after running build; subsequent `make check` should be clean
+- [x] add `make build` target invoking `uv run python scripts/build/compile.py`
+- [x] `make check` = `make build && git diff --exit-code` (drift detection)
+- [x] keep `make ci` chain intact (lint → validate → check → test)
+- [x] update `.gitattributes` with `dist/** linguist-generated=true`, `dist/** binary` for the symlink targets, and root-generated files
+- [x] (no test task — verified manually by running `make build` and checking dist/ exists and is non-empty after Tasks 1–13)
+- [x] commit a snapshot of `dist/` after running build; subsequent `make check` should be clean
 
 ### Task 15: Bulk-migrate batch 1 simple skills (frontmatter-only divergence)
 

@@ -179,12 +179,13 @@ agents-md: ## Generate AGENTS.md from skill overlays
 # --- One-shot build: regenerate everything derived from canonical sources ---
 
 .PHONY: build check
-build: overlays pi-overlays pi-agents agents-md flat sync-hooks generate-hooks ## Regenerate all derived artifacts from canonical sources
+build: ## Regenerate dist/ and root manifests from canonical sources under src/
+	uv run python scripts/build/compile.py
 
 check: build ## Build, then fail if any tracked file changed (drift detection)
 	@if ! git diff --quiet --exit-code; then \
 		echo "ERROR: derived artifacts drifted. See diff above for either updated sources or hand-edited generated files."; \
-		echo "  Hand-edits to generated files are overwritten by 'make build' — edit canonical sources or add SKILL.codex.md/SKILL.pi.md sidecars instead."; \
+		echo "  Hand-edits to generated files are overwritten by 'make build' — edit canonical sources under src/ instead."; \
 		git --no-pager diff --stat; \
 		exit 1; \
 	fi
