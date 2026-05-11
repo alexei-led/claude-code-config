@@ -318,12 +318,12 @@ The migration is mechanical given the design is settled: bulk-migrate the remain
 - Create: `src/skills/watch-team/SKILL.md`
 - Create: `src/skills/watch-team/claude/frontmatter.yaml`
 
-- [ ] read `plugins/dev-workflow/commands/watch-team.md`
-- [ ] split frontmatter: name + description in base; allowed-tools / argument-hint / context in `claude/frontmatter.yaml`
-- [ ] rewrite body intent-driven (drop `$ARGUMENTS` parsing if any, drop `Task()` syntax for capability descriptions)
-- [ ] verify generic-validator passes on the base
-- [ ] write test: watch-team compiles for all 4 targets
-- [ ] run tests — must pass before task 18
+- [x] read `plugins/dev-workflow/commands/watch-team.md`
+- [x] split frontmatter: name + description in base; allowed-tools / argument-hint / context in `claude/frontmatter.yaml`
+- [x] rewrite body intent-driven (drop `$ARGUMENTS` parsing if any, drop `Task()` syntax for capability descriptions) — source had no forbidden tokens; body kept intact with slash-command example dropped
+- [x] verify generic-validator passes on the base
+- [x] write test: watch-team compiles for all 4 targets
+- [x] run tests — must pass before task 18
 
 ### Task 18: Update CONTRIBUTING.md and README.md for new structure
 
