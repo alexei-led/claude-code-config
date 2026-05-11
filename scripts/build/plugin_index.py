@@ -1,0 +1,136 @@
+"""Plugin composition index and output-path resolver.
+
+Reads every `src/plugins/<plugin>/plugin.yaml` into a per-kind reverse map
+(`name → [owning plugins]`) used by the compiler to determine where each
+skill / agent / hook lands in `dist/` for plugin-grouped targets
+(`claude`, `codex`).
+
+For flat targets (`gemini`, `pi`) the index is unused — artifacts always
+land at the flat per-target path.
+
+Plugin-grouped targets where the artifact is not owned by any plugin emit
+no output for that target (the artifact is effectively skipped). Flat
+targets always emit so vendor-neutral skills/agents remain available on
+Pi even when they have no plugin assignment.
+"""
+
+from __future__ import annotations
+
+import logging
+import sys
+from collections.abc import Mapping
+from pathlib import Path
+
+import yaml
+
+_HERE = Path(__file__).resolve().parent
+if str(_HERE) not in sys.path:
+    sys.path.insert(0, str(_HERE))
+
+import compile as _compile  # noqa: E402
+
+log = logging.getLogger("compile.plugin_index")
+
+
+KINDS: tuple[str, ...] = ("skills", "agents", "hooks")
+
+
+PluginIndex = dict[str, dict[str, list[str]]]
+
+
+def _empty_index() -> PluginIndex:
+    return {kind: {} for kind in KINDS}
+
+
+def build_plugin_index(root: Path) -> PluginIndex:
+    """Read all `src/plugins/*/plugin.yaml` files into a reverse index.
+
+    Returns a dict keyed by kind (`skills`, `agents`, `hooks`); each value
+    maps artifact name to the list of plugin names that own it (sorted,
+    deduplicated). Plugins with no `plugin.yaml` are skipped silently;
+    plugins that omit a kind contribute nothing for that kind.
+    """
+    index = _empty_index()
+    plugins_root = root / "src" / "plugins"
+    if not plugins_root.is_dir():
+        return index
+
+    for plugin_dir in sorted(p for p in plugins_root.iterdir() if p.is_dir()):
+        manifest = plugin_dir / "plugin.yaml"
+        if not manifest.is_file():
+            continue
+        try:
+            data = yaml.safe_load(manifest.read_text()) or {}
+        except yaml.YAMLError as exc:
+            raise ValueError(f"{manifest}: invalid YAML: {exc}") from exc
+        if not isinstance(data, Mapping):
+            raise ValueError(f"{manifest}: top-level must be a mapping")
+        plugin_name = data.get("name") or plugin_dir.name
+        for kind in KINDS:
+            names = data.get(kind) or []
+            if not isinstance(names, list):
+                raise ValueError(
+                    f"{manifest}: {kind!r} must be a list, got {type(names).__name__}"
+                )
+            for name in names:
+                if not isinstance(name, str):
+                    raise ValueError(
+                        f"{manifest}: {kind!r} entries must be strings; got {name!r}"
+                    )
+                owners = index[kind].setdefault(name, [])
+                if plugin_name not in owners:
+                    owners.append(plugin_name)
+
+    for kind in KINDS:
+        for owners in index[kind].values():
+            owners.sort()
+    return index
+
+
+def owners(
+    name: str,
+    kind: str,
+    plugin_index: PluginIndex | None,
+) -> list[str]:
+    """Return the plugin names that own `name` for `kind`.
+
+    Empty list when the artifact is not listed in any `plugin.yaml`.
+    """
+    if kind not in KINDS:
+        raise ValueError(f"unknown kind {kind!r}; expected one of {KINDS}")
+    if not plugin_index:
+        return []
+    return list(plugin_index.get(kind, {}).get(name, []))
+
+
+def output_paths(
+    name: str,
+    kind: str,
+    target: str,
+    plugin_index: PluginIndex | None,
+    root: Path,
+) -> list[Path]:
+    """Resolve dist output directories for `name` of `kind` for `target`.
+
+    Plugin-grouped targets (`layout: plugin`) emit one directory per owning
+    plugin; an unowned artifact returns an empty list (skipped). Flat
+    targets always return the single flat directory.
+
+    The returned paths are *directories* — callers append `<name>/SKILL.md`
+    (skills), `<name>.md` / `<name>.toml` (agents), or `<script>` (hooks)
+    as appropriate.
+    """
+    if kind not in KINDS:
+        raise ValueError(f"unknown kind {kind!r}; expected one of {KINDS}")
+    if target not in _compile.OUTPUT:
+        raise ValueError(f"unknown target {target!r}")
+    cfg = _compile.OUTPUT[target]
+    dir_key = {"skills": "skill_dir", "agents": "agent_dir", "hooks": "hook_dir"}[kind]
+    dist = root / "dist" / target
+    leaf = cfg[dir_key]
+    if cfg["layout"] == "plugin":
+        plugins = owners(name, kind, plugin_index)
+        if not plugins:
+            return []
+        return [dist / "plugins" / p / leaf for p in plugins]
+    return [dist / leaf]

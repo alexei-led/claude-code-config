@@ -1,0 +1,8 @@
+name: go-dev
+version: 2.2.0
+description: Idiomatic Go 1.25+ development with stdlib-first patterns
+skills:
+  - writing-go
+agents:
+  - go-engineer
+hooks: []

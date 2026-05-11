@@ -1,0 +1,10 @@
+name: infra-ops
+version: 2.2.0
+description: Kubernetes, Terraform, Helm, GitHub Actions, AWS, and GCP operations
+skills:
+  - deploying-infra
+  - managing-infra
+  - using-cloud-cli
+agents:
+  - infra-engineer
+hooks: []

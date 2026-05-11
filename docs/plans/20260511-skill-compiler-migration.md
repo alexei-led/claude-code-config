@@ -231,12 +231,12 @@ The migration is mechanical given the design is settled: bulk-migrate the remain
 - Create: `scripts/build/plugin_index.py`
 - Create: `tests/test_plugin_index.py`
 
-- [ ] write `src/plugins/<plugin>/plugin.yaml` for each existing plugin (dev-workflow, dev-tools, go-dev, infra-ops, python-dev, spec-system, testing-e2e, typescript-dev, web-dev) listing `skills:`, `agents:`, `hooks:`, plus plugin metadata (name, description, version)
-- [ ] implement `build_plugin_index(root)` reading all `plugin.yaml` → `{skill_name → [plugin_names]}`, same for agents and hooks
-- [ ] implement `output_paths(name, kind, target, plugin_index, root)` returning list of dist paths (one per owning plugin for plugin-grouped targets, single flat path for Pi)
-- [ ] skills/agents not in any `plugin.yaml` are skipped for plugin-grouped targets but emitted for Pi (flat)
-- [ ] write tests: skill in one plugin / skill in multiple plugins / skill in no plugin / flat target ignores plugin_index
-- [ ] run tests — must pass before task 12
+- [x] write `src/plugins/<plugin>/plugin.yaml` for each existing plugin (dev-workflow, dev-tools, go-dev, infra-ops, python-dev, spec-system, testing-e2e, typescript-dev, web-dev) listing `skills:`, `agents:`, `hooks:`, plus plugin metadata (name, description, version)
+- [x] implement `build_plugin_index(root)` reading all `plugin.yaml` → `{skill_name → [plugin_names]}`, same for agents and hooks
+- [x] implement `output_paths(name, kind, target, plugin_index, root)` returning list of dist paths (one per owning plugin for plugin-grouped targets, single flat path for Pi)
+- [x] skills/agents not in any `plugin.yaml` are skipped for plugin-grouped targets but emitted for Pi (flat)
+- [x] write tests: skill in one plugin / skill in multiple plugins / skill in no plugin / flat target ignores plugin_index
+- [x] run tests — must pass before task 12
 
 ### Task 12: Generate marketplace manifests from plugin.yaml
 
