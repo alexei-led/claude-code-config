@@ -1,0 +1,19 @@
+tools:
+  - Read
+  - Grep
+  - Glob
+  - LS
+  - Bash(npx *)
+  - Bash(playwright *)
+  - Bash(html-validate *)
+  - Bash(stylelint *)
+  - LSP
+  - mcp__plugin_claude-mem_mcp-search__smart_search
+  - mcp__plugin_claude-mem_mcp-search__smart_outline
+  - mcp__plugin_claude-mem_mcp-search__smart_unfold
+model: sonnet
+color: cyan
+skills:
+  - writing-web
+  - testing-e2e
+  - smart-explore
