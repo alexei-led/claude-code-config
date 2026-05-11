@@ -147,10 +147,29 @@ def main(argv: list[str] | None = None) -> int:
         log.info("--dry-run: skipping dist/ writes")
         return 0
 
-    log.warning(
-        "compile pipelines not wired yet; nothing emitted to dist/ "
-        "(this is expected during the scaffolding stage)"
-    )
+    # Plugin index lands in Task 11; until then skills go to the flat fallback
+    # path for every target.
+    plugin_index: dict[str, list[str]] = {}
+
+    _here = Path(__file__).resolve().parent
+    if str(_here) not in sys.path:
+        sys.path.insert(0, str(_here))
+    from compile_skill import compile_skill  # local import: avoids cycle at top
+
+    total_skill_writes = 0
+    for target in TARGETS:
+        for skill in skills:
+            written = compile_skill(skill, target, plugin_index, root)
+            total_skill_writes += len(written)
+    log.info("wrote %d skill file(s) under dist/", total_skill_writes)
+
+    if agents or hooks:
+        log.warning(
+            "agent/hook pipelines not wired yet; %d agent(s) and %d hook(s) "
+            "skipped (Tasks 7–10)",
+            len(agents),
+            len(hooks),
+        )
     return 0
 
 

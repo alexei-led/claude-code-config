@@ -104,7 +104,9 @@ def test_main_dry_run_exits_zero(compile_mod, caplog):
 
 
 def test_main_without_dry_run_returns_zero(compile_mod):
-    assert compile_mod.main([]) == 0
+    # The full main() writes into real dist/; cover the entry point via
+    # --dry-run here. End-to-end compile is exercised in test_compile_skill.
+    assert compile_mod.main(["--dry-run"]) == 0
 
 
 def test_required_output_fields_includes_hook_dir(compile_mod):
