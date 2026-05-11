@@ -84,8 +84,6 @@ ALLOWED_KEYS: dict[str, frozenset[str]] = {
         {
             "name",
             "description",
-            "license",
-            "metadata",
             "model",
             "model_reasoning_effort",
             # Vendor-neutral alias renamed to model_reasoning_effort by codex_toml.
@@ -94,7 +92,6 @@ ALLOWED_KEYS: dict[str, frozenset[str]] = {
             "nickname_candidates",
             "mcp_servers",
             "skills",
-            "developer_instructions",
         }
     ),
     "gemini": frozenset(
@@ -218,7 +215,9 @@ def _parse_shell_frontmatter(text: str) -> tuple[dict[str, Any], str]:
             return dict(data), body
         fm_body_lines.append(lines[i])
         i += 1
-    return {}, text
+    # Opening `# ---` was found but no closing fence — treat as a malformed
+    # source rather than silently returning empty metadata.
+    raise ValueError("shell frontmatter: opening '# ---' has no matching close")
 
 
 def _strip_comment(line: str) -> str:

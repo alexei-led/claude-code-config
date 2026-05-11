@@ -19,8 +19,14 @@ unknown keys cannot leak through.
 
 from __future__ import annotations
 
+import re
 from collections.abc import Mapping, Sequence
 from typing import Any
+
+# Control characters (U+0000–U+001F except \b\t\n\f\r, plus U+007F) that the
+# TOML spec §2.4 requires to be escaped as `\uXXXX` inside basic strings. The
+# named escapes for \b\t\n\f\r are applied first; this regex catches the rest.
+_CTRL_RE = re.compile(r"[\x00-\x07\x0b\x0e-\x1f\x7f]")
 
 _SCALAR_PASSTHROUGH: tuple[str, ...] = (
     "model",
@@ -157,13 +163,20 @@ def _basic_string(value: Any) -> str:
         .replace("\f", "\\f")
         .replace("\r", "\\r")
     )
+    escaped = _CTRL_RE.sub(lambda m: f"\\u{ord(m.group(0)):04X}", escaped)
     return f'"{escaped}"'
 
 
 def _string_array(values: Any) -> str:
     if isinstance(values, str) or not isinstance(values, Sequence):
         raise ValueError(f"expected a sequence of strings, got {type(values).__name__}")
-    parts = [_basic_string(v) for v in values]
+    parts: list[str] = []
+    for v in values:
+        if not isinstance(v, str):
+            raise ValueError(
+                f"string-array element must be a string, got {type(v).__name__}"
+            )
+        parts.append(_basic_string(v))
     return "[" + ", ".join(parts) + "]"
 
 

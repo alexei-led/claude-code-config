@@ -142,7 +142,9 @@ def compile_agent(
         body = base_body
 
     name = agent_dir.name
-    merged_meta.setdefault("name", name)
+    if not merged_meta.get("name"):
+        # `setdefault` would skip an explicit `name: null`, so check the value.
+        merged_meta["name"] = name
 
     if target == "codex":
         rendered = to_toml(merged_meta, body)

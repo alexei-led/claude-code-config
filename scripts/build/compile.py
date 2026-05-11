@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import shutil
 import sys
 from pathlib import Path
 
@@ -138,15 +139,6 @@ def main(argv: list[str] | None = None) -> int:
         log.info("--dry-run: skipping dist/ writes")
         return 0
 
-    # Wipe each target's dist/ subtree before rebuild so stale outputs
-    # (e.g. files for sources later restricted with `targets:`) don't leak.
-    import shutil
-
-    for target in TARGETS:
-        target_dir = root / "dist" / target
-        if target_dir.exists():
-            shutil.rmtree(target_dir)
-
     _here = Path(__file__).resolve().parent
     if str(_here) not in sys.path:
         sys.path.insert(0, str(_here))
@@ -156,8 +148,17 @@ def main(argv: list[str] | None = None) -> int:
     from manifests import write_all as write_manifests
     from plugin_index import build_plugin_index, validate_artifacts_exist
 
+    # Build and validate the plugin index *before* wiping dist/, so a stale
+    # plugin.yaml reference doesn't leave the tree empty on a failed build.
     plugin_index = build_plugin_index(root)
     validate_artifacts_exist(root, plugin_index)
+
+    # Wipe each target's dist/ subtree before rebuild so stale outputs
+    # (e.g. files for sources later restricted with `targets:`) don't leak.
+    for target in TARGETS:
+        target_dir = root / "dist" / target
+        if target_dir.exists():
+            shutil.rmtree(target_dir)
 
     total_skill_writes = 0
     for target in TARGETS:

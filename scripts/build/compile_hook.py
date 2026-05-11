@@ -91,7 +91,7 @@ GEMINI_EVENT_ORDER: tuple[str, ...] = (
 )
 CODEX_EVENT_ORDER: tuple[str, ...] = ("PreToolUse", "PostToolUse", "SessionStart")
 
-_TARGET_SUBDIRS: frozenset[str] = frozenset({"claude", "codex", "gemini", "pi"})
+_TARGET_SUBDIRS: frozenset[str] = frozenset(_compile.TARGETS)
 
 # Hook names land directly in output paths, manifest entries, and command
 # substitutions. Anything outside this character class would either escape the
