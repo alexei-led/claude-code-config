@@ -43,14 +43,15 @@ def to_toml(agent_meta: Mapping[str, Any], body: str) -> str:
         meta.pop("effort")
 
     lines: list[str] = []
-    if "name" in meta:
-        lines.append(f"name = {_basic_string(meta.pop('name'))}")
-    if "description" in meta:
-        lines.append(f"description = {_basic_string(meta.pop('description'))}")
-
-    for key in _SCALAR_PASSTHROUGH:
-        if key in meta:
-            lines.append(f"{key} = {_basic_string(meta.pop(key))}")
+    for key in ("name", "description", *_SCALAR_PASSTHROUGH):
+        if key not in meta:
+            continue
+        value = meta.pop(key)
+        if value is None:
+            # Treat `key: null` as "unset" rather than emitting the string "None"
+            # (which is what `str(None)` would produce).
+            continue
+        lines.append(f"{key} = {_basic_string(value)}")
 
     if "nickname_candidates" in meta:
         lines.append(

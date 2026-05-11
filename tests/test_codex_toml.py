@@ -58,6 +58,26 @@ def test_explicit_model_reasoning_effort_wins_over_effort(load_script):
     assert "effort" not in data
 
 
+def test_none_scalar_values_are_omitted(load_script):
+    """`field: null` in YAML must not emit `field = "None"` in TOML."""
+    to_toml = _to_toml(load_script)
+    out = to_toml(
+        {
+            "name": "a",
+            "description": None,
+            "model": None,
+            "sandbox_mode": "workspace-write",
+        },
+        "body\n",
+    )
+    data = tomllib.loads(out)
+    assert "description" not in data
+    assert "model" not in data
+    assert data["sandbox_mode"] == "workspace-write"
+    assert 'description = "None"' not in out
+    assert 'model = "None"' not in out
+
+
 def test_nickname_candidates_pass_through_as_string_array(load_script):
     to_toml = _to_toml(load_script)
     out = to_toml(

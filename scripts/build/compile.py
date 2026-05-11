@@ -2,9 +2,6 @@
 
 Compiles vendor-neutral sources under `src/` into per-target plugin/extension
 trees under `dist/` for Claude Code, Codex CLI, Gemini CLI, and Pi Agent.
-
-Scaffold stage (Task 1): target config, source discovery, dry-run mode.
-Pipelines (skills/agents/hooks) wire in via subsequent tasks.
 """
 
 from __future__ import annotations
@@ -12,7 +9,6 @@ from __future__ import annotations
 import argparse
 import logging
 import sys
-from collections.abc import Iterable
 from pathlib import Path
 
 log = logging.getLogger("compile")
@@ -70,11 +66,6 @@ def discover(src_subdir: Path) -> list[Path]:
     if not src_subdir.is_dir():
         return []
     return sorted(p for p in src_subdir.iterdir() if p.is_dir())
-
-
-def iter_targets() -> Iterable[str]:
-    """Yield configured targets in declaration order."""
-    return iter(TARGETS)
 
 
 def validate_output_config() -> None:

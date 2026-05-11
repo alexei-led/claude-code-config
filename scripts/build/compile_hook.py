@@ -19,8 +19,10 @@ Per-target output shape:
 - pi:     scripts copied to `dist/pi/hooks/<script>` (flat). No manifest
   (Pi consumes hooks via the script files only).
 
-Until Task 11 produces a real plugin index, plugin-grouped targets fall back
-to the flat hook path when no plugin owns a hook (matches `compile_skill`).
+Hooks not owned by any plugin in `src/plugins/*/plugin.yaml` land at the flat
+hook path even for plugin-grouped targets (`claude`, `codex`). This matches
+`compile_skill`/`compile_agent` and lets vendor-neutral hooks remain reachable
+when they have no plugin assignment.
 """
 
 from __future__ import annotations
@@ -175,8 +177,9 @@ def hook_output_assignments(
     """Resolve per-target hook directories paired with their owning plugin.
 
     Plugin-grouped targets emit once per owning plugin; an unowned hook on a
-    plugin-grouped target is skipped (no consumer would find it). Flat targets
-    always use the flat path.
+    plugin-grouped target falls back to the flat path so the script is still
+    available out-of-band (e.g. referenced from `.claude/settings.json`).
+    Flat targets always use the flat path.
     """
     cfg = _compile.OUTPUT[target]
     dist = root / "dist" / target

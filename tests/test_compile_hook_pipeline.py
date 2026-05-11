@@ -133,6 +133,21 @@ def test_load_hook_missing_required_field(ch, tmp_path):
         ch.load_hook(hook_dir)
 
 
+@pytest.mark.parametrize(
+    "bad_name",
+    ["../escape", "has space", "../../etc/passwd", "with/slash", "-leading-dash", ""],
+)
+def test_load_hook_rejects_unsafe_names(ch, tmp_path, bad_name):
+    hook_dir = tmp_path / "src" / "hooks" / "h"
+    hook_dir.mkdir(parents=True)
+    (hook_dir / "meta.yaml").write_text(
+        f"name: {bad_name!r}\nevent: postedit\ntimeout: 10\n"
+    )
+    (hook_dir / "HOOK.sh").write_text("#!/bin/sh\n")
+    with pytest.raises(ValueError, match="name"):
+        ch.load_hook(hook_dir)
+
+
 # --- compile_hook (placement) ----------------------------------------------
 
 

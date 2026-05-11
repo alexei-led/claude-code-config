@@ -158,6 +158,17 @@ def test_write_codex_marketplace_skips_plugins_without_dist_dir(manifests, fake_
     assert [p["name"] for p in data["plugins"]] == ["alpha"]
 
 
+def test_write_claude_marketplace_skips_plugins_without_dist_dir(manifests, fake_root):
+    """Plugins lacking a dist/claude/plugins/<name>/ dir are omitted."""
+    import shutil
+
+    shutil.rmtree(fake_root / "dist" / "claude" / "plugins" / "beta")
+    plugins = manifests.load_plugins(fake_root)
+    out = manifests.write_claude_marketplace(plugins, fake_root)
+    data = json.loads(out.read_text())
+    assert [p["name"] for p in data["plugins"]] == ["alpha"]
+
+
 def test_write_codex_marketplace_categories(manifests, fake_root):
     plugins = manifests.load_plugins(fake_root)
     out = manifests.write_codex_marketplace(plugins, fake_root)
@@ -181,10 +192,12 @@ def test_write_gemini_extension_at_root(manifests, fake_root):
 def test_ensure_gemini_symlinks_creates_links(manifests, fake_root):
     created = manifests.ensure_gemini_symlinks(fake_root)
     assert (fake_root / "skills").is_symlink()
+    assert (fake_root / "agents").is_symlink()
     assert (fake_root / "hooks").is_symlink()
     assert os.readlink(fake_root / "skills") == "dist/gemini/skills"
+    assert os.readlink(fake_root / "agents") == "dist/gemini/agents"
     assert os.readlink(fake_root / "hooks") == "dist/gemini/hooks"
-    assert len(created) == 2
+    assert len(created) == 3
 
 
 def test_ensure_gemini_symlinks_idempotent(manifests, fake_root):

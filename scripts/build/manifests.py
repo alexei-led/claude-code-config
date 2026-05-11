@@ -39,6 +39,7 @@ log = logging.getLogger("compile.manifests")
 
 _GEMINI_SYMLINK_TARGETS: tuple[tuple[str, str], ...] = (
     ("skills", "dist/gemini/skills"),
+    ("agents", "dist/gemini/agents"),
     ("hooks", "dist/gemini/hooks"),
 )
 

@@ -1,6 +1,6 @@
 # Skill Compiler — Design
 
-**Status**: Not implemented. **Replaces**: `scripts/build/generate-skills.py`.
+**Status**: Implemented (see `scripts/build/compile.py`). The migration plan at `docs/plans/completed/20260511-skill-compiler-migration.md` is finished; this doc remains as the architectural reference.
 **Principle**: KISS. Single source of truth under `src/`. All generated outputs under `dist/`. Root-level files only where target platforms require them.
 
 ## Goal
@@ -377,12 +377,12 @@ Source: each target's CLI self-report. Names may evolve — verify against curre
 
 ## Discovery paths (what each target finds at repo root)
 
-| Target | Reads at repo root                                                  | Points to                                                                          |
-| ------ | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| Claude | `.claude-plugin/marketplace.json`                                   | `./dist/claude/plugins/*`                                                          |
-| Codex  | `.agents/plugins/marketplace.json`                                  | `./dist/codex/plugins/*`                                                           |
-| Gemini | `gemini-extension.json`, `skills/`, `hooks/hooks.json`, `commands/` | symlinks → `dist/gemini/*`                                                         |
-| Pi     | (none — local install script)                                       | `flat/skills-pi`, etc. via `install-pi-exports.sh` updated to point at `dist/pi/*` |
+| Target | Reads at repo root                                                  | Points to                                                                                                  |
+| ------ | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Claude | `.claude-plugin/marketplace.json`                                   | `./dist/claude/plugins/*`                                                                                  |
+| Codex  | `.agents/plugins/marketplace.json`                                  | `./dist/codex/plugins/*`                                                                                   |
+| Gemini | `gemini-extension.json`, `skills/`, `hooks/hooks.json`, `commands/` | symlinks → `dist/gemini/*`                                                                                 |
+| Pi     | (none — manual symlinks per project)                                | `~/.pi/agent/skills` → `dist/pi/skills`, `~/.pi/agent/agents` → `dist/pi/agents` (see README "Pi" section) |
 
 ## Authoring patterns (lessons from migrating 4 skills + 38 agents)
 
@@ -497,18 +497,20 @@ The 34-agent CC migration ran in <1 second. Pi-only agents got a similar script 
 
 ## Migration
 
-1. Build renderer + tests (skills and agents share the overlay/output pipeline; agents add a TOML-conversion code path for Codex).
-2. Move skills to `src/skills/<skill>/` (one dir per skill).
-3. Move agents to `src/agents/<name>/AGENT.md` (one dir per agent, file always named `AGENT.md`). For bulk migration, use the helper-script pattern above.
-4. Write `src/plugins/<p>/plugin.yaml` for each plugin, listing `skills`, `agents`, `hooks`. (No `commands` list — commands are skills per CC v2.1.3.)
-5. Apply the vendor-neutral-body checklist to each base `SKILL.md` / `AGENT.md`; move target-specific content into `<target>/body.md` + `<target>/frontmatter.yaml`.
-6. Migrate `plugins/<p>/commands/*.md` to skills. Standalone commands → individual skill. Related action commands sharing resources (e.g. `spec/*`) → one consolidated skill with argument routing and shared `scripts/`.
-7. Build once → populate `dist/` and root-level generated files.
-8. Add committed root symlinks: `ln -s dist/gemini/skills skills`, etc.
-9. Update `.gitattributes`: `dist/**` and root-generated files marked `linguist-generated`.
-10. Update `install-pi-exports.sh` to point at `dist/pi/*` (skills and agents both).
-11. Update `make check` (already does build + diff).
-12. Delete `scripts/build/generate-skills.py`, `generate-subagents.py`, `CLAUDE_TO_PI_TOOLS`, `PLATFORM_LEAK_RE`, `CC-ONLY` markers, `flat/` tree.
+**Done.** The migration completed on 2026-05-11; this section is retained as historical reference. See the plan at `docs/plans/completed/20260511-skill-compiler-migration.md` for per-task acceptance evidence. Summary of the steps that ran:
+
+1. Built renderer + tests (skills and agents share the overlay/output pipeline; agents add a TOML-conversion code path for Codex).
+2. Moved skills to `src/skills/<skill>/` (one dir per skill).
+3. Moved agents to `src/agents/<name>/AGENT.md` (one dir per agent, file always named `AGENT.md`).
+4. Wrote `src/plugins/<p>/plugin.yaml` for each plugin, listing `skills`, `agents`, `hooks`.
+5. Applied the vendor-neutral-body checklist to each base `SKILL.md` / `AGENT.md`; moved target-specific content into `<target>/body.md` + `<target>/frontmatter.yaml`.
+6. Migrated `plugins/<p>/commands/*.md` to skills (standalone → individual skill, related → consolidated skill with `references/`).
+7. Build → populated `dist/` and root-level generated files.
+8. Added committed root symlinks for Gemini (`skills/`, `hooks/`) pointing into `dist/gemini/`.
+9. Updated `.gitattributes`: `dist/**` and root-generated files marked `linguist-generated`.
+10. Pi consumers symlink `~/.pi/agent/skills` and `~/.pi/agent/agents` to `dist/pi/*` manually (see README "Pi" section); the old `install-pi-exports.sh` was removed.
+11. `make check` runs build + drift detection.
+12. Deleted `scripts/build/generate-skills.py`, `generate-subagents.py`, `generate-hooks.py`, `generate-agents-md.py`, `generate-flat.sh`, `_common.py`, `CC-ONLY` markers, and the `flat/` tree.
 
 ## Out of scope
 

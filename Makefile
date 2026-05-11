@@ -112,7 +112,8 @@ lint-instructions: ## Lint agent/skill instructions (advisory)
 
 validate-executables: ## Check shell + Python entry scripts have executable bit
 	@fail=0; \
-	for f in $$(find src scripts -name '*.sh') \
+	for f in $$(find src -name 'HOOK.*' -type f) \
+		$$(find src scripts -name '*.sh') \
 		scripts/git-hooks/pre-commit scripts/git-hooks/pre-push scripts/release/release-tag; do \
 		[ -x "$$f" ] || { echo "ERROR: $$f is not executable"; fail=1; }; \
 	done; \
