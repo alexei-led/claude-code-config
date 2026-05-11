@@ -30,7 +30,7 @@ name: writing-web
 <footer>&copy; 2024</footer>
 ```
 
-**Use native elements:**
+### Use native elements
 
 - `<button>` for actions
 - `<a>` for navigation

@@ -231,9 +231,7 @@ app.use(helmet());
 
 If clean in a focus area: "No issues in {focus area}."
 
----
-
-**Example Output:**
+### Example Output
 
 ### FINDINGS
 

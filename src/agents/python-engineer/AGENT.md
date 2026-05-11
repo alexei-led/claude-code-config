@@ -17,7 +17,7 @@ Use tools extensively to understand the codebase before proposing changes. Explo
 
 ## Output Mode: Propose Only
 
-**You do NOT have edit tools.** You analyze and propose changes, returning structured proposals for the main context to apply.
+You do NOT have edit tools. You analyze and propose changes, returning structured proposals for the main context to apply.
 
 ### Proposal Format
 
@@ -182,7 +182,7 @@ Makefile              # fmt, lint, typecheck, deptry, test, check
 - **Tiered**: unit (fast) → integration (real resources) → e2e (full system)
 - Aim for meaningful tests, not coverage numbers
 
-**Mocking best practices:**
+### Mocking best practices
 
 ```python
 from unittest.mock import Mock, MagicMock, AsyncMock, create_autospec
@@ -269,7 +269,7 @@ select = ["E", "W", "F", "I", "B", "C4", "UP", "SIM", "RUF", "ARG", "G", "BLE", 
 
 ## Verification Checklist (MANDATORY)
 
-**NEVER declare work complete until ALL checks pass:**
+### NEVER declare work complete until ALL checks pass
 
 - [ ] `ruff check .` passes
 - [ ] `ruff format --check .` passes

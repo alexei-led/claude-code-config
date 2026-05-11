@@ -23,8 +23,6 @@ Track these 4 phases. Keep work scoped to ONLY these review targets and keep age
 3. Review against rubric (parallel agents)
 4. Aggregate and present findings
 
----
-
 ## Phase 1: Discovery
 
 Scan for all Claude Code configuration components. Check BOTH standard layout
@@ -77,8 +75,6 @@ Build inventory table:
 
 Token estimation: `word_count * 1.3` for English text.
 
----
-
 ## Phase 2: Context Budget Measurement
 
 Calculate the **session startup cost** — tokens loaded before the user's
@@ -102,8 +98,6 @@ Startup Budget = CLAUDE.md tokens
 Count CLAUDE.md lines and estimate tokens. Flag if CLAUDE.md exceeds 150
 lines or ~3K tokens.
 
----
-
 ## Phase 3: Review Against Rubric
 
 Find and read the rubric (co-located with this skill):
@@ -116,7 +110,7 @@ Glob("**/skills/reviewing-cc-config/RUBRIC.md")
 Read the first match. If no match found, **stop and warn the user** that
 RUBRIC.md is missing — do not proceed without the rubric. If the rubric or requested config files are unavailable, stop and report the blocker instead of inventing findings.
 
-**Parse `$ARGUMENTS`:**
+### Parse `$ARGUMENTS`
 
 - No args or `all` → review everything
 - `skills` → review only skills
@@ -161,8 +155,6 @@ rule/verdict/notes table. Keep under 1500 tokens.
 Notification=alerts, PostCompact=metrics). Output per hook:
 `### name (event, lines)` + check/verdict/notes table. Keep under 1000 tokens.
 
----
-
 ## Phase 4: Aggregate, Cross-Check & Present
 
 Collect results from all review agents. **Cross-check**: for each ERROR
@@ -179,11 +171,9 @@ Report structure:
 4. **Top 5 Highest-Impact Improvements** with estimated savings
 5. **What's Working Well** — explicit acknowledgment of good patterns
 
----
-
 ## Phase 5: Apply Fixes (only if `--fix` in arguments)
 
-**Skip this phase entirely unless `--fix` is in `$ARGUMENTS`.**
+### Skip this phase entirely unless `--fix` is in `$ARGUMENTS`
 
 If `--fix` is NOT present, use `AskUserQuestion`. Ask one question at a time:
 
@@ -202,8 +192,6 @@ After each fix, show the diff. Do NOT make changes beyond what was flagged.
 components against the rules that triggered the fix. Confirm each finding
 is resolved. Report any regressions.
 
----
-
 ## Examples
 
 ```
@@ -214,4 +202,4 @@ is resolved. Report any regressions.
 /reviewing-cc-config all --fix          # Review everything, then apply fixes
 ```
 
-**Execute this workflow now.**
+### Execute this workflow now

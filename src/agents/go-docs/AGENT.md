@@ -47,7 +47,7 @@ golangci-lint linters         # List available linters
 
 Comments are ONLY valuable when they explain **why**, not **what**.
 
-**DELETE these comments:**
+### DELETE these comments
 
 ```go
 // BAD: obvious from code
@@ -58,7 +58,7 @@ if err != nil { // check for error
 }
 ```
 
-**KEEP these comments:**
+### KEEP these comments
 
 ```go
 // GOOD: explains non-obvious behavior
@@ -74,7 +74,7 @@ var cacheMu sync.RWMutex
 const maxBatchSize = 1000
 ```
 
-**Comment checklist:**
+### Comment checklist
 
 - Would a competent Go developer understand without this comment? → Delete
 - Does it explain business logic, constraints, or non-obvious decisions? → Keep
@@ -127,9 +127,7 @@ func TestUserService_Create_ValidUser(t *testing.T) {
 
 If clean: "No issues found."
 
----
-
-**Example Output:**
+### Example Output
 
 ### FINDINGS
 

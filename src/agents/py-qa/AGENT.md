@@ -94,9 +94,7 @@ Do not modify, delete, or execute application code. Run only the diagnostic comm
 
 If clean in a focus area: "No issues in {focus area}."
 
----
-
-**Example Output:**
+### Example Output
 
 ### FINDINGS
 

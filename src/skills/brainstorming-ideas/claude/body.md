@@ -12,8 +12,6 @@ Turn a vague idea or draft plan into a clear design before coding. In grill mode
 6. Validate design incrementally
 7. Capture outcome and next steps
 
----
-
 ## Core Principles
 
 - **Dialogue first** - Ask the user before spawning any agents
@@ -26,8 +24,6 @@ Turn a vague idea or draft plan into a clear design before coding. In grill mode
 - **Code over questions** - If the codebase can answer a question, inspect it instead of asking
 - **Domain vocabulary matters** - Use `CONTEXT.md` / `CONTEXT-MAP.md` terms when present; resolve conflicts explicitly
 - **ADRs are rare** - Offer one only for hard-to-reverse, surprising, real trade-off decisions
-
----
 
 ## Phase 0: Load Domain Context
 
@@ -52,8 +48,6 @@ Ask clarifying questions using AskUserQuestion. Keep it conversational:
 - "Can you describe this in a sentence or two?" (free text via "Other")
 - "What triggered this idea?" with context-appropriate options
 - "Is there an existing feature this builds on?"
-
----
 
 ## Phase 2: Explore Requirements (Starbursting)
 
@@ -113,8 +107,6 @@ Use AskUserQuestion:
 If "Some wrong": ask which ones and adjust requirements.
 If "Not sure": flag risky assumptions for verification in Phase 4.
 
----
-
 ## Phase 3: Checkpoint - Gather More Context?
 
 After understanding requirements, **ask before spawning any agents**:
@@ -151,8 +143,6 @@ Proceed to Phase 4.
 ### If user chooses "Skip to approaches":
 
 Jump directly to Phase 5 (Present Approaches).
-
----
 
 ## Phase 4: Research Similar Solutions (If Requested)
 
@@ -192,8 +182,6 @@ Present research summary before asking approach preference:
 **Recommended for our context:** [Pattern] because [reasons]
 ```
 
----
-
 ## Phase 5: Present Approaches
 
 Use AskUserQuestion with 2-4 options:
@@ -207,8 +195,6 @@ For each option, briefly cover:
 - **What**: Core implementation
 - **Trade-offs**: Complexity vs flexibility, Now vs later
 - **Fits when**: Scenario where this shines
-
----
 
 ## Phase 6: Validate Design Incrementally
 
@@ -231,8 +217,6 @@ At each section, actively challenge:
 - "Do we need this now, or is it speculative?"
 - "What's the simplest version that solves the problem?"
 - "Can we defer this complexity?"
-
----
 
 ## Phase 7: Capture Outcome and Next Steps
 
@@ -274,8 +258,6 @@ Use AskUserQuestion:
 
 - **Next steps** — Ready to proceed with implementation? Options: 1. **Create worktree** - Isolated workspace via using-git-worktrees 2. **Create plan** - Detailed implementation steps 3. **Done for now** - Just save the design
 
----
-
 ## Methodology Reference
 
 This skill incorporates proven brainstorming techniques:
@@ -286,8 +268,6 @@ This skill incorporates proven brainstorming techniques:
 - **Reverse Brainstorming** — "How could this fail?" during validation
 - **Mind Mapping** — Architecture section visualizes relationships
 
----
-
 ## Examples
 
 ```
@@ -296,4 +276,4 @@ This skill incorporates proven brainstorming techniques:
 /brainstorming-ideas grill migration    # Stress-test an existing plan
 ```
 
-**Execute this collaborative brainstorming workflow now.**
+### Execute this collaborative brainstorming workflow now

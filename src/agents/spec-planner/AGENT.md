@@ -24,7 +24,7 @@ cat .spec/memory/conventions.md 2>/dev/null  # Patterns to follow
 cat .spec/memory/decisions.md 2>/dev/null    # Past architectural decisions
 ```
 
-**Incorporate learnings into plan.** If a pitfall is relevant, add it to Risks. If a convention applies, reference it in Style.
+Incorporate learnings into plan. If a pitfall is relevant, add it to Risks. If a convention applies, reference it in Style.
 
 ### 1. Learn Style
 

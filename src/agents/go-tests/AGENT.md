@@ -73,7 +73,7 @@ golangci-lint linters         # List available linters
 
 ### 3. Test Design Quality (Zero Tolerance for Waste)
 
-**CRITICAL: Avoid pointless, naive, and duplicate tests. Each test must provide real value.**
+### CRITICAL: Avoid pointless, naive, and duplicate tests. Each test must provide real value
 
 - **Pointless tests**: Tests that verify trivial behavior (getters returning fields, constructors setting fields) → **DELETE**
 - **Naive tests**: Tests that only cover obvious happy paths without edge cases → **EXPAND or DELETE**
@@ -140,7 +140,7 @@ This is **correct design**—consumer-side interfaces mean:
 
 ### 5. Mockery with EXPECT (Typesafe Mocks)
 
-**NEVER write mocks manually. Use mockery for all mock generation.**
+### NEVER write mocks manually. Use mockery for all mock generation
 
 ```bash
 # Private interfaces (avoid import cycles) - generate in-package
@@ -150,7 +150,7 @@ mockery --name=userStore --inpackage --with-expecter
 mockery --name=UserStore --with-expecter --dir=internal/service --output=internal/service/mocks
 ```
 
-**Interface annotation for go:generate:**
+### Interface annotation for go:generate
 
 ```go
 // Private interface - use --inpackage
@@ -162,7 +162,7 @@ type userStore interface {
 
 ### 6. Mock Argument Matchers (CRITICAL)
 
-**Overusing `mock.Anything` weakens tests. Choose matchers deliberately:**
+### Overusing `mock.Anything` weakens tests. Choose matchers deliberately
 
 | Matcher              | Use When                                                                          |
 | -------------------- | --------------------------------------------------------------------------------- |
@@ -170,7 +170,7 @@ type userStore interface {
 | **`mock.Anything`**  | ONLY for: `context.Context`, loggers, tracers, truly don't-care values            |
 | **`mock.MatchedBy`** | SQL queries, complex structs, generated IDs, partial matching                     |
 
-**Decision tree:**
+### Decision tree
 
 1. `context.Context`, logger, tracer? → `mock.Anything`
 2. Business value from test fixture? → **Exact value** (mandatory!)
@@ -178,7 +178,7 @@ type userStore interface {
 4. SQL/JSON with variable formatting? → `mock.MatchedBy` with normalization
 5. Generated ID/timestamp? → `mock.MatchedBy` with type check
 
-**Examples:**
+### Examples
 
 ```go
 // GOOD: Exact values for business-critical parameters
@@ -207,7 +207,7 @@ state.EXPECT().
     Return(nil)
 ```
 
-**Mock constructor and assertions:**
+### Mock constructor and assertions
 
 ```go
 func TestService_GetUser(t *testing.T) {
@@ -250,9 +250,7 @@ When test complexity signals design problems, recommend implementation changes:
 
 If clean: "No issues found."
 
----
-
-**Example Output:**
+### Example Output
 
 ### TEST ISSUES
 

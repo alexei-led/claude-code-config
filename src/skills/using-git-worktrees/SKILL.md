@@ -10,7 +10,7 @@ name: using-git-worktrees
 
 ## Core Principle
 
-**Main repo stays on main/master — never edit directly.** Every branch gets its own worktree (a sibling folder). Delete the worktree after the branch merges.
+Main repo stays on main/master — never edit directly. Every branch gets its own worktree (a sibling folder). Delete the worktree after the branch merges.
 
 Think of a worktree as a **disposable branch folder**, not a long-lived parallel environment.
 

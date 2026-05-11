@@ -24,8 +24,6 @@ Validate and deploy changes to Kubernetes, Terraform, Helm, or Kustomize with pr
 
 `--dry-run` runs steps 1–5 (validation only). `--apply` runs all 8 steps.
 
----
-
 ## Step 1: Parse Arguments
 
 **Default**: `--dry-run` (safe mode)
@@ -34,8 +32,6 @@ Validate and deploy changes to Kubernetes, Terraform, Helm, or Kustomize with pr
 - `--apply` → Apply changes after validation
 - `[environment]` → Target environment (staging, production, dev)
 - `--background` → Run validation in background, return agent ID
-
----
 
 ## Step 2: Detect Infrastructure Type
 
@@ -49,8 +45,6 @@ Use Glob to find infrastructure files (quick scan):
 - `**/Chart.yaml` - Helm
 
 **If no infrastructure detected**: "No infrastructure files found. Looking for: \*.tf, Chart.yaml, kustomization.yaml, k8s/, Dockerfile"
-
----
 
 ## Step 3: Pre-flight Validation
 
@@ -116,11 +110,9 @@ Task(
 
 **If --background:** Return agent ID immediately for later collection.
 
----
-
 ## Step 4: Review Changes
 
-**Present diff/plan to user:**
+### Present diff/plan to user
 
 ```
 ## Pre-flight: {READY|BLOCKED}
@@ -138,8 +130,6 @@ Task(
 
 **If BLOCKED**: Stop, show blockers.
 
----
-
 ## Step 5: Research Best Practices (if needed)
 
 For uncertain findings, use Perplexity for current best practices:
@@ -151,17 +141,13 @@ mcp__perplexity-ask__perplexity_ask with:
 
 **If --dry-run**: Stop here with validation summary.
 
----
-
 ## Step 6: Confirm Production Deploys
 
-**If environment = production:**
+### If environment = production
 
 **STOP**: `AskUserQuestion`
 
 - **Production** — Deploy to PRODUCTION? Options: 1. **Yes, deploy** - Apply changes now 2. **Review again** - Show full diff 3. **Cancel** - Abort deployment
-
----
 
 ## Step 7: Apply Changes
 
@@ -189,8 +175,6 @@ esac
 echo "$(date -Iseconds) DEPLOY_END status=$?" >> .deploy.log
 ```
 
----
-
 ## Step 8: Post-Deploy Verification
 
 ```bash
@@ -201,7 +185,7 @@ kubectl rollout status deployment/{name} --timeout=300s
 kubectl get pods -l app={name}
 ```
 
-**If rollout fails:**
+### If rollout fails
 
 ```
 ROLLBACK AVAILABLE
@@ -231,8 +215,6 @@ Status: {HEALTHY|DEGRADED|FAILED}
 Rollback: {command if needed}
 ```
 
----
-
 ## Key Principles
 
 1. **Dry-run by default** - Never apply without explicit --apply
@@ -242,6 +224,4 @@ Rollback: {command if needed}
 
 Pairs with `managing-infra` skill for patterns and reference material.
 
----
-
-**Execute deployment workflow now.**
+### Execute deployment workflow now

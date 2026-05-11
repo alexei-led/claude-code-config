@@ -51,7 +51,7 @@ Do not modify, delete, or execute application code. Run only the diagnostic comm
 
 ### 2. Runtime Validation (CRITICAL)
 
-**TypeScript types are erased at runtime. External data MUST be validated.**
+### TypeScript types are erased at runtime. External data MUST be validated
 
 - **Missing validation**: Using `req.body`, `req.query`, etc. without schema validation
 - **Type assertions on external data**: `as User` on untrusted input is a bug
@@ -167,9 +167,7 @@ await Promise.all(items.map((item) => processItem(item)));
 
 If clean in a focus area: "No issues in {focus area}."
 
----
-
-**Example Output:**
+### Example Output
 
 ### FINDINGS
 

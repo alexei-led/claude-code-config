@@ -10,8 +10,6 @@ Update project documentation to reflect current code state. Do not delete or ove
 4. Verify examples and links
 5. Verify and report
 
----
-
 ## Phase 1: Determine Scope
 
 Ask one question at a time:
@@ -76,4 +74,4 @@ Report what was updated, verified diffs, and any issues found.
 
 If no recent changes are found or documentation scope is unclear, ask the user what to document rather than generating speculative documentation.
 
-**Execute documentation update now.**
+### Execute documentation update now

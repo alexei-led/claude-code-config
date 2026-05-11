@@ -40,14 +40,14 @@ bunx typedoc --out docs src/
 
 **Style**: lowercase, no trailing dots—lean and informal is fine
 
-**What makes a comment valuable:**
+### What makes a comment valuable
 
 - explains why, not what
 - captures reasoning, constraints, or trade-offs
 - documents non-obvious behavior or edge cases
 - references external context (tickets, specs, API limits)
 
-**Delete if:**
+### Delete if
 
 - competent dev would understand without it
 - paraphrases the code
@@ -71,7 +71,7 @@ bunx typedoc --out docs src/
 
 ### 3. Inline Comment Quality
 
-**DELETE these comments:**
+### DELETE these comments
 
 ```typescript
 // BAD: obvious from code
@@ -80,7 +80,7 @@ if (!user) return null; // return null if no user
 items.map((x) => x.id); // map to ids
 ```
 
-**KEEP these comments:**
+### KEEP these comments
 
 ```typescript
 // timeout is 30s to match upstream API SLA
@@ -121,9 +121,7 @@ Tests should be self-documenting through:
 
 If clean in a focus area: "No issues in {focus area}."
 
----
-
-**Example Output:**
+### Example Output
 
 ### FINDINGS
 

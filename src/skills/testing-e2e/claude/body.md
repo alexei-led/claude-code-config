@@ -12,11 +12,9 @@ Execute E2E testing workflows using Playwright scripts (via playwright-skill). D
 4. Verify results and collect artifacts
 5. Present output
 
----
-
 ## Phase 1: Parse Arguments
 
-**$ARGUMENTS:**
+### $ARGUMENTS
 
 - `run` → Run existing E2E tests
 - `record` → Record browser session for test generation
@@ -27,8 +25,6 @@ Execute E2E testing workflows using Playwright scripts (via playwright-skill). D
 If no argument provided, use AskUserQuestion. Ask one question at a time:
 
 - **Action** — What E2E testing task to run? Options: 1. **Run tests** - Execute existing Playwright tests 2. **Record** - Record browser session 3. **Generate** - Create test from URL/description 4. **Verify** - Check feature
-
----
 
 ## Phase 2: Prepare App and Data
 
@@ -74,7 +70,7 @@ Write a Playwright script to `/tmp/playwright-record-*.js` that:
 
 Translate manual flows into Playwright actions and assertions, but first define deterministic fixtures: seeded users/items/coupons, fixed dates, stable IDs, reset database state, and mocked external services where needed.
 
-**Spawn playwright-tester agent:**
+### Spawn playwright-tester agent
 
 ```
 Task(
@@ -95,7 +91,7 @@ Task(
 
 ### Verify Feature
 
-**Spawn playwright-tester agent for feature verification:**
+### Spawn playwright-tester agent for feature verification
 
 ```
 Task(
@@ -111,8 +107,6 @@ Task(
   4. Report PASS/FAIL with evidence (screenshots if needed)"
 )
 ```
-
----
 
 ## Phase 4: Verify Results
 
@@ -132,8 +126,6 @@ If tests fail:
 4. Repeat until all tests pass
 5. Run full suite once more to confirm no regressions: `npx playwright test`
 
----
-
 ## Phase 5: Output
 
 The final report must include PASS/FAIL/BLOCKED, dev server status, fixture/reset summary, test results, and artifact paths for traces/screenshots/videos/reports when relevant. If tests were not run, report BLOCKED or explain exactly why; do not imply success.
@@ -151,8 +143,6 @@ Artifacts: {trace/screenshots/videos/report paths or "none"}
 Details:
 - [test results or generation summary]
 ```
-
----
 
 ## Execution
 
@@ -194,7 +184,7 @@ if ((await btn.count()) === 0) {
 }
 ```
 
-**Recovery strategies:**
+### Recovery strategies
 
 1. Use `browser_snapshot` to inspect current DOM state
 2. Try alternative locators (text, role, data-testid)
@@ -230,13 +220,13 @@ await page.route("**/api/**", (route) => {
 
 ### Flaky Test Patterns
 
-**Avoid:**
+### Avoid
 
 - Fixed `page.waitForTimeout(1000)` delays
 - Brittle selectors like `.btn-23`
 - Tests depending on animation timing
 
-**Prefer:**
+### Prefer
 
 - `waitForSelector`, `waitForLoadState`
 - Role/text-based selectors: `getByRole('button', { name: 'Submit' })`
@@ -258,6 +248,4 @@ npx playwright test --trace on
 npx playwright show-trace trace.zip
 ```
 
----
-
-**Execute E2E testing workflow now.**
+### Execute E2E testing workflow now

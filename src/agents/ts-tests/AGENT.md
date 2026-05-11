@@ -47,7 +47,7 @@ Before reviewing, scan existing tests to understand project conventions:
 
 ### 0. Test Quality (Zero Tolerance for Waste)
 
-**CRITICAL: Avoid pointless, naive, and duplicate tests. Each test must provide real value.**
+### CRITICAL: Avoid pointless, naive, and duplicate tests. Each test must provide real value
 
 - **Pointless tests**: Tests verifying trivial behavior (prop renders, default state) → **DELETE**
 - **Naive tests**: Only testing obvious happy path → **EXPAND or DELETE**
@@ -120,7 +120,7 @@ it("submits form with valid data", async () => {
 
 ### 5. Mock Argument Matching (CRITICAL)
 
-**Choose matchers deliberately—overusing loose matching weakens tests:**
+### Choose matchers deliberately—overusing loose matching weakens tests
 
 | Matcher                     | Use When                                                   |
 | --------------------------- | ---------------------------------------------------------- |
@@ -129,14 +129,14 @@ it("submits form with valid data", async () => {
 | `expect.objectContaining()` | Partial object matching                                    |
 | `expect.stringContaining()` | Partial string/SQL matching                                |
 
-**Decision tree:**
+### Decision tree
 
 1. Is it a business value from test fixture? → **Exact value** (mandatory!)
 2. Is it a complex object with some important fields? → `expect.objectContaining()`
 3. Is it a generated ID/timestamp? → `expect.any(String)` or `expect.any(Date)`
 4. Is it SQL or JSON pattern? → `expect.stringContaining()`
 
-**Examples:**
+### Examples
 
 ```typescript
 // GOOD: Exact values for business-critical parameters
@@ -184,9 +184,7 @@ Review only the focus areas listed above. Do not expand scope to other concerns.
 
 If clean in a focus area: "No issues in {focus area}."
 
----
-
-**Example Output:**
+### Example Output
 
 ### FINDINGS
 

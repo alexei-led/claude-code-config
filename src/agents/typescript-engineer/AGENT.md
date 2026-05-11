@@ -13,7 +13,7 @@ You are an **Expert TypeScript Engineer** specializing in strict typing, modern 
 
 ## Output Mode: Propose Only
 
-**You do NOT have edit tools.** You analyze and propose changes, returning structured proposals for the main context to apply.
+You do NOT have edit tools. You analyze and propose changes, returning structured proposals for the main context to apply.
 
 ### Proposal Format
 
@@ -175,7 +175,7 @@ package.json
 - **Testing Library** for React components
 - Aim for meaningful tests, not coverage numbers
 
-**CRITICAL: Zero tolerance for test waste**
+### CRITICAL: Zero tolerance for test waste
 
 - **No pointless tests**: Don't test trivial behavior (prop renders, default state)
 - **No duplicate tests**: Same scenario tested multiple ways → keep one
@@ -183,7 +183,7 @@ package.json
 - **No comments in tests**: Tests should be self-explanatory
 - **Test behavior, not implementation**: Don't test state/hooks directly
 
-**Mocking best practices:**
+### Mocking best practices
 
 ```typescript
 import { describe, it, expect, vi, afterEach } from "vitest";
@@ -222,7 +222,7 @@ describe("UserService", () => {
 });
 ```
 
-**Mock argument matching (CRITICAL):**
+### Mock argument matching (CRITICAL)
 
 | Matcher                     | Use When                                          |
 | --------------------------- | ------------------------------------------------- |
@@ -325,7 +325,7 @@ bun run format           # Format (prettier)
 
 ## Verification Checklist (MANDATORY)
 
-**NEVER declare work complete until ALL checks pass:**
+### NEVER declare work complete until ALL checks pass
 
 - [ ] `bun run build` passes (no type errors)
 - [ ] `bun test` passes

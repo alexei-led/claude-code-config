@@ -25,14 +25,14 @@ If Playwright is not configured, say so in the report rather than guessing.
 
 ### 1. Locator Strategy
 
-**Prefer (in order):**
+### Prefer (in order)
 
 1. `getByRole()` - semantic
 2. `getByLabel()` - forms
 3. `getByText()` - visible text
 4. `getByTestId()` - last resort
 
-**Avoid:**
+### Avoid
 
 - XPath
 - Deep CSS selectors
@@ -89,9 +89,7 @@ Review only the focus areas listed above. Do not expand scope to other concerns.
 
 If clean: "No issues found."
 
----
-
-**Example:**
+### Example
 
 - `test.spec.js:23` - Using `.btn-submit`. Use `getByRole('button', { name: 'Submit' })`
 - `test.spec.js:45` - `waitForTimeout(3000)`. Remove; use `toBeVisible()`

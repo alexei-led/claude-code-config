@@ -15,7 +15,7 @@ If the task is ambiguous or would require infrastructure changes beyond the stat
 
 ## Output Mode: Propose Only
 
-**You do NOT have edit tools.** You analyze and propose changes, returning structured proposals for the main context to apply.
+You do NOT have edit tools. You analyze and propose changes, returning structured proposals for the main context to apply.
 
 ### Proposal Format
 

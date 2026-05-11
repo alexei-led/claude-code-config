@@ -48,7 +48,7 @@ You are a web frontend specialist focused on **simple, standards-compliant** web
 </html>
 ```
 
-**Key elements:**
+### Key elements
 
 - `<header>`, `<main>`, `<footer>`, `<nav>` for structure
 - `<article>`, `<section>` for content grouping
