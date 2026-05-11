@@ -215,14 +215,14 @@ The migration is mechanical given the design is settled: bulk-migrate the remain
 - Modify: `scripts/build/compile.py`
 - Create: `tests/test_compile_hook_pipeline.py`
 
-- [ ] implement `compile_hook(hook_dir, target, plugin_index, root)`:
+- [x] implement `compile_hook(hook_dir, target, plugin_index, root)`:
   1. load hook script (`HOOK.sh` / `HOOK.py`), copy to per-plugin output dir for plugin-grouped targets
   2. for the hook event manifest, aggregate all hooks per target → write `hooks/hooks.json` for Gemini (BeforeTool/AfterTool/SessionStart syntax) and per-plugin `codex.hooks.json` (PreToolUse/PostToolUse/SessionStart syntax)
   3. Claude reads hook configuration from `.claude/settings.json` (out of scope for v1; manifest pass-through)
-- [ ] handle `${extensionPath}` vs `$PLUGIN_ROOT` substitution variables per target
-- [ ] retire the old `_EVENT_MAP` table — moves into the compiler as data
-- [ ] write tests: hook event → per-target manifest entries / multi-plugin aggregation for Gemini / per-plugin codex.hooks.json
-- [ ] run tests — must pass before task 11
+- [x] handle `${extensionPath}` vs `$PLUGIN_ROOT` substitution variables per target
+- [x] retire the old `_EVENT_MAP` table — moves into the compiler as data
+- [x] write tests: hook event → per-target manifest entries / multi-plugin aggregation for Gemini / per-plugin codex.hooks.json
+- [x] run tests — must pass before task 11
 
 ### Task 11: Plugin composition and output path resolution
 

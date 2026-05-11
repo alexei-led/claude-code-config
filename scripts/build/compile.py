@@ -155,6 +155,7 @@ def main(argv: list[str] | None = None) -> int:
     if str(_here) not in sys.path:
         sys.path.insert(0, str(_here))
     from compile_agent import compile_agent  # local imports: avoid cycle at top
+    from compile_hook import compile_hook, write_hook_manifests
     from compile_skill import compile_skill
 
     total_skill_writes = 0
@@ -171,11 +172,16 @@ def main(argv: list[str] | None = None) -> int:
             total_agent_writes += len(written)
     log.info("wrote %d agent file(s) under dist/", total_agent_writes)
 
-    if hooks:
-        log.warning(
-            "hook pipeline not wired yet; %d hook(s) skipped (Tasks 9–10)",
-            len(hooks),
-        )
+    total_hook_writes = 0
+    for target in TARGETS:
+        results = []
+        for hook in hooks:
+            result = compile_hook(hook, target, plugin_index, root)
+            total_hook_writes += len(result.placements)
+            results.append(result)
+        manifest_paths = write_hook_manifests(results, target, root)
+        total_hook_writes += len(manifest_paths)
+    log.info("wrote %d hook file(s) under dist/", total_hook_writes)
     return 0
 
 
