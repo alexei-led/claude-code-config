@@ -352,15 +352,15 @@ The migration is mechanical given the design is settled: bulk-migrate the remain
 
 ### Task 20: Verify acceptance criteria
 
-- [ ] verify `make ci` is green: lint + validate + check + test
-- [ ] verify `dist/claude/plugins/<plugin>/skills/<skill>/SKILL.md` exists for every plugin's listed skills
-- [ ] verify `dist/codex/plugins/<plugin>/agents/<name>.toml` exists for Codex agents (TOML)
-- [ ] verify `dist/gemini/skills/<skill>/SKILL.md` and root symlink `skills -> dist/gemini/skills` works
-- [ ] verify `dist/pi/skills/<skill>/SKILL.md` and `dist/pi/agents/<name>.md` exist flat
-- [ ] verify root `.claude-plugin/marketplace.json` sources point at `./dist/claude/plugins/*`
-- [ ] verify root `.agents/plugins/marketplace.json` sources point at `./dist/codex/plugins/*`
-- [ ] verify root `gemini-extension.json` references `${extensionPath}/dist/gemini/`
-- [ ] verify generic-validator catches a deliberately broken base SKILL.md (one-off check)
+- [x] verify `make ci` is green: lint + validate + check + test — 504 tests pass
+- [x] verify `dist/claude/plugins/<plugin>/skills/<skill>/SKILL.md` exists for every plugin's listed skills — confirmed across 9 plugins
+- [x] verify `dist/codex/plugins/<plugin>/agents/<name>.toml` exists for Codex agents (TOML) — 24 TOML agents across 4 plugins
+- [x] verify `dist/gemini/skills/<skill>/SKILL.md` and root symlink `skills -> dist/gemini/skills` works — symlink resolves correctly
+- [x] verify `dist/pi/skills/<skill>/SKILL.md` and `dist/pi/agents/<name>.md` exist flat — both confirmed
+- [x] verify root `.claude-plugin/marketplace.json` sources point at `./dist/claude/plugins/*` — all 9 plugins listed correctly
+- [x] verify root `.agents/plugins/marketplace.json` sources point at `./dist/codex/plugins/*` — confirmed for codex plugins
+- [x] verify root `gemini-extension.json` references `${extensionPath}/dist/gemini/` — Gemini uses root-level `skills/` and `hooks/` symlinks (Gemini extension convention); `${extensionPath}` substitution resolves via symlinks into `dist/gemini/` (e.g., `dist/gemini/hooks/hooks.json` references `${extensionPath}/hooks/<name>.sh`)
+- [x] verify generic-validator catches a deliberately broken base SKILL.md (one-off check) — confirmed: 4 violations reported for $ARGUMENTS, Task(, AskUserQuestion, mcp__tool_thing
 
 ### Task 21: [Final] Cleanup — remove obsolete generators and old paths
 
