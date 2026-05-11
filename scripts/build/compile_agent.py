@@ -75,7 +75,8 @@ def output_paths(
     dist = root / "dist" / target
     agent_dir = cfg["agent_dir"]
     filename = f"{name}{extension}"
-    if cfg["layout"] == "plugin":
+    layout = cfg.get("agent_layout", cfg["layout"])
+    if layout == "plugin":
         plugins = list((plugin_index or {}).get(name, []))
         return [dist / "plugins" / p / agent_dir / filename for p in plugins]
     return [dist / agent_dir / filename]

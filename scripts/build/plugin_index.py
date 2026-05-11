@@ -112,6 +112,35 @@ def validate_artifacts_exist(root: Path, index: PluginIndex) -> None:
 _PLUGIN_GROUPED_TARGETS: frozenset[str] = frozenset({"claude", "codex"})
 
 
+def _layout_for(target: str, kind: str) -> str:
+    """Return the dist layout (`plugin` or `flat`) for a target+kind pair.
+
+    Targets can override the layout per artifact kind via `agent_layout`,
+    `skill_layout`, or `hook_layout` in `compile.OUTPUT`. Falls back to the
+    target's top-level `layout` when no override is set. Used both for path
+    resolution and ownership validation so the two stay aligned.
+    """
+    cfg = _compile.OUTPUT[target]
+    _override_keys = {
+        "skills": "skill_layout",
+        "agents": "agent_layout",
+        "hooks": "hook_layout",
+    }
+    override_key = _override_keys[kind]
+    return cfg.get(override_key, cfg["layout"])
+
+
+def _plugin_grouped_targets_for_kind(kind: str) -> frozenset[str]:
+    """Return targets that use plugin grouping for the given artifact kind.
+
+    Honors per-kind layout overrides so a target that emits, say, agents
+    flat is not counted as plugin-grouped for ownership purposes.
+    """
+    return frozenset(
+        t for t in _PLUGIN_GROUPED_TARGETS if _layout_for(t, kind) == "plugin"
+    )
+
+
 def _base_targets(base_path: Path) -> list[str] | None:
     """Return the `targets:` restriction from a base SKILL/AGENT, or None.
 
@@ -157,11 +186,16 @@ def validate_plugin_ownership(root: Path, index: PluginIndex) -> None:
         if not kind_dir.is_dir():
             continue
         owners_map = index.get(kind, {})
+        grouped = _plugin_grouped_targets_for_kind(kind)
+        if not grouped:
+            # All plugin-capable targets emit this kind flat; ownership is
+            # informational only. Skip the existence check entirely.
+            continue
         for item in sorted(p for p in kind_dir.iterdir() if p.is_dir()):
             if owners_map.get(item.name):
                 continue
             targets = _base_targets(item / base_name)
-            if targets is not None and not (_PLUGIN_GROUPED_TARGETS & set(targets)):
+            if targets is not None and not (grouped & set(targets)):
                 continue
             missing.append(f"{kind}/{item.name}")
     if missing:
@@ -212,7 +246,7 @@ def output_paths(
     dir_key = {"skills": "skill_dir", "agents": "agent_dir", "hooks": "hook_dir"}[kind]
     dist = root / "dist" / target
     leaf = cfg[dir_key]
-    if cfg["layout"] == "plugin":
+    if _layout_for(target, kind) == "plugin":
         plugins = owners(name, kind, plugin_index)
         if not plugins:
             return []

@@ -29,6 +29,7 @@ OUTPUT: dict[str, dict[str, str]] = {
         "layout": "plugin",
         "skill_dir": "skills",
         "agent_dir": "agents",
+        "agent_layout": "flat",
         "hook_dir": "hooks",
     },
     "gemini": {
@@ -42,6 +43,7 @@ OUTPUT: dict[str, dict[str, str]] = {
         "skill_dir": "skills",
         "agent_dir": "agents",
         "hook_dir": "hooks",
+        "extension_dir": "extensions",
     },
 }
 
@@ -144,6 +146,7 @@ def main(argv: list[str] | None = None) -> int:
         sys.path.insert(0, str(_here))
     from compile_agent import compile_agent  # local imports: avoid cycle at top
     from compile_hook import compile_hook, write_hook_manifests
+    from compile_pi_extension import compile_pi_extensions
     from compile_skill import compile_skill
     from manifests import write_all as write_manifests
     from plugin_index import (
@@ -189,6 +192,10 @@ def main(argv: list[str] | None = None) -> int:
         manifest_paths = write_hook_manifests(results, target, root)
         total_hook_writes += len(manifest_paths)
     log.info("wrote %d hook file(s) under dist/", total_hook_writes)
+
+    pi_extensions = compile_pi_extensions(root)
+    if pi_extensions:
+        log.info("wrote %d pi extension(s) under dist/", len(pi_extensions))
 
     manifest_paths_meta = write_manifests(root)
     log.info(

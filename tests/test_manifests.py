@@ -61,9 +61,10 @@ def fake_root(tmp_path: Path) -> Path:
     # both appear in the manifests under test.
     for target in ("claude", "codex"):
         for name in ("alpha", "beta"):
-            (tmp_path / "dist" / target / "plugins" / name).mkdir(
-                parents=True, exist_ok=True
-            )
+            plugin_dir = tmp_path / "dist" / target / "plugins" / name
+            plugin_dir.mkdir(parents=True, exist_ok=True)
+            if target == "codex":
+                (plugin_dir / "skills").mkdir()
 
     return tmp_path
 
@@ -245,11 +246,106 @@ def test_ensure_gemini_symlinks_refuses_non_symlink(manifests, fake_root):
         manifests.ensure_gemini_symlinks(fake_root)
 
 
+def test_write_claude_plugin_manifests_basic(manifests, fake_root):
+    plugins = manifests.load_plugins(fake_root)
+    written = manifests.write_claude_plugin_manifests(plugins, fake_root)
+    assert len(written) == 2
+    alpha = json.loads(
+        (
+            fake_root
+            / "dist"
+            / "claude"
+            / "plugins"
+            / "alpha"
+            / ".claude-plugin"
+            / "plugin.json"
+        ).read_text()
+    )
+    assert alpha["name"] == "alpha"
+    assert alpha["version"] == "1.0.0"
+    assert alpha["description"] == "Alpha plugin"
+    assert alpha["keywords"] == ["alpha-kw"]
+    assert "author" not in alpha  # no global owner set in this fixture
+
+
+def test_write_claude_plugin_manifests_inherits_global_owner(manifests, fake_root):
+    (fake_root / "src" / "plugins" / "marketplace.yaml").write_text(
+        "owner:\n  name: Test Owner\n  email: t@example.com\n"
+        "homepage: https://example.com\n"
+        "license: MIT\n"
+    )
+    plugins = manifests.load_plugins(fake_root)
+    manifests.write_claude_plugin_manifests(plugins, fake_root)
+    alpha = json.loads(
+        (
+            fake_root
+            / "dist"
+            / "claude"
+            / "plugins"
+            / "alpha"
+            / ".claude-plugin"
+            / "plugin.json"
+        ).read_text()
+    )
+    assert alpha["author"] == {"name": "Test Owner", "email": "t@example.com"}
+    assert alpha["homepage"] == "https://example.com"
+    assert alpha["license"] == "MIT"
+
+
+def test_write_claude_plugin_manifests_skips_missing_dist(manifests, fake_root):
+    import shutil
+
+    shutil.rmtree(fake_root / "dist" / "claude" / "plugins" / "beta")
+    plugins = manifests.load_plugins(fake_root)
+    written = manifests.write_claude_plugin_manifests(plugins, fake_root)
+    assert [p.parent.parent.name for p in written] == ["alpha"]
+
+
+def test_write_codex_plugin_manifests_basic_and_hooks(manifests, fake_root):
+    # Add a codex hooks manifest for alpha so we get the hooks pointer.
+    hooks_dir = fake_root / "dist" / "codex" / "plugins" / "alpha" / "hooks"
+    hooks_dir.mkdir(parents=True, exist_ok=True)
+    (hooks_dir / "codex.hooks.json").write_text("{}\n")
+
+    plugins = manifests.load_plugins(fake_root)
+    written = manifests.write_codex_plugin_manifests(plugins, fake_root)
+    assert len(written) == 2
+    alpha = json.loads(
+        (
+            fake_root
+            / "dist"
+            / "codex"
+            / "plugins"
+            / "alpha"
+            / ".codex-plugin"
+            / "plugin.json"
+        ).read_text()
+    )
+    assert alpha["name"] == "alpha"
+    assert alpha["skills"] == "./skills"
+    assert alpha["hooks"] == "./hooks/codex.hooks.json"
+    beta = json.loads(
+        (
+            fake_root
+            / "dist"
+            / "codex"
+            / "plugins"
+            / "beta"
+            / ".codex-plugin"
+            / "plugin.json"
+        ).read_text()
+    )
+    assert beta["skills"] == "./skills"
+    assert "hooks" not in beta
+
+
 def test_write_all_full_run(manifests, fake_root):
     out = manifests.write_all(fake_root)
     assert out["claude"].is_file()
     assert out["codex"].is_file()
     assert out["gemini"].is_file()
+    assert len(out["claude_plugins"]) == 2
+    assert len(out["codex_plugins"]) == 2
     assert all(p.is_symlink() for p in out["symlinks"])
 
 

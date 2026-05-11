@@ -7,12 +7,10 @@
 [![AGENTS.md](https://img.shields.io/badge/AGENTS.md-standard-000000)](https://agents.md)
 [![Codex CLI](https://img.shields.io/badge/Codex_CLI-skill_export-10A37F)](https://developers.openai.com/codex/plugins)
 [![Gemini CLI](https://img.shields.io/badge/Gemini_CLI-skill_export-4285F4)](https://geminicli.com/docs/extensions)
-[![Plugins](https://img.shields.io/badge/plugins-9-green)](plugins/)
-[![Skills](https://img.shields.io/badge/skills-36-green)](plugins/)
+[![Plugins](https://img.shields.io/badge/plugins-9-green)](src/plugins/)
+[![Skills](https://img.shields.io/badge/skills-37-green)](src/plugins/)
 
-A **Claude Code** plugin suite — 36 skills, 34 agents, 10 hooks, and 9 commands — with portable skill export for Codex CLI, Gemini CLI, Pi, and [AGENTS.md](https://agents.md)-compatible tools. Built over 6+ months of daily use and continuous refinement.
-
-Built for Claude Code, with all 36 portable skills exported as platform-optimized instructions for Codex CLI, Gemini CLI, Pi, and any tool supporting the AGENTS.md standard.
+A multi-agent skill suite for **Claude Code**, **Codex CLI**, **Gemini CLI**, and **Pi** — 37 skills, 38 agents, 9 hooks, and 9 commands. One source of truth in `src/`, compiled to platform-optimized output for each tool. Supports [AGENTS.md](https://agents.md)-compatible tools too. Built over 6+ months of daily use and continuous refinement.
 
 ## Why This Exists
 
@@ -160,7 +158,6 @@ location. Restart Pi or run `/reload` after creating the symlinks.
 
 | Extension              | Role                                                     |
 | ---------------------- | -------------------------------------------------------- |
-| `smart-lint.ts`        | Runs `smart-lint.sh` after every turn that wrote a file  |
 | `ask-user-question.ts` | `ask_user_question` tool with structured options         |
 | `permission-gate.ts`   | Confirms dangerous bash (rm -rf, sudo, chmod 777)        |
 | `protected-paths.ts`   | Blocks writes to `.env`, `.git/`, `node_modules/`        |
@@ -229,19 +226,19 @@ All agents and several skills optionally integrate with [claude-mem](https://git
 
 ## Plugins
 
-| Plugin                                                 | Skills | Agents | Description                                                                        |
-| ------------------------------------------------------ | ------ | ------ | ---------------------------------------------------------------------------------- |
-| [**dev-workflow**](plugins/dev-workflow/README.md)     | 10     | 25     | Code review, fixes, commits, linting hooks, and 24 language-specific review agents |
-| [**go-dev**](plugins/go-dev/README.md)                 | 1      | 1      | Idiomatic Go development with stdlib-first patterns, testing, and CLI tooling      |
-| [**python-dev**](plugins/python-dev/README.md)         | 1      | 1      | Python 3.12+ development with uv/ruff/pyright toolchain                            |
-| [**typescript-dev**](plugins/typescript-dev/README.md) | 1      | 1      | TypeScript with strict typing, React patterns, and modern tooling                  |
-| [**web-dev**](plugins/web-dev/README.md)               | 1      | 1      | Web frontend with vanilla HTML, CSS, JavaScript, and HTMX                          |
-| [**infra-ops**](plugins/infra-ops/README.md)           | 3      | 1      | Kubernetes, Terraform, Helm, GitHub Actions, AWS, GCP                              |
-| [**dev-tools**](plugins/dev-tools/README.md)           | 17     | 2      | Modern CLI, git worktrees, docs lookup, web research, config review, brainstorming |
-| [**spec-system**](plugins/spec-system/README.md)       | 0      | 1      | Spec-driven development: requirements, tasks, and planning workflows               |
-| [**testing-e2e**](plugins/testing-e2e/README.md)       | 2      | 1      | E2E testing with Playwright: browser automation and test generation                |
+| Plugin                                                       | Skills | Agents | Description                                                                        |
+| ------------------------------------------------------------ | ------ | ------ | ---------------------------------------------------------------------------------- |
+| [**dev-workflow**](src/plugins/dev-workflow/plugin.yaml)     | 10     | 25     | Code review, fixes, commits, linting hooks, and 24 language-specific review agents |
+| [**go-dev**](src/plugins/go-dev/plugin.yaml)                 | 1      | 1      | Idiomatic Go development with stdlib-first patterns, testing, and CLI tooling      |
+| [**python-dev**](src/plugins/python-dev/plugin.yaml)         | 1      | 1      | Python 3.12+ development with uv/ruff/pyright toolchain                            |
+| [**typescript-dev**](src/plugins/typescript-dev/plugin.yaml) | 1      | 1      | TypeScript with strict typing, React patterns, and modern tooling                  |
+| [**web-dev**](src/plugins/web-dev/plugin.yaml)               | 1      | 1      | Web frontend with vanilla HTML, CSS, JavaScript, and HTMX                          |
+| [**infra-ops**](src/plugins/infra-ops/plugin.yaml)           | 3      | 1      | Kubernetes, Terraform, Helm, GitHub Actions, AWS, GCP                              |
+| [**dev-tools**](src/plugins/dev-tools/plugin.yaml)           | 17     | 2      | Modern CLI, git worktrees, docs lookup, web research, config review, brainstorming |
+| [**spec-system**](src/plugins/spec-system/plugin.yaml)       | 1      | 1      | Spec-driven development: requirements, tasks, and planning workflows               |
+| [**testing-e2e**](src/plugins/testing-e2e/plugin.yaml)       | 2      | 1      | E2E testing with Playwright: browser automation and test generation                |
 
-**Totals**: 36 skills, 34 agents, 10 hooks, 9 commands
+**Totals**: 37 skills, 34 agents (plugin-owned), 9 hooks, 9 commands
 
 ## Skills
 
@@ -297,9 +294,9 @@ These activate silently when relevant patterns are detected — no `/skill-name`
 
 ## Agents
 
-Claude Code uses the full plugin agent set below. Pi gets a small generated
-runtime set in `dist/pi/agents/`: `scout`, `planner`, `reviewer`, `worker`, and
-`playwright-tester`.
+Claude Code uses the full plugin agent set below. Pi receives all 38 agents: the
+complete plugin set plus `planner`, `reviewer`, `scout`, and `worker` — Pi-only
+planning agents with no plugin assignment.
 
 | Need                       | Agent                       | Model  |
 | -------------------------- | --------------------------- | ------ |
@@ -339,12 +336,12 @@ One source of truth (`src/`) compiles into per-target trees (`dist/<target>/`).
 The compiler is `scripts/build/compile.py`; design is documented in
 [`docs/skill-compiler-design.md`](docs/skill-compiler-design.md).
 
-| Target      | Output                                | Notes                                                    |
-| ----------- | ------------------------------------- | -------------------------------------------------------- |
-| Claude Code | `dist/claude/plugins/<plugin>/`       | Skills + markdown agents + hooks + commands per plugin   |
-| Codex CLI   | `dist/codex/plugins/<plugin>/`        | Skills + TOML agents + hooks.json per plugin             |
-| Gemini CLI  | `dist/gemini/{skills,agents,hooks}/`  | Flat per kind; root `skills`/`hooks` symlinks for loader |
-| Pi          | `dist/pi/{skills,agents,extensions}/` | Flat layout; symlinked into `~/.pi/agent/`               |
+| Target      | Output                                               | Notes                                                    |
+| ----------- | ---------------------------------------------------- | -------------------------------------------------------- |
+| Claude Code | `dist/claude/plugins/<plugin>/`                      | Skills + markdown agents + hooks + commands per plugin   |
+| Codex CLI   | `dist/codex/plugins/<plugin>/`, `dist/codex/agents/` | Skills + hooks per plugin; standalone TOML agents        |
+| Gemini CLI  | `dist/gemini/{skills,agents,hooks}/`                 | Flat per kind; root `skills`/`hooks` symlinks for loader |
+| Pi          | `dist/pi/{skills,agents,extensions}/`                | Flat layout; symlinked into `~/.pi/agent/`               |
 
 ### Structure
 

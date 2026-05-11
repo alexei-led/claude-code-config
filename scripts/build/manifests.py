@@ -179,6 +179,103 @@ def write_claude_marketplace(plugins: Sequence[Mapping[str, Any]], root: Path) -
     return out
 
 
+def _plugin_manifest_payload(
+    plugin: Mapping[str, Any],
+    global_meta: Mapping[str, Any],
+    fallback_version: str,
+) -> dict[str, Any]:
+    """Build a per-plugin manifest dict shared by Claude and Codex emitters.
+
+    Plugin-level fields win; missing optional metadata (author/homepage/
+    repository/license) falls back to the global marketplace metadata so
+    consumers do not see anonymous plugins.
+    """
+    payload: dict[str, Any] = {
+        "name": plugin["name"],
+        "version": plugin.get("version") or fallback_version,
+    }
+    if plugin.get("description"):
+        payload["description"] = plugin["description"]
+
+    author = plugin.get("author")
+    if author is None:
+        owner = global_meta.get("owner")
+        if isinstance(owner, Mapping):
+            author = dict(owner)
+    if author is not None:
+        payload["author"] = author
+
+    for key in ("homepage", "repository", "license"):
+        if plugin.get(key) is not None:
+            payload[key] = plugin[key]
+        elif global_meta.get(key) is not None:
+            payload[key] = global_meta[key]
+
+    _copy_optional(plugin, payload, ("keywords", "category", "tags"))
+    return payload
+
+
+def write_claude_plugin_manifests(
+    plugins: Sequence[Mapping[str, Any]], root: Path
+) -> list[Path]:
+    """Write `.claude-plugin/plugin.json` under each compiled Claude plugin dir.
+
+    Each manifest enables Claude Code's `/plugin install <name>@<market>`
+    flow once the marketplace entry is registered. Plugins without a
+    `dist/claude/plugins/<name>/` directory are skipped.
+    """
+    global_meta = load_global_meta(root)
+    version = _resolve_version(global_meta, plugins)
+    written: list[Path] = []
+    for plugin in plugins:
+        name = plugin["name"]
+        plugin_root = root / "dist" / "claude" / "plugins" / name
+        if not plugin_root.is_dir():
+            continue
+        payload = _plugin_manifest_payload(plugin, global_meta, version)
+        out = plugin_root / ".claude-plugin" / "plugin.json"
+        _write_json(out, payload)
+        written.append(out)
+    log.info("wrote %d claude per-plugin manifest(s)", len(written))
+    return written
+
+
+def write_codex_plugin_manifests(
+    plugins: Sequence[Mapping[str, Any]], root: Path
+) -> list[Path]:
+    """Write `.codex-plugin/plugin.json` under each compiled Codex plugin dir.
+
+    Mirrors `write_claude_plugin_manifests` for Codex. When a plugin emits
+    a hooks manifest (`hooks/codex.hooks.json`), the relative path is
+    referenced so Codex resolves it without scanning.
+    """
+    global_meta = load_global_meta(root)
+    version = _resolve_version(global_meta, plugins)
+    written: list[Path] = []
+    for plugin in plugins:
+        name = plugin["name"]
+        plugin_root = root / "dist" / "codex" / "plugins" / name
+        if not plugin_root.is_dir():
+            continue
+        payload = _plugin_manifest_payload(plugin, global_meta, version)
+        # Use public_homepage/public_repository when set — the main homepage/
+        # repository may point to a private enterprise repo for Claude Code.
+        for key in ("homepage", "repository"):
+            pub = global_meta.get(f"public_{key}")
+            if pub and not plugin.get(key):
+                payload[key] = pub
+        if (plugin_root / "skills").is_dir():
+            payload["skills"] = "./skills"
+        hooks_manifest = plugin_root / "hooks" / "codex.hooks.json"
+        if hooks_manifest.is_file():
+            payload["hooks"] = "./hooks/codex.hooks.json"
+        out = plugin_root / ".codex-plugin" / "plugin.json"
+        _write_json(out, payload)
+        written.append(out)
+    log.info("wrote %d codex per-plugin manifest(s)", len(written))
+    return written
+
+
 def write_codex_marketplace(plugins: Sequence[Mapping[str, Any]], root: Path) -> Path:
     """Write `.agents/plugins/marketplace.json` with Codex-flavored entries.
 
@@ -279,5 +376,7 @@ def write_all(root: Path) -> dict[str, Any]:
         "claude": write_claude_marketplace(plugins, root),
         "codex": write_codex_marketplace(plugins, root),
         "gemini": write_gemini_extension(plugins, root),
+        "claude_plugins": write_claude_plugin_manifests(plugins, root),
+        "codex_plugins": write_codex_plugin_manifests(plugins, root),
         "symlinks": ensure_gemini_symlinks(root),
     }

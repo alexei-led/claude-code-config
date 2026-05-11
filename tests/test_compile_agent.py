@@ -303,7 +303,7 @@ def test_body_overlay_applied_when_present(ca, tmp_path: Path) -> None:
 
 
 def test_plugin_grouped_target_skips_unowned_agent(ca, tmp_path: Path) -> None:
-    """Unowned agents return no writes for plugin-grouped targets."""
+    """Unowned agents return no writes for plugin-grouped agent layouts."""
     agent = tmp_path / "src" / "agents" / "orphan"
     agent.mkdir(parents=True)
     (agent / "AGENT.md").write_text(
@@ -312,8 +312,23 @@ def test_plugin_grouped_target_skips_unowned_agent(ca, tmp_path: Path) -> None:
     root = tmp_path / "repo"
     root.mkdir()
 
+    # Claude still requires plugin ownership for agents.
     assert ca.compile_agent(agent, "claude", None, root) == []
-    assert ca.compile_agent(agent, "codex", None, root) == []
-    # Flat targets still emit even without a plugin index.
+    # Flat layouts (codex agents, pi, gemini) emit even without a plugin index.
+    codex_written = ca.compile_agent(agent, "codex", None, root)
+    assert codex_written == [root / "dist" / "codex" / "agents" / "orphan.toml"]
     assert ca.compile_agent(agent, "pi", None, root) != []
     assert ca.compile_agent(agent, "gemini", None, root) != []
+
+
+def test_codex_agents_emit_flat_not_plugin_grouped(ca, tmp_path: Path) -> None:
+    """Codex agents land at dist/codex/agents/ regardless of plugin index."""
+    agent = tmp_path / "src" / "agents" / "tiny"
+    agent.mkdir(parents=True)
+    (agent / "AGENT.md").write_text("---\nname: tiny\ndescription: d\n---\n\nbody\n")
+    root = tmp_path / "repo"
+    root.mkdir()
+    plugin_index = {"tiny": ["alpha", "beta"]}
+
+    written = ca.compile_agent(agent, "codex", plugin_index, root)
+    assert written == [root / "dist" / "codex" / "agents" / "tiny.toml"]

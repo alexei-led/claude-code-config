@@ -158,8 +158,14 @@ def test_output_paths_plugin_grouped_no_owner_returns_empty(pi_mod, fake_plugins
         pi_mod.output_paths("orphan", "skills", "claude", index, fake_plugins_root)
         == []
     )
+    # Codex agents land flat regardless of plugin ownership (agent_layout=flat).
+    assert pi_mod.output_paths(
+        "orphan", "agents", "codex", index, fake_plugins_root
+    ) == [fake_plugins_root / "dist/codex/agents"]
+    # Claude agents still require plugin ownership.
     assert (
-        pi_mod.output_paths("orphan", "agents", "codex", index, fake_plugins_root) == []
+        pi_mod.output_paths("orphan", "agents", "claude", index, fake_plugins_root)
+        == []
     )
 
 

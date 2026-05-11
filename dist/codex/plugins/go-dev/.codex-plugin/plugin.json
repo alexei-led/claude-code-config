@@ -1,0 +1,13 @@
+{
+  "name": "go-dev",
+  "version": "2.2.0",
+  "description": "Idiomatic Go 1.25+ development with stdlib-first patterns",
+  "author": {
+    "name": "Alexei Ledenev",
+    "email": "alexei.led@gmail.com"
+  },
+  "homepage": "https://github.com/alexei-led/cc-thingz",
+  "repository": "https://github.com/alexei-led/cc-thingz",
+  "license": "MIT",
+  "skills": "./skills"
+}

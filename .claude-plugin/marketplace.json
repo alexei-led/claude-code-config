@@ -5,7 +5,7 @@
     "email": "alexei.led@gmail.com"
   },
   "metadata": {
-    "description": "A Claude Code plugin suite for development workflows, language tooling, infrastructure ops, and more \u2014 with portable skill export for Codex CLI and Gemini CLI.",
+    "description": "A multi-agent skill suite for Claude Code, Codex CLI, Gemini CLI, and Pi \u2014 development workflows, language tooling, infrastructure ops, and more.",
     "homepage": "https://github.com/alexei-led/cc-forge",
     "repository": "https://github.com/alexei-led/cc-forge",
     "license": "MIT",

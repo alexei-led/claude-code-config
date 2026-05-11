@@ -1,10 +1,8 @@
-<!-- Hand-maintained catalog of skills exported to AGENTS.md-compatible tools. Update when adding/removing/renaming a skill under src/skills/. -->
-
 # cc-thingz Skills
 
-A Claude Code plugin suite with portable skill export for Codex CLI, Gemini CLI, and AGENTS.md-compatible tools.
+A multi-agent skill suite for Claude Code, Codex CLI, Gemini CLI, and Pi.
 
-32 portable skills exported to Gemini under `dist/gemini/skills/` — code review, language tooling, infrastructure, testing, and developer utilities. Claude-only skills are not listed here.
+32 portable skills available under `dist/gemini/skills/` — code review, language tooling, infrastructure, testing, and developer utilities. Platform-specific skills are excluded.
 
 ## Development Workflow
 
