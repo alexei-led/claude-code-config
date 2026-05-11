@@ -1,0 +1,18 @@
+user-invocable: true
+context: fork
+allowed-tools:
+  - AskUserQuestion
+  - Task
+  - TaskCreate
+  - TaskUpdate
+  - TaskList
+  - Read
+  - Grep
+  - Glob
+  - Write
+  - mcp__perplexity-ask__perplexity_ask
+  - mcp__plugin_claude-mem_mcp-search__timeline
+  - mcp__plugin_claude-mem_mcp-search__search
+  - WebFetch
+  - Bash(git *)
+argument-hint: '[idea|plan|grill] <topic-or-plan>'

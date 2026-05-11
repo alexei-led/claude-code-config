@@ -1,0 +1,203 @@
+---
+description: Idiomatic TypeScript development. Use when writing TypeScript code, Node.js
+  services, React apps, or discussing TS patterns. Emphasizes strict typing, composition,
+  and modern tooling (bun/vite).
+name: writing-typescript
+---
+
+<!-- Platform guidance for non-Claude models (Codex CLI, Gemini CLI) -->
+<!-- Persistence: Keep going until the task is fully resolved. Do not stop at the first obstacle. -->
+<!-- Tool use: Use available tools to verify — do not guess at file contents, paths, or command output. -->
+<!-- Planning: Reflect between steps. Decompose complex problems into logical sub-steps before acting. -->
+<!-- Reliability: Assess risk before irreversible actions. Ask for clarification on ambiguity. -->
+<!-- Completeness: Generate complete responses without truncating. Review your output against the original constraints. -->
+
+# TypeScript Development (5.x)
+
+## Critical Output Rules
+
+- State strict TypeScript choices explicitly: `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, no `any` by default, and `unknown` for untrusted input.
+- Validate untrusted API/JSON responses at the boundary before returning typed data.
+- Favor composition and small functions/hooks over large classes, global state, or mixed concerns.
+- Handle async errors explicitly with `Result`/discriminated unions or typed thrown errors at boundaries.
+- Always mention behavior tests for success and failure paths. For React, include component or user-behavior tests for loading, success, error, and validation states.
+- Include verification commands when code changes: `bunx tsc --noEmit`, `bun test`, and lint/format commands when configured.
+- Keep dependencies minimal; add schema/form libraries only when real complexity beats a small type guard or helper.
+- Do not run destructive shell commands. For broad or risky changes, state the risk and ask before acting.
+
+## Core Philosophy
+
+1. **Strict Mode Always**
+   - Enable all strict checks in tsconfig
+   - Treat `any` as a bug—use `unknown` for untrusted input
+   - noUncheckedIndexedAccess, exactOptionalPropertyTypes
+
+2. **Interface vs Type**
+   - interface for object shapes (extensible, mergeable)
+   - type for unions, intersections, mapped types
+   - interface for React props and public APIs
+
+3. **Discriminated Unions**
+   - Literal `kind`/`type` tag for variants
+   - Exhaustive switch with never check
+   - Model states as unions, not boolean flags
+
+4. **Flat Control Flow**
+   - Guard clauses with early returns
+   - Type guards and predicate helpers
+   - Maximum 2 levels of nesting
+
+5. **Result Type Pattern**
+   - Result<T, E> for explicit error handling
+   - Discriminated union for success/failure
+   - Custom Error subclasses for instanceof
+
+## Quick Patterns
+
+### Discriminated Unions (Not Boolean Flags)
+
+```typescript
+// GOOD: discriminated union for state
+type LoadState<T> =
+  | { status: "idle" }
+  | { status: "loading" }
+  | { status: "success"; data: T }
+  | { status: "error"; error: string };
+
+// BAD: boolean flags
+type LoadState = {
+  isLoading: boolean;
+  isError: boolean;
+  data: T | null;
+  error: string | null;
+};
+```
+
+### Flat Control Flow (No Nesting)
+
+```typescript
+// GOOD: guard clauses, early returns
+function process(user: User | null): Result<Data> {
+  if (!user) return err("no user");
+  if (!user.isActive) return err("inactive");
+  if (user.role !== "admin") return err("not admin");
+  return ok(doWork(user)); // happy path at end
+}
+
+// BAD: nested conditions
+function process(user: User | null): Result<Data> {
+  if (user) {
+    if (user.isActive) {
+      if (user.role === "admin") {
+        return ok(doWork(user));
+      }
+    }
+  }
+  return err("invalid");
+}
+```
+
+### Type Guards
+
+```typescript
+function isUser(value: unknown): value is User {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "id" in value &&
+    "name" in value
+  );
+}
+
+// Predicate helper for flat code
+const isActiveAdmin = (u: User | null): u is User & { role: "admin" } =>
+  !!u && u.isActive && u.role === "admin";
+```
+
+### Result Type
+
+```typescript
+type Result<T, E = Error> = { ok: true; value: T } | { ok: false; error: E };
+
+const ok = <T>(value: T): Result<T, never> => ({ ok: true, value });
+const err = <E>(error: E): Result<never, E> => ({ ok: false, error });
+
+async function fetchUser(
+  id: string,
+): Promise<Result<User, "not-found" | "network">> {
+  try {
+    const res = await fetch(`/users/${id}`);
+    if (res.status === 404) return err("not-found");
+    if (!res.ok) return err("network");
+    return ok(await res.json());
+  } catch {
+    return err("network");
+  }
+}
+```
+
+### Exhaustive Switch
+
+```typescript
+function area(shape: Shape): number {
+  switch (shape.kind) {
+    case "circle":
+      return Math.PI * shape.radius ** 2;
+    case "square":
+      return shape.size ** 2;
+    case "rect":
+      return shape.width * shape.height;
+    default: {
+      const _exhaustive: never = shape; // Error if variant missed
+      return _exhaustive;
+    }
+  }
+}
+```
+
+## tsconfig.json Essentials
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitReturns": true,
+    "noImplicitOverride": true,
+    "isolatedModules": true
+  }
+}
+```
+
+## References
+
+- [PATTERNS.md](references/PATTERNS.md) - Code patterns and style
+- [REACT.md](references/REACT.md) - React component patterns
+- [TESTING.md](references/TESTING.md) - Testing with vitest
+
+## Commands
+
+```bash
+bun install              # Install deps
+bun run build            # Build
+bun test                 # Test
+bun run lint             # Lint
+bun run format           # Format
+```
+
+## Verify Generated Code
+
+After generating code, always verify it compiles, tests pass, and lint runs when configured:
+
+```bash
+bunx tsc --noEmit
+bun test
+bun run lint
+bun run format --check
+```
+
+Use the project's configured commands if different.

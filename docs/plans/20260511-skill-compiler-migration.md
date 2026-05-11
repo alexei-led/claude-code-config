@@ -285,14 +285,14 @@ The migration is mechanical given the design is settled: bulk-migrate the remain
 - Create: `src/skills/<batch-1 skill dirs>/SKILL.md` (+ optional `claude/frontmatter.yaml`)
 - Create: `scripts/build/migrate_skills.py` (one-shot helper, similar to migrate_agents.py)
 
-- [ ] write `migrate_skills.py` adapting the agent-migration script: read base SKILL.md, split frontmatter (name + description stay; CC-specific keys move to claude/frontmatter.yaml)
-- [ ] migrate writing-go, writing-python, writing-typescript, writing-web (4 skills)
-- [ ] migrate sequential-thinking, using-modern-cli, using-cloud-cli, using-git-worktrees (4 skills)
-- [ ] migrate refactoring-code, smart-explore, searching-code (3 skills)
-- [ ] migrate brainstorming-ideas, grill-me, debating-ideas (3 skills) — already have codex/pi sidecars; preserve as `<target>/body.md`
-- [ ] run `make build` after each batch; verify dist diff is sane
-- [ ] write tests: migrated skill compiles cleanly for all 4 targets
-- [ ] run tests — must pass before task 16
+- [x] write `migrate_skills.py` adapting the agent-migration script: read base SKILL.md, split frontmatter (name + description stay; CC-specific keys move to claude/frontmatter.yaml)
+- [x] migrate writing-go, writing-python, writing-typescript, writing-web (4 skills)
+- [x] migrate sequential-thinking, using-modern-cli, using-cloud-cli, using-git-worktrees (4 skills)
+- [x] migrate refactoring-code, smart-explore, searching-code (3 skills)
+- [x] migrate brainstorming-ideas, grill-me, debating-ideas (3 skills) — brainstorming-ideas keeps CC body as `claude/body.md`, base = vendor-neutral codex content; debating-ideas marked `targets: [claude]` (no vendor-neutral version exists); grill-me clean
+- [x] run `make build` after each batch; verify dist diff is sane
+- [x] write tests: migrated skill compiles cleanly for all 4 targets
+- [x] run tests — must pass before task 16
 
 ### Task 16: Bulk-migrate batch 2 — skills with target sidecars
 

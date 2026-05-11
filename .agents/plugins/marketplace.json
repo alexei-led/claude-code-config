@@ -27,6 +27,39 @@
       }
     },
     {
+      "name": "go-dev",
+      "source": {
+        "source": "local",
+        "path": "./dist/codex/plugins/go-dev"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_FIRST_USE"
+      }
+    },
+    {
+      "name": "infra-ops",
+      "source": {
+        "source": "local",
+        "path": "./dist/codex/plugins/infra-ops"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_FIRST_USE"
+      }
+    },
+    {
+      "name": "python-dev",
+      "source": {
+        "source": "local",
+        "path": "./dist/codex/plugins/python-dev"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_FIRST_USE"
+      }
+    },
+    {
       "name": "spec-system",
       "source": {
         "source": "local",
@@ -42,6 +75,28 @@
       "source": {
         "source": "local",
         "path": "./dist/codex/plugins/testing-e2e"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_FIRST_USE"
+      }
+    },
+    {
+      "name": "typescript-dev",
+      "source": {
+        "source": "local",
+        "path": "./dist/codex/plugins/typescript-dev"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_FIRST_USE"
+      }
+    },
+    {
+      "name": "web-dev",
+      "source": {
+        "source": "local",
+        "path": "./dist/codex/plugins/web-dev"
       },
       "policy": {
         "installation": "AVAILABLE",
