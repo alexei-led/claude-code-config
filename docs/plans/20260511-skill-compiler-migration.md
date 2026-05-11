@@ -331,10 +331,10 @@ The migration is mechanical given the design is settled: bulk-migrate the remain
 - Modify: `CONTRIBUTING.md`
 - Modify: `README.md`
 
-- [ ] update CONTRIBUTING.md: src/ vs dist/ rules, vendor-neutral body checklist, no markdown tables / ASCII boxes guidance, how to add a skill / agent / hook / plugin
-- [ ] update README.md installation sections: paths now under `dist/<target>/`, no manual symlink for Pi users (or document the new manual symlink convention)
-- [ ] cross-link the design doc (`docs/skill-compiler-design.md`)
-- [ ] (no test task — documentation)
+- [x] update CONTRIBUTING.md: src/ vs dist/ rules, vendor-neutral body checklist, no markdown tables / ASCII boxes guidance, how to add a skill / agent / hook / plugin
+- [x] update README.md installation sections: paths now under `dist/<target>/`, no manual symlink for Pi users (or document the new manual symlink convention)
+- [x] cross-link the design doc (`docs/skill-compiler-design.md`)
+- [x] (no test task — documentation)
 
 ### Task 19: Update CI workflows
 
