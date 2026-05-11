@@ -1,0 +1,9 @@
+user-invocable: false
+context: fork
+agent: infra-engineer
+allowed-tools:
+  - Read
+  - Bash
+  - Grep
+  - Glob
+  - Bash(kubectl *)

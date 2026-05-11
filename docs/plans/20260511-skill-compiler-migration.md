@@ -299,18 +299,18 @@ The migration is mechanical given the design is settled: bulk-migrate the remain
 **Files:**
 - Create: `src/skills/<batch-2 skill dirs>/{SKILL.md, claude/, codex/, gemini/, pi/}` as needed
 
-- [ ] migrate testing-e2e (has codex + pi sidecars) — preserve as overlay bodies
-- [ ] migrate mem-history (has Pi sidecar)
-- [ ] migrate exploring-repos (has Pi sidecar)
-- [ ] migrate researching-web (has Pi sidecar)
-- [ ] migrate reviewing-cc-config, evolving-config (Pi sidecar)
-- [ ] migrate fixing-code (codex sidecar), improving-tests (codex sidecar), documenting-code (Pi sidecar)
-- [ ] migrate deploying-infra (codex sidecar), managing-infra
-- [ ] migrate linting-instructions, analyzing-usage, looking-up-docs, context7-cli, improve-codebase-architecture, ccgram-messaging
-- [ ] each sidecar from old `SKILL.<target>.md` becomes `<target>/body.md` in the new structure
-- [ ] `make build` after each cluster — verify outputs sane
-- [ ] write tests: each migrated skill produces correct outputs for all 4 targets with overlay merging
-- [ ] run tests — must pass before task 17
+- [x] migrate testing-e2e (has codex + pi sidecars) — preserve as overlay bodies
+- [x] migrate mem-history (has Pi sidecar)
+- [x] migrate exploring-repos (has Pi sidecar)
+- [x] migrate researching-web (has Pi sidecar)
+- [x] migrate reviewing-cc-config, evolving-config (Pi sidecar) — reviewing-cc-config marked `targets: [claude]` (CC orchestration cannot be cleanly removed without semantic loss); evolving-config swapped via Pi sidecar as vendor-neutral base
+- [x] migrate fixing-code (codex sidecar), improving-tests (codex sidecar), documenting-code (Pi sidecar)
+- [x] migrate deploying-infra (codex sidecar), managing-infra — deploying-infra marked `targets: [claude]` (codex sidecar retains `$ARGUMENTS`, no vendor-neutral form yet)
+- [x] migrate linting-instructions, analyzing-usage, looking-up-docs, context7-cli, improve-codebase-architecture, ccgram-messaging — linting-instructions and analyzing-usage marked `targets: [claude]` ($ARGUMENTS in body, no sidecar variants to swap)
+- [x] each sidecar from old `SKILL.<target>.md` becomes `<target>/body.md` in the new structure
+- [x] `make build` after each cluster — verify outputs sane
+- [x] write tests: each migrated skill produces correct outputs for all 4 targets with overlay merging
+- [x] run tests — must pass before task 17
 
 ### Task 17: Migrate watch-team command as standalone skill
 

@@ -79,6 +79,7 @@ class MigrationSpec:
     source_plugin_dir: Path
     targets_restriction: list[str] | None = None
     swap_claude_body: bool = False
+    swap_pi_body: bool = False
     import_codex_body: bool = False
     import_pi_body: bool = False
     extra_files: list[Path] = field(default_factory=list)
@@ -225,6 +226,23 @@ def migrate(spec: MigrationSpec, out_root: Path) -> None:
                 target_dir / "claude" / "frontmatter.yaml", claude_meta
             )
         _write_text_if_changed(target_dir / "claude" / "body.md", base_body)
+    elif spec.swap_pi_body and cc_pi_sidecar.is_file():
+        pi_meta, pi_body = _load(cc_pi_sidecar)
+        new_base_meta = {k: pi_meta[k] for k in ("name", "description") if k in pi_meta}
+        if "name" not in new_base_meta:
+            new_base_meta["name"] = base_meta.get("name", spec.name)
+        if spec.targets_restriction:
+            new_base_meta["targets"] = list(spec.targets_restriction)
+        if sibling_names:
+            pi_body = _rewrite_sibling_links(pi_body, sibling_names)
+        _write_skill_md(target_dir / "SKILL.md", new_base_meta, pi_body)
+
+        _, claude_meta = _split_frontmatter(base_meta)
+        if claude_meta:
+            _write_yaml_if_changed(
+                target_dir / "claude" / "frontmatter.yaml", claude_meta
+            )
+        _write_text_if_changed(target_dir / "claude" / "body.md", base_body)
     else:
         new_base_meta, claude_meta = _split_frontmatter(base_meta)
         if spec.targets_restriction:
@@ -246,7 +264,7 @@ def migrate(spec: MigrationSpec, out_root: Path) -> None:
         if overlay:
             _write_yaml_if_changed(target_dir / "codex" / "frontmatter.yaml", overlay)
 
-    if spec.import_pi_body and cc_pi_sidecar.is_file():
+    if spec.import_pi_body and not spec.swap_pi_body and cc_pi_sidecar.is_file():
         pi_meta, pi_body = _load(cc_pi_sidecar)
         _write_text_if_changed(target_dir / "pi" / "body.md", pi_body)
         overlay = {
@@ -274,6 +292,9 @@ def migrate(spec: MigrationSpec, out_root: Path) -> None:
         _copy_extras(spec.extra_files, target_dir / "references")
 
     log.info("migrated skill=%s from plugin=%s", spec.name, plugin)
+
+
+BATCH_2: list[MigrationSpec] = []  # populated below after BATCH_1 declaration
 
 
 BATCH_1: list[MigrationSpec] = [
@@ -337,6 +358,98 @@ BATCH_1: list[MigrationSpec] = [
 ]
 
 
+BATCH_2[:] = [
+    MigrationSpec(
+        name="testing-e2e",
+        source_plugin_dir=ROOT / "plugins" / "testing-e2e",
+        swap_pi_body=True,
+        import_codex_body=True,
+    ),
+    MigrationSpec(
+        name="mem-history",
+        source_plugin_dir=ROOT / "plugins" / "dev-tools",
+        import_pi_body=True,
+    ),
+    MigrationSpec(
+        name="exploring-repos",
+        source_plugin_dir=ROOT / "plugins" / "dev-tools",
+        swap_pi_body=True,
+    ),
+    MigrationSpec(
+        name="researching-web",
+        source_plugin_dir=ROOT / "plugins" / "dev-tools",
+        swap_pi_body=True,
+    ),
+    MigrationSpec(
+        name="reviewing-cc-config",
+        source_plugin_dir=ROOT / "plugins" / "dev-tools",
+        targets_restriction=["claude"],
+    ),
+    MigrationSpec(
+        name="evolving-config",
+        source_plugin_dir=ROOT / "plugins" / "dev-tools",
+        swap_pi_body=True,
+    ),
+    MigrationSpec(
+        name="fixing-code",
+        source_plugin_dir=ROOT / "plugins" / "dev-workflow",
+        swap_claude_body=True,
+    ),
+    MigrationSpec(
+        name="improving-tests",
+        source_plugin_dir=ROOT / "plugins" / "dev-workflow",
+        swap_claude_body=True,
+    ),
+    MigrationSpec(
+        name="documenting-code",
+        source_plugin_dir=ROOT / "plugins" / "dev-workflow",
+        swap_pi_body=True,
+    ),
+    MigrationSpec(
+        name="deploying-infra",
+        source_plugin_dir=ROOT / "plugins" / "infra-ops",
+        targets_restriction=["claude"],
+    ),
+    MigrationSpec(
+        name="managing-infra",
+        source_plugin_dir=ROOT / "plugins" / "infra-ops",
+    ),
+    MigrationSpec(
+        name="linting-instructions",
+        source_plugin_dir=ROOT / "plugins" / "dev-tools",
+        targets_restriction=["claude"],
+    ),
+    MigrationSpec(
+        name="analyzing-usage",
+        source_plugin_dir=ROOT / "plugins" / "dev-tools",
+        targets_restriction=["claude"],
+    ),
+    MigrationSpec(
+        name="looking-up-docs",
+        source_plugin_dir=ROOT / "plugins" / "dev-tools",
+    ),
+    MigrationSpec(
+        name="context7-cli",
+        source_plugin_dir=ROOT / "plugins" / "dev-tools",
+    ),
+    MigrationSpec(
+        name="improve-codebase-architecture",
+        source_plugin_dir=ROOT / "plugins" / "dev-workflow",
+    ),
+    MigrationSpec(
+        name="ccgram-messaging",
+        source_plugin_dir=ROOT / "plugins" / "dev-workflow",
+    ),
+]
+
+
+BATCHES: dict[str, list[MigrationSpec]] = {
+    "batch1": BATCH_1,
+    "batch2": BATCH_2,
+    "all": BATCH_1 + BATCH_2,
+}
+
+
 def run(out_root: Path, specs: Iterable[MigrationSpec]) -> None:
     out_root.mkdir(parents=True, exist_ok=True)
     for spec in specs:
@@ -351,13 +464,19 @@ def main() -> int:
         default=ROOT / "src" / "skills",
         help="Output dir (default: src/skills/)",
     )
+    ap.add_argument(
+        "--batch",
+        choices=sorted(BATCHES),
+        default="batch1",
+        help="Which migration batch to run (default: batch1)",
+    )
     ap.add_argument("--verbose", action="store_true")
     args = ap.parse_args()
     logging.basicConfig(
         level=logging.DEBUG if args.verbose else logging.INFO,
         format="%(levelname)s %(name)s: %(message)s",
     )
-    run(args.out, BATCH_1)
+    run(args.out, BATCHES[args.batch])
     return 0
 
 
