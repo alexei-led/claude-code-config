@@ -2,11 +2,7 @@
 
 Update project documentation to reflect current code state. Do not delete or overwrite existing docs without confirmation. If verification fails or required evidence is unavailable, report the failure instead of claiming docs are current.
 
-<!-- CC-ONLY: begin -->
-
 **Use TaskCreate / TaskUpdate** to track these 5 phases:
-
-<!-- CC-ONLY: end -->
 
 1. Determine documentation scope
 2. Analyze recent changes
@@ -27,8 +23,6 @@ Ask one question at a time:
 ## Phase 2-4: Analyze and Update Documentation
 
 Use a documentation subagent when available; otherwise inspect and update docs directly.
-
-<!-- CC-ONLY: begin -->
 
 ```
 Task with docs-keeper agent:
@@ -64,8 +58,6 @@ Updated:
 
 Verified: All links valid, examples compile"
 ```
-
-<!-- CC-ONLY: end -->
 
 ## Phase 4: Research Best Practices (If Needed)
 

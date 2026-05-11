@@ -28,8 +28,8 @@ lint-python: ## Lint Python files with ruff
 lint-shell: ## Lint shell scripts with shellcheck + shfmt (matches CI's action-sh-checker scope)
 	@command -v shellcheck >/dev/null 2>&1 || { echo "shellcheck not installed"; exit 1; }
 	@command -v shfmt >/dev/null 2>&1 || { echo "shfmt not installed"; exit 1; }
-	find plugins platforms scripts -name '*.sh' -exec shellcheck {} +
-	find plugins platforms scripts -name '*.sh' -exec shfmt -i 0 -d {} +
+	find src scripts -name '*.sh' -exec shellcheck {} +
+	find src scripts -name '*.sh' -exec shfmt -i 0 -d {} +
 	@# Cover .bats test files and extension-less shell scripts CI also lints
 	find tests -name '*.bats' -exec shfmt -i 0 -d {} +
 	shfmt -i 0 -d scripts/git-hooks/pre-commit scripts/git-hooks/pre-push scripts/release/release-tag
@@ -98,8 +98,8 @@ skill-evals-summary: ## Print summary for latest skill eval workspace
 # targets are gone — they duplicated what `make check` already proves
 # end-to-end, and disagreed with each other when generators changed.
 
-.PHONY: validate validate-config validate-executables validate-no-plugin-evals validate-genericity lint-instructions
-validate: validate-no-plugin-evals validate-config validate-genericity validate-executables ## Validate canonical sources (frontmatter, executable bits, plugin layout)
+.PHONY: validate validate-config validate-executables validate-genericity lint-instructions
+validate: validate-config validate-genericity validate-executables ## Validate canonical sources (frontmatter, executable bits, plugin layout)
 
 validate-config: ## Validate plugin configs and frontmatter
 	uv run python scripts/validate/validate-config.py
@@ -107,23 +107,12 @@ validate-config: ## Validate plugin configs and frontmatter
 validate-genericity: ## Reject Claude-only tokens in vendor-neutral base SKILL.md/AGENT.md
 	uv run python scripts/validate/validate_genericity.py
 
-validate-no-plugin-evals: ## Ensure eval fixtures are not inside deployable plugin skill dirs
-	@bad=$$(find plugins -path '*/skills/*/evals' -type d); \
-	if [ -n "$$bad" ]; then \
-		echo "ERROR: evals/ found inside deployable plugin skills"; \
-		echo "$$bad"; \
-		exit 1; \
-	fi
-
 lint-instructions: ## Lint agent/skill instructions (advisory)
 	@uv run python scripts/validate/lint-instructions.py
 
 validate-executables: ## Check shell + Python entry scripts have executable bit
 	@fail=0; \
-	for f in $$(find plugins platforms scripts -name '*.sh') \
-		plugins/dev-workflow/hooks/session-start.py \
-		plugins/infra-ops/skills/using-cloud-cli/scripts/bq-cost-check.py \
-		plugins/infra-ops/skills-pi/using-cloud-cli/scripts/bq-cost-check.py \
+	for f in $$(find src scripts -name '*.sh') \
 		scripts/git-hooks/pre-commit scripts/git-hooks/pre-push scripts/release/release-tag; do \
 		[ -x "$$f" ] || { echo "ERROR: $$f is not executable"; fail=1; }; \
 	done; \
@@ -135,46 +124,8 @@ validate-executables: ## Check shell + Python entry scripts have executable bit
 fmt: ## Auto-format Python and shell files
 	uv run ruff check --fix .
 	uv run ruff format .
-	find plugins platforms scripts -name '*.sh' -exec shfmt -i 0 -w {} +
+	find src scripts -name '*.sh' -exec shfmt -i 0 -w {} +
 	shfmt -i 0 -w scripts/git-hooks/pre-commit scripts/git-hooks/pre-push scripts/release/release-tag
-
-# --- Flat ---
-
-.PHONY: flat
-flat: ## Sync flat/ symlinks with plugin contents
-	bash scripts/build/generate-flat.sh
-
-# --- Hooks (smart-lint.sh distribution) ---
-
-.PHONY: sync-hooks generate-hooks
-sync-hooks: ## Copy canonical smart-lint.sh and smart-lint/ modules to Pi extensions
-	@mkdir -p platforms/pi/extensions/smart-lint; \
-	cp plugins/dev-workflow/hooks/smart-lint.sh platforms/pi/extensions/smart-lint.sh; \
-	chmod +x platforms/pi/extensions/smart-lint.sh; \
-	cp plugins/dev-workflow/hooks/smart-lint/*.sh platforms/pi/extensions/smart-lint/; \
-	chmod +x platforms/pi/extensions/smart-lint/*.sh; \
-	echo "synced smart-lint.sh + smart-lint/ -> platforms/pi/extensions/"
-
-generate-hooks: ## Regenerate hook configs from hooks.source.yaml
-	uv run python scripts/build/generate-hooks.py
-
-# --- Overlays ---
-
-.PHONY: overlays pi-overlays pi-agents
-overlays: ## Build platform-specific skill overlays (skills-codex/)
-	uv run python scripts/build/generate-skills.py
-
-pi-overlays: ## Build Pi skill overlays (skills-pi/)
-	uv run python scripts/build/generate-skills.py --platform pi
-
-pi-agents: ## Build Pi subagent overlays (agents-pi/)
-	uv run python scripts/build/generate-subagents.py
-
-# --- Generated docs ---
-
-.PHONY: agents-md
-agents-md: ## Generate AGENTS.md from skill overlays
-	uv run python scripts/build/generate-agents-md.py
 
 # --- One-shot build: regenerate everything derived from canonical sources ---
 

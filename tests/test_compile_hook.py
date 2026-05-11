@@ -187,16 +187,6 @@ def test_no_world_writable_scripts():
                 assert not (path.stat().st_mode & stat.S_IWOTH), path
 
 
-def test_legacy_registry_resolves_each_source():
-    """Every entry in legacy_registry must point at an existing file."""
-    for hook in migrate_hooks.legacy_registry(REPO):
-        assert hook.source.is_file(), hook.source
-
-
-def test_hook_dir_count_matches_registry_size():
-    assert len(hook_dirs(REPO)) == len(migrate_hooks.legacy_registry(REPO))
-
-
 def test_status_message_present_when_expected():
     must_have = {"git-guardrails", "smart-lint", "session-start", "test-runner"}
     for hook_dir in hook_dirs(REPO):

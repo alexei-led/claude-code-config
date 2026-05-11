@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-HOOK="$BATS_TEST_DIRNAME/../../plugins/dev-workflow/hooks/smart-lint.sh"
+HOOK="$BATS_TEST_DIRNAME/../../src/hooks/smart-lint/HOOK.sh"
 
 setup() {
 	WORK_DIR="${BATS_TEST_TMPDIR:-$(mktemp -d)}"

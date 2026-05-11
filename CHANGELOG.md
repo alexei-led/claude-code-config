@@ -8,6 +8,31 @@ major = breaking config/hook changes, minor = new skills/features, patch = fixes
 
 ## [Unreleased]
 
+### Removed
+
+- **Old source paths and scattered generators retired.** The skill compiler
+  migration (`docs/plans/completed/20260511-skill-compiler-migration.md`)
+  is finished: `plugins/*/skills/`, `plugins/*/agents/`, `plugins/*/commands/`,
+  `plugins/*/skills-codex/`, `plugins/*/skills-pi/`, `plugins/*/agents-pi/`,
+  `plugins/*/hooks/`, `platforms/pi/`, and `flat/` are gone. The single
+  source of truth is now `src/`, and all generated artifacts live under
+  `dist/<target>/` plus the three root manifests (`.claude-plugin/marketplace.json`,
+  `.agents/plugins/marketplace.json`, `gemini-extension.json`).
+- **Deleted generators**: `scripts/build/generate-skills.py`,
+  `generate-subagents.py`, `generate-hooks.py`, `generate-agents-md.py`,
+  `generate-flat.sh`, `scripts/release/install-pi-exports.sh`, and
+  `scripts/_common.py`. `make flat`, `make sync-hooks`, `make generate-hooks`,
+  `make overlays`, `make pi-overlays`, `make pi-agents`, `make agents-md`,
+  and `make validate-no-plugin-evals` were removed from the Makefile.
+- **Obsolete docs**: `docs/pi-skill-export.md` (replaced by README + the
+  new design doc `docs/skill-compiler-design.md`).
+- **`<!-- CC-ONLY: ... -->` markers** stripped from `src/` content;
+  Claude-only artifacts now express intent via base `targets: [claude]` or
+  a `claude/` overlay instead of inline markers.
+- **`validate-config.py` slimmed down** to validate only the three root
+  manifests + `AGENTS.md`; per-source vendor-neutrality is enforced by
+  `validate_genericity.py` and golden-file tests in `tests/test_compile_*.py`.
+
 ### Changed
 
 - **`scripts/` reorganized** into thematic subdirectories so the three

@@ -1,1 +1,0 @@
-../../plugins/dev-workflow/agents/docs-keeper.md

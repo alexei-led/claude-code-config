@@ -1,1 +1,0 @@
-../../plugins/spec-system/scripts/specctl.py

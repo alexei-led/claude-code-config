@@ -19,11 +19,7 @@ If no argument provided, ask the user what they want to evaluate.
 
 Routing rule: if the user wants open-ended idea generation, option discovery, or "what could we build/do?", explicitly say this is open-ended brainstorming and route to `brainstorming-ideas` or an ideation workflow. Use this skill only when there is a specific design decision, thesis, or bounded trade-off to stress-test. If no clear opposing positions exist or evidence is unavailable, stop and ask for a sharper decision instead of inventing a debate.
 
-<!-- CC-ONLY: begin -->
-
 **Use TaskCreate / TaskUpdate** to track these 4 phases:
-
-<!-- CC-ONLY: end -->
 
 1. Frame the debate
 2. Spawn thesis + antithesis agents
@@ -51,8 +47,6 @@ Frame as a clear binary or spectrum question. Examples:
 ## Phase 2: Spawn Thesis + Antithesis (Parallel)
 
 Spawn two Explore agents in a single message:
-
-<!-- CC-ONLY: begin -->
 
 ```
 Task(
@@ -90,22 +84,16 @@ Task(
 )
 ```
 
-<!-- CC-ONLY: end -->
-
 ---
 
 ## Phase 3: Synthesize
 
 Collect both results:
 
-<!-- CC-ONLY: begin -->
-
 ```
 TaskOutput(task_id=<thesis_id>, block=true)
 TaskOutput(task_id=<antithesis_id>, block=true)
 ```
-
-<!-- CC-ONLY: end -->
 
 Synthesize into a structured verdict:
 

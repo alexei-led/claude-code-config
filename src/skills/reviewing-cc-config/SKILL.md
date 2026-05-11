@@ -187,15 +187,11 @@ Report structure:
 
 **Skip this phase entirely unless `--fix` is in `$ARGUMENTS`.**
 
-<!-- CC-ONLY: begin -->
-
 If `--fix` is NOT present, use `AskUserQuestion`. Ask one question at a time:
 
 | Header | Question                     | Options                                                         |
 | ------ | ---------------------------- | --------------------------------------------------------------- |
 | Action | Apply fixes from the review? | Fix all errors / Fix errors + warnings / Show diffs only / Skip |
-
-<!-- CC-ONLY: end -->
 
 Apply only approved fixes. Confirm before deleting files, removing hooks, broad rewrites, or changing permissions:
 

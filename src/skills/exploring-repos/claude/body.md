@@ -14,8 +14,6 @@ DeepWiki provides AI-generated wiki documentation for 30,000+ popular public Git
 
 ## Workflow
 
-<!-- CC-ONLY: begin -->
-
 ### Step 1 — Understand the repository structure
 
 Call `mcp__deepwiki__read_wiki_structure` with `repoName` in `owner/repo` format to get the topic list:
@@ -51,8 +49,6 @@ mcp__deepwiki__ask_question({
   "question": "How do these frameworks handle document chunking differently?"
 })
 ```
-
-<!-- CC-ONLY: end -->
 
 ## Query Strategies
 
@@ -155,15 +151,12 @@ DeepWiki returns empty or error?
    installed. The `looking-up-docs` skill wraps this workflow.
 
 3. **Perplexity** — for repos not in DeepWiki or Context7:
-   <!-- CC-ONLY: begin -->
 
    ```
    mcp__perplexity-ask__perplexity_ask({
      "messages": [{ "role": "user", "content": "Explain the architecture of <owner/repo>" }]
    })
    ```
-
-   <!-- CC-ONLY: end -->
 
 4. **Direct exploration** — clone and read:
 

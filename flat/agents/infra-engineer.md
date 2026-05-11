@@ -1,1 +1,0 @@
-../../plugins/infra-ops/agents/infra-engineer.md

@@ -27,18 +27,15 @@ import sys
 from collections.abc import Iterable
 from pathlib import Path
 
-sys.path.insert(
-    0,
-    str(
-        next(
-            p
-            for p in Path(__file__).resolve().parents
-            if (p / "pyproject.toml").is_file()
-        )
-        / "scripts"
-    ),
+try:
+    import frontmatter
+except ImportError:
+    print("ERROR: pip install python-frontmatter", file=sys.stderr)
+    sys.exit(1)
+
+ROOT = next(
+    p for p in Path(__file__).resolve().parents if (p / "pyproject.toml").is_file()
 )
-from _common import ROOT, frontmatter  # noqa: E402
 
 FORBIDDEN_PATTERN = re.compile(
     r"\$ARGUMENTS"

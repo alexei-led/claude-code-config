@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build a temporary agent-skills-eval tree from repo skills and test fixtures."""
+"""Build a temporary agent-skills-eval tree from compiled skills and test fixtures."""
 
 import argparse
 import json
@@ -9,9 +9,17 @@ from pathlib import Path
 ROOT = next(
     p for p in Path(__file__).resolve().parents if (p / "pyproject.toml").is_file()
 )
-PLUGINS_DIR = ROOT / "plugins"
+DIST_DIR = ROOT / "dist"
 EVALS_DIR = ROOT / "tests" / "skill-evals"
 DEFAULT_OUT = Path("/tmp/cc-thingz-skill-eval-root")
+
+# Map the legacy --source-dir flag to the compiled distribution that has
+# the same role. ``skills`` = Claude variant (canonical reference set),
+# ``skills-codex`` = Codex overlay variant.
+SOURCE_TO_TARGET = {
+    "skills": "claude",
+    "skills-codex": "codex",
+}
 
 
 class EvalPrepError(Exception):
@@ -19,7 +27,8 @@ class EvalPrepError(Exception):
 
 
 def copy_skill(plugin: str, skill: str, out: Path, source_dir: str) -> Path:
-    source = PLUGINS_DIR / plugin / source_dir / skill
+    target = SOURCE_TO_TARGET[source_dir]
+    source = DIST_DIR / target / "plugins" / plugin / "skills" / skill
     if not source.is_dir():
         raise EvalPrepError(f"missing skill directory: {source.relative_to(ROOT)}")
     if not (source / "SKILL.md").is_file():
@@ -53,7 +62,7 @@ def copy_evals(eval_root: Path, skill_dest: Path) -> int:
 
 
 def prepare(out: Path, source_dir: str = "skills") -> tuple[int, int]:
-    if source_dir not in {"skills", "skills-codex"}:
+    if source_dir not in SOURCE_TO_TARGET:
         raise EvalPrepError("source directory must be 'skills' or 'skills-codex'")
     if out == ROOT or ROOT in out.parents:
         raise EvalPrepError("output directory must not be inside the repository")
@@ -88,7 +97,7 @@ def main() -> int:
     )
     parser.add_argument(
         "--source-dir",
-        choices=["skills", "skills-codex"],
+        choices=sorted(SOURCE_TO_TARGET),
         default="skills",
         help="skill tree to copy from while preserving evaluator layout",
     )

@@ -46,7 +46,6 @@ jobs:
             skill_evals:
               - 'src/skills/**'
               - 'dist/**'
-              - 'plugins/**/skills/**'
               - 'tests/skill-evals/**'
               - 'scripts/evals/prepare-skill-evals.py'
               - 'scripts/evals/summarize-skill-evals.py'

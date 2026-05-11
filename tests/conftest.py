@@ -1,9 +1,7 @@
 """Shared pytest fixtures.
 
-`load_script` replaces ad-hoc importlib boilerplate that each test file used to
-inline. Scripts in `scripts/` are kebab-cased CLI files; this fixture loads them
-as importable modules using the kebab-to-snake convention (e.g.
-`generate-skills.py` becomes module name `generate_skills`).
+`load_script` loads a kebab-cased CLI script under scripts/ as an importable
+module, mapping the filename (e.g. `compile.py`) to a snake-case module name.
 """
 
 from __future__ import annotations
@@ -18,8 +16,6 @@ import pytest
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 _SCRIPTS = _REPO_ROOT / "scripts"
 
-# scripts/_common.py is imported via `from _common import ...` inside the
-# generators; tests that load those generators need scripts/ on sys.path.
 sys.path.insert(0, str(_SCRIPTS))
 
 
@@ -50,9 +46,5 @@ def _load(rel_or_name: str) -> ModuleType:
 
 @pytest.fixture(scope="session")
 def load_script():
-    """Return a function that loads a script in scripts/<sub>/ as a module.
-
-    Pass either a basename ("generate-skills.py") or a relative path
-    ("build/generate-skills.py").
-    """
+    """Return a function that loads a script in scripts/<sub>/ as a module."""
     return _load

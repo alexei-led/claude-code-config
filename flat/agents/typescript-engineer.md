@@ -1,1 +1,0 @@
-../../plugins/typescript-dev/agents/typescript-engineer.md
