@@ -1,0 +1,226 @@
+"""Tests for the hook migration helper and src/hooks discovery layout.
+
+Covers Task 9 acceptance: every legacy hook is migrated, metadata is
+well-formed, executable bits are preserved, and support directories
+(e.g. `smart-lint/`) are mirrored under the hook root.
+
+The compile-side hook pipeline (writing per-target manifests) lands in
+Task 10 — these tests intentionally stay scoped to source-side layout.
+"""
+
+from __future__ import annotations
+
+import os
+import stat
+import sys
+from pathlib import Path
+
+import pytest
+import yaml
+
+REPO = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO / "scripts" / "build"))
+
+import migrate_hooks  # noqa: E402
+
+VALID_EVENTS = frozenset(
+    {
+        "sessionstart",
+        "preedit",
+        "postedit",
+        "prebash",
+        "posttool",
+        "userpromptsubmit",
+        "notification",
+        "worktreecreate",
+        "worktreeremove",
+    }
+)
+
+EXPECTED_HOOK_NAMES = frozenset(
+    {
+        "file-protector",
+        "git-guardrails",
+        "smart-lint",
+        "session-start",
+        "skill-enforcer",
+        "notify",
+        "test-runner",
+        "worktree-create",
+        "worktree-remove",
+    }
+)
+
+
+def hook_dirs(root: Path) -> list[Path]:
+    src = root / "src" / "hooks"
+    return sorted(p for p in src.iterdir() if p.is_dir())
+
+
+def load_meta(hook_dir: Path) -> dict:
+    return yaml.safe_load((hook_dir / "meta.yaml").read_text())
+
+
+def test_repo_has_all_expected_hook_dirs():
+    names = {p.name for p in hook_dirs(REPO)}
+    assert names == EXPECTED_HOOK_NAMES
+
+
+def test_every_hook_has_script_and_meta():
+    for hook_dir in hook_dirs(REPO):
+        assert (hook_dir / "meta.yaml").is_file(), hook_dir
+        scripts = list(hook_dir.glob("HOOK.*"))
+        assert len(scripts) == 1, f"{hook_dir} should have exactly one HOOK.*"
+        assert scripts[0].suffix in {".sh", ".py"}
+
+
+@pytest.mark.parametrize("hook_dir", hook_dirs(REPO), ids=lambda p: p.name)
+def test_meta_required_fields(hook_dir: Path):
+    meta = load_meta(hook_dir)
+    assert meta["name"] == hook_dir.name
+    assert meta["event"] in VALID_EVENTS
+    assert isinstance(meta["timeout"], int) and meta["timeout"] > 0
+    if "status_message" in meta:
+        assert isinstance(meta["status_message"], str) and meta["status_message"]
+
+
+def test_hook_scripts_are_executable():
+    for hook_dir in hook_dirs(REPO):
+        script = next(hook_dir.glob("HOOK.*"))
+        mode = script.stat().st_mode
+        assert mode & stat.S_IXUSR, f"{script} should have user-exec bit"
+
+
+def test_smart_lint_support_dir_mirrored():
+    sub = REPO / "src" / "hooks" / "smart-lint" / "smart-lint"
+    assert sub.is_dir()
+    expected = {
+        "lib.sh",
+        "lint-go.sh",
+        "lint-python.sh",
+        "lint-shell.sh",
+        "lint-typescript.sh",
+        "lint-web.sh",
+        "main.sh",
+    }
+    assert {p.name for p in sub.iterdir()} == expected
+    assert sub.joinpath("main.sh").stat().st_mode & stat.S_IXUSR
+
+
+def test_session_start_is_python_hook():
+    hook_dir = REPO / "src" / "hooks" / "session-start"
+    assert (hook_dir / "HOOK.py").is_file()
+    assert not (hook_dir / "HOOK.sh").exists()
+
+
+def test_known_event_assignments():
+    expected = {
+        "file-protector": ("preedit", None),
+        "git-guardrails": ("prebash", "Checking git command"),
+        "smart-lint": ("postedit", "Running smart-lint"),
+        "session-start": ("sessionstart", "Loading session context"),
+        "skill-enforcer": ("userpromptsubmit", None),
+        "test-runner": ("postedit", "Running tests"),
+        "notify": ("notification", None),
+        "worktree-create": ("worktreecreate", None),
+        "worktree-remove": ("worktreeremove", None),
+    }
+    for hook_dir in hook_dirs(REPO):
+        meta = load_meta(hook_dir)
+        want_event, want_msg = expected[hook_dir.name]
+        assert meta["event"] == want_event, hook_dir.name
+        assert meta.get("status_message") == want_msg, hook_dir.name
+
+
+def test_migration_is_idempotent(tmp_path: Path, monkeypatch):
+    """Running migrate_all twice produces identical bytes for every output."""
+    fake_root = tmp_path
+    (fake_root / "plugins").mkdir()
+    (fake_root / "src").mkdir()
+
+    # Materialize a tiny legacy layout pointing at one shell script.
+    legacy = fake_root / "plugins" / "x" / "hooks"
+    legacy.mkdir(parents=True)
+    sample = legacy / "demo.sh"
+    sample.write_text("#!/bin/sh\necho demo\n")
+    sample.chmod(sample.stat().st_mode | stat.S_IXUSR)
+
+    def fake_registry(_: Path) -> list[migrate_hooks.LegacyHook]:
+        return [
+            migrate_hooks.LegacyHook(
+                name="demo",
+                source=sample,
+                event="postedit",
+                timeout=5,
+                status_message="Demo",
+            )
+        ]
+
+    monkeypatch.setattr(migrate_hooks, "legacy_registry", fake_registry)
+    migrate_hooks.migrate_all(fake_root)
+    snapshot = {
+        p: p.read_bytes() for p in (fake_root / "src").rglob("*") if p.is_file()
+    }
+    migrate_hooks.migrate_all(fake_root)
+    second = {p: p.read_bytes() for p in (fake_root / "src").rglob("*") if p.is_file()}
+    assert snapshot == second
+
+
+def test_unsupported_extension_rejected():
+    with pytest.raises(ValueError, match="unsupported hook extension"):
+        migrate_hooks.hook_script_name(Path("foo.rb"))
+
+
+def test_meta_yaml_is_round_trippable():
+    """meta.yaml must parse to a dict with the four required fields."""
+    for hook_dir in hook_dirs(REPO):
+        data = yaml.safe_load((hook_dir / "meta.yaml").read_text())
+        assert isinstance(data, dict)
+        assert set(data) >= {"name", "event", "timeout"}
+
+
+def test_no_world_writable_scripts():
+    """Defensive: copied scripts must not gain world-writable bits."""
+    for hook_dir in hook_dirs(REPO):
+        for path in hook_dir.rglob("*"):
+            if path.is_file():
+                assert not (path.stat().st_mode & stat.S_IWOTH), path
+
+
+def test_legacy_registry_resolves_each_source():
+    """Every entry in legacy_registry must point at an existing file."""
+    for hook in migrate_hooks.legacy_registry(REPO):
+        assert hook.source.is_file(), hook.source
+
+
+def test_hook_dir_count_matches_registry_size():
+    assert len(hook_dirs(REPO)) == len(migrate_hooks.legacy_registry(REPO))
+
+
+def test_status_message_present_when_expected():
+    must_have = {"git-guardrails", "smart-lint", "session-start", "test-runner"}
+    for hook_dir in hook_dirs(REPO):
+        meta = load_meta(hook_dir)
+        if hook_dir.name in must_have:
+            assert meta.get("status_message"), hook_dir.name
+
+
+@pytest.mark.parametrize("hook_dir", hook_dirs(REPO), ids=lambda p: p.name)
+def test_hook_dir_has_no_unexpected_files(hook_dir: Path):
+    """Source layout: only HOOK.*, meta.yaml, and known support dirs allowed."""
+    allowed_files = {"meta.yaml"}
+    allowed_files.update({f"HOOK{ext}" for ext in (".sh", ".py")})
+    for entry in hook_dir.iterdir():
+        if entry.is_dir():
+            continue
+        assert entry.name in allowed_files, f"unexpected file: {entry}"
+
+
+def test_copy_preserving_mode_keeps_executable(tmp_path: Path):
+    src = tmp_path / "src.sh"
+    src.write_text("#!/bin/sh\n:\n")
+    src.chmod(0o755)
+    dst = tmp_path / "dst.sh"
+    migrate_hooks.copy_preserving_mode(src, dst)
+    assert dst.read_bytes() == src.read_bytes()
+    assert os.stat(dst).st_mode & stat.S_IXUSR

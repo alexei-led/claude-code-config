@@ -202,11 +202,11 @@ The migration is mechanical given the design is settled: bulk-migrate the remain
 - Create: `tests/test_compile_hook.py`
 - Create: `scripts/build/migrate_hooks.py` (one-shot helper)
 
-- [ ] write `scripts/build/migrate_hooks.py` to move `plugins/dev-workflow/hooks/*.sh` (and `session-start.py`) into `src/hooks/<hook>/HOOK.sh` form, extracting event metadata from current `hooks.source.yaml`
-- [ ] run helper — produces 10 hook dirs (smart-lint, skill-enforcer, file-protector, git-guardrails, test-runner, notify, session-start, worktree-create, worktree-remove, plus any others)
-- [ ] for each hook dir, frontmatter (in HOOK.sh comment header or separate `meta.yaml`) declares: event (sessionstart / preedit / postedit / prebash / posttool / userpromptsubmit), timeout, name, optional status_message
-- [ ] write tests: hooks discovery / event metadata parse / per-target script copy
-- [ ] run tests — must pass before task 10
+- [x] write `scripts/build/migrate_hooks.py` to move `plugins/dev-workflow/hooks/*.sh` (and `session-start.py`) into `src/hooks/<hook>/HOOK.sh` form, extracting event metadata from current `hooks.source.yaml`
+- [x] run helper — produces 9 hook dirs (smart-lint, skill-enforcer, file-protector, git-guardrails, test-runner, notify, session-start, worktree-create, worktree-remove)
+- [x] for each hook dir, frontmatter (separate `meta.yaml`) declares: event (sessionstart / preedit / postedit / prebash / userpromptsubmit / notification / worktreecreate / worktreeremove), timeout, name, optional status_message
+- [x] write tests: hooks discovery / event metadata parse / executable bit / support dir mirroring / idempotency
+- [x] run tests — must pass before task 10
 
 ### Task 10: Wire hook compilation pipeline
 
