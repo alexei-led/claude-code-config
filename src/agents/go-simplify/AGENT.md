@@ -3,6 +3,7 @@ description:
   Go simplification specialist focused on over-abstraction, one-line functions,
   coupling, and testability. Recommends simpler designs.
 name: go-simplify
+targets: [claude]
 ---
 
 ## Role

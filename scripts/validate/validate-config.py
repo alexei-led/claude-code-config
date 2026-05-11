@@ -36,6 +36,9 @@ sys.path.insert(
 )
 from _common import ROOT, frontmatter  # noqa: E402
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from validate_genericity import discover_base_files, scan_file  # noqa: E402
+
 KEBAB_CASE_RE = re.compile(r"^[a-z][a-z0-9]*(-[a-z0-9]+)*$")
 
 MARKETPLACE_REQUIRED_FIELDS = ["name", "owner", "plugins"]
@@ -400,6 +403,14 @@ def validate_skill_sidecars() -> list[str]:
                 )
 
     return errors
+
+
+def validate_base_genericity() -> list[str]:
+    """Reject Claude-only tokens in vendor-neutral base SKILL.md / AGENT.md."""
+    violations: list[str] = []
+    for path in discover_base_files():
+        violations.extend(scan_file(path))
+    return violations
 
 
 def validate_pi_exports() -> list[str]:
@@ -953,6 +964,7 @@ def main() -> int:
     all_errors.extend(validate_platform_overlays())
     all_errors.extend(validate_skill_sidecars())
     all_errors.extend(validate_pi_exports())
+    all_errors.extend(validate_base_genericity())
 
     # Frontmatter validation
     for config_type, spec in REQUIRED_FIELDS.items():

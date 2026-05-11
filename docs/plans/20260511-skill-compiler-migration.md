@@ -259,12 +259,12 @@ The migration is mechanical given the design is settled: bulk-migrate the remain
 - Modify: `scripts/validate/validate-config.py` (call validator)
 - Create: `tests/test_validate_genericity.py`
 
-- [ ] implement regex scanner: forbidden tokens in base SKILL.md/AGENT.md = `\$ARGUMENTS|Task\(|AskUserQuestion|TaskCreate|TodoWrite|mcp__|!`[^`]+`|\$\{CLAUDE_[A-Z_]+\}`
-- [ ] opt-out: if base frontmatter has `targets: [claude]` (or just `claude`), skip the check for that artifact
-- [ ] integrate into `make check` / pre-commit pipeline
-- [ ] report violations as `file:line: token "<X>" not allowed in vendor-neutral base; move to claude/body.md or restrict to targets: [claude]`
-- [ ] write tests: clean base passes / base with $ARGUMENTS fails / base with Task( fails / Claude-restricted base allowed to use them
-- [ ] run tests — must pass before task 14
+- [x] implement regex scanner: forbidden tokens in base SKILL.md/AGENT.md = `\$ARGUMENTS|Task\(|AskUserQuestion|TaskCreate|TodoWrite|mcp__|!`[^`]+`|\$\{CLAUDE_[A-Z_]+\}`
+- [x] opt-out: if base frontmatter has `targets: [claude]` (or just `claude`), skip the check for that artifact
+- [x] integrate into `make check` / pre-commit pipeline
+- [x] report violations as `file:line: token "<X>" not allowed in vendor-neutral base; move to claude/body.md or restrict to targets: [claude]`
+- [x] write tests: clean base passes / base with $ARGUMENTS fails / base with Task( fails / Claude-restricted base allowed to use them
+- [x] run tests — must pass before task 14
 
 ### Task 14: Wire `make build` and `make check` to new compiler
 

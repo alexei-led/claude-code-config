@@ -98,11 +98,14 @@ skill-evals-summary: ## Print summary for latest skill eval workspace
 # targets are gone — they duplicated what `make check` already proves
 # end-to-end, and disagreed with each other when generators changed.
 
-.PHONY: validate validate-config validate-executables validate-no-plugin-evals lint-instructions
-validate: validate-no-plugin-evals validate-config validate-executables ## Validate canonical sources (frontmatter, executable bits, plugin layout)
+.PHONY: validate validate-config validate-executables validate-no-plugin-evals validate-genericity lint-instructions
+validate: validate-no-plugin-evals validate-config validate-genericity validate-executables ## Validate canonical sources (frontmatter, executable bits, plugin layout)
 
 validate-config: ## Validate plugin configs and frontmatter
 	uv run python scripts/validate/validate-config.py
+
+validate-genericity: ## Reject Claude-only tokens in vendor-neutral base SKILL.md/AGENT.md
+	uv run python scripts/validate/validate_genericity.py
 
 validate-no-plugin-evals: ## Ensure eval fixtures are not inside deployable plugin skill dirs
 	@bad=$$(find plugins -path '*/skills/*/evals' -type d); \

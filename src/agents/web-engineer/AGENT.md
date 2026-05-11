@@ -3,6 +3,7 @@ description:
   Web frontend specialist for vanilla HTML, CSS, JavaScript, and HTMX.
   Simple, standards-compliant web development.
 name: web-engineer
+targets: [claude]
 ---
 
 ## Role

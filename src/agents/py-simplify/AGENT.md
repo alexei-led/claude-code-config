@@ -3,6 +3,7 @@ description:
   Python 3.12+ simplification specialist focused on over-abstraction, dead
   code, and unnecessary complexity. Use for Python code review.
 name: py-simplify
+targets: [claude]
 ---
 
 ## Role

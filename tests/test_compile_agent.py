@@ -114,22 +114,24 @@ def _diff_files(golden: Path, actual: Path) -> str | None:
     return None
 
 
-@pytest.mark.parametrize("target", ALL_TARGETS)
-def test_compile_agent_go_engineer_matches_golden(
-    ca, tmp_path: Path, target: str
-) -> None:
-    """go-engineer compiles to .md for claude/gemini/pi, .toml for codex."""
+def test_compile_agent_go_engineer_claude_only(ca, tmp_path: Path) -> None:
+    """go-engineer has `targets: [claude]` (uses Claude-only MCP tools).
+
+    Only the Claude target emits; codex/gemini/pi are skipped per the
+    base frontmatter restriction enforced by `validate_genericity`.
+    """
     root = _staging_root(tmp_path)
     agent_dir = root / "src" / "agents" / "go-engineer"
 
-    written = ca.compile_agent(agent_dir, target, None, root)
-    assert written, f"compile_agent returned no writes for go-engineer/{target}"
+    for target in ("codex", "gemini", "pi"):
+        assert ca.compile_agent(agent_dir, target, None, root) == [], (
+            f"go-engineer should not emit for {target} (targets: [claude])"
+        )
+
+    written = ca.compile_agent(agent_dir, "claude", None, root)
     assert len(written) == 1
-
-    ext = ".toml" if target == "codex" else ".md"
-    actual = root / "dist" / target / "agents" / f"go-engineer{ext}"
-    golden = _GOLDENS / "go-engineer" / target / f"go-engineer{ext}"
-
+    actual = root / "dist" / "claude" / "agents" / "go-engineer.md"
+    golden = _GOLDENS / "go-engineer" / "claude" / "go-engineer.md"
     assert golden.is_file(), f"missing golden snapshot: {golden}"
     diff = _diff_files(golden, actual)
     assert diff is None, diff

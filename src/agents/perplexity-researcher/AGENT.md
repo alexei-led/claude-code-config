@@ -4,6 +4,7 @@ description:
   needs codebase context (comparing current code to best practices). For simple lookups,
   call mcp__perplexity-ask__perplexity_ask directly instead.
 name: perplexity-researcher
+targets: [claude]
 ---
 
 You are a research specialist using Perplexity AI to find accurate, current information on best practices, technology comparisons, and industry standards.
