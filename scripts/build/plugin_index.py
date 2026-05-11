@@ -21,6 +21,7 @@ import sys
 from collections.abc import Mapping
 from pathlib import Path
 
+import frontmatter
 import yaml
 
 _HERE = Path(__file__).resolve().parent
@@ -105,6 +106,68 @@ def validate_artifacts_exist(root: Path, index: PluginIndex) -> None:
     if missing:
         raise ValueError(
             "plugin.yaml references missing source(s):\n  - " + "\n  - ".join(missing)
+        )
+
+
+_PLUGIN_GROUPED_TARGETS: frozenset[str] = frozenset({"claude", "codex"})
+
+
+def _base_targets(base_path: Path) -> list[str] | None:
+    """Return the `targets:` restriction from a base SKILL/AGENT, or None.
+
+    Returns None when the file has no `targets:` key (meaning all targets
+    are allowed). Returns a list of target names otherwise. String values
+    are normalized to a one-element list.
+    """
+    if not base_path.is_file():
+        return None
+    meta = frontmatter.loads(base_path.read_text()).metadata
+    if not isinstance(meta, Mapping):
+        return None
+    raw = meta.get("targets")
+    if raw is None:
+        return None
+    if isinstance(raw, str):
+        return [raw]
+    if not isinstance(raw, list):
+        return None
+    out: list[str] = []
+    for t in raw:  # type: ignore[union-attr]
+        out.append(str(t))
+    return out
+
+
+def validate_plugin_ownership(root: Path, index: PluginIndex) -> None:
+    """Fail when a source artifact lands on no plugin-grouped target.
+
+    For each skill/agent under `src/`: if its base `targets:` allows any
+    plugin-grouped target (`claude`, `codex`) and yet no `plugin.yaml`
+    lists it, the build would emit no output for those targets. That hides
+    misconfigurations (a new skill added to `src/skills/` but forgotten in
+    `plugin.yaml`), so refuse to proceed.
+
+    Artifacts restricted to flat-only targets (`pi`, `gemini`) are
+    exempt — they intentionally bypass plugin grouping.
+    """
+    src = root / "src"
+    base_files = {"skills": "SKILL.md", "agents": "AGENT.md"}
+    missing: list[str] = []
+    for kind, base_name in base_files.items():
+        kind_dir = src / kind
+        if not kind_dir.is_dir():
+            continue
+        owners_map = index.get(kind, {})
+        for item in sorted(p for p in kind_dir.iterdir() if p.is_dir()):
+            if owners_map.get(item.name):
+                continue
+            targets = _base_targets(item / base_name)
+            if targets is not None and not (_PLUGIN_GROUPED_TARGETS & set(targets)):
+                continue
+            missing.append(f"{kind}/{item.name}")
+    if missing:
+        raise ValueError(
+            "source artifact(s) not owned by any plugin.yaml; add them or "
+            "restrict their `targets:` to pi/gemini:\n  - " + "\n  - ".join(missing)
         )
 
 

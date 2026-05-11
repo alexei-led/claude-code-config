@@ -146,12 +146,17 @@ def main(argv: list[str] | None = None) -> int:
     from compile_hook import compile_hook, write_hook_manifests
     from compile_skill import compile_skill
     from manifests import write_all as write_manifests
-    from plugin_index import build_plugin_index, validate_artifacts_exist
+    from plugin_index import (
+        build_plugin_index,
+        validate_artifacts_exist,
+        validate_plugin_ownership,
+    )
 
     # Build and validate the plugin index *before* wiping dist/, so a stale
     # plugin.yaml reference doesn't leave the tree empty on a failed build.
     plugin_index = build_plugin_index(root)
     validate_artifacts_exist(root, plugin_index)
+    validate_plugin_ownership(root, plugin_index)
 
     # Wipe each target's dist/ subtree before rebuild so stale outputs
     # (e.g. files for sources later restricted with `targets:`) don't leak.

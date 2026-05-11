@@ -215,3 +215,72 @@ def test_output_paths_none_index_treated_as_empty(pi_mod, fake_plugins_root):
     assert pi_mod.output_paths(
         "shared-skill", "skills", "pi", None, fake_plugins_root
     ) == [fake_plugins_root / "dist/pi/skills"]
+
+
+def _write_skill(root: Path, name: str, frontmatter_block: str = "") -> None:
+    skill_dir = root / "src" / "skills" / name
+    skill_dir.mkdir(parents=True, exist_ok=True)
+    (skill_dir / "SKILL.md").write_text(
+        f"---\nname: {name}\ndescription: d\n{frontmatter_block}---\n\nbody\n"
+    )
+
+
+def _write_agent(root: Path, name: str, frontmatter_block: str = "") -> None:
+    agent_dir = root / "src" / "agents" / name
+    agent_dir.mkdir(parents=True, exist_ok=True)
+    (agent_dir / "AGENT.md").write_text(
+        f"---\nname: {name}\ndescription: d\n{frontmatter_block}---\n\nbody\n"
+    )
+
+
+def test_validate_plugin_ownership_passes_when_all_owned(pi_mod, fake_plugins_root):
+    _write_skill(fake_plugins_root, "shared-skill")
+    _write_skill(fake_plugins_root, "only-alpha")
+    _write_skill(fake_plugins_root, "only-beta")
+    _write_agent(fake_plugins_root, "only-alpha-agent")
+    index = pi_mod.build_plugin_index(fake_plugins_root)
+    pi_mod.validate_plugin_ownership(fake_plugins_root, index)
+
+
+def test_validate_plugin_ownership_fails_on_orphan_skill(pi_mod, fake_plugins_root):
+    _write_skill(fake_plugins_root, "shared-skill")
+    _write_skill(fake_plugins_root, "only-alpha")
+    _write_skill(fake_plugins_root, "only-beta")
+    _write_skill(fake_plugins_root, "lonely")  # not in any plugin.yaml
+    index = pi_mod.build_plugin_index(fake_plugins_root)
+    with pytest.raises(ValueError, match="not owned by any plugin"):
+        pi_mod.validate_plugin_ownership(fake_plugins_root, index)
+
+
+def test_validate_plugin_ownership_allows_pi_only_orphan(pi_mod, fake_plugins_root):
+    _write_skill(fake_plugins_root, "shared-skill")
+    _write_skill(fake_plugins_root, "only-alpha")
+    _write_skill(fake_plugins_root, "only-beta")
+    _write_agent(fake_plugins_root, "only-alpha-agent")
+    _write_agent(fake_plugins_root, "pi-only-orphan", "targets:\n  - pi\n")
+    index = pi_mod.build_plugin_index(fake_plugins_root)
+    pi_mod.validate_plugin_ownership(fake_plugins_root, index)
+
+
+def test_validate_plugin_ownership_allows_gemini_only_orphan(pi_mod, fake_plugins_root):
+    _write_skill(fake_plugins_root, "shared-skill")
+    _write_skill(fake_plugins_root, "only-alpha")
+    _write_skill(fake_plugins_root, "only-beta")
+    _write_agent(fake_plugins_root, "only-alpha-agent")
+    _write_skill(fake_plugins_root, "gemini-only", "targets:\n  - pi\n  - gemini\n")
+    index = pi_mod.build_plugin_index(fake_plugins_root)
+    pi_mod.validate_plugin_ownership(fake_plugins_root, index)
+
+
+def test_validate_plugin_ownership_fails_on_claude_only_orphan(
+    pi_mod, fake_plugins_root
+):
+    _write_skill(fake_plugins_root, "shared-skill")
+    _write_skill(fake_plugins_root, "only-alpha")
+    _write_skill(fake_plugins_root, "only-beta")
+    _write_agent(fake_plugins_root, "only-alpha-agent")
+    # Claude-only orphan is still wrong: the build would emit nothing for it.
+    _write_skill(fake_plugins_root, "claude-orphan", "targets:\n  - claude\n")
+    index = pi_mod.build_plugin_index(fake_plugins_root)
+    with pytest.raises(ValueError, match="claude-orphan"):
+        pi_mod.validate_plugin_ownership(fake_plugins_root, index)

@@ -177,6 +177,31 @@ def test_write_codex_marketplace_categories(manifests, fake_root):
     assert alpha["category"] == "workflow"
 
 
+def test_write_codex_marketplace_honors_marketplace_name(manifests, fake_root):
+    """Mirror rewrites set `marketplace_name` to rename the published entry.
+
+    The Codex marketplace must use the renamed name (like the Claude
+    marketplace) while the on-disk source path keeps the canonical dir name.
+    """
+    plugin_yaml = fake_root / "src" / "plugins" / "alpha" / "plugin.yaml"
+    plugin_yaml.write_text(plugin_yaml.read_text() + "marketplace_name: alpha-mirror\n")
+    plugins = manifests.load_plugins(fake_root)
+    out = manifests.write_codex_marketplace(plugins, fake_root)
+    data = json.loads(out.read_text())
+    alpha = next(p for p in data["plugins"] if p["source"]["path"].endswith("/alpha"))
+    assert alpha["name"] == "alpha-mirror"
+
+
+def test_write_claude_marketplace_honors_marketplace_name(manifests, fake_root):
+    plugin_yaml = fake_root / "src" / "plugins" / "alpha" / "plugin.yaml"
+    plugin_yaml.write_text(plugin_yaml.read_text() + "marketplace_name: alpha-mirror\n")
+    plugins = manifests.load_plugins(fake_root)
+    out = manifests.write_claude_marketplace(plugins, fake_root)
+    data = json.loads(out.read_text())
+    alpha = next(p for p in data["plugins"] if p["source"].endswith("/alpha"))
+    assert alpha["name"] == "alpha-mirror"
+
+
 def test_write_gemini_extension_at_root(manifests, fake_root):
     plugins = manifests.load_plugins(fake_root)
     out = manifests.write_gemini_extension(plugins, fake_root)

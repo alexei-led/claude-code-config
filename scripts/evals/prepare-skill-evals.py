@@ -26,11 +26,17 @@ class EvalPrepError(Exception):
     """Skill eval preparation failed."""
 
 
-def copy_skill(plugin: str, skill: str, out: Path, source_dir: str) -> Path:
+def copy_skill(plugin: str, skill: str, out: Path, source_dir: str) -> Path | None:
+    """Copy a compiled skill into the eval tree, or return None when absent.
+
+    A missing compiled source is normal in cross-target lanes: skills with
+    ``targets: [claude]`` are not emitted to ``dist/codex/...`` and vice
+    versa. Return None so the caller can skip the fixture without aborting.
+    """
     target = SOURCE_TO_TARGET[source_dir]
     source = DIST_DIR / target / "plugins" / plugin / "skills" / skill
     if not source.is_dir():
-        raise EvalPrepError(f"missing skill directory: {source.relative_to(ROOT)}")
+        return None
     if not (source / "SKILL.md").is_file():
         raise EvalPrepError(f"missing SKILL.md: {source.relative_to(ROOT)}")
 
@@ -77,6 +83,10 @@ def prepare(out: Path, source_dir: str = "skills") -> tuple[int, int]:
         plugin = skill_root.parent.name
         skill = skill_root.name
         skill_dest = copy_skill(plugin, skill, out, source_dir)
+        if skill_dest is None:
+            # Skill not emitted for this target (e.g. claude-only skill on the
+            # codex lane). Skipping keeps the cross-target evals running.
+            continue
         eval_count += copy_evals(skill_root, skill_dest)
         skill_count += 1
 

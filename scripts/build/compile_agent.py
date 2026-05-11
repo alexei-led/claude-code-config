@@ -65,9 +65,11 @@ def output_paths(
 
     Agents are single files (not directories), so the path is
     `<dist>/<...>/<agent_dir>/<name><extension>`. Plugin-grouped targets
-    (`claude`, `codex`) emit once per owning plugin from `plugin_index`; agents
-    with no owning plugin emit nothing for that target. Flat targets
-    (`gemini`, `pi`) always emit to the flat path.
+    (`claude`, `codex`) emit once per owning plugin from `plugin_index`;
+    agents with no owning plugin emit nothing for that target — an unowned
+    plugin-grouped artifact would land at an unreachable flat path that the
+    marketplace manifests never reference. Flat targets (`gemini`, `pi`)
+    always emit to the flat path.
     """
     cfg = _compile.OUTPUT[target]
     dist = root / "dist" / target
@@ -75,8 +77,7 @@ def output_paths(
     filename = f"{name}{extension}"
     if cfg["layout"] == "plugin":
         plugins = list((plugin_index or {}).get(name, []))
-        if plugins:
-            return [dist / "plugins" / p / agent_dir / filename for p in plugins]
+        return [dist / "plugins" / p / agent_dir / filename for p in plugins]
     return [dist / agent_dir / filename]
 
 

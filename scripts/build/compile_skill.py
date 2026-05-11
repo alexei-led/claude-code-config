@@ -75,19 +75,18 @@ def output_dirs(
 ) -> list[Path]:
     """Resolve per-target dist directories for a skill.
 
-    Plugin-grouped targets (`claude`, `codex`) emit once per owning plugin from
-    `plugin_index`; skills with no owning plugin fall back to the flat path so
-    tests with synthetic indexes still get an output (production builds always
-    pass a complete index via `build_plugin_index`). Flat targets (`gemini`,
-    `pi`) always emit to the flat path.
+    Plugin-grouped targets (`claude`, `codex`) emit once per owning plugin
+    from `plugin_index`; an unowned skill returns an empty list (skipped)
+    so it can't land at an unreachable flat path that the marketplace
+    manifest never references. Flat targets (`gemini`, `pi`) always emit
+    to the flat directory.
     """
     cfg = _compile.OUTPUT[target]
     dist = root / "dist" / target
     skill_dir = cfg["skill_dir"]
     if cfg["layout"] == "plugin":
         plugins = list((plugin_index or {}).get(name, []))
-        if plugins:
-            return [dist / "plugins" / p / skill_dir / name for p in plugins]
+        return [dist / "plugins" / p / skill_dir / name for p in plugins]
     return [dist / skill_dir / name]
 
 

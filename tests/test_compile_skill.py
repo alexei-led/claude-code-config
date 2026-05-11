@@ -125,11 +125,14 @@ def test_compile_skill_matches_golden(
     root = _staging_root(tmp_path)
     skill_dir = root / "src" / "skills" / skill
 
-    written = cs.compile_skill(skill_dir, target, None, root)
+    # Pin an owning plugin so plugin-grouped targets resolve to the same
+    # `dist/<target>/plugins/<plugin>/skills/<skill>/` path as the goldens.
+    plugin_index = {skill: ["plugin"]}
+    written = cs.compile_skill(skill_dir, target, plugin_index, root)
 
     assert written, f"compile_skill returned no writes for {skill}/{target}"
 
-    actual_dir = root / "dist" / target / "skills" / skill
+    actual_dir = written[0].parent
     golden_dir = _GOLDENS / skill / target
 
     assert golden_dir.is_dir(), f"missing golden snapshot: {golden_dir}"
@@ -146,11 +149,14 @@ def test_targets_restriction_skips_skill(cs, tmp_path: Path) -> None:
     )
     root = tmp_path / "repo"
     root.mkdir()
+    # Pass an owning plugin so the claude emission is gated only by the
+    # `targets:` restriction, not by missing plugin ownership.
+    plugin_index = {"skill": ["alpha"]}
 
-    assert cs.compile_skill(skill, "claude", None, root) != []
-    assert cs.compile_skill(skill, "codex", None, root) == []
-    assert cs.compile_skill(skill, "gemini", None, root) == []
-    assert cs.compile_skill(skill, "pi", None, root) == []
+    assert cs.compile_skill(skill, "claude", plugin_index, root) != []
+    assert cs.compile_skill(skill, "codex", plugin_index, root) == []
+    assert cs.compile_skill(skill, "gemini", plugin_index, root) == []
+    assert cs.compile_skill(skill, "pi", plugin_index, root) == []
 
 
 def test_targets_string_form_accepted(cs, tmp_path: Path) -> None:
@@ -178,8 +184,9 @@ def test_targets_key_stripped_from_emitted_frontmatter(cs, tmp_path: Path) -> No
     )
     root = tmp_path / "repo"
     root.mkdir()
+    plugin_index = {"skill": ["alpha"]}
 
-    written = cs.compile_skill(skill, "claude", None, root)
+    written = cs.compile_skill(skill, "claude", plugin_index, root)
     assert len(written) == 1
     text = written[0].read_text()
     assert "targets:" not in text.splitlines()[1:5], text
@@ -198,7 +205,8 @@ def test_preamble_injected_for_codex(cs, tmp_path: Path) -> None:
     preambles.mkdir(parents=True)
     (preambles / "platform.md").write_text("<!-- platform preamble -->\n")
 
-    written = cs.compile_skill(skill, "codex", None, root)
+    plugin_index = {"skill": ["alpha"]}
+    written = cs.compile_skill(skill, "codex", plugin_index, root)
     text = written[0].read_text()
     assert "<!-- platform preamble -->" in text
     assert text.index("<!-- platform preamble -->") < text.index("# Body")
@@ -216,7 +224,8 @@ def test_preamble_absent_for_claude(cs, tmp_path: Path) -> None:
     (preambles / "platform.md").write_text("<!-- BANNER-PLATFORM -->\n")
     (preambles / "pi.md").write_text("<!-- BANNER-PI -->\n")
 
-    written = cs.compile_skill(skill, "claude", None, root)
+    plugin_index = {"skill": ["alpha"]}
+    written = cs.compile_skill(skill, "claude", plugin_index, root)
     text = written[0].read_text()
     assert "BANNER-PLATFORM" not in text
     assert "BANNER-PI" not in text
@@ -250,3 +259,20 @@ def test_flat_layout_ignores_plugin_index(cs, tmp_path: Path) -> None:
     written = cs.compile_skill(skill, "pi", plugin_index, root)
     assert len(written) == 1
     assert written[0] == root / "dist" / "pi" / "skills" / "my-skill" / "SKILL.md"
+
+
+def test_plugin_grouped_target_skips_unowned_skill(cs, tmp_path: Path) -> None:
+    """Unowned skills return no writes for plugin-grouped targets."""
+    skill = tmp_path / "skill_root" / "orphan"
+    skill.mkdir(parents=True)
+    (skill / "SKILL.md").write_text(
+        "---\nname: orphan\ndescription: no plugin owner\n---\n\nbody\n"
+    )
+    root = tmp_path / "repo"
+    root.mkdir()
+
+    assert cs.compile_skill(skill, "claude", None, root) == []
+    assert cs.compile_skill(skill, "codex", None, root) == []
+    # Flat targets still emit so vendor-neutral skills reach Pi/Gemini.
+    assert cs.compile_skill(skill, "pi", None, root) != []
+    assert cs.compile_skill(skill, "gemini", None, root) != []

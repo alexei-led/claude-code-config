@@ -93,7 +93,8 @@ def test_batch1_skill_compiles_for_target(
     skill_dir = root / "src" / "skills" / skill
 
     assert skill_dir.is_dir(), f"missing migrated source: {skill_dir}"
-    written = cs.compile_skill(skill_dir, target, None, root)
+    plugin_index = {skill: ["plugin"]}
+    written = cs.compile_skill(skill_dir, target, plugin_index, root)
 
     assert written, f"compile_skill returned no writes for {skill}/{target}"
 
@@ -110,12 +111,13 @@ def test_batch1_skill_compiles_for_target(
 def test_claude_only_skill_skips_other_targets(cs, tmp_path: Path, skill: str) -> None:
     root = _staging_root(tmp_path)
     skill_dir = root / "src" / "skills" / skill
+    plugin_index = {skill: ["plugin"]}
 
-    assert cs.compile_skill(skill_dir, "claude", None, root), (
+    assert cs.compile_skill(skill_dir, "claude", plugin_index, root), (
         f"{skill} did not emit for claude despite targets: [claude]"
     )
     for t in ("codex", "gemini", "pi"):
-        assert cs.compile_skill(skill_dir, t, None, root) == [], (
+        assert cs.compile_skill(skill_dir, t, plugin_index, root) == [], (
             f"{skill} should be skipped for target {t}"
         )
 
@@ -127,8 +129,9 @@ def test_references_copied_to_dist(
 ) -> None:
     root = _staging_root(tmp_path)
     skill_dir = root / "src" / "skills" / skill
+    plugin_index = {skill: ["plugin"]}
 
-    written = cs.compile_skill(skill_dir, target, None, root)
+    written = cs.compile_skill(skill_dir, target, plugin_index, root)
     assert written, f"no writes for {skill}/{target}"
 
     out_dir = written[0].parent
@@ -140,9 +143,10 @@ def test_brainstorming_ideas_swaps_claude_body(cs, tmp_path: Path) -> None:
     """Claude target gets the original orchestration body; others get vendor-neutral."""
     root = _staging_root(tmp_path)
     skill_dir = root / "src" / "skills" / "brainstorming-ideas"
+    plugin_index = {"brainstorming-ideas": ["plugin"]}
 
-    claude_written = cs.compile_skill(skill_dir, "claude", None, root)
-    codex_written = cs.compile_skill(skill_dir, "codex", None, root)
+    claude_written = cs.compile_skill(skill_dir, "claude", plugin_index, root)
+    codex_written = cs.compile_skill(skill_dir, "codex", plugin_index, root)
 
     claude_body = frontmatter.loads(claude_written[0].read_text()).content
     codex_body = frontmatter.loads(codex_written[0].read_text()).content
@@ -155,7 +159,8 @@ def test_grill_me_credits_file_preserved(cs, tmp_path: Path) -> None:
     """The grill-me skill's CREDITS.md must reach every target's dist tree."""
     root = _staging_root(tmp_path)
     skill_dir = root / "src" / "skills" / "grill-me"
+    plugin_index = {"grill-me": ["plugin"]}
 
     for target in TARGETS:
-        written = cs.compile_skill(skill_dir, target, None, root)
+        written = cs.compile_skill(skill_dir, target, plugin_index, root)
         assert (written[0].parent / "references" / "CREDITS.md").is_file()

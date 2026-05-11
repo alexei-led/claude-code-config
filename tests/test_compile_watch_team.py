@@ -39,8 +39,9 @@ def _staging_root(tmp_path: Path) -> Path:
 def test_watch_team_compiles_for_target(cs, tmp_path: Path, target: str) -> None:
     root = _staging_root(tmp_path)
     skill_dir = root / "src" / "skills" / "watch-team"
+    plugin_index = {"watch-team": ["plugin"]}
 
-    written = cs.compile_skill(skill_dir, target, None, root)
+    written = cs.compile_skill(skill_dir, target, plugin_index, root)
 
     assert len(written) == 1, written
     out = written[0]
@@ -60,9 +61,10 @@ def test_watch_team_compiles_for_target(cs, tmp_path: Path, target: str) -> None
 def test_watch_team_claude_frontmatter_only_on_claude(cs, tmp_path: Path) -> None:
     root = _staging_root(tmp_path)
     skill_dir = root / "src" / "skills" / "watch-team"
+    plugin_index = {"watch-team": ["plugin"]}
 
-    claude_out = cs.compile_skill(skill_dir, "claude", None, root)[0]
-    codex_out = cs.compile_skill(skill_dir, "codex", None, root)[0]
+    claude_out = cs.compile_skill(skill_dir, "claude", plugin_index, root)[0]
+    codex_out = cs.compile_skill(skill_dir, "codex", plugin_index, root)[0]
 
     claude_meta = frontmatter.loads(claude_out.read_text()).metadata
     codex_meta = frontmatter.loads(codex_out.read_text()).metadata

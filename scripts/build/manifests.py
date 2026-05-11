@@ -198,7 +198,7 @@ def write_codex_marketplace(plugins: Sequence[Mapping[str, Any]], root: Path) ->
             # plugin contributes no codex artifacts — omit from marketplace
             continue
         entry: dict[str, Any] = {
-            "name": name,
+            "name": plugin.get("marketplace_name") or name,
             "source": {
                 "source": "local",
                 "path": f"./dist/codex/plugins/{name}",

@@ -122,15 +122,16 @@ def test_compile_agent_go_engineer_claude_only(ca, tmp_path: Path) -> None:
     """
     root = _staging_root(tmp_path)
     agent_dir = root / "src" / "agents" / "go-engineer"
+    plugin_index = {"go-engineer": ["go-dev"]}
 
     for target in ("codex", "gemini", "pi"):
-        assert ca.compile_agent(agent_dir, target, None, root) == [], (
+        assert ca.compile_agent(agent_dir, target, plugin_index, root) == [], (
             f"go-engineer should not emit for {target} (targets: [claude])"
         )
 
-    written = ca.compile_agent(agent_dir, "claude", None, root)
+    written = ca.compile_agent(agent_dir, "claude", plugin_index, root)
     assert len(written) == 1
-    actual = root / "dist" / "claude" / "agents" / "go-engineer.md"
+    actual = written[0]
     golden = _GOLDENS / "go-engineer" / "claude" / "go-engineer.md"
     assert golden.is_file(), f"missing golden snapshot: {golden}"
     diff = _diff_files(golden, actual)
@@ -165,8 +166,9 @@ def test_codex_target_emits_toml_extension(ca, tmp_path: Path) -> None:
     )
     root = tmp_path / "repo"
     root.mkdir()
+    plugin_index = {"tiny": ["alpha"]}
 
-    written = ca.compile_agent(agent, "codex", None, root)
+    written = ca.compile_agent(agent, "codex", plugin_index, root)
     assert len(written) == 1
     assert written[0].suffix == ".toml"
     text = written[0].read_text()
@@ -183,9 +185,10 @@ def test_md_targets_emit_md_extension(ca, tmp_path: Path) -> None:
     )
     root = tmp_path / "repo"
     root.mkdir()
+    plugin_index = {"tiny": ["alpha"]}
 
     for target in ("claude", "gemini", "pi"):
-        written = ca.compile_agent(agent, target, None, root)
+        written = ca.compile_agent(agent, target, plugin_index, root)
         assert len(written) == 1, target
         assert written[0].suffix == ".md", target
         text = written[0].read_text()
@@ -201,9 +204,10 @@ def test_targets_restriction_string_form(ca, tmp_path: Path) -> None:
     )
     root = tmp_path / "repo"
     root.mkdir()
+    plugin_index = {"a": ["alpha"]}
 
-    assert ca.compile_agent(agent, "pi", None, root) != []
-    assert ca.compile_agent(agent, "claude", None, root) == []
+    assert ca.compile_agent(agent, "pi", plugin_index, root) != []
+    assert ca.compile_agent(agent, "claude", plugin_index, root) == []
 
 
 def test_targets_key_stripped_from_md_output(ca, tmp_path: Path) -> None:
@@ -214,8 +218,9 @@ def test_targets_key_stripped_from_md_output(ca, tmp_path: Path) -> None:
     )
     root = tmp_path / "repo"
     root.mkdir()
+    plugin_index = {"a": ["alpha"]}
 
-    written = ca.compile_agent(agent, "claude", None, root)
+    written = ca.compile_agent(agent, "claude", plugin_index, root)
     assert len(written) == 1
     assert "targets:" not in written[0].read_text()
 
@@ -228,8 +233,9 @@ def test_targets_key_stripped_from_toml_output(ca, tmp_path: Path) -> None:
     )
     root = tmp_path / "repo"
     root.mkdir()
+    plugin_index = {"a": ["alpha"]}
 
-    written = ca.compile_agent(agent, "codex", None, root)
+    written = ca.compile_agent(agent, "codex", plugin_index, root)
     assert len(written) == 1
     assert "targets" not in written[0].read_text()
 
@@ -242,8 +248,9 @@ def test_name_injected_from_directory_when_missing(ca, tmp_path: Path) -> None:
     )
     root = tmp_path / "repo"
     root.mkdir()
+    plugin_index = {"from-dirname": ["alpha"]}
 
-    written = ca.compile_agent(agent, "claude", None, root)
+    written = ca.compile_agent(agent, "claude", plugin_index, root)
     assert "name: from-dirname" in written[0].read_text()
 
 
@@ -287,8 +294,26 @@ def test_body_overlay_applied_when_present(ca, tmp_path: Path) -> None:
     (agent / "claude" / "body.md").write_text("# Replaced\nclaude-only body.\n")
     root = tmp_path / "repo"
     root.mkdir()
+    plugin_index = {"with-overlay": ["alpha"]}
 
-    written = ca.compile_agent(agent, "claude", None, root)
+    written = ca.compile_agent(agent, "claude", plugin_index, root)
     text = written[0].read_text()
     assert "claude-only body." in text
     assert "base body." not in text
+
+
+def test_plugin_grouped_target_skips_unowned_agent(ca, tmp_path: Path) -> None:
+    """Unowned agents return no writes for plugin-grouped targets."""
+    agent = tmp_path / "src" / "agents" / "orphan"
+    agent.mkdir(parents=True)
+    (agent / "AGENT.md").write_text(
+        "---\nname: orphan\ndescription: no owner\n---\n\nbody\n"
+    )
+    root = tmp_path / "repo"
+    root.mkdir()
+
+    assert ca.compile_agent(agent, "claude", None, root) == []
+    assert ca.compile_agent(agent, "codex", None, root) == []
+    # Flat targets still emit even without a plugin index.
+    assert ca.compile_agent(agent, "pi", None, root) != []
+    assert ca.compile_agent(agent, "gemini", None, root) != []

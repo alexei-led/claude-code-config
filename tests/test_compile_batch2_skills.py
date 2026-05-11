@@ -97,7 +97,8 @@ def test_batch2_skill_compiles_for_target(
     skill_dir = root / "src" / "skills" / skill
 
     assert skill_dir.is_dir(), f"missing migrated source: {skill_dir}"
-    written = cs.compile_skill(skill_dir, target, None, root)
+    plugin_index = {skill: ["plugin"]}
+    written = cs.compile_skill(skill_dir, target, plugin_index, root)
 
     assert written, f"compile_skill returned no writes for {skill}/{target}"
 
@@ -114,12 +115,13 @@ def test_batch2_skill_compiles_for_target(
 def test_claude_only_skill_skips_other_targets(cs, tmp_path: Path, skill: str) -> None:
     root = _staging_root(tmp_path)
     skill_dir = root / "src" / "skills" / skill
+    plugin_index = {skill: ["plugin"]}
 
-    assert cs.compile_skill(skill_dir, "claude", None, root), (
+    assert cs.compile_skill(skill_dir, "claude", plugin_index, root), (
         f"{skill} did not emit for claude despite targets: [claude]"
     )
     for t in ("codex", "gemini", "pi"):
-        assert cs.compile_skill(skill_dir, t, None, root) == [], (
+        assert cs.compile_skill(skill_dir, t, plugin_index, root) == [], (
             f"{skill} should be skipped for target {t}"
         )
 
@@ -131,9 +133,10 @@ def test_swap_skill_routes_claude_body(
     """Swap-migrated skills must put the Claude orchestration body on Claude only."""
     root = _staging_root(tmp_path)
     skill_dir = root / "src" / "skills" / skill
+    plugin_index = {skill: ["plugin"]}
 
-    claude_written = cs.compile_skill(skill_dir, "claude", None, root)
-    codex_written = cs.compile_skill(skill_dir, "codex", None, root)
+    claude_written = cs.compile_skill(skill_dir, "claude", plugin_index, root)
+    codex_written = cs.compile_skill(skill_dir, "codex", plugin_index, root)
 
     claude_body = frontmatter.loads(claude_written[0].read_text()).content
     codex_body = frontmatter.loads(codex_written[0].read_text()).content
