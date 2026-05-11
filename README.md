@@ -204,7 +204,7 @@ assume MCP tools.
 
 > Stepwise reasoning previously came from the
 > [Sequential Thinking MCP](https://github.com/modelcontextprotocol/servers/tree/main/src/sequentialthinking).
-> It now ships as the [`sequential-thinking` skill](plugins/dev-tools/skills/sequential-thinking/SKILL.md) — no MCP install required and portable across Claude Code, Codex, Gemini, and Pi.
+> It now ships as the [`sequential-thinking` skill](src/skills/sequential-thinking/SKILL.md) — no MCP install required and portable across Claude Code, Codex, Gemini, and Pi.
 
 ### Claude-Mem Integration
 
@@ -298,7 +298,7 @@ These activate silently when relevant patterns are detected — no `/skill-name`
 ## Agents
 
 Claude Code uses the full plugin agent set below. Pi gets a small generated
-runtime set in `flat/agents-pi/`: `scout`, `planner`, `reviewer`, `worker`, and
+runtime set in `dist/pi/agents/`: `scout`, `planner`, `reviewer`, `worker`, and
 `playwright-tester`.
 
 | Need                       | Agent                       | Model  |
