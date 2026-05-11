@@ -16,55 +16,55 @@
       "name": "dev-tools",
       "source": "./dist/claude/plugins/dev-tools",
       "description": "Modern CLI tools, git worktrees, docs lookup, research, and brainstorming",
-      "version": "2.2.0"
+      "version": "4.0.0"
     },
     {
       "name": "dev-workflow",
       "source": "./dist/claude/plugins/dev-workflow",
       "description": "Code review, fixes, commits, and linting for development workflows",
-      "version": "2.2.0"
+      "version": "4.0.0"
     },
     {
       "name": "go-dev",
       "source": "./dist/claude/plugins/go-dev",
       "description": "Idiomatic Go 1.25+ development with stdlib-first patterns",
-      "version": "2.2.0"
+      "version": "4.0.0"
     },
     {
       "name": "infra-ops",
       "source": "./dist/claude/plugins/infra-ops",
       "description": "Kubernetes, Terraform, Helm, GitHub Actions, AWS, and GCP operations",
-      "version": "2.2.0"
+      "version": "4.0.0"
     },
     {
       "name": "python-dev",
       "source": "./dist/claude/plugins/python-dev",
       "description": "Python 3.12+ with uv/ruff/pyright toolchain and modern patterns",
-      "version": "2.2.0"
+      "version": "4.0.0"
     },
     {
       "name": "spec-system",
       "source": "./dist/claude/plugins/spec-system",
       "description": "Spec-driven development with structured requirements and planning",
-      "version": "2.2.0"
+      "version": "4.0.0"
     },
     {
       "name": "testing-e2e",
       "source": "./dist/claude/plugins/testing-e2e",
       "description": "End-to-end testing with Playwright for browser automation and UI testing",
-      "version": "2.2.0"
+      "version": "4.0.0"
     },
     {
       "name": "typescript-dev",
       "source": "./dist/claude/plugins/typescript-dev",
       "description": "TypeScript with strict typing, React patterns, and modern tooling",
-      "version": "2.2.0"
+      "version": "4.0.0"
     },
     {
       "name": "web-dev",
       "source": "./dist/claude/plugins/web-dev",
       "description": "Web frontend with vanilla HTML, CSS, JavaScript, and HTMX",
-      "version": "2.2.0"
+      "version": "4.0.0"
     }
   ],
   "version": "4.0.0"

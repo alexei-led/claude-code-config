@@ -1,5 +1,5 @@
 name: python-dev
-version: 2.2.0
+version: 4.0.0
 description: Python 3.12+ with uv/ruff/pyright toolchain and modern patterns
 skills:
   - writing-python
