@@ -1,6 +1,6 @@
 """Shared overlay engine for the skill/agent/hook compiler.
 
-This task wires the frontmatter half of the overlay pipeline:
+Frontmatter pipeline:
 
 - `load_base` reads `SKILL.md` / `AGENT.md` (YAML+markdown via `python-frontmatter`)
   and `HOOK.sh` / `HOOK.py` (shell-comment YAML block).
@@ -8,14 +8,24 @@ This task wires the frontmatter half of the overlay pipeline:
   the base via `mergedeep.merge` with overlay-side wins, strips the `targets`
   renderer metadata, and filters out keys not allowed for the target.
 
-Body-overlay and support-file logic land in later tasks; this module grows
-those exports without breaking the frontmatter contract.
+Body pipeline (mirror mode):
+
+- `parse_sections` splits markdown into a tree keyed by `#+` headers, ignoring
+  fenced code blocks.
+- `apply_mirror` walks an overlay tree onto a base tree. Each overlay header is
+  an anchor; the suffix selects the operation (`(_+)` append, `(+_)` prepend,
+  no suffix → replace if base has the anchor, otherwise add as a new
+  subsection). Append/prepend without a matching base anchor is a build error.
+
+Full-replacement detection and support-file overlay land in later tasks.
 """
 
 from __future__ import annotations
 
 import logging
+import re
 from collections.abc import Mapping
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -205,3 +215,225 @@ def _strip_comment(line: str) -> str:
     if raw.startswith("#"):
         return raw[1:]
     return raw
+
+
+# --- Body mirror overlay -----------------------------------------------------
+
+_HEADER_RE = re.compile(r"^(#+)\s+(.+?)\s*$")
+_FENCE_RE = re.compile(r"^(```+|~~~+)")
+_SUFFIX_RE = re.compile(r"\s*\((?:\\?_\+|\+\\?_)\)\s*$")
+
+
+class OverlayError(ValueError):
+    """Raised when an overlay body cannot be merged onto its base."""
+
+
+@dataclass
+class Section:
+    """A markdown section: header + its content text + nested subsections.
+
+    The synthetic root has `level=0` and no `raw_header`; everything in the
+    parsed document hangs off its `children`.
+    """
+
+    level: int
+    title: str
+    raw_header: str
+    content: str
+    line: int = 0
+    children: list[Section] = field(default_factory=list)
+
+
+def parse_sections(md: str) -> Section:
+    """Parse markdown into a header-keyed tree.
+
+    Lines starting with `#+` outside fenced code blocks become section
+    boundaries. Content between a header and the next header at the same or
+    higher level is the section's `content`; deeper headers become `children`.
+    """
+    root = Section(level=0, title="", raw_header="", content="", line=0)
+    stack: list[Section] = [root]
+    in_fence = False
+    fence_chars = ""
+    pending: list[str] = []
+
+    def flush() -> None:
+        if pending:
+            stack[-1].content += "".join(pending)
+            pending.clear()
+
+    for idx, line in enumerate(md.splitlines(keepends=True), start=1):
+        body = line.rstrip("\n")
+        if in_fence:
+            pending.append(line)
+            if body.strip() == fence_chars:
+                in_fence = False
+                fence_chars = ""
+            continue
+        fence_match = _FENCE_RE.match(body)
+        if fence_match:
+            in_fence = True
+            fence_chars = fence_match.group(1)
+            pending.append(line)
+            continue
+        header_match = _HEADER_RE.match(body)
+        if header_match:
+            flush()
+            level = len(header_match.group(1))
+            title = header_match.group(2)
+            while stack[-1].level >= level:
+                stack.pop()
+            section = Section(
+                level=level,
+                title=title,
+                raw_header=body,
+                content="",
+                line=idx,
+            )
+            stack[-1].children.append(section)
+            stack.append(section)
+            continue
+        pending.append(line)
+
+    flush()
+    return root
+
+
+def _normalize(title: str) -> tuple[str, str]:
+    """Return `(key, op)` for an overlay header title.
+
+    `op` is `'append'` for `(_+)`/`(\\_+)`, `'prepend'` for `(+_)`/`(+\\_)`,
+    otherwise `'replace'`. The backslash variants exist because markdown
+    rendering escapes underscores; either form is accepted.
+    """
+    stripped = title.rstrip()
+    for marker in ("(_+)", "(\\_+)"):
+        if stripped.endswith(marker):
+            return stripped[: -len(marker)].rstrip(), "append"
+    for marker in ("(+_)", "(+\\_)"):
+        if stripped.endswith(marker):
+            return stripped[: -len(marker)].rstrip(), "prepend"
+    return stripped, "replace"
+
+
+def _strip_suffix(raw_header: str) -> str:
+    return _SUFFIX_RE.sub("", raw_header)
+
+
+def apply_mirror(
+    base_body: str,
+    overlay_body: str,
+    *,
+    overlay_filename: str = "<overlay>",
+) -> str:
+    """Apply an overlay body to a base body in mirror mode.
+
+    Each overlay header is matched to the base by full header path. The suffix
+    on the overlay title selects the operation (replace/append/prepend); a
+    title with no suffix that does not exist in base is added as a new
+    subsection. Duplicate anchors and append/prepend onto a missing base
+    anchor raise `OverlayError`.
+    """
+    base = parse_sections(base_body)
+    overlay = parse_sections(overlay_body)
+    _merge(base, overlay, [], overlay_filename)
+    return _render(base)
+
+
+def _merge(
+    base: Section,
+    overlay: Section,
+    path: list[str],
+    overlay_filename: str,
+) -> None:
+    seen: set[str] = set()
+    for child in overlay.children:
+        key, _ = _normalize(child.title)
+        if key in seen:
+            raise OverlayError(
+                f"{overlay_filename}:{child.line}: duplicate overlay anchor "
+                f"{'/'.join(path + [key]) or key!r}"
+            )
+        seen.add(key)
+
+    base_by_key: dict[str, Section] = {}
+    for child in base.children:
+        key, _ = _normalize(child.title)
+        if key in base_by_key:
+            raise OverlayError(
+                f"<base>:{child.line}: duplicate base anchor "
+                f"{'/'.join(path + [key]) or key!r}"
+            )
+        base_by_key[key] = child
+
+    for overlay_child in overlay.children:
+        key, op = _normalize(overlay_child.title)
+        target = base_by_key.get(key)
+        has_content = overlay_child.content.strip() != ""
+        has_children = bool(overlay_child.children)
+
+        if op == "replace":
+            if target is None:
+                new_section = _clone_for_emit(overlay_child)
+                base.children.append(new_section)
+                base_by_key[key] = new_section
+                continue
+            if has_content or not has_children:
+                replacement = _clone_for_emit(overlay_child)
+                replacement.raw_header = target.raw_header
+                idx = base.children.index(target)
+                base.children[idx] = replacement
+                base_by_key[key] = replacement
+            else:
+                _merge(target, overlay_child, path + [key], overlay_filename)
+        elif op == "append":
+            if target is None:
+                raise OverlayError(
+                    f"{overlay_filename}:{overlay_child.line}: append anchor "
+                    f"{'/'.join(path + [key]) or key!r} not found in base"
+                )
+            target.content = _join_content(target.content, overlay_child.content)
+            target.children.extend(_clone_for_emit(c) for c in overlay_child.children)
+        elif op == "prepend":
+            if target is None:
+                raise OverlayError(
+                    f"{overlay_filename}:{overlay_child.line}: prepend anchor "
+                    f"{'/'.join(path + [key]) or key!r} not found in base"
+                )
+            target.content = _join_content(overlay_child.content, target.content)
+            new_children = [_clone_for_emit(c) for c in overlay_child.children]
+            new_children.extend(target.children)
+            target.children = new_children
+
+
+def _clone_for_emit(section: Section) -> Section:
+    return Section(
+        level=section.level,
+        title=section.title,
+        raw_header=_strip_suffix(section.raw_header),
+        content=section.content,
+        line=section.line,
+        children=[_clone_for_emit(c) for c in section.children],
+    )
+
+
+def _join_content(first: str, second: str) -> str:
+    a = first.rstrip("\n")
+    b = second.lstrip("\n")
+    if not a:
+        return second
+    if not b:
+        return first
+    return a + "\n\n" + b
+
+
+def _render(section: Section) -> str:
+    parts: list[str] = []
+    if section.raw_header:
+        parts.append(section.raw_header)
+        if not section.raw_header.endswith("\n"):
+            parts.append("\n")
+    parts.append(section.content)
+    for child in section.children:
+        parts.append(_render(child))
+    return "".join(parts)
