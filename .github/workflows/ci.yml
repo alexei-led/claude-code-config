@@ -41,7 +41,11 @@ jobs:
               - '**/*.json'
               - '**/*.toml'
               - 'scripts/validate/validate-config.py'
+              - 'scripts/validate/validate_genericity.py'
+              - 'src/**'
             skill_evals:
+              - 'src/skills/**'
+              - 'dist/**'
               - 'plugins/**/skills/**'
               - 'tests/skill-evals/**'
               - 'scripts/evals/prepare-skill-evals.py'

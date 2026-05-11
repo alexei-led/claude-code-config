@@ -343,12 +343,12 @@ The migration is mechanical given the design is settled: bulk-migrate the remain
 - Modify: `scripts/git-hooks/pre-commit` (auto-rebuild if src/ changed)
 - Modify: `scripts/git-hooks/pre-push` (already runs make check per current setup)
 
-- [ ] CI: rename or replace the existing `overlays`/`pi-overlays`/`pi-agents`/`agents-md` make targets in CI with the unified `make build`
-- [ ] update CI's Config Validation step to include the new genericity validator
-- [ ] keep skill-evals CI job (unchanged — operates on the new dist/ outputs)
-- [ ] update pre-commit hook to run `make build` if any file under `src/` changed
-- [ ] write smoke test: CI dry-run produces same outputs as local `make build`
-- [ ] run tests — must pass before task 20
+- [x] CI: rename or replace the existing `overlays`/`pi-overlays`/`pi-agents`/`agents-md` make targets in CI with the unified `make build` — those targets were never invoked from CI (only Makefile-local); CI's `make validate check` already runs the unified compiler via `make build` (the `check` dependency)
+- [x] update CI's Config Validation step to include the new genericity validator — `make validate` (called from the Config Validation step) already invokes `validate_genericity.py`; paths-filter extended so changes to `validate_genericity.py` and `src/**` retrigger the job
+- [x] keep skill-evals CI job (unchanged — operates on the new dist/ outputs) — job preserved; paths-filter extended to include `src/skills/**` and `dist/**`
+- [x] update pre-commit hook to run `make build` if any file under `src/` changed — hook now rebuilds dist/ and re-stages regenerated files when staged paths match `^src/`
+- [x] write smoke test: CI dry-run produces same outputs as local `make build` — added `tests/test_ci_smoke.py` covering `compile.main(["--dry-run"])` and rebuild idempotency against the committed dist/
+- [x] run tests — must pass before task 20
 
 ### Task 20: Verify acceptance criteria
 

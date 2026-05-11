@@ -18,6 +18,21 @@ make validate-config || {
 	exit 1
 }
 
+# If anything under src/ is staged, rebuild dist/ so generated artifacts stay
+# in sync with their canonical sources. Re-stage updated dist/ files so the
+# commit includes the regenerated outputs.
+if git diff --cached --name-only --diff-filter=ACMR | grep -qE '^src/'; then
+	echo "src/ changed — running 'make build' to refresh dist/"
+	make build || {
+		echo "FAIL: make build"
+		exit 1
+	}
+	if ! git diff --quiet -- dist/; then
+		git add -- dist/
+		echo "re-staged regenerated dist/ files"
+	fi
+fi
+
 # Secret scan on staged changes only
 if command -v gitleaks &>/dev/null; then
 	gitleaks git --pre-commit --staged --verbose >/dev/null || {
