@@ -166,15 +166,15 @@ The migration is mechanical given the design is settled: bulk-migrate the remain
 - Create: `scripts/build/codex_toml.py`
 - Create: `tests/test_codex_toml.py`
 
-- [ ] implement `to_toml(agent_meta, body)` emitting:
+- [x] implement `to_toml(agent_meta, body)` emitting:
   - `name = "..."`, `description = "..."` (TOML strings)
   - `developer_instructions = """..."""` (triple-quoted, body markdown)
   - rename `effort` → `model_reasoning_effort`
   - pass through `model`, `nickname_candidates`, `sandbox_mode`
   - emit `[mcp_servers.*]` and `[[skills.config]]` blocks from overlay yaml
-- [ ] handle multiline strings in TOML (escape `"""` if it appears in body)
-- [ ] write tests: minimal agent (name + description + body) / agent with model + effort / agent with mcp_servers / agent with skills.config / body containing triple-quotes
-- [ ] run tests — must pass before task 8
+- [x] handle multiline strings in TOML (escape `"""` if it appears in body)
+- [x] write tests: minimal agent (name + description + body) / agent with model + effort / agent with mcp_servers / agent with skills.config / body containing triple-quotes
+- [x] run tests — must pass before task 8
 
 ### Task 8: Wire agent compilation pipeline
 
