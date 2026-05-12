@@ -143,7 +143,7 @@ def test_write_codex_marketplace_paths(manifests, fake_root):
         assert entry["source"]["path"].startswith("./dist/codex/plugins/")
         assert entry["policy"] == {
             "installation": "AVAILABLE",
-            "authentication": "ON_FIRST_USE",
+            "authentication": "ON_USE",
         }
 
 

@@ -1,0 +1,30 @@
+{
+  "name": "cc-thingz",
+  "version": "4.1.0",
+  "private": true,
+  "description": "Portable development skills for Claude Code, Codex CLI, Gemini CLI, and Pi.",
+  "keywords": [
+    "pi-package"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/alexei-led/cc-thingz",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alexei-led/cc-thingz.git"
+  },
+  "peerDependencies": {
+    "@mariozechner/pi-agent-core": "*",
+    "@mariozechner/pi-ai": "*",
+    "@mariozechner/pi-coding-agent": "*",
+    "@mariozechner/pi-tui": "*",
+    "typebox": "*"
+  },
+  "pi": {
+    "extensions": [
+      "./dist/pi/extensions"
+    ],
+    "skills": [
+      "./dist/pi/skills"
+    ]
+  }
+}

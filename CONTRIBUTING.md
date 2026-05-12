@@ -275,12 +275,16 @@ Pi consumes the flat tree under `dist/pi/`. No `install-pi-exports.sh`
 helper; symlink manually (one time):
 
 ```bash
-ln -snf "$(pwd)/dist/pi/skills"      ~/.pi/agent/skills
-ln -snf "$(pwd)/dist/pi/agents"      ~/.pi/agent/agents
-ln -snf "$(pwd)/dist/pi/extensions"  ~/.pi/agent/extensions
+ln -snf "$(pwd)/dist/pi/agents"  ~/.pi/agent/agents
+pi install "$(pwd)"
 ```
 
-The `extensions` symlink is **required**, not optional. Several hooks depend on
+The root `package.json` declares `pi.extensions` and `pi.skills` pointing at
+`dist/pi/extensions` and `dist/pi/skills`. `pi install "$(pwd)"` registers the
+whole package via Pi's loader — existing extensions from other sources are
+preserved. Re-run `pi install "$(pwd)"` after `make build` to pick up changes.
+
+Extensions are **required**, not optional. Several hooks depend on
 bundled extensions being loaded:
 
 - `smart-lint.sh` calls the `ask_user_question` tool (from `ask-user-question.ts`)

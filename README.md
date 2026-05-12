@@ -136,18 +136,23 @@ cd ~/src/cc-thingz
 # 1. Install the subagent runtime:
 pi install npm:@tintinweb/pi-subagents
 
-# 2. Build the dist/ tree, then symlink:
+# 2. Build the dist/ tree:
 make build
-ln -snf "$(pwd)/dist/pi/skills"      ~/.pi/agent/skills
-ln -snf "$(pwd)/dist/pi/agents"      ~/.pi/agent/agents
-ln -snf "$(pwd)/dist/pi/extensions"  ~/.pi/agent/extensions   # if present
+
+# 3. Symlink agents (flat layout, Pi expects these at known paths):
+ln -snf "$(pwd)/dist/pi/agents"  ~/.pi/agent/agents
+
+# 4. Install skills and extensions via Pi's package loader:
+pi install "$(pwd)"
 ```
 
-If `~/.pi/agent/skills`, `agents`, or `extensions` already exist, move them
-aside first (`mv ~/.pi/agent/skills ~/.pi/agent/skills.bak`) — `ln -snf`
-will overwrite an existing symlink but not a real directory. Override the
-target with `PI_CODING_AGENT_DIR=<DIR>` if you run Pi from a non-default
-location. Restart Pi or run `/reload` after creating the symlinks.
+`ln -snf` replaces an existing symlink safely but will not overwrite a real
+directory — move it aside first if needed
+(`mv ~/.pi/agent/agents ~/.pi/agent/agents.bak`). `pi install "$(pwd)"` reads
+the root `package.json` (`pi.extensions`, `pi.skills`) and registers cc-thingz
+alongside any other installed packages — existing extensions are preserved.
+Override the agent dir with `PI_CODING_AGENT_DIR=<DIR>` if you run Pi from a
+non-default location. Restart Pi or run `/reload` after installing.
 
 **Bundled Pi extensions** (`dist/pi/extensions/`):
 

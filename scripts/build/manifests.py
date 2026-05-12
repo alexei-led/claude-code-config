@@ -302,7 +302,7 @@ def write_codex_marketplace(plugins: Sequence[Mapping[str, Any]], root: Path) ->
             },
             "policy": {
                 "installation": "AVAILABLE",
-                "authentication": "ON_FIRST_USE",
+                "authentication": "ON_USE",
             },
         }
         if "codex_category" in plugin:
