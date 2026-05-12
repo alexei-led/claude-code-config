@@ -13,7 +13,7 @@ SPECCTL = (
     Path(__file__).resolve().parent.parent
     / "src"
     / "skills"
-    / "spec"
+    / "spec-core"
     / "scripts"
     / "specctl.py"
 )
