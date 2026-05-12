@@ -1,17 +1,16 @@
 ---
-description:
-  Dialectic thinking — spawn thesis and antithesis agents to stress-test
-  ideas, then synthesize and verify against code. Use when user says "debate", "argue
-  both sides", "devil's advocate", "stress test this idea", "pros and cons of approach",
-  or wants rigorous evaluation of a design decision.
+description: >
+  Dialectic thinking for code and architecture decisions — spawn thesis and antithesis
+  agents, verify claims against the codebase, then synthesize. Use when user says
+  "debate", "argue both sides", "devil's advocate", "pros and cons of approach",
+  or wants a design decision stress-tested against actual code.
+  For conceptual or logical claims without a codebase, use thinking-tools:dialectic instead.
 name: debating-ideas
 targets:
   - claude
 ---
 
 # Dialectic Debate
-
-Stress-test ideas by spawning competing perspectives, then synthesize and ground-truth against code.
 
 ## `$ARGUMENTS` is the question or topic to debate
 
@@ -89,13 +88,15 @@ TaskOutput(task_id=<thesis_id>, block=true)
 TaskOutput(task_id=<antithesis_id>, block=true)
 ```
 
+If either agent reports no codebase evidence, flag the debate as theory-only: "No code evidence found — debate is conceptual. Verdict confidence capped at low." Do not fabricate supporting code. Proceed with available evidence.
+
 Synthesize into a structured verdict:
 
-1. **Where they agree** — shared facts, common ground
-2. **Where they conflict** — genuine disagreements with evidence
-3. **Weak arguments** — flag claims that lack code evidence or rely on generalities
-4. **Verdict** — which position has stronger grounding, and why
-5. **Conditions** — when would the other position win instead?
+1. Where they agree — shared facts, common ground
+2. Where they conflict — genuine disagreements with evidence
+3. Weak arguments — flag claims that lack code evidence or rely on generalities
+4. Verdict — which position has stronger grounding, and why
+5. Conditions — when would the other position win instead?
 
 ## Phase 4: Verify Claims
 
@@ -135,4 +136,4 @@ Verified claims: {N}/{M} checked, {K} corrected
 
 If the debate reaches no clear conclusion, present both positions with evidence and let the user decide.
 
-### Frame the debate now
+Start Phase 1 with the topic from `$ARGUMENTS`.
