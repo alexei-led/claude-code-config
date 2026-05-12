@@ -12,8 +12,6 @@ targets:
 
 # Deploy Infrastructure
 
-Validate and deploy changes to Kubernetes, Terraform, Helm, or Kustomize with pre-flight checks, security validation, and rollback support.
-
 ## Usage
 
 ```
@@ -44,11 +42,17 @@ Use Glob to find infrastructure files (quick scan):
 - `**/kustomization.yaml` - Kustomize
 - `**/Chart.yaml` - Helm
 
-**If no infrastructure detected**: "No infrastructure files found. Looking for: \*.tf, Chart.yaml, kustomization.yaml, k8s/, Dockerfile"
+### If no infrastructure detected
+
+Stop: "No infrastructure files found. Looking for: \*.tf, Chart.yaml, kustomization.yaml, k8s/, Dockerfile"
+
+### If required CLI tools are absent
+
+Stop: "Missing tools: {list}. Install before proceeding." Do not attempt commands with unavailable tools.
 
 ## Step 3: Pre-flight Validation
 
-Spawn **infra-engineer** for validation:
+Spawn the infra-engineer agent for validation:
 
 ```
 Task(
@@ -108,7 +112,9 @@ Task(
 )
 ```
 
-**If --background:** Return agent ID immediately for later collection.
+### If --background
+
+Return agent ID immediately for later collection.
 
 ## Step 4: Review Changes
 
@@ -128,7 +134,9 @@ Task(
 - {any security concerns}
 ```
 
-**If BLOCKED**: Stop, show blockers.
+### If BLOCKED
+
+Stop and show blockers. Do not proceed to Step 5.
 
 ## Step 5: Research Best Practices (if needed)
 
@@ -139,7 +147,9 @@ mcp__perplexity-ask__perplexity_ask with:
 "Current best practices for {specific concern} in {technology} 2024-2025"
 ```
 
-**If --dry-run**: Stop here with validation summary.
+### If --dry-run
+
+Stop here. Output the Step 4 pre-flight summary as the final result.
 
 ## Step 6: Confirm Production Deploys
 
@@ -185,6 +195,10 @@ kubectl rollout status deployment/{name} --timeout=300s
 kubectl get pods -l app={name}
 ```
 
+### If rollout status times out
+
+Do not wait further. Show rollback commands and ask: "Rollout is taking longer than expected — rollback or investigate?"
+
 ### If rollout fails
 
 ```
@@ -215,13 +229,4 @@ Status: {HEALTHY|DEGRADED|FAILED}
 Rollback: {command if needed}
 ```
 
-## Key Principles
-
-1. **Dry-run by default** - Never apply without explicit --apply
-2. **Production requires confirmation** - Extra gate for prod
-3. **Rollback ready** - Always show rollback command
-4. **Log everything** - .deploy.log for audit trail
-
 Pairs with `managing-infra` skill for patterns and reference material.
-
-### Execute deployment workflow now
