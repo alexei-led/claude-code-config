@@ -1,7 +1,6 @@
 ---
 context: fork
-description:
-  Playwright primitives for real-browser automation — dev-server detection,
+description: Playwright primitives for real-browser automation — dev-server detection,
   a Node.js script runner, and helpers for clicks, form fills, screenshots, multi-viewport,
   custom HTTP headers. Use when a task needs an actual browser (rendered DOM, visual
   checks, multi-page flows, cross-browser behavior). Not for API tests or logic tests
@@ -16,19 +15,17 @@ Provides primitives for browser automation: dev-server detection, a script runne
 
 ## Path resolution
 
-Resolve `$SKILL_DIR` to the directory holding this `SKILL.md`. All commands below address bundled files under `$SKILL_DIR/scripts/`.
-
 ## Critical workflow
 
 1. **Detect dev servers first** for localhost testing:
 
    ```bash
-   node -e "require('$SKILL_DIR/scripts/lib/helpers').detectDevServers().then(s => console.log(JSON.stringify(s)))"
+   node -e "require('scripts/lib/helpers').detectDevServers().then(s => console.log(JSON.stringify(s)))"
    ```
 
    One server → use it. Multiple → ask which. None → ask for a URL.
 
-2. **Write generated scripts to `/tmp/playwright-test-*.js`** — never into `$SKILL_DIR` or the user's project.
+2. **Write generated scripts to `/tmp/playwright-test-*.js`** — never into `scripts/` or the user's project.
 
 3. **Visible browser by default** (`headless: false`). Headless only when the user asks.
 
@@ -37,9 +34,9 @@ Resolve `$SKILL_DIR` to the directory holding this `SKILL.md`. All commands belo
 ## Running scripts
 
 ```bash
-node $SKILL_DIR/scripts/run.js /tmp/playwright-test-<name>.js   # file
-node $SKILL_DIR/scripts/run.js "<code>"                          # inline
-cat script.js | node $SKILL_DIR/scripts/run.js                   # stdin
+node scripts/run.js /tmp/playwright-test-<name>.js   # file
+node scripts/run.js "<code>"                          # inline
+cat script.js | node scripts/run.js                   # stdin
 ```
 
 `run.js` `cd`s to its own directory for module resolution, auto-wraps non-`async` code, and on first run auto-installs Playwright via bun. For code without `require()` it injects globals: `chromium`, `firefox`, `webkit`, `devices`, `helpers`, and `getContextOptionsWithHeaders(opts)`.
@@ -57,11 +54,11 @@ Set env vars before invoking `run.js` to inject extra headers into every request
 ```bash
 # single header
 PW_HEADER_NAME=X-Automated-By PW_HEADER_VALUE=playwright-skill \
-  node $SKILL_DIR/scripts/run.js /tmp/script.js
+  node scripts/run.js /tmp/script.js
 
 # multiple
 PW_EXTRA_HEADERS='{"X-Automated-By":"playwright-skill","X-Debug":"true"}' \
-  node $SKILL_DIR/scripts/run.js /tmp/script.js
+  node scripts/run.js /tmp/script.js
 ```
 
 Headers apply automatically when scripts use `helpers.createContext(browser)`. For raw `browser.newContext(...)`, wrap options with `getContextOptionsWithHeaders(...)`.

@@ -1,25 +1,24 @@
 ---
 allowed-tools:
-  - Task
-  - TaskOutput
-  - TaskCreate
-  - TaskUpdate
-  - TaskList
-  - AskUserQuestion
-  - Read
-  - Grep
-  - Glob
-  - LS
-  - Bash(git *)
-  - Bash(gh pr *)
-  - Bash(gh api *)
-  - Bash(rg *)
-  - mcp__plugin_claude-mem_mcp-search__search
-  - mcp__plugin_claude-mem_mcp-search__get_observations
-argument-hint: "[deep] [team] [external] [architecture]"
+- Task
+- TaskOutput
+- TaskCreate
+- TaskUpdate
+- TaskList
+- AskUserQuestion
+- Read
+- Grep
+- Glob
+- LS
+- Bash(git *)
+- Bash(gh pr *)
+- Bash(gh api *)
+- Bash(rg *)
+- mcp__plugin_claude-mem_mcp-search__search
+- mcp__plugin_claude-mem_mcp-search__get_observations
+argument-hint: '[deep] [team] [external] [architecture]'
 context: fork
-description:
-  Code review covering security, quality, tests, implementation, documentation,
+description: Code review covering security, quality, tests, implementation, documentation,
   and architecture / module-depth. Use when the user asks to review code, check changes,
   audit a PR or diff, find refactoring opportunities, or look for shallow modules
   and over-abstraction.
@@ -140,7 +139,6 @@ search({ query: "<file paths from git diff --name-only HEAD>", limit: 10 })
 ```
 
 Fetch full observations via `get_observations` for relevant hits. Forward key findings into reviewer prompts. Skip silently if the MCP is not installed.
-
 ## Report format
 
 ```markdown

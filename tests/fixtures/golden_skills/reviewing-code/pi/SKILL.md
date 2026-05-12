@@ -1,6 +1,5 @@
 ---
-description:
-  Code review covering security, quality, tests, implementation, documentation,
+description: Code review covering security, quality, tests, implementation, documentation,
   and architecture / module-depth. Use when the user asks to review code, check changes,
   audit a PR or diff, find refactoring opportunities, or look for shallow modules
   and over-abstraction.

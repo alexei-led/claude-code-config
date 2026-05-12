@@ -1,6 +1,5 @@
 ---
-description:
-  Playwright primitives for real-browser automation — dev-server detection,
+description: Playwright primitives for real-browser automation — dev-server detection,
   a Node.js script runner, and helpers for clicks, form fills, screenshots, multi-viewport,
   custom HTTP headers. Use when a task needs an actual browser (rendered DOM, visual
   checks, multi-page flows, cross-browser behavior). Not for API tests or logic tests
@@ -21,8 +20,6 @@ Playwright primitives for browser automation on Pi: dev-server detection, a scri
 
 ## Path resolution
 
-Resolve `$SKILL_DIR` to the directory holding this `SKILL.md`. Common Pi deployment path:
-
 ```text
 ~/.pi/agent/skills/playwright-skill
 ```
@@ -34,7 +31,7 @@ See [`references/setup.md`](references/setup.md). First invocation of `run.js` a
 ## Detect dev servers
 
 ```bash
-node -e "require('$SKILL_DIR/scripts/lib/helpers').detectDevServers().then(s => console.log(JSON.stringify(s)))"
+node -e "require('scripts/lib/helpers').detectDevServers().then(s => console.log(JSON.stringify(s)))"
 ```
 
 If multiple servers are found, ask the user which to test.
@@ -44,7 +41,7 @@ If multiple servers are found, ask the user which to test.
 Write scripts outside the skill directory (typically under `/tmp`), then:
 
 ```bash
-node $SKILL_DIR/scripts/run.js /tmp/playwright-check.js
+node scripts/run.js /tmp/playwright-check.js
 ```
 
 ## Rules
