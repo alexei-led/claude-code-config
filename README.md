@@ -137,28 +137,30 @@ file/path protection, post-edit lint, completion notifications).
 pi install npm:@tintinweb/pi-subagents
 ```
 
-**Install extensions and skills** — Pi's package loader reads the root
-`package.json` and registers skills and extensions from `dist/pi/`:
+**Install extensions and skills** — one command installs skills and extensions
+and clones the repo under `~/.pi/agent/git/`:
 
 ```bash
-# From GitHub (no local clone needed for skills and extensions):
 pi install git:github.com/alexei-led/cc-thingz
+```
 
-# For local development (build first, then install from checkout):
+For local development (build first, then install from the checkout):
+
+```bash
 git clone https://github.com/alexei-led/cc-thingz.git ~/src/cc-thingz
 cd ~/src/cc-thingz && make build
 pi install "$(pwd)"
 ```
 
 **Install agents** — Pi's subagent runtime (`@tintinweb/pi-subagents`) loads
-agents from `~/.pi/agent/agents/`. Symlink the compiled agent tree there:
+agents from `~/.pi/agent/agents/`. After `pi install`, the repo is already at
+`~/.pi/agent/git/github.com/alexei-led/cc-thingz` — symlink the agent tree
+from there:
 
 ```bash
-# If installing from GitHub, clone just for the agents:
-git clone https://github.com/alexei-led/cc-thingz.git ~/src/cc-thingz
-cd ~/src/cc-thingz && make build
-
-ln -snf "$(pwd)/dist/pi/agents" ~/.pi/agent/agents
+ln -snf \
+  ~/.pi/agent/git/github.com/alexei-led/cc-thingz/dist/pi/agents \
+  ~/.pi/agent/agents
 ```
 
 `ln -snf` replaces an existing symlink but will not overwrite a real directory

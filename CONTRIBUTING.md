@@ -291,12 +291,14 @@ Re-run `pi install` after `make build` to pick up changes. Existing extensions
 from other packages are preserved — Pi's loader merges packages.
 
 **Agents** — `pi install` does not register agents; the `@tintinweb/pi-subagents`
-loader reads them from `~/.pi/agent/agents/`. Symlink once from a local clone:
+loader reads them from `~/.pi/agent/agents/`. After `pi install`, the repo is
+already cloned at `~/.pi/agent/git/github.com/alexei-led/cc-thingz` — symlink
+the agent tree from there:
 
 ```bash
-git clone https://github.com/alexei-led/cc-thingz.git ~/src/cc-thingz
-cd ~/src/cc-thingz && make build
-ln -snf "$(pwd)/dist/pi/agents" ~/.pi/agent/agents
+ln -snf \
+  ~/.pi/agent/git/github.com/alexei-led/cc-thingz/dist/pi/agents \
+  ~/.pi/agent/agents
 ```
 
 Extensions are required, not optional. Several hooks depend on bundled
