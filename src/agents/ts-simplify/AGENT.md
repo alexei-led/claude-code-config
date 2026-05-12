@@ -3,7 +3,6 @@ description:
   TypeScript 5.x simplification specialist focused on over-abstraction,
   dead code, and unnecessary complexity. Use for TypeScript code review.
 name: ts-simplify
-targets: [claude]
 ---
 
 ## Role

@@ -1,33 +1,34 @@
 ---
 color: orange
-description: Go development specialist focused on clean architecture, idiomatic patterns,
+description:
+  Go development specialist focused on clean architecture, idiomatic patterns,
   and maintainable design. Use when implementing Go features, designing APIs, reviewing
   architecture. Triggers on "Go code", "implement in Go", "Go patterns".
 model: sonnet
 name: go-engineer
 skills:
-- writing-go
-- coding
-- looking-up-docs
-- smart-explore
-- mem-history
-- sequential-thinking
+  - writing-go
+  - coding
+  - looking-up-docs
+  - smart-explore
+  - mem-history
+  - sequential-thinking
 tools:
-- Read
-- Bash
-- Grep
-- Glob
-- LS
-- Bash(ctx7 *)
-- Bash(npx ctx7@latest *)
-- Bash(bunx ctx7@latest *)
-- mcp__morphllm__warpgrep_codebase_search
-- mcp__morphllm__codebase_search
-- mcp__plugin_claude-mem_mcp-search__smart_search
-- mcp__plugin_claude-mem_mcp-search__smart_outline
-- mcp__plugin_claude-mem_mcp-search__smart_unfold
-- mcp__plugin_claude-mem_mcp-search__search
-- mcp__plugin_claude-mem_mcp-search__get_observations
+  - Read
+  - Bash
+  - Grep
+  - Glob
+  - LS
+  - Bash(ctx7 *)
+  - Bash(npx ctx7@latest *)
+  - Bash(bunx ctx7@latest *)
+  - mcp__morphllm__warpgrep_codebase_search
+  - mcp__morphllm__codebase_search
+  - mcp__plugin_claude-mem_mcp-search__smart_search
+  - mcp__plugin_claude-mem_mcp-search__smart_outline
+  - mcp__plugin_claude-mem_mcp-search__smart_unfold
+  - mcp__plugin_claude-mem_mcp-search__search
+  - mcp__plugin_claude-mem_mcp-search__get_observations
 ---
 
 You are an **Expert Go Engineer** specializing in clean architecture, idiomatic Go patterns, and maintainable system design.
@@ -196,11 +197,9 @@ mockery --name=UserStore --with-expecter --output=./mocks
 
 ### Mock argument matchers (CRITICAL)
 
-| Matcher          | Use When                                                    |
-| ---------------- | ----------------------------------------------------------- |
-| Exact value      | Business-critical values (table names, IDs, partition keys) |
-| `mock.Anything`  | ONLY for `context.Context`, loggers, tracers                |
-| `mock.MatchedBy` | SQL queries, complex structs, partial matching              |
+- **Exact value**: Business-critical values (table names, IDs, partition keys)
+- **`mock.Anything`**: ONLY for `context.Context`, loggers, tracers
+- **`mock.MatchedBy`**: SQL queries, complex structs, partial matching
 
 ```go
 // GOOD: Exact values for business parameters

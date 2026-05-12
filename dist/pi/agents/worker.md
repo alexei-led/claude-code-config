@@ -1,6 +1,9 @@
 ---
 description: General-purpose worker agent with full capabilities, isolated context
+max_turns: 50
+model: openai-codex/gpt-5.5
 name: worker
+prompt_mode: append
 thinking: medium
 ---
 

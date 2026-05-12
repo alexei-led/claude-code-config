@@ -3,7 +3,6 @@ description:
   Web simplification specialist. Finds unnecessary complexity in HTML/CSS/JS.
   Use for code review.
 name: web-simplify
-targets: [claude]
 ---
 
 ## Role

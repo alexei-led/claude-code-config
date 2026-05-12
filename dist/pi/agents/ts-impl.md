@@ -2,7 +2,11 @@
 description: TypeScript 5.x implementation specialist focused on requirements match,
   dependency injection, runtime validation, and edge cases. Use for TypeScript code
   review.
+max_turns: 20
+model: openai-codex/gpt-5.5
 name: ts-impl
+thinking: high
+tools: read, grep, find, ls, bash
 ---
 
 ## Role

@@ -1,5 +1,7 @@
 ---
 description: Creates implementation plans from context and requirements
+max_turns: 20
+model: openai-codex/gpt-5.4
 name: planner
 thinking: medium
 tools: read, grep, find, ls

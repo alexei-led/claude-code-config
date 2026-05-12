@@ -2,7 +2,11 @@
 description: TypeScript 5.x idioms specialist focused on strict typing, discriminated
   unions, modern patterns (satisfies, as const), and composition. Use for TypeScript
   code review.
+max_turns: 20
+model: openai-codex/gpt-5.4
 name: ts-idioms
+thinking: medium
+tools: read, grep, find, ls, bash
 ---
 
 ## Role

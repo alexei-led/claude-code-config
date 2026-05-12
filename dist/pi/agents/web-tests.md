@@ -1,7 +1,11 @@
 ---
 description: Web testing specialist for E2E tests with Playwright. Use for test code
   review.
+max_turns: 20
+model: openai-codex/gpt-5.4
 name: web-tests
+thinking: medium
+tools: read, grep, find, ls, bash
 ---
 
 ## Role

@@ -99,20 +99,11 @@ def _diff_files(golden: Path, actual: Path) -> str | None:
     return None
 
 
-def test_compile_agent_go_engineer_claude_only(ca, tmp_path: Path) -> None:
-    """go-engineer has `targets: [claude]` (uses Claude-only MCP tools).
-
-    Only the Claude target emits; codex/gemini/pi are skipped per the
-    base frontmatter restriction enforced by `validate_genericity`.
-    """
+def test_compile_agent_go_engineer_all_platforms(ca, tmp_path: Path) -> None:
+    """go-engineer has no targets restriction — all platforms receive output."""
     root = make_agent_staging_root(tmp_path)
     agent_dir = root / "src" / "agents" / "go-engineer"
     plugin_index = {"go-engineer": ["go-dev"]}
-
-    for target in ("codex", "gemini", "pi"):
-        assert ca.compile_agent(agent_dir, target, plugin_index, root) == [], (
-            f"go-engineer should not emit for {target} (targets: [claude])"
-        )
 
     written = ca.compile_agent(agent_dir, "claude", plugin_index, root)
     assert len(written) == 1

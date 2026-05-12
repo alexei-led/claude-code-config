@@ -3,7 +3,11 @@ description: Go testing specialist focused on idiomatic table-driven tests, test
   assert/require, mockery EXPECT patterns, and test design quality. Identifies pointless/duplicate
   tests and recommends implementation refactoring when complex setup signals design
   problems.
+max_turns: 20
+model: openai-codex/gpt-5.4
 name: go-tests
+thinking: medium
+tools: read, grep, find, ls, bash
 ---
 
 ## Role

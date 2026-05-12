@@ -1,7 +1,11 @@
 ---
 description: Go documentation specialist focused on godoc comments, meaningful comments
   only, and zero test comments. Use for Go code review.
+max_turns: 10
+model: openai-codex/gpt-5.4
 name: go-docs
+thinking: low
+tools: read, grep, find, ls, bash
 ---
 
 ## Role

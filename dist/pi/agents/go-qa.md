@@ -1,7 +1,11 @@
 ---
 description: Go 1.25+ QA specialist focused on logic correctness, security (OWASP),
   and performance. Use for Go code review.
+max_turns: 15
+model: openai-codex/gpt-5.5
 name: go-qa
+thinking: high
+tools: read, grep, find, ls, bash
 ---
 
 ## Role

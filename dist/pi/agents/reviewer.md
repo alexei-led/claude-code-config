@@ -1,5 +1,7 @@
 ---
 description: Code review specialist for quality and security analysis
+max_turns: 30
+model: openai-codex/gpt-5.4
 name: reviewer
 thinking: medium
 tools: read, grep, find, ls, bash

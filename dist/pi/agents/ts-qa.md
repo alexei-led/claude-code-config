@@ -1,7 +1,11 @@
 ---
 description: TypeScript 5.x QA specialist focused on logic correctness, security vulnerabilities
   (OWASP), and performance issues. Use for TypeScript code review.
+max_turns: 15
+model: openai-codex/gpt-5.5
 name: ts-qa
+thinking: high
+tools: read, grep, find, ls, bash
 ---
 
 ## Role

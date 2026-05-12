@@ -1,0 +1,4 @@
+tools: read, grep, find
+thinking: low
+model: openai-codex/gpt-5.4
+max_turns: 10

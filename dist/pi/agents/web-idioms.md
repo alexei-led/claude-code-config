@@ -1,7 +1,11 @@
 ---
 description: Web idioms specialist for semantic HTML, CSS patterns, and minimal JS.
   Use for HTML/CSS/JS/HTMX review.
+max_turns: 20
+model: openai-codex/gpt-5.4
 name: web-idioms
+thinking: medium
+tools: read, grep, find, ls, bash
 ---
 
 ## Role

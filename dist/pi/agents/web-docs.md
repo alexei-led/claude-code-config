@@ -1,7 +1,11 @@
 ---
 description: Web documentation specialist for comments and ARIA labels. Use for HTML/CSS/JS
   review.
+max_turns: 10
+model: openai-codex/gpt-5.4
 name: web-docs
+thinking: low
+tools: read, grep, find, ls, bash
 ---
 
 ## Role

@@ -1,7 +1,11 @@
 ---
 description: Go 1.25+ idioms specialist focused on early returns, short naming, consumer-side
   interfaces, and stdlib-first patterns. Use for Go code review.
+max_turns: 20
+model: openai-codex/gpt-5.4
 name: go-idioms
+thinking: medium
+tools: read, grep, find, ls, bash
 ---
 
 ## Role

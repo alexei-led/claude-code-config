@@ -1,6 +1,8 @@
 ---
 description: Fast codebase recon that returns compressed context for handoff to other
   agents
+max_turns: 15
+model: openai-codex/gpt-5.4-mini
 name: scout
 thinking: low
 tools: read, grep, find, ls, bash

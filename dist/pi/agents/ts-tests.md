@@ -2,7 +2,11 @@
 description: TypeScript testing specialist focused on Vitest, test.each patterns,
   React Testing Library, and test design quality. Identifies pointless/duplicate tests
   and recommends combining with test.each.
+max_turns: 20
+model: openai-codex/gpt-5.4
 name: ts-tests
+thinking: medium
+tools: read, grep, find, ls, bash
 ---
 
 ## Role

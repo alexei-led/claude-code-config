@@ -1,7 +1,11 @@
 ---
 description: TypeScript 5.x documentation specialist focused on JSDoc, TSDoc, comment
   quality, and README accuracy. Use for TypeScript code review.
+max_turns: 10
+model: openai-codex/gpt-5.4
 name: ts-docs
+thinking: low
+tools: read, grep, find, ls, bash
 ---
 
 ## Role

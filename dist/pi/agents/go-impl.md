@@ -1,7 +1,11 @@
 ---
 description: Go 1.25+ implementation specialist focused on requirements, DI wiring,
   private interfaces, and testability. Use for Go code review.
+max_turns: 20
+model: openai-codex/gpt-5.5
 name: go-impl
+thinking: high
+tools: read, grep, find, ls, bash
 ---
 
 ## Role

@@ -1,7 +1,11 @@
 ---
 description: Python 3.12+ QA specialist focused on logic correctness, security vulnerabilities,
   and performance issues. Use for Python code review.
+max_turns: 15
+model: openai-codex/gpt-5.5
 name: py-qa
+thinking: high
+tools: read, grep, find, ls, bash
 ---
 
 ## Role

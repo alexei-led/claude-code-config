@@ -1,7 +1,11 @@
 ---
 description: Python 3.12+ testing specialist focused on pytest, fixtures, parametrize,
   and coverage. Use for Python code review.
+max_turns: 20
+model: openai-codex/gpt-5.4
 name: py-tests
+thinking: medium
+tools: read, grep, find, ls, bash
 ---
 
 ## Role

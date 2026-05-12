@@ -115,6 +115,11 @@ ALLOWED_KEYS: dict[str, frozenset[str]] = {
             "thinking",
             "tools",
             "skills",
+            "max_turns",
+            "prompt_mode",
+            "memory",
+            "isolation",
+            "disallowed_tools",
         }
     ),
 }

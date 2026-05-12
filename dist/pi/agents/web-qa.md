@@ -1,7 +1,11 @@
 ---
 description: Web QA specialist for security, performance, and accessibility basics.
   Use for HTML/CSS/JS/HTMX review.
+max_turns: 15
+model: openai-codex/gpt-5.4
 name: web-qa
+thinking: medium
+tools: read, grep, find, ls, bash
 ---
 
 ## Role

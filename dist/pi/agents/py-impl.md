@@ -1,7 +1,11 @@
 ---
 description: Python 3.12+ implementation specialist focused on requirements match,
   dependency injection wiring, and edge cases. Use for Python code review.
+max_turns: 20
+model: openai-codex/gpt-5.5
 name: py-impl
+thinking: high
+tools: read, grep, find, ls, bash
 ---
 
 ## Role

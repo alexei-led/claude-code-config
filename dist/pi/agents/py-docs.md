@@ -1,7 +1,11 @@
 ---
 description: Python 3.12+ documentation specialist focused on docstrings, README accuracy,
   and type hints for documentation. Use for Python code review.
+max_turns: 10
+model: openai-codex/gpt-5.4
 name: py-docs
+thinking: low
+tools: read, grep, find, ls, bash
 ---
 
 ## Role

@@ -1,7 +1,11 @@
 ---
 description: Web implementation specialist for requirements and responsive design.
   Use for HTML/CSS/JS/HTMX review.
+max_turns: 20
+model: openai-codex/gpt-5.4
 name: web-impl
+thinking: medium
+tools: read, grep, find, ls, bash
 ---
 
 ## Role

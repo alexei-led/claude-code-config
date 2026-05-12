@@ -121,8 +121,7 @@ Claude-Code-native features (plan mode, todos, AskUserQuestion, subagents,
 file/path protection, post-edit lint). Two third-party packages are
 prerequisites — Pi pulls one in transitively, the other you must install:
 
-- **[`@tintinweb/pi-subagents`](https://github.com/tintinweb/pi-subagents)** (or the
-  [pinned fork](https://github.com/alexei-led/pi-subagents/tree/fix/pi-skill-discovery))
+- **[`@tintinweb/pi-subagents`](https://github.com/tintinweb/pi-subagents)**
   provides the `Agent` / `get_subagent_result` / `steer_subagent` tools used
   by the `subagent` extension.
 - **[`@mariozechner/pi-coding-agent`](https://www.npmjs.com/package/@mariozechner/pi-coding-agent)**
@@ -134,10 +133,8 @@ prerequisites — Pi pulls one in transitively, the other you must install:
 git clone https://github.com/alexei-led/cc-thingz.git ~/src/cc-thingz
 cd ~/src/cc-thingz
 
-# 1. Install the subagent runtime (pick one):
+# 1. Install the subagent runtime:
 pi install npm:@tintinweb/pi-subagents
-# or for unreleased fixes:
-# pi install git:github.com/alexei-led/pi-subagents@fix/pi-skill-discovery
 
 # 2. Build the dist/ tree, then symlink:
 make build
@@ -164,7 +161,7 @@ location. Restart Pi or run `/reload` after creating the symlinks.
 | `subagent/`            | Spawns isolated `pi` processes (single, parallel, chain) |
 | `structured-output.ts` | `structured_output` tool that terminates the agent loop  |
 
-**Pi gets**: all skills from `src/`, plus Pi-only runtime subagents (`scout`, `planner`, `reviewer`, `worker`, `playwright-tester`).
+**Pi gets**: all 38 agents (requires [`@tintinweb/pi-subagents`](https://github.com/tintinweb/pi-subagents) for subagent support), all skills, and bundled extensions. Each agent has a Pi-specific frontmatter overlay tuned for OpenAI Codex models (`openai-codex/gpt-5.5`, `gpt-5.4`, `gpt-5.4-mini`), thinking levels, tool restrictions, and turn limits. The four pipeline agents (`scout`, `planner`, `reviewer`, `worker`) are Pi-only — they implement the scout→planner→worker→reviewer orchestration pattern.
 
 ### Other AGENTS.md-Compatible Tools
 
@@ -289,24 +286,30 @@ These activate silently when relevant patterns are detected — no `/skill-name`
 
 ## Agents
 
-Claude Code uses the full plugin agent set below. Pi adds `planner`, `reviewer`, `scout`, and `worker` — runtime orchestration agents with no plugin assignment.
+All 34 plugin agents work on Claude Code and Pi. Pi also adds 4 pipeline-only agents (`scout`, `planner`, `reviewer`, `worker`) for orchestration workflows.
 
-| Need                       | Agent                       | Model  |
-| -------------------------- | --------------------------- | ------ |
-| Go implementation          | `go-engineer`               | sonnet |
-| Python implementation      | `python-engineer`           | sonnet |
-| TypeScript implementation  | `typescript-engineer`       | sonnet |
-| Deep Go QA/impl review     | `go-qa`, `go-impl`          | opus   |
-| Deep Python QA/impl review | `py-qa`, `py-impl`          | opus   |
-| Deep TS QA/impl review     | `ts-qa`, `ts-impl`          | opus   |
-| Go/Py/TS/Web review        | `*-idioms`, `*-tests`, etc. | sonnet |
-| Go/Py/TS/Web docs review   | `*-docs`                    | haiku  |
-| Infrastructure validation  | `infra-engineer`            | sonnet |
-| E2E browser testing        | `playwright-tester`         | sonnet |
-| Implementation planning    | `spec-planner`              | sonnet |
-| Documentation updates      | `docs-keeper`               | sonnet |
-| Web research               | `perplexity-researcher`     | sonnet |
-| PDF data extraction        | `pdf-parser`                | sonnet |
+| Need                       | Agent                       | Claude model | Pi model              |
+| -------------------------- | --------------------------- | ------------ | --------------------- |
+| Go implementation          | `go-engineer`               | sonnet       | gpt-5.5               |
+| Python implementation      | `python-engineer`           | sonnet       | gpt-5.5               |
+| TypeScript implementation  | `typescript-engineer`       | sonnet       | gpt-5.5               |
+| Deep Go QA/impl review     | `go-qa`, `go-impl`          | opus         | gpt-5.5 thinking:high |
+| Deep Python QA/impl review | `py-qa`, `py-impl`          | opus         | gpt-5.5 thinking:high |
+| Deep TS QA/impl review     | `ts-qa`, `ts-impl`          | opus         | gpt-5.5 thinking:high |
+| Go/Py/TS/Web review        | `*-idioms`, `*-tests`, etc. | sonnet       | gpt-5.4               |
+| Go/Py/TS/Web docs review   | `*-docs`                    | haiku        | gpt-5.4 thinking:low  |
+| Infrastructure validation  | `infra-engineer`            | sonnet       | gpt-5.5               |
+| E2E browser testing        | `playwright-tester`         | sonnet       | gpt-5.4               |
+| Implementation planning    | `spec-planner`              | sonnet       | gpt-5.4 thinking:high |
+| Documentation updates      | `docs-keeper`               | sonnet       | gpt-5.4               |
+| Web research               | `perplexity-researcher`     | sonnet       | gpt-5.4               |
+| PDF data extraction        | `pdf-parser`                | sonnet       | gpt-5.4-mini          |
+| Codebase recon             | `scout` _(Pi only)_         | —            | gpt-5.4-mini          |
+| Implementation planning    | `planner` _(Pi only)_       | —            | gpt-5.4               |
+| Code review                | `reviewer` _(Pi only)_      | —            | gpt-5.4               |
+| Task execution             | `worker` _(Pi only)_        | —            | gpt-5.5               |
+
+Pi model names use the `openai-codex/` provider prefix (e.g. `openai-codex/gpt-5.5`) to avoid ambiguous fuzzy matching when multiple providers expose the same model ID.
 
 ## Hooks (Claude Code only)
 

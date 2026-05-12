@@ -42,6 +42,7 @@ backups/
 file-history/
 plans/
 powerline/usage/
+posts/
 
 # === Project-specific state (per-repo, not portable) ===
 projects/

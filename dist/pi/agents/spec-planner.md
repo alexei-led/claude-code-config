@@ -1,6 +1,10 @@
 ---
 description: Creates implementation plans. Learns codebase style, uses deep thinking.
+max_turns: 20
+model: openai-codex/gpt-5.4
 name: spec-planner
+thinking: high
+tools: read, grep, find, ls, bash
 ---
 
 You are a **Planning Agent** that creates implementation plans for tasks.

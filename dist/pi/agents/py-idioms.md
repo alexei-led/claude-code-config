@@ -1,7 +1,11 @@
 ---
 description: Python 3.12+ idioms specialist focused on Pythonic patterns, PEP8, type
   hints, and Protocol usage. Use for Python code review.
+max_turns: 20
+model: openai-codex/gpt-5.4
 name: py-idioms
+thinking: medium
+tools: read, grep, find, ls, bash
 ---
 
 ## Role

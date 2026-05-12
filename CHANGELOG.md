@@ -8,6 +8,37 @@ major = breaking config/hook changes, minor = new skills/features, patch = fixes
 
 ## [Unreleased]
 
+## [4.1.0] - 2026-05-12
+
+### Added
+
+- **Pi frontmatter overlays for all 38 agents**: each agent now has a `pi/frontmatter.yaml`
+  tuning model, thinking level, tool restrictions, and turn limits for the Pi coding agent.
+  Model tiers: `openai-codex/gpt-5.5` (engineer/heavy agents), `openai-codex/gpt-5.4`
+  (review/docs/planning agents), `openai-codex/gpt-5.4-mini` (scout, pdf-parser).
+  Uses provider-qualified model IDs (`openai-codex/` prefix) to avoid fuzzy-match ambiguity
+  across azure-openai-responses, github-copilot, minimax-cn, and openai-codex providers.
+- **Pi pipeline agents enhanced**: `scout`, `planner`, `reviewer`, `worker` now carry
+  explicit `model`, `max_turns`, `thinking`, and (for `worker`) `prompt_mode: append`
+  so the agent inherits the parent CLAUDE.md context. Turn budgets: scout 15, planner 20,
+  reviewer 30, worker 50.
+- **Pi allowlist extended** (`scripts/build/overlay.py`): `max_turns`, `prompt_mode`,
+  `memory`, `isolation`, `disallowed_tools` added to the Pi key allowlist so these fields
+  are no longer silently dropped when compiling Pi agent output.
+- **10 agents made all-platform**: `go-engineer`, `go-simplify`, `infra-engineer`,
+  `perplexity-researcher`, `py-simplify`, `python-engineer`, `ts-simplify`,
+  `typescript-engineer`, `web-engineer`, `web-simplify` previously had `targets: [claude]`
+  or `targets: [claude, pi]`. Targets restriction removed — they now compile for Claude,
+  Codex, Gemini, and Pi.
+
+### Improved
+
+- **Agent instruction quality**: 34+ `AGENT.md` files updated — tables converted to bullet
+  lists, NOT-guard scope boundaries added, failure-handling sections added, bold pseudo-headers
+  converted to real `###` headers.
+- **Skill instruction quality**: 9 skill files updated with failure-handling sections, NOT
+  guards, and structural fixes.
+
 ## [4.0.5] - 2026-05-12
 
 ### Added
