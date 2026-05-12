@@ -21,7 +21,8 @@ context: fork
 description: Code review covering security, quality, tests, implementation, documentation,
   and architecture / module-depth. Use when the user asks to review code, check changes,
   audit a PR or diff, find refactoring opportunities, or look for shallow modules
-  and over-abstraction.
+  and over-abstraction. NOT for fixing the issues found (use fixing-code) or applying
+  refactors (use refactoring-code).
 name: reviewing-code
 user-invocable: true
 ---
@@ -70,14 +71,23 @@ Scan the changed-file extensions and identify which language reviewers are neede
 
 For each detected language, delegate to the agent(s) below in parallel if the runtime supports parallel sub-agents. Pass each agent: the scope, the project conventions (read `CONTEXT.md`/`docs/adr/` first), and whether architecture focus is requested.
 
-**Standard review** — one agent per language:
+Spawn each agent via `Task(subagent_type="<name>", prompt=...)`. Each agent's model is set in its own metadata; do not pin a model from the skill.
+
+When `team` is set, spawn the reviewers as an agent team so they challenge each other's findings; report format prefixes findings with `[Flagged by: agent1, agent2]`.
+
+When `external` is set, additionally spawn in parallel:
+
+- `Task(subagent_type="codex-assistant", prompt="review: code from <git_command>")` — security, quality, architecture from a second model.
+- `Task(subagent_type="gemini-consultant", prompt="review: architecture of <git_command>")` — architecture alternatives and trade-offs.
+
+### Standard review — one agent per language
 
 - Go → `go-engineer`
 - Python → `python-engineer`
 - TypeScript → `typescript-engineer`
 - Web (HTML / CSS / JS) → `web-engineer`
 
-**Thorough review** — full dimension coverage per language:
+### Thorough review — full dimension coverage per language
 
 - Go: `go-qa`, `go-idioms`, `go-tests`, `go-impl`, `go-docs`, `go-simplify`
 - Python: `py-qa`, `py-idioms`, `py-tests`, `py-impl`, `py-docs`, `py-simplify`
@@ -94,15 +104,6 @@ Dimension meanings (same across languages):
 - `*-simplify` — over-abstraction, dead code, pass-throughs
 
 If the runtime cannot spawn subagents, walk the dimensions sequentially as the main agent.
-
-Spawn each agent via `Task(subagent_type="<name>", prompt=...)`. Each agent's model is set in its own metadata; do not pin a model from the skill.
-
-When `team` is set, spawn the reviewers as an agent team so they challenge each other's findings; report format prefixes findings with `[Flagged by: agent1, agent2]`.
-
-When `external` is set, additionally spawn in parallel:
-
-- `Task(subagent_type="codex-assistant", prompt="review: code from <git_command>")` — security, quality, architecture from a second model.
-- `Task(subagent_type="gemini-consultant", prompt="review: architecture of <git_command>")` — architecture alternatives and trade-offs.
 
 ## Review rules (passed to every reviewer)
 
@@ -124,9 +125,9 @@ Apply when the user asks for architecture focus. Pass these terms into reviewer 
 - **Leverage** — caller value from depth.
 - **Locality** — change, bugs, and verification concentrated in one place.
 
-**Deletion test**: if deleting a module makes complexity vanish, it was a pass-through. If complexity reappears across callers, the module was earning its keep.
+Deletion test: if deleting a module makes complexity vanish, it was a pass-through. If complexity reappears across callers, the module was earning its keep.
 
-**Seam rule**: one adapter means a hypothetical seam; two adapters means a real seam. Do not propose ports without real variation.
+Seam rule: one adapter means a hypothetical seam; two adapters means a real seam. Do not propose ports without real variation.
 
 ## Historical context (optional)
 

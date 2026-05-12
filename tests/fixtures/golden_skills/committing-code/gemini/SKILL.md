@@ -11,7 +11,7 @@ Group changed files logically into focused, atomic commits.
 
 Scope: only inspect changes, group them, and create normal commits. Do not rewrite history, amend existing commits, force-push, or stage secrets. Include relevant `git status`, `git diff`, and `git log` output in the proposal.
 
-Any commit plan must explicitly say the first inspection commands are `git status --short`, `git diff --stat HEAD`, `git diff HEAD`, and `git log --oneline -8`. Any commit summary must include a final `git status --short` plus recent `git log --oneline -n <created>` output.
+Not for squashing, rebasing, or cherry-picking — those rewrite history.
 
 ## Step 1: Gather State
 
@@ -25,10 +25,12 @@ git log --oneline -8
 ```
 
 **If no changes:** Say "Nothing to commit" → stop.
+**If not a git repository:** Report "Not a git repository" → stop.
+**If detached HEAD or interrupted rebase/merge:** Report the git state verbatim → stop.
 
 ## Step 2: Analyze & Present
 
-Group files by: feature (impl+tests), fix (bug+test), refactor, docs, config.
+Group files by: feature (impl+tests), fix (bug+test), refactor, docs, config. Base grouping on diff output only — do not infer purpose from filename alone.
 
 Match commit style from recent history.
 
@@ -45,11 +47,15 @@ Proposed commits:
    - README.md
 ```
 
+**If user rejects the grouping:** Ask for revised grouping; do not proceed until approved.
+
 ## Step 3: Execute
 
-Never stage files matching `.env`, `*.pem`, `*credentials*`, or `*secret*`. Flag to user if detected in changes. Safe source/test files may still be grouped and committed separately after approval.
+Never stage files matching `.env`, `*.pem`, `*.key`, `*.p12`, `*credentials*`, `*secret*`, `*password*`, or `*token*`. Flag to user if detected in changes. Safe source/test files may still be grouped and committed separately after approval.
 
 Pause for user approval before each `git add` and `git commit`.
+
+**If pre-commit hook rejects:** Report the hook error verbatim; do not retry with `--no-verify`.
 
 ## Step 4: Summary
 
