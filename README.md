@@ -96,7 +96,10 @@ gemini extensions link /path/to/cc-thingz
 
 Gemini reads `gemini-extension.json` at the repo root, loads context from
 `AGENTS.md` (auto-generated; shared with Codex and other AGENTS.md-aware
-tools), and discovers per-skill SKILL.md files under `dist/gemini/skills/`.
+tools), and discovers skills, agents, and hooks by scanning extension-root
+subdirectories by hard-coded name. Root-level `skills/`, `agents/`, and
+`hooks/` symlinks point into `dist/gemini/` so Gemini finds them; the
+compiler regenerates these symlinks on every `make build`.
 
 `dist/gemini/hooks/hooks.json` registers:
 
@@ -328,7 +331,7 @@ The compiler is `scripts/build/compile.py`.
 | ----------- | ---------------------------------------------------- | ------------------------------------------------------ |
 | Claude Code | `dist/claude/plugins/<plugin>/`                      | Skills + markdown agents + hooks + commands per plugin |
 | Codex CLI   | `dist/codex/plugins/<plugin>/`, `dist/codex/agents/` | Skills + hooks per plugin; standalone TOML agents      |
-| Gemini CLI  | `dist/gemini/{skills,agents,hooks}/`                 | Flat per kind                                          |
+| Gemini CLI  | `dist/gemini/{skills,agents,hooks}/`                 | Flat per kind; root symlinks for extension loader      |
 | Pi          | `dist/pi/{skills,agents,extensions}/`                | Flat layout; symlinked into `~/.pi/agent/`             |
 
 ### Structure
@@ -351,6 +354,9 @@ dist/                                # ALL generated; linguist-generated=true
 .agents/plugins/marketplace.json     # → ./dist/codex/plugins/*
 gemini-extension.json                # → ${extensionPath}/dist/gemini/
 AGENTS.md                            # AGENTS.md catalog
+skills      -> dist/gemini/skills    # symlink — Gemini scans extension root by name
+agents      -> dist/gemini/agents    # symlink — Gemini scans extension root by name
+hooks       -> dist/gemini/hooks     # symlink — Gemini scans extension root by name
 ```
 
 Regenerate everything with:
