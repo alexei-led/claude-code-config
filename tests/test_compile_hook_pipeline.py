@@ -9,7 +9,9 @@ Covers:
   sequential markers, `${extensionPath}/hooks/<script>` substitution)
 - Codex per-plugin `codex.hooks.json` shape (PreToolUse/PostToolUse/
   SessionStart, `$PLUGIN_ROOT/hooks/<script>` substitution, statusMessage)
-- Claude / Pi receive no manifest in v1
+- Claude per-plugin `hooks.json` shape (PreToolUse/PostToolUse/SessionStart,
+  `${CLAUDE_PLUGIN_ROOT}/hooks/<script>` substitution)
+- Pi receives no manifest
 - CC-only events (notification, worktreecreate, worktreeremove) are dropped
   from Gemini/Codex manifests
 """
@@ -372,12 +374,73 @@ def test_codex_manifest_multi_plugin(ch, tmp_path):
 # --- manifest building (Claude / Pi) ---------------------------------------
 
 
-def test_claude_no_manifest(ch, tmp_path):
+def test_claude_manifest_per_plugin(ch, tmp_path):
+    src = tmp_path / "src"
+    h_pre = _write_hook(src, "file-protector", "preedit", timeout=10)
+    h_prebash = _write_hook(src, "git-guardrails", "prebash", timeout=10)
+    h_post = _write_hook(src, "smart-lint", "postedit", timeout=60)
+    h_notify = _write_hook(src, "notify", "notification", timeout=10)
+    h_session = _write_hook(src, "session-start", "sessionstart", timeout=5)
+    h_ups = _write_hook(src, "skill-enforcer", "userpromptsubmit", timeout=15)
+    plugin_index = {
+        "file-protector": ["dev-workflow"],
+        "git-guardrails": ["dev-workflow"],
+        "smart-lint": ["dev-workflow"],
+        "notify": ["dev-workflow"],
+        "session-start": ["dev-workflow"],
+        "skill-enforcer": ["dev-workflow"],
+    }
+    results = _compile_all(
+        ch,
+        [h_pre, h_prebash, h_post, h_notify, h_session, h_ups],
+        "claude",
+        plugin_index,
+        tmp_path,
+    )
+    written = ch.write_hook_manifests(results, "claude", tmp_path)
+    assert written == [
+        tmp_path
+        / "dist"
+        / "claude"
+        / "plugins"
+        / "dev-workflow"
+        / "hooks"
+        / "hooks.json"
+    ]
+    manifest = json.loads(written[0].read_text())
+    events = manifest["hooks"]
+    assert set(events) == {
+        "SessionStart",
+        "UserPromptSubmit",
+        "PreToolUse",
+        "PostToolUse",
+        "Notification",
+    }
+
+    session = events["SessionStart"][0]
+    assert "matcher" not in session
+    assert session["hooks"][0]["command"] == (
+        "${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh"
+    )
+
+    pre_groups = {g["matcher"]: g for g in events["PreToolUse"]}
+    assert pre_groups["Write|Edit|MultiEdit"]["hooks"][0]["command"] == (
+        "${CLAUDE_PLUGIN_ROOT}/hooks/file-protector.sh"
+    )
+    assert pre_groups["Bash"]["hooks"][0]["command"] == (
+        "${CLAUDE_PLUGIN_ROOT}/hooks/git-guardrails.sh"
+    )
+
+    post = events["PostToolUse"][0]
+    assert post["matcher"] == "Write|Edit|MultiEdit"
+    assert post["hooks"][0]["command"] == ("${CLAUDE_PLUGIN_ROOT}/hooks/smart-lint.sh")
+    assert post["hooks"][0]["timeout"] == 60
+
+
+def test_claude_manifest_skips_when_no_plugin(ch, tmp_path):
     src = tmp_path / "src"
     hook = _write_hook(src, "smart-lint", "postedit")
-    results = _compile_all(
-        ch, [hook], "claude", {"smart-lint": ["dev-workflow"]}, tmp_path
-    )
+    results = _compile_all(ch, [hook], "claude", {}, tmp_path)
     written = ch.write_hook_manifests(results, "claude", tmp_path)
     assert written == []
 
@@ -420,3 +483,31 @@ def test_real_src_hooks_gemini_manifest(ch, tmp_path):
     assert "hooks" in manifest
     for event in manifest["hooks"]:
         assert event in ch.GEMINI_EVENT_ORDER
+
+
+def test_real_src_hooks_claude_manifest(ch, tmp_path):
+    """End-to-end: compile every real hook for Claude and inspect plugin manifests."""
+    hook_root = REPO_ROOT / "src" / "hooks"
+    if not hook_root.is_dir():
+        pytest.skip("src/hooks not present")
+    hooks = sorted(p for p in hook_root.iterdir() if p.is_dir())
+    plugin_index = {
+        "file-protector": ["dev-workflow"],
+        "git-guardrails": ["dev-workflow"],
+        "notify": ["dev-workflow"],
+        "session-start": ["dev-workflow"],
+        "skill-enforcer": ["dev-workflow"],
+        "smart-lint": ["dev-workflow"],
+        "test-runner": ["dev-workflow"],
+        "worktree-create": ["dev-tools"],
+        "worktree-remove": ["dev-tools"],
+    }
+    results = [ch.compile_hook(h, "claude", plugin_index, tmp_path) for h in hooks]
+    written = ch.write_hook_manifests(results, "claude", tmp_path)
+    assert {p.parent.parent.name for p in written} == {"dev-workflow", "dev-tools"}
+
+    by_plugin = {p.parent.parent.name: json.loads(p.read_text()) for p in written}
+    assert "PreToolUse" in by_plugin["dev-workflow"]["hooks"]
+    assert "PostToolUse" in by_plugin["dev-workflow"]["hooks"]
+    assert "WorktreeCreate" in by_plugin["dev-tools"]["hooks"]
+    assert "WorktreeRemove" in by_plugin["dev-tools"]["hooks"]

@@ -206,9 +206,8 @@ for skills and agents — both follow the `base + per-target overlay` pattern.
   `meta.yaml` declaring `event`, `timeout`, and optional `status_message`.
   Prefer Python (stdlib only) for anything beyond a thin shell wrapper —
   startup is well under the 5 s timeout. Add the hook to one or more
-  `plugin.yaml` files. Per-target hook manifests (`hooks.json` for Gemini,
-  `codex.hooks.json` for Codex, `.claude/settings.json` for Claude) are
-  generated.
+  `plugin.yaml` files. Per-target hook manifests (`hooks.json` for Claude and
+  Gemini, `codex.hooks.json` for Codex) are generated.
 - **Commands (Claude only):** commands now live as skills under
   `src/skills/<command>/` and the Claude target picks them up from
   `claude/frontmatter.yaml` (which may carry `allowed-tools`,

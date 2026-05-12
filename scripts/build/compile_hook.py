@@ -8,8 +8,8 @@ manifest for that target.
 Per-target output shape:
 
 - claude: scripts copied to `dist/claude/plugins/<plugin>/hooks/<script>`.
-  Claude reads hook config from `.claude/settings.json` and is out of scope
-  for manifest emission in v1 — no `hooks.json` is written.
+  Per-plugin manifest `dist/claude/plugins/<plugin>/hooks/hooks.json`
+  with `${CLAUDE_PLUGIN_ROOT}/hooks/<script>` substitution.
 - codex:  scripts copied to `dist/codex/plugins/<plugin>/hooks/<script>`.
   Per-plugin manifest `dist/codex/plugins/<plugin>/hooks/codex.hooks.json`
   with `$PLUGIN_ROOT/hooks/<script>` substitution.
@@ -53,33 +53,50 @@ log = logging.getLogger("compile.hook")
 # them out-of-band).
 EVENT_MAP: dict[str, dict[str, tuple[str, str | None] | None]] = {
     "sessionstart": {
+        "claude": ("SessionStart", None),
         "gemini": ("SessionStart", None),
         "codex": ("SessionStart", None),
     },
     "preedit": {
+        "claude": ("PreToolUse", "Write|Edit|MultiEdit"),
         "gemini": ("BeforeTool", "write_file|replace"),
         "codex": None,
     },
     "prebash": {
+        "claude": ("PreToolUse", "Bash"),
         "gemini": ("BeforeTool", "run_shell_command"),
         "codex": ("PreToolUse", "^Bash$"),
     },
     "postedit": {
+        "claude": ("PostToolUse", "Write|Edit|MultiEdit"),
         "gemini": ("AfterTool", "write_file|replace"),
         "codex": ("PostToolUse", "^apply_patch$"),
     },
     "posttool": {
+        "claude": ("PostToolUse", None),
         "gemini": ("AfterTool", None),
         "codex": ("PostToolUse", None),
     },
     "userpromptsubmit": {
+        "claude": ("UserPromptSubmit", None),
         "gemini": ("UserPromptSubmit", None),
         "codex": None,
     },
-    # CC-only events — no Gemini/Codex equivalent.
-    "notification": {"gemini": None, "codex": None},
-    "worktreecreate": {"gemini": None, "codex": None},
-    "worktreeremove": {"gemini": None, "codex": None},
+    "notification": {
+        "claude": ("Notification", None),
+        "gemini": None,
+        "codex": None,
+    },
+    "worktreecreate": {
+        "claude": ("WorktreeCreate", None),
+        "gemini": None,
+        "codex": None,
+    },
+    "worktreeremove": {
+        "claude": ("WorktreeRemove", None),
+        "gemini": None,
+        "codex": None,
+    },
 }
 
 GEMINI_SEQUENTIAL: frozenset[str] = frozenset({"BeforeTool", "AfterTool"})
@@ -90,6 +107,19 @@ GEMINI_EVENT_ORDER: tuple[str, ...] = (
     "UserPromptSubmit",
 )
 CODEX_EVENT_ORDER: tuple[str, ...] = ("PreToolUse", "PostToolUse", "SessionStart")
+CLAUDE_EVENT_ORDER: tuple[str, ...] = (
+    "Setup",
+    "SessionStart",
+    "UserPromptSubmit",
+    "PreToolUse",
+    "PostToolUse",
+    "Notification",
+    "Stop",
+    "SubagentStop",
+    "SessionEnd",
+    "WorktreeCreate",
+    "WorktreeRemove",
+)
 
 _TARGET_SUBDIRS: frozenset[str] = frozenset(_compile.TARGETS)
 
@@ -247,6 +277,14 @@ def _codex_hook_entry(spec: HookSpec) -> dict:
     return entry
 
 
+def _claude_hook_entry(spec: HookSpec) -> dict:
+    return {
+        "type": "command",
+        "command": f"${{CLAUDE_PLUGIN_ROOT}}/hooks/{spec.script_basename}",
+        "timeout": spec.timeout,
+    }
+
+
 def _to_bytes(data: dict) -> bytes:
     return (json.dumps(data, indent=2) + "\n").encode()
 
@@ -305,6 +343,32 @@ def _build_codex(specs: Sequence[HookSpec]) -> dict:
     return {"hooks": events}
 
 
+def _build_claude(specs: Sequence[HookSpec]) -> dict:
+    groups: dict[tuple[str, str | None], list[dict]] = {}
+    for spec in specs:
+        mapping = EVENT_MAP[spec.event].get("claude")
+        if mapping is None:
+            continue
+        event_name, matcher = mapping
+        key = (event_name, matcher)
+        groups.setdefault(key, []).append(_claude_hook_entry(spec))
+
+    events: dict[str, list] = {}
+    for event_name in CLAUDE_EVENT_ORDER:
+        event_groups = []
+        for (ev, matcher), hooks in groups.items():
+            if ev != event_name:
+                continue
+            group: dict = {}
+            if matcher is not None:
+                group["matcher"] = matcher
+            group["hooks"] = hooks
+            event_groups.append(group)
+        if event_groups:
+            events[event_name] = event_groups
+    return {"hooks": events}
+
+
 def write_hook_manifests(
     results: Sequence[HookCompileResult],
     target: str,
@@ -313,9 +377,8 @@ def write_hook_manifests(
     """Aggregate compiled hooks for `target` into per-target manifest files.
 
     Gemini receives a single `dist/gemini/hooks/hooks.json` covering every
-    hook. Codex receives one `codex.hooks.json` per owning plugin. Claude and
-    Pi receive no manifest (Claude consumes hooks via `.claude/settings.json`;
-    Pi consumes scripts directly).
+    hook. Claude and Codex receive one manifest per owning plugin. Pi receives
+    no manifest because it consumes scripts directly.
     """
     if not results:
         return []
@@ -333,7 +396,7 @@ def write_hook_manifests(
             written.append(path)
         return written
 
-    if target == "codex":
+    if target in {"claude", "codex"}:
         # Group specs by owning plugin; placements without a plugin land at the
         # flat fallback and get no manifest.
         by_plugin: dict[str, list[HookSpec]] = {}
@@ -344,14 +407,19 @@ def write_hook_manifests(
                     continue
                 by_plugin.setdefault(plugin, []).append(result.spec)
         for plugin, specs in by_plugin.items():
-            manifest = _build_codex(specs)
+            if target == "claude":
+                manifest = _build_claude(specs)
+                manifest_name = "hooks.json"
+            else:
+                manifest = _build_codex(specs)
+                manifest_name = "codex.hooks.json"
             if not manifest["hooks"]:
                 continue
-            path = dist / "plugins" / plugin / "hooks" / "codex.hooks.json"
+            path = dist / "plugins" / plugin / "hooks" / manifest_name
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(_to_bytes(manifest))
             written.append(path)
         return written
 
-    # claude / pi → no manifest writes.
+    # pi → no manifest writes.
     return written
