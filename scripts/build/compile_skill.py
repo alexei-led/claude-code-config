@@ -29,9 +29,6 @@ import logging
 import sys
 from collections.abc import Mapping
 from pathlib import Path
-from typing import Any
-
-import frontmatter
 
 _HERE = Path(__file__).resolve().parent
 if str(_HERE) not in sys.path:
@@ -43,6 +40,8 @@ from overlay import (  # noqa: E402
     apply_support_files,
     load_base,
     merge_frontmatter,
+    render_md,
+    target_listed,
 )
 
 log = logging.getLogger("compile.skill")
@@ -90,32 +89,10 @@ def output_dirs(
     return [dist / skill_dir / name]
 
 
-def _target_listed(base_meta: Mapping[str, Any], target: str) -> bool:
-    """Return True when `target` passes the base `targets:` restriction."""
-    raw = base_meta.get("targets")
-    if raw is None:
-        return True
-    listed = [raw] if isinstance(raw, str) else list(raw)
-    return target in listed
-
-
 def _inject_preamble(body: str, preamble: str) -> str:
     if not preamble:
         return body
     return preamble + "\n\n" + body
-
-
-def _render(meta: Mapping[str, Any], body: str) -> str:
-    """Render `meta` as YAML frontmatter followed by `body`.
-
-    Uses `python-frontmatter` for byte-for-byte compatibility with how base
-    files are read. Bodies always end with a single trailing newline.
-    """
-    post = frontmatter.Post(body, **dict(meta))
-    text = frontmatter.dumps(post)
-    if not text.endswith("\n"):
-        text += "\n"
-    return text
 
 
 def compile_skill(
@@ -132,7 +109,7 @@ def compile_skill(
     base_path = skill_dir / "SKILL.md"
     base_meta, base_body = load_base(base_path)
 
-    if not _target_listed(base_meta, target):
+    if not target_listed(base_meta, target):
         log.debug(
             "skill=%s target=%s skipped (not in targets:%s)",
             skill_dir.name,
@@ -160,7 +137,7 @@ def compile_skill(
 
     body = _inject_preamble(body, load_preamble(target, root))
 
-    rendered = _render(merged_meta, body)
+    rendered = render_md(merged_meta, body)
 
     written: list[Path] = []
     for out_dir in output_dirs(skill_dir.name, target, plugin_index, root):

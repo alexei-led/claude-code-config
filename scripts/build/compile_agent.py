@@ -35,9 +35,6 @@ import logging
 import sys
 from collections.abc import Mapping
 from pathlib import Path
-from typing import Any
-
-import frontmatter
 
 _HERE = Path(__file__).resolve().parent
 if str(_HERE) not in sys.path:
@@ -49,6 +46,8 @@ from overlay import (  # noqa: E402
     apply_body_overlay,
     load_base,
     merge_frontmatter,
+    render_md,
+    target_listed,
 )
 
 log = logging.getLogger("compile.agent")
@@ -82,27 +81,6 @@ def output_paths(
     return [dist / agent_dir / filename]
 
 
-def _target_listed(base_meta: Mapping[str, Any], target: str) -> bool:
-    """Return True when `target` passes the base `targets:` restriction."""
-    raw = base_meta.get("targets")
-    if raw is None:
-        return True
-    listed = [raw] if isinstance(raw, str) else list(raw)
-    return target in listed
-
-
-def _render_md(meta: Mapping[str, Any], body: str) -> str:
-    """Render `meta` as YAML frontmatter followed by `body`.
-
-    Mirrors `compile_skill._render` so md outputs are byte-stable across runs.
-    """
-    post = frontmatter.Post(body, **dict(meta))
-    text = frontmatter.dumps(post)
-    if not text.endswith("\n"):
-        text += "\n"
-    return text
-
-
 def compile_agent(
     agent_dir: Path,
     target: str,
@@ -117,7 +95,7 @@ def compile_agent(
     base_path = agent_dir / "AGENT.md"
     base_meta, base_body = load_base(base_path)
 
-    if not _target_listed(base_meta, target):
+    if not target_listed(base_meta, target):
         log.debug(
             "agent=%s target=%s skipped (not in targets:%s)",
             agent_dir.name,
@@ -152,7 +130,7 @@ def compile_agent(
         rendered = to_toml(merged_meta, body)
         extension = ".toml"
     else:
-        rendered = _render_md(merged_meta, body)
+        rendered = render_md(merged_meta, body)
         extension = ".md"
 
     written: list[Path] = []

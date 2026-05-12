@@ -173,6 +173,28 @@ def merge_frontmatter(
     return filter_allowed_keys(merged, target)
 
 
+def target_listed(base_meta: Mapping[str, Any], target: str) -> bool:
+    """Return True when `target` passes the base `targets:` restriction."""
+    raw = base_meta.get("targets")
+    if raw is None:
+        return True
+    listed = [raw] if isinstance(raw, str) else list(raw)
+    return target in listed
+
+
+def render_md(meta: Mapping[str, Any], body: str) -> str:
+    """Render `meta` as YAML frontmatter followed by `body`.
+
+    Uses python-frontmatter for byte-for-byte compatibility with how base
+    files are read. Bodies always end with a single trailing newline.
+    """
+    post = frontmatter.Post(body, **dict(meta))
+    text = frontmatter.dumps(post)
+    if not text.endswith("\n"):
+        text += "\n"
+    return text
+
+
 def filter_allowed_keys(meta: Mapping[str, Any], target: str) -> dict[str, Any]:
     """Drop keys not in the target's allowlist; log each drop at debug level."""
     if target not in ALLOWED_KEYS:
