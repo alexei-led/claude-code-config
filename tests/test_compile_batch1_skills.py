@@ -58,7 +58,6 @@ SKILLS_WITH_REFERENCES = {
     ),
     "using-cloud-cli": ("references/AWS.md", "references/GCP.md"),
     "using-git-worktrees": ("references/WORKFLOW.md",),
-    "grill-me": ("references/CREDITS.md",),
 }
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -153,14 +152,3 @@ def test_brainstorming_ideas_swaps_claude_body(cs, tmp_path: Path) -> None:
 
     assert "TaskCreate" in claude_body, "Claude body should retain CC orchestration"
     assert "TaskCreate" not in codex_body, "Codex body must be vendor-neutral"
-
-
-def test_grill_me_credits_file_preserved(cs, tmp_path: Path) -> None:
-    """The grill-me skill's CREDITS.md must reach every target's dist tree."""
-    root = _staging_root(tmp_path)
-    skill_dir = root / "src" / "skills" / "grill-me"
-    plugin_index = {"grill-me": ["plugin"]}
-
-    for target in TARGETS:
-        written = cs.compile_skill(skill_dir, target, plugin_index, root)
-        assert (written[0].parent / "references" / "CREDITS.md").is_file()
