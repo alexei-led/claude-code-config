@@ -39,8 +39,6 @@ Before reviewing, consider researching current Python best practices:
 
 ## Required: Run Tooling First
 
-**ALWAYS execute these commands before manual review**:
-
 ```bash
 # Check for style issues
 ruff check .
@@ -49,7 +47,7 @@ ruff check .
 vulture . --min-confidence 80
 ```
 
-**Use LSP for code navigation** (find unused and over-abstracted code):
+### LSP Navigation (find unused and over-abstracted code)
 
 - `findReferences` - check if exported symbols are actually used
 - `goToImplementation` - find how many implementations a Protocol has
@@ -139,3 +137,11 @@ If clean in a focus area: "No issues in {focus area}."
 - `src/cache.py:23` - `@lru_cache` added without profiling. Measure first: is this a bottleneck?
 
 No issues in unnecessary inheritance.
+
+## Failure Handling
+
+- If `ruff check` fails to run, note the failure and proceed with manual dead-code and complexity review.
+- If `vulture` is not installed, skip dead-code automation and rely on LSP `findReferences` and `incomingCalls`.
+- If LSP tools are unavailable, skip unused-symbol detection; flag this limitation in findings.
+- If no simplification opportunities are found in a focus area, report "No issues in {focus area}." explicitly.
+- If the codebase is intentionally minimal (e.g., a library stub), note this and limit scope to dead code only.

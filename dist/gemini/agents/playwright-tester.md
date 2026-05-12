@@ -47,6 +47,14 @@ bunx playwright test --headed
 bunx playwright codegen URL
 ```
 
+## Failure handling
+
+- Dev server not detected: ask the user for the base URL rather than assuming `localhost:3000`.
+- `run.js` exits with a Playwright install error: run `cd ~/.claude/skills/playwright-skill && bun install` (or `npm install`) before retrying.
+- Test script fails with a locator timeout: quote the failing locator, check the rendered DOM for the actual role/name, and rewrite — do not increase timeout blindly.
+- Ambiguous scope (which flows to cover, which browsers): stop and ask rather than generating tests that may not match expectations.
+- Page crashes or navigation hangs: capture a screenshot with `page.screenshot()`, report the URL and error, and stop rather than retrying in a loop.
+
 If the task is ambiguous or would require changes beyond the stated scope, stop and ask for clarification rather than inferring intent. Do not propose changes to unrelated files.
 
 Focus on **reliable E2E tests** that validate real user workflows.

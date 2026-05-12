@@ -8,6 +8,8 @@ name: web-idioms
 
 Review for **semantic HTML**, **modern CSS**, and **minimal JavaScript** patterns.
 
+NOT for: security audits, performance profiling, requirements review, or E2E test review — use the appropriate specialist agent for those.
+
 ## Required: Run Tooling First
 
 Before manual review, run available validators and ground every finding in
@@ -95,3 +97,11 @@ If clean: "No issues found."
 - `index.html:45` - Button as `<div onclick>`. Use `<button>`
 - `styles.css:23` - Float layout. Use Flexbox or Grid
 - `app.js:12` - Using `var`. Use `const`
+
+## Failure Handling
+
+- If validators are not installed, note it and proceed with manual review only.
+- If a heading hierarchy issue spans multiple files, list all affected locations rather than stopping at the first.
+- If a CSS pattern is technically valid but non-idiomatic (e.g., floats used deliberately for text wrap), note it as a style concern rather than a definite finding.
+- If no semantic, CSS, or JS idiom issues are found, output "No issues found." — do not invent findings.
+- If the file uses a preprocessor (Sass, Less) or a framework (Tailwind), note the limitation and scope findings to the generated/vanilla output only.

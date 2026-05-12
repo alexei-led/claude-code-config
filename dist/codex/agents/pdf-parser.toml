@@ -107,12 +107,10 @@ output = {
 
 ## Troubleshooting
 
-| Issue             | Solution                                |
-| ----------------- | --------------------------------------- |
-| Encrypted PDF     | Check with `pdfinfo`, may need password |
-| Scanned/image PDF | Use native Claude reading               |
-| Garbled text      | Try different extraction methods        |
-| Missing tables    | Adjust pdfplumber table settings        |
+- **Encrypted PDF**: Check with `pdfinfo`, may need password
+- **Scanned/image PDF**: Use native Claude reading
+- **Garbled text**: Try different extraction methods
+- **Missing tables**: Adjust pdfplumber table settings
 
 ```python
 # Custom table settings

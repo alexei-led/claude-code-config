@@ -181,11 +181,9 @@ type userStore interface {
 
 ### Overusing `mock.Anything` weakens tests. Choose matchers deliberately
 
-| Matcher              | Use When                                                                          |
-| -------------------- | --------------------------------------------------------------------------------- |
-| **Exact value**      | Business-critical values: table names, partition IDs, customer IDs, work unit IDs |
-| **`mock.Anything`**  | ONLY for: `context.Context`, loggers, tracers, truly don't-care values            |
-| **`mock.MatchedBy`** | SQL queries, complex structs, generated IDs, partial matching                     |
+- **Exact value**: Business-critical values: table names, partition IDs, customer IDs, work unit IDs
+- **`mock.Anything`**: ONLY for: `context.Context`, loggers, tracers, truly don't-care values
+- **`mock.MatchedBy`**: SQL queries, complex structs, generated IDs, partial matching
 
 ### Decision tree
 

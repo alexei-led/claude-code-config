@@ -39,3 +39,10 @@ Output format:
 Overall assessment in 2-3 sentences.
 
 Be specific with file paths and line numbers.
+
+## Failure handling
+
+- `git diff` returns nothing (no recent changes): ask which files or commit range to review rather than guessing.
+- File is too large to read in full: read the changed sections only; note in the review that full-file coverage was skipped.
+- Code is in an unfamiliar language or framework: flag this and limit findings to structural issues (error handling, naming, security) rather than language-specific idioms.
+- Scope of changes is larger than expected: review only what was asked; list any adjacent files that look suspicious but were out of scope.

@@ -196,11 +196,9 @@ mockery --name=UserStore --with-expecter --output=./mocks
 
 ### Mock argument matchers (CRITICAL)
 
-| Matcher          | Use When                                                    |
-| ---------------- | ----------------------------------------------------------- |
-| Exact value      | Business-critical values (table names, IDs, partition keys) |
-| `mock.Anything`  | ONLY for `context.Context`, loggers, tracers                |
-| `mock.MatchedBy` | SQL queries, complex structs, partial matching              |
+- **Exact value**: Business-critical values (table names, IDs, partition keys)
+- **`mock.Anything`**: ONLY for `context.Context`, loggers, tracers
+- **`mock.MatchedBy`**: SQL queries, complex structs, partial matching
 
 ```go
 // GOOD: Exact values for business parameters

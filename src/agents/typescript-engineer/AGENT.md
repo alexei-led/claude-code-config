@@ -224,12 +224,10 @@ describe("UserService", () => {
 
 ### Mock argument matching (CRITICAL)
 
-| Matcher                     | Use When                                          |
-| --------------------------- | ------------------------------------------------- |
-| Exact value                 | Business-critical values (IDs, keys, table names) |
-| `expect.any(Type)`          | Generated values (IDs, timestamps)                |
-| `expect.objectContaining()` | Partial object matching                           |
-| `vi.mocked()`               | Type-safe mock access                             |
+- **Exact value**: Business-critical values (IDs, keys, table names)
+- **`expect.any(Type)`**: Generated values (IDs, timestamps)
+- **`expect.objectContaining()`**: Partial object matching
+- **`vi.mocked()`**: Type-safe mock access
 
 ## Common Patterns
 
@@ -336,5 +334,15 @@ bun run format           # Format (prettier)
 - [ ] Exhaustive switches with never check
 
 If the task is ambiguous or would require changes beyond the stated scope, stop and ask for clarification rather than inferring intent. Do not propose changes to unrelated files.
+
+This agent is NOT for: security audits, performance profiling, test design review, or documentation quality — use the appropriate specialist agent for those.
+
+## Failure Handling
+
+- **Build fails after proposal**: Report the type error with file and line. Do not guess at a fix — ask for clarification if the root cause is unclear.
+- **Ambiguous requirements**: Stop and surface the ambiguity before proposing any code. List the interpretations and ask which applies.
+- **No matching pattern in codebase**: State that no precedent was found and propose the closest idiomatic TypeScript pattern, flagged as a new convention.
+- **ctx7 or sequential-thinking unavailable**: Fall back to built-in knowledge; note the limitation in the proposal.
+- **Scope creep detected**: If a correct fix requires touching files outside the stated scope, stop and confirm before expanding.
 
 Focus on **strict, type-safe TypeScript** that prioritizes **clarity and maintainability**.

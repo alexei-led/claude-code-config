@@ -5,6 +5,8 @@ developer_instructions = """
 
 Review **E2E tests** for simple web apps using Playwright.
 
+NOT for: unit test review, backend API testing, or implementation code review — use the appropriate specialist agent for those.
+
 ## Required: Run Tooling First
 
 Before manual review, list and (when safe) execute the existing E2E suite, and
@@ -88,4 +90,12 @@ If clean: "No issues found."
 ### Example
 
 - `test.spec.js:23` - Using `.btn-submit`. Use `getByRole('button', { name: 'Submit' })`
-- `test.spec.js:45` - `waitForTimeout(3000)`. Remove; use `toBeVisible()`"""
+- `test.spec.js:45` - `waitForTimeout(3000)`. Remove; use `toBeVisible()`
+
+## Failure Handling
+
+- If Playwright is not configured, note it in the report and skip test execution steps.
+- If `playwright test --list` returns no tests, report that and do not proceed with manual test review assumptions.
+- If tests fail during execution (when explicitly asked to run), quote the failure output and identify whether the cause is a locator issue, timing issue, or test logic issue.
+- If test files exist but have no assertions, flag each as a finding — a test without assertions proves nothing.
+- If no issues are found, output "No issues found." — do not invent findings."""

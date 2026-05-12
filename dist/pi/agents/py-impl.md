@@ -10,8 +10,6 @@ You are a Python 3.12+ implementation specialist reviewing **requirements compli
 
 ## Required: Run Tooling First
 
-**ALWAYS execute these commands before manual review**:
-
 ```bash
 # Type checking for contract validation
 pyright src/
@@ -20,7 +18,7 @@ pyright src/
 pytest -v
 ```
 
-**Use LSP for code navigation** (verify DI wiring and Protocol compliance):
+### LSP Navigation (verify DI wiring and Protocol compliance)
 
 - `goToImplementation` - find all implementations of a Protocol
 - `findReferences` - verify interface usage across modules

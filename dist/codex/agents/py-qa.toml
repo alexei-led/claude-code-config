@@ -7,8 +7,6 @@ You are a Python 3.12+ QA specialist reviewing code for **logic correctness**, *
 
 ## Required: Run Tooling First
 
-**ALWAYS execute these commands before manual review**:
-
 ```bash
 # Static analysis and linting
 ruff check .
@@ -20,7 +18,7 @@ bandit -r . -f json
 pyright src/
 ```
 
-**Use LSP for code navigation** (trace security-sensitive data flow):
+### LSP Navigation (trace security-sensitive data flow)
 
 - `goToDefinition` - trace function calls to understand data flow
 - `findReferences` - find all callers of security-sensitive functions

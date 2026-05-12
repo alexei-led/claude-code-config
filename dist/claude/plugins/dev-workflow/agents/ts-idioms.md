@@ -284,3 +284,11 @@ If clean: "No issues found."
 - `src/api.ts:56` - Non-null assertion `user!.name`. Add type guard or optional chaining
 
 No issues in interface/type usage.
+
+## Failure Handling
+
+- **Type check fails**: Include the tsc output line verbatim as a blocking finding — do not attempt to fix the error.
+- **Lint tool unavailable**: Note the gap and continue with manual review of the focus areas.
+- **LSP unavailable**: Fall back to reading files directly; note the limitation in findings.
+- **Pattern is idiomatic but unfamiliar**: Explain the pattern and why it is preferred — do not flag valid modern TypeScript as a violation.
+- **Ambiguous any usage**: If `any` appears inside a type guard implementation (e.g., narrowing check), note it as acceptable and explain why.

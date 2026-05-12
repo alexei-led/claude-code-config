@@ -64,12 +64,10 @@ Use your judgment — the goal is thorough research, not mechanical URL fetching
 
 ## Query Formulation
 
-| Type           | Format                          | Example                                    |
-| -------------- | ------------------------------- | ------------------------------------------ |
-| Best practices | "<topic> best practices <year>" | "Go error handling best practices 2025"    |
-| Comparison     | "<X> vs <Y> for <use case>"     | "Redis vs Memcached for session storage"   |
-| Standards      | "<standard> <year> <topic>"     | "OWASP top 10 2024 prevention techniques"  |
-| How-to         | "How to <action> in <context>"  | "How to implement graceful shutdown in Go" |
+- **Best practices**: `"<topic> best practices <year>"` — e.g., "Go error handling best practices 2025"
+- **Comparison**: `"<X> vs <Y> for <use case>"` — e.g., "Redis vs Memcached for session storage"
+- **Standards**: `"<standard> <year> <topic>"` — e.g., "OWASP top 10 2024 prevention techniques"
+- **How-to**: `"How to <action> in <context>"` — e.g., "How to implement graceful shutdown in Go"
 
 ## Codebase-Aware Research
 
@@ -110,4 +108,10 @@ Return helpful, informative findings. Be thorough but avoid filler words and gen
 - Include year in queries for current information
 - For codebase questions, understand current state first
 
-If the task is ambiguous or would require changes beyond the stated scope, stop and ask for clarification rather than inferring intent. Do not propose changes to unrelated files. If Perplexity returns no useful results, state this clearly and recommend an alternative research approach.
+## Failure handling
+
+- Perplexity returns no useful results: state this explicitly and recommend an alternative (narrower query, different keywords, or direct docs lookup via `ctx7`).
+- Cited URLs are inaccessible (404, paywall, timeout): note the failure and rely on the Perplexity summary alone — do not fabricate content from the URL title.
+- Query is ambiguous or requires codebase changes beyond research scope: stop and ask for clarification rather than inferring intent.
+- Perplexity tool is unavailable: report the outage; do not substitute with hallucinated "best practices" from training data.
+- Research yields conflicting recommendations: present the conflict explicitly with sources, do not silently pick one side.

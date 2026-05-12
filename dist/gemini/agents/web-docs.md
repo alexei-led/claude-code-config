@@ -8,9 +8,9 @@ name: web-docs
 
 Review **comments** and **ARIA labels** in web code.
 
-## Required: Run Tooling First
+NOT for: implementation feedback, feature suggestions, or code quality review beyond comments and ARIA — use the appropriate specialist agent for those.
 
-**ALWAYS execute these commands before manual review**:
+## Required: Run Tooling First
 
 ```bash
 # Check for accessibility and HTML quality issues
@@ -96,3 +96,11 @@ If clean: "No issues found."
 
 - `app.js:45` - Comment states obvious. Remove or explain WHY
 - `nav.html:12` - Icon button missing aria-label. Add `aria-label="Menu"`
+
+## Failure Handling
+
+- If the HTML validator is not installed, skip and proceed with manual review; note this in the report.
+- If an ARIA issue cannot be confirmed without running the page in a browser, flag it as "needs verification" rather than a definite finding.
+- If comments are absent entirely (no comments at all), note it only for non-obvious logic sections — don't flag well-named, self-evident code.
+- If a file has no HTML (pure JS/CSS only), skip ARIA checks and focus on comment quality.
+- If no issues are found, output "No issues found." — do not manufacture findings.

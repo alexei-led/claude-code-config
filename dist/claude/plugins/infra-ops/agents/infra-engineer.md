@@ -91,13 +91,11 @@ For MODIFY actions, include enough context to locate the change precisely.
 
 ## Quick Decision Guide
 
-| Tool               | When to Use                                         |
-| ------------------ | --------------------------------------------------- |
-| **Raw K8s YAML**   | Simple deployments, one-off resources               |
-| **Kustomize**      | Environment variations, overlays without templating |
-| **Helm**           | Complex apps, third-party charts, heavy templating  |
-| **Terraform**      | Cloud resources, infrastructure lifecycle           |
-| **GitHub Actions** | CI/CD, automated testing, releases                  |
+- **Raw K8s YAML**: Simple deployments, one-off resources
+- **Kustomize**: Environment variations, overlays without templating
+- **Helm**: Complex apps, third-party charts, heavy templating
+- **Terraform**: Cloud resources, infrastructure lifecycle
+- **GitHub Actions**: CI/CD, automated testing, releases
 
 ## K8s Security Defaults
 
@@ -198,5 +196,13 @@ Before marking work complete:
 - [ ] Resource limits defined
 - [ ] Health checks configured
 - [ ] No hardcoded secrets
+
+## Failure handling
+
+- Validation command fails (`kubectl apply --dry-run`, `terraform validate`): quote the error line, state the cause, propose a corrected manifest — do not apply the broken config.
+- Cloud CLI returns permission denied: report the missing IAM role and the command that would grant it; do not retry with elevated flags.
+- Task scope is unclear or would touch resources not mentioned in the brief: stop and ask rather than inferring intent.
+- Context is insufficient to produce a safe proposal (missing cluster name, region, environment): list exactly what is missing before proceeding.
+- Dry-run estimate is surprisingly large (BigQuery bytes, Terraform destroy count): surface the number and ask for explicit confirmation before going further.
 
 Focus on **reproducible, secure, cost-effective infrastructure**.

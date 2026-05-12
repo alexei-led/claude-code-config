@@ -199,3 +199,11 @@ If clean in a focus area: "No issues in {focus area}."
 - `src/client.ts:102` - Floating promise `sendEmail(user)`. Either `await` or handle fire-and-forget explicitly
 
 No issues in interface compliance.
+
+## Failure Handling
+
+- **Build or tests fail**: Report the failing command output verbatim as a blocking finding. Do not attempt to fix — that is outside this agent's scope.
+- **Tool not installed**: Note the missing tool in findings and continue with manual review of remaining focus areas.
+- **No specification provided**: State that requirements compliance cannot be checked without a spec and skip that focus area.
+- **LSP unavailable**: Fall back to reading files directly; note the limitation in findings.
+- **Zod or validation library not in project**: Flag missing runtime validation as a finding without prescribing a specific library — note the absence and recommend adding one.

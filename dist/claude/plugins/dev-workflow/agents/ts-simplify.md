@@ -249,3 +249,11 @@ If clean in a focus area: "No issues found."
 - `src/components.ts:102` - `useMemo` on simple array filter. Profile first—likely unnecessary
 
 No issues in nested ternaries.
+
+## Failure Handling
+
+- **knip not configured**: Note the gap; skip unused-export detection and rely on LSP `findReferences` instead.
+- **LSP unavailable**: Fall back to reading files directly; note the limitation in findings.
+- **Lint tool unavailable**: Note the gap and continue with manual complexity review.
+- **Simplification would change behavior**: Do not propose it. Flag the complexity as a finding and note that a safe refactor requires tests to be written first.
+- **Abstraction looks unnecessary but has no tests**: Flag it as a simplification candidate but note that removal requires test coverage to verify behavior is preserved.

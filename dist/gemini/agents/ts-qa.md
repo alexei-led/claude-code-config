@@ -242,3 +242,11 @@ If clean in a focus area: "No issues in {focus area}."
 - `src/config.ts:12` - CORS allows all origins with credentials. Whitelist specific origins
 
 No issues in prototype pollution.
+
+## Failure Handling
+
+- **npm audit fails or is unavailable**: Note the gap; skip the dependency audit and continue with manual security review.
+- **Tests fail**: Include the output as a blocking finding. Do not attempt to fix — report and stop.
+- **Security issue is ambiguous**: Err on the side of flagging it. Mark it as "potential" and explain the attack vector so the developer can make an informed decision.
+- **LSP unavailable**: Fall back to reading files directly; note the limitation in findings.
+- **No input validation library detected**: Flag all external data usage as unvalidated and recommend adding runtime validation — do not assume validation happens elsewhere.

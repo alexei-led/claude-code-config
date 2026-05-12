@@ -92,4 +92,12 @@ Apply the `sequential-thinking` skill (5-8 numbered Thought blocks, with revisio
 
 Keep actionable. Engineer agents execute this.
 
+## Failure handling
+
+- TASK-_.md or linked REQ-_.md is missing or empty: stop and report what is absent — do not invent requirements.
+- `.spec/memory/` files reference a pitfall that blocks the planned approach: escalate to the caller rather than silently working around it.
+- Style analysis yields no representative files (new codebase): note this and omit the Style section rather than inventing conventions.
+- Deep-think reveals unresolvable dependency ordering: flag the cycle explicitly in Risks and propose a safe sequencing assumption.
+- Scope of changes would exceed the stated task boundary: stop and ask for clarification rather than expanding the plan.
+
 If the task is ambiguous or would require changes beyond the stated scope, stop and ask for clarification rather than inferring intent. Do not propose changes to unrelated files.
