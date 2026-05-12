@@ -92,12 +92,14 @@ cc-thingz/
 │   ├── hooks/<hook>/
 │   │   ├── HOOK.sh                    # or HOOK.py
 │   │   └── meta.yaml                  # event, timeout, optional status_message
+│   ├── pi-extensions/                 # TypeScript Pi extension sources
+│   │   └── <extension>/               # Compiled into dist/pi/extensions/
 │   └── plugins/<plugin>/plugin.yaml   # Plugin composition (skills/agents/hooks lists)
 ├── dist/                              # ALL generated — DO NOT EDIT
 │   ├── claude/plugins/<plugin>/{skills,agents,hooks,commands}/
-│   ├── codex/plugins/<plugin>/{skills,agents/*.toml,hooks}/
+│   ├── codex/{agents/*.toml,plugins/<plugin>/{skills,hooks}/}
 │   ├── gemini/{skills,agents,hooks/hooks.json}/
-│   └── pi/{skills,agents,extensions}/  # Flat — no plugin grouping
+│   └── pi/{skills,agents,hooks,extensions}/  # Flat — no plugin grouping
 ├── scripts/
 │   ├── build/                         # Compiler entry points
 │   │   ├── compile.py                 # Main entry — `make build`
@@ -105,6 +107,7 @@ cc-thingz/
 │   │   ├── compile_skill.py
 │   │   ├── compile_agent.py
 │   │   ├── compile_hook.py
+│   │   ├── compile_pi_extension.py    # Verbatim tree-copy for Pi extensions
 │   │   ├── codex_toml.py              # Agent → Codex TOML emitter
 │   │   ├── plugin_index.py            # plugin.yaml → output path resolver
 │   │   └── manifests.py               # Marketplace manifest generator
@@ -243,9 +246,14 @@ Also avoid:
   command", "delegate to a sub-task").
 
 To divert a Claude-only chunk: add a mirror overlay in
-`src/skills/<skill>/claude/body.md` with `<!-- @replace -->` anchors, or
-replace the body wholesale by writing a full `claude/body.md` (no anchors →
-full replacement).
+`src/skills/<skill>/claude/body.md`. The compiler auto-detects mode:
+
+- **Full replacement** — overlay has no headers matching the base; the base
+  body is dropped entirely and the overlay is used as-is.
+- **Mirror mode** — overlay shares at least one header with the base, or uses
+  `(_+)` (append) / `(+_)` (prepend) suffixes on a header title. Each overlay
+  header is an anchor matched by full header path; unmatched headers are added
+  as new sections.
 
 ## Scripts and Tests
 
