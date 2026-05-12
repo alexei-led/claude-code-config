@@ -1,13 +1,16 @@
 ---
 description:
-  Analyze Claude Code usage, cost, efficiency, and burn rate using ccusage
-  and termgraph. Use when user says "usage", "cost", "spending", "tokens", "analyze
-  usage", "how much did I spend", "usage report", "budget", "burn rate", "efficiency",
-  "cache hits", "ccusage", "ccw", "ccp". NOT for general shell scripting,
-  non-Claude API cost analysis, or cloud infrastructure billing (use using-cloud-cli).
+  Analyze AI coding agent usage, cost, efficiency, and burn rate — Claude Code
+  (ccusage), Pi/pi-agent (ccusage-pi), or Codex CLI (ccusage-codex). Use when
+  user says "usage", "cost", "spending", "tokens", "analyze usage", "how much did
+  I spend", "usage report", "budget", "burn rate", "efficiency", "cache hits",
+  "ccusage", "ccw", "ccp". NOT for general shell scripting, non-AI-agent cost
+  analysis, or cloud infrastructure billing (use using-cloud-cli).
 name: analyzing-usage
 targets:
   - claude
+  - codex
+  - pi
 ---
 
 # Analyze Claude Code Usage
@@ -32,7 +35,7 @@ Bash tool uses zsh, not fish — always use full command form, not `ccw`/`ccp` a
 
 ## Arguments
 
-From `$ARGUMENTS`: `work`/`ccw`/`personal`/`ccp` -> profile. `daily`/`weekly`/`monthly`/`session` -> subcommand (default: `daily`). `--since`/`--until` -> date range (default: 14 days). `--today` -> today only. `--compare` -> both profiles.
+Parse skill arguments: `work`/`ccw`/`personal`/`ccp` -> profile. `daily`/`weekly`/`monthly`/`session` -> subcommand (default: `daily`). `--since`/`--until` -> date range (default: 14 days). `--today` -> today only. `--compare` -> both profiles.
 
 ## Date Defaults
 
