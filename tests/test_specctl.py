@@ -4,19 +4,12 @@ from __future__ import annotations
 
 import json
 import subprocess
-import tempfile
 from pathlib import Path
 
 import pytest
+from conftest import REPO_ROOT
 
-SPECCTL = (
-    Path(__file__).resolve().parent.parent
-    / "src"
-    / "skills"
-    / "spec-core"
-    / "scripts"
-    / "specctl.py"
-)
+SPECCTL = REPO_ROOT / "src" / "skills" / "spec-core" / "scripts" / "specctl.py"
 
 
 def run_specctl(*args: str, cwd: str | None = None) -> subprocess.CompletedProcess:
@@ -29,120 +22,109 @@ def run_specctl(*args: str, cwd: str | None = None) -> subprocess.CompletedProce
     )
 
 
-class TestHelp:
-    def test_help_exits_zero(self):
-        result = run_specctl("--help")
-        assert result.returncode == 0
-        assert "specctl" in result.stdout.lower()
-
-    def test_status_help(self):
-        result = run_specctl("status", "--help")
-        assert result.returncode == 0
-
-    def test_ready_help(self):
-        result = run_specctl("ready", "--help")
-        assert result.returncode == 0
+@pytest.fixture()
+def empty_spec(tmp_path: Path) -> Path:
+    """A minimal .spec/ project with no tasks."""
+    for sub in ("tasks", "reqs", "epics", "memory"):
+        (tmp_path / ".spec" / sub).mkdir(parents=True)
+    return tmp_path
 
 
-class TestNoSpecDir:
-    """Commands should fail gracefully outside a .spec/ project."""
-
-    def test_status_no_spec(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            result = run_specctl("status", cwd=tmp)
-            assert result.returncode != 0
-
-    def test_ready_no_spec(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            result = run_specctl("ready", cwd=tmp)
-            assert result.returncode != 0
-
-    def test_validate_no_spec(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            result = run_specctl("validate", cwd=tmp)
-            assert result.returncode != 0
+# ---------------------------------------------------------------------------
+# Help flags
+# ---------------------------------------------------------------------------
 
 
-class TestJsonFlags:
-    """Verify --json flags are accepted by argparse."""
-
-    def test_status_json_flag(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            result = run_specctl("status", "--json", cwd=tmp)
-            # Should fail (no .spec/) but NOT with argparse error
-            assert "unrecognized arguments" not in result.stderr
-
-    def test_ready_json_flag(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            result = run_specctl("ready", "--json", cwd=tmp)
-            assert "unrecognized arguments" not in result.stderr
+def test_help_exits_zero():
+    result = run_specctl("--help")
+    assert result.returncode == 0
+    assert "specctl" in result.stdout.lower()
 
 
-class TestWithSpecDir:
-    """Tests that create a minimal .spec/ directory."""
+@pytest.mark.parametrize("cmd", ["status", "ready"])
+def test_subcommand_help_exits_zero(cmd: str):
+    result = run_specctl(cmd, "--help")
+    assert result.returncode == 0
 
-    @pytest.fixture()
-    def spec_dir(self, tmp_path):
-        (tmp_path / ".spec" / "tasks").mkdir(parents=True)
-        (tmp_path / ".spec" / "reqs").mkdir(parents=True)
-        (tmp_path / ".spec" / "epics").mkdir(parents=True)
-        (tmp_path / ".spec" / "memory").mkdir(parents=True)
-        return tmp_path
 
-    def test_status_empty_project(self, spec_dir):
-        result = run_specctl("status", cwd=str(spec_dir))
-        assert result.returncode == 0
+# ---------------------------------------------------------------------------
+# No .spec/ directory — commands must fail gracefully
+# ---------------------------------------------------------------------------
 
-    def test_status_json_empty(self, spec_dir):
-        result = run_specctl("status", "--json", cwd=str(spec_dir))
-        assert result.returncode == 0
-        data = json.loads(result.stdout)
-        assert data["total"] == 0
-        assert data["done"] == 0
 
-    def test_ready_empty(self, spec_dir):
-        result = run_specctl("ready", cwd=str(spec_dir))
-        assert result.returncode == 0
+@pytest.mark.parametrize("cmd", ["status", "ready", "validate"])
+def test_fails_without_spec_dir(cmd: str, tmp_path: Path):
+    result = run_specctl(cmd, cwd=str(tmp_path))
+    assert result.returncode != 0
 
-    def test_ready_json_empty(self, spec_dir):
-        result = run_specctl("ready", "--json", cwd=str(spec_dir))
-        assert result.returncode == 0
-        data = json.loads(result.stdout)
-        assert data == []
 
-    def test_validate_empty(self, spec_dir):
-        result = run_specctl("validate", cwd=str(spec_dir))
-        assert result.returncode == 0
+# ---------------------------------------------------------------------------
+# --json flags accepted by argparse (argparse errors, not domain errors)
+# ---------------------------------------------------------------------------
 
-    def test_with_task(self, spec_dir):
-        task = spec_dir / ".spec" / "tasks" / "TASK-test-smoke.md"
-        task.write_text(
-            "---\n"
-            "id: TASK-test-smoke\n"
-            "status: todo\n"
-            "priority: high\n"
-            "---\n"
-            "# Smoke test task\n"
-            "\nA task for testing.\n"
-        )
-        result = run_specctl("status", "--json", cwd=str(spec_dir))
-        assert result.returncode == 0
-        data = json.loads(result.stdout)
-        assert data["total"] == 1
-        assert data["todo"] == 1
 
-    def test_ready_with_task(self, spec_dir):
-        task = spec_dir / ".spec" / "tasks" / "TASK-ready-test.md"
-        task.write_text(
-            "---\n"
-            "id: TASK-ready-test\n"
-            "status: todo\n"
-            "priority: normal\n"
-            "---\n"
-            "# Ready test task\n"
-        )
-        result = run_specctl("ready", "--json", cwd=str(spec_dir))
-        assert result.returncode == 0
-        data = json.loads(result.stdout)
-        assert len(data) == 1
-        assert data[0]["id"] == "TASK-ready-test"
+@pytest.mark.parametrize("cmd", ["status", "ready"])
+def test_json_flag_accepted(cmd: str, tmp_path: Path):
+    result = run_specctl(cmd, "--json", cwd=str(tmp_path))
+    assert "unrecognized arguments" not in result.stderr
+
+
+# ---------------------------------------------------------------------------
+# Empty project
+# ---------------------------------------------------------------------------
+
+
+def test_status_empty_project(empty_spec: Path):
+    result = run_specctl("status", cwd=str(empty_spec))
+    assert result.returncode == 0
+
+
+def test_status_json_empty(empty_spec: Path):
+    result = run_specctl("status", "--json", cwd=str(empty_spec))
+    assert result.returncode == 0
+    data = json.loads(result.stdout)
+    assert data["total"] == 0
+    assert data["done"] == 0
+
+
+def test_ready_empty(empty_spec: Path):
+    result = run_specctl("ready", cwd=str(empty_spec))
+    assert result.returncode == 0
+
+
+def test_ready_json_empty(empty_spec: Path):
+    result = run_specctl("ready", "--json", cwd=str(empty_spec))
+    assert result.returncode == 0
+    assert json.loads(result.stdout) == []
+
+
+def test_validate_empty(empty_spec: Path):
+    result = run_specctl("validate", cwd=str(empty_spec))
+    assert result.returncode == 0
+
+
+# ---------------------------------------------------------------------------
+# Project with tasks
+# ---------------------------------------------------------------------------
+
+
+def test_status_counts_task(empty_spec: Path):
+    (empty_spec / ".spec" / "tasks" / "TASK-smoke.md").write_text(
+        "---\nid: TASK-smoke\nstatus: todo\npriority: high\n---\n# Smoke\n"
+    )
+    result = run_specctl("status", "--json", cwd=str(empty_spec))
+    assert result.returncode == 0
+    data = json.loads(result.stdout)
+    assert data["total"] == 1
+    assert data["todo"] == 1
+
+
+def test_ready_returns_unblocked_task(empty_spec: Path):
+    (empty_spec / ".spec" / "tasks" / "TASK-ready.md").write_text(
+        "---\nid: TASK-ready\nstatus: todo\npriority: normal\n---\n# Ready\n"
+    )
+    result = run_specctl("ready", "--json", cwd=str(empty_spec))
+    assert result.returncode == 0
+    data = json.loads(result.stdout)
+    assert len(data) == 1
+    assert data[0]["id"] == "TASK-ready"

@@ -12,16 +12,14 @@ from __future__ import annotations
 
 import os
 import stat
-import sys
 from pathlib import Path
 
 import pytest
 import yaml
+from conftest import REPO_ROOT, _load
 
-REPO = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(REPO / "scripts" / "build"))
-
-import migrate_hooks  # noqa: E402
+REPO = REPO_ROOT
+migrate_hooks = _load("migrate_hooks.py")
 
 VALID_EVENTS = frozenset(
     {
@@ -145,7 +143,7 @@ def test_migration_is_idempotent(tmp_path: Path, monkeypatch):
     sample.write_text("#!/bin/sh\necho demo\n")
     sample.chmod(sample.stat().st_mode | stat.S_IXUSR)
 
-    def fake_registry(_: Path) -> list[migrate_hooks.LegacyHook]:
+    def fake_registry(_: Path) -> list:
         return [
             migrate_hooks.LegacyHook(
                 name="demo",

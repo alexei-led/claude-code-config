@@ -20,8 +20,7 @@ from pathlib import Path
 
 import frontmatter
 import pytest
-
-TARGETS = ("claude", "codex", "gemini", "pi")
+from conftest import TARGETS, make_batch_skill_staging_root
 
 BATCH_1_SKILLS_ALL_TARGETS = (
     "writing-go",
@@ -60,9 +59,6 @@ SKILLS_WITH_REFERENCES = {
     "using-git-worktrees": ("references/WORKFLOW.md",),
 }
 
-_REPO_ROOT = Path(__file__).resolve().parent.parent
-_SRC_SKILLS = _REPO_ROOT / "src" / "skills"
-
 
 @pytest.fixture(scope="module")
 def cs(load_script):
@@ -70,25 +66,12 @@ def cs(load_script):
     return load_script("build/compile_skill.py")
 
 
-def _staging_root(tmp_path: Path) -> Path:
-    root = tmp_path / "repo"
-    (root / "src" / "skills").mkdir(parents=True)
-    for skill_dir in _SRC_SKILLS.iterdir():
-        if skill_dir.is_dir():
-            (root / "src" / "skills" / skill_dir.name).symlink_to(skill_dir)
-    (root / "scripts" / "build" / "preambles").mkdir(parents=True)
-    preambles_src = _REPO_ROOT / "scripts" / "build" / "preambles"
-    for entry in preambles_src.iterdir():
-        (root / "scripts" / "build" / "preambles" / entry.name).symlink_to(entry)
-    return root
-
-
 @pytest.mark.parametrize("skill", BATCH_1_SKILLS_ALL_TARGETS)
 @pytest.mark.parametrize("target", TARGETS)
 def test_batch1_skill_compiles_for_target(
     cs, tmp_path: Path, skill: str, target: str
 ) -> None:
-    root = _staging_root(tmp_path)
+    root = make_batch_skill_staging_root(tmp_path)
     skill_dir = root / "src" / "skills" / skill
 
     assert skill_dir.is_dir(), f"missing migrated source: {skill_dir}"
@@ -108,14 +91,14 @@ def test_batch1_skill_compiles_for_target(
 
 @pytest.mark.parametrize("skill", CLAUDE_ONLY_SKILLS)
 def test_claude_only_skill_skips_other_targets(cs, tmp_path: Path, skill: str) -> None:
-    root = _staging_root(tmp_path)
+    root = make_batch_skill_staging_root(tmp_path)
     skill_dir = root / "src" / "skills" / skill
     plugin_index = {skill: ["plugin"]}
 
     assert cs.compile_skill(skill_dir, "claude", plugin_index, root), (
         f"{skill} did not emit for claude despite targets: [claude]"
     )
-    for t in ("codex", "gemini", "pi"):
+    for t in [t for t in TARGETS if t != "claude"]:
         assert cs.compile_skill(skill_dir, t, plugin_index, root) == [], (
             f"{skill} should be skipped for target {t}"
         )
@@ -126,7 +109,7 @@ def test_claude_only_skill_skips_other_targets(cs, tmp_path: Path, skill: str) -
 def test_references_copied_to_dist(
     cs, tmp_path: Path, skill: str, target: str, refs: tuple[str, ...]
 ) -> None:
-    root = _staging_root(tmp_path)
+    root = make_batch_skill_staging_root(tmp_path)
     skill_dir = root / "src" / "skills" / skill
     plugin_index = {skill: ["plugin"]}
 
@@ -140,7 +123,7 @@ def test_references_copied_to_dist(
 
 def test_brainstorming_ideas_swaps_claude_body(cs, tmp_path: Path) -> None:
     """Claude target gets the original orchestration body; others get vendor-neutral."""
-    root = _staging_root(tmp_path)
+    root = make_batch_skill_staging_root(tmp_path)
     skill_dir = root / "src" / "skills" / "brainstorming-ideas"
     plugin_index = {"brainstorming-ideas": ["plugin"]}
 

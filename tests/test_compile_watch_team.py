@@ -11,11 +11,7 @@ from pathlib import Path
 
 import frontmatter
 import pytest
-
-_REPO_ROOT = Path(__file__).resolve().parent.parent
-_SRC_SKILLS = _REPO_ROOT / "src" / "skills"
-
-TARGETS = ("claude", "codex", "gemini", "pi")
+from conftest import TARGETS, make_skill_staging_root
 
 
 @pytest.fixture(scope="module")
@@ -24,20 +20,9 @@ def cs(load_script):
     return load_script("build/compile_skill.py")
 
 
-def _staging_root(tmp_path: Path) -> Path:
-    root = tmp_path / "repo"
-    (root / "src").mkdir(parents=True)
-    (root / "src" / "skills").symlink_to(_SRC_SKILLS)
-    (root / "scripts" / "build" / "preambles").mkdir(parents=True)
-    preambles_src = _REPO_ROOT / "scripts" / "build" / "preambles"
-    for entry in preambles_src.iterdir():
-        (root / "scripts" / "build" / "preambles" / entry.name).symlink_to(entry)
-    return root
-
-
 @pytest.mark.parametrize("target", TARGETS)
 def test_watch_team_compiles_for_target(cs, tmp_path: Path, target: str) -> None:
-    root = _staging_root(tmp_path)
+    root = make_skill_staging_root(tmp_path)
     skill_dir = root / "src" / "skills" / "watch-team"
     plugin_index = {"watch-team": ["plugin"]}
 
@@ -59,7 +44,7 @@ def test_watch_team_compiles_for_target(cs, tmp_path: Path, target: str) -> None
 
 
 def test_watch_team_claude_frontmatter_only_on_claude(cs, tmp_path: Path) -> None:
-    root = _staging_root(tmp_path)
+    root = make_skill_staging_root(tmp_path)
     skill_dir = root / "src" / "skills" / "watch-team"
     plugin_index = {"watch-team": ["plugin"]}
 

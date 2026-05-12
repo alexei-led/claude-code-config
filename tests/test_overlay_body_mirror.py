@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-import textwrap
-
 import pytest
+from conftest import dedent_md
 
 
 @pytest.fixture(scope="module")
@@ -12,13 +11,9 @@ def ov(load_script):
     return load_script("build/overlay.py")
 
 
-def _md(s: str) -> str:
-    return textwrap.dedent(s).lstrip("\n")
-
-
 def test_parse_sections_splits_by_header(ov) -> None:
     tree = ov.parse_sections(
-        _md(
+        dedent_md(
             """
             # A
 
@@ -47,7 +42,7 @@ def test_parse_sections_splits_by_header(ov) -> None:
 
 def test_parse_sections_ignores_headers_in_code_fence(ov) -> None:
     tree = ov.parse_sections(
-        _md(
+        dedent_md(
             """
             # Real
 
@@ -67,7 +62,7 @@ def test_parse_sections_ignores_headers_in_code_fence(ov) -> None:
 
 def test_parse_sections_tracks_line_numbers(ov) -> None:
     tree = ov.parse_sections(
-        _md(
+        dedent_md(
             """
             # A
 
@@ -81,7 +76,7 @@ def test_parse_sections_tracks_line_numbers(ov) -> None:
 
 
 def test_apply_mirror_replaces_section_by_anchor(ov) -> None:
-    base = _md(
+    base = dedent_md(
         """
         # Top
 
@@ -94,7 +89,7 @@ def test_apply_mirror_replaces_section_by_anchor(ov) -> None:
         review-body
         """
     )
-    overlay = _md(
+    overlay = dedent_md(
         """
         # Top
 
@@ -112,7 +107,7 @@ def test_apply_mirror_replaces_section_by_anchor(ov) -> None:
 
 
 def test_apply_mirror_append_adds_text_at_end(ov) -> None:
-    base = _md(
+    base = dedent_md(
         """
         # Top
 
@@ -121,7 +116,7 @@ def test_apply_mirror_append_adds_text_at_end(ov) -> None:
         base text
         """
     )
-    overlay = _md(
+    overlay = dedent_md(
         """
         # Top
 
@@ -139,7 +134,7 @@ def test_apply_mirror_append_adds_text_at_end(ov) -> None:
 
 
 def test_apply_mirror_append_with_escaped_suffix(ov) -> None:
-    base = _md(
+    base = dedent_md(
         """
         # Top
 
@@ -148,7 +143,7 @@ def test_apply_mirror_append_with_escaped_suffix(ov) -> None:
         base
         """
     )
-    overlay = _md(
+    overlay = dedent_md(
         """
         # Top
 
@@ -163,7 +158,7 @@ def test_apply_mirror_append_with_escaped_suffix(ov) -> None:
 
 
 def test_apply_mirror_prepend_adds_text_at_start(ov) -> None:
-    base = _md(
+    base = dedent_md(
         """
         # Top
 
@@ -172,7 +167,7 @@ def test_apply_mirror_prepend_adds_text_at_start(ov) -> None:
         base text
         """
     )
-    overlay = _md(
+    overlay = dedent_md(
         """
         # Top
 
@@ -187,7 +182,7 @@ def test_apply_mirror_prepend_adds_text_at_start(ov) -> None:
 
 
 def test_apply_mirror_adds_new_section_under_parent(ov) -> None:
-    base = _md(
+    base = dedent_md(
         """
         # Top
 
@@ -196,7 +191,7 @@ def test_apply_mirror_adds_new_section_under_parent(ov) -> None:
         e
         """
     )
-    overlay = _md(
+    overlay = dedent_md(
         """
         # Top
 
@@ -214,7 +209,7 @@ def test_apply_mirror_adds_new_section_under_parent(ov) -> None:
 
 
 def test_apply_mirror_missing_append_anchor_raises(ov) -> None:
-    base = _md(
+    base = dedent_md(
         """
         # Top
 
@@ -223,7 +218,7 @@ def test_apply_mirror_missing_append_anchor_raises(ov) -> None:
         x
         """
     )
-    overlay = _md(
+    overlay = dedent_md(
         """
         # Top
 
@@ -245,7 +240,7 @@ def test_apply_mirror_missing_prepend_anchor_raises(ov) -> None:
 
 def test_apply_mirror_duplicate_overlay_anchor_raises(ov) -> None:
     base = "# A\n\n## B\n\nx\n"
-    overlay = _md(
+    overlay = dedent_md(
         """
         # A
 
@@ -267,7 +262,7 @@ def test_apply_mirror_structural_recurse_does_not_replace_parent(ov) -> None:
 
     The parent section is not replaced; only the named child is modified.
     """
-    base = _md(
+    base = dedent_md(
         """
         # Top
 
@@ -280,7 +275,7 @@ def test_apply_mirror_structural_recurse_does_not_replace_parent(ov) -> None:
         b-body
         """
     )
-    overlay = _md(
+    overlay = dedent_md(
         """
         # Top
 
@@ -298,7 +293,7 @@ def test_apply_mirror_structural_recurse_does_not_replace_parent(ov) -> None:
 
 def test_apply_mirror_full_replace_drops_base_children(ov) -> None:
     """Replace with content under the overlay header drops the base subtree."""
-    base = _md(
+    base = dedent_md(
         """
         # A
 
@@ -311,7 +306,7 @@ def test_apply_mirror_full_replace_drops_base_children(ov) -> None:
         also gone
         """
     )
-    overlay = _md(
+    overlay = dedent_md(
         """
         # A
 
@@ -326,7 +321,7 @@ def test_apply_mirror_full_replace_drops_base_children(ov) -> None:
 
 
 def test_apply_mirror_append_carries_overlay_children(ov) -> None:
-    base = _md(
+    base = dedent_md(
         """
         # Top
 
@@ -335,7 +330,7 @@ def test_apply_mirror_append_carries_overlay_children(ov) -> None:
         base
         """
     )
-    overlay = _md(
+    overlay = dedent_md(
         """
         # Top
 
@@ -367,7 +362,7 @@ def test_apply_mirror_no_overlay_headers_returns_base_unchanged(ov) -> None:
 
 
 def test_parse_render_round_trip(ov) -> None:
-    md = _md(
+    md = dedent_md(
         """
         # Top
 

@@ -25,12 +25,9 @@ from pathlib import Path
 
 import frontmatter
 import pytest
+from conftest import REPO_ROOT, make_agent_staging_root
 
-ALL_TARGETS = ("claude", "codex", "gemini", "pi")
-
-_REPO_ROOT = Path(__file__).resolve().parent.parent
-_GOLDENS = _REPO_ROOT / "tests" / "fixtures" / "golden_agents"
-_SRC_AGENTS = _REPO_ROOT / "src" / "agents"
+_GOLDENS = REPO_ROOT / "tests" / "fixtures" / "golden_agents"
 
 
 @pytest.fixture(scope="module")
@@ -44,18 +41,6 @@ def ca(load_script):
     load_script("build/compile.py")
     load_script("build/codex_toml.py")
     return load_script("build/compile_agent.py")
-
-
-def _staging_root(tmp_path: Path) -> Path:
-    """Layout a tmp repo whose `src/agents/` mirrors the real tree.
-
-    The compiler resolves output dirs relative to `root`, so we need a `root`
-    distinct from the real repo to keep tmp_path isolated from `dist/`.
-    """
-    root = tmp_path / "repo"
-    (root / "src").mkdir(parents=True)
-    (root / "src" / "agents").symlink_to(_SRC_AGENTS)
-    return root
 
 
 def _norm_body(text: str) -> str:
@@ -120,7 +105,7 @@ def test_compile_agent_go_engineer_claude_only(ca, tmp_path: Path) -> None:
     Only the Claude target emits; codex/gemini/pi are skipped per the
     base frontmatter restriction enforced by `validate_genericity`.
     """
-    root = _staging_root(tmp_path)
+    root = make_agent_staging_root(tmp_path)
     agent_dir = root / "src" / "agents" / "go-engineer"
     plugin_index = {"go-engineer": ["go-dev"]}
 
@@ -140,7 +125,7 @@ def test_compile_agent_go_engineer_claude_only(ca, tmp_path: Path) -> None:
 
 def test_compile_agent_scout_pi_only(ca, tmp_path: Path) -> None:
     """scout has `targets: [pi]` — only Pi receives an output."""
-    root = _staging_root(tmp_path)
+    root = make_agent_staging_root(tmp_path)
     agent_dir = root / "src" / "agents" / "scout"
 
     for target in ("claude", "codex", "gemini"):

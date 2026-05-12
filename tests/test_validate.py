@@ -2,21 +2,13 @@
 
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
 from unittest.mock import patch
 
-_spec = importlib.util.spec_from_file_location(
-    "validate_config",
-    Path(__file__).resolve().parent.parent
-    / "scripts"
-    / "validate"
-    / "validate-config.py",
-)
-assert _spec is not None and _spec.loader is not None
-validate_config = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(validate_config)
+from conftest import _load
+
+validate_config = _load("validate-config.py")
 
 
 def _write(path: Path, data: dict) -> None:

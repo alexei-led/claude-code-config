@@ -1,19 +1,11 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
 
-_spec = importlib.util.spec_from_file_location(
-    "summarize_skill_evals",
-    Path(__file__).resolve().parent.parent
-    / "scripts"
-    / "evals"
-    / "summarize-skill-evals.py",
-)
-assert _spec is not None and _spec.loader is not None
-summarize_skill_evals = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(summarize_skill_evals)
+from conftest import _load
+
+summarize_skill_evals = _load("summarize-skill-evals.py")
 
 
 def _write_grading(

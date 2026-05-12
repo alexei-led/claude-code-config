@@ -12,8 +12,7 @@ import hashlib
 from pathlib import Path
 
 import pytest
-
-_REPO_ROOT = Path(__file__).resolve().parent.parent
+from conftest import REPO_ROOT as _REPO_ROOT
 
 
 def _hash_tree(root: Path) -> dict[str, str]:

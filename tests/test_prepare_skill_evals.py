@@ -1,22 +1,13 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+from conftest import _load
 
-_spec = importlib.util.spec_from_file_location(
-    "prepare_skill_evals",
-    Path(__file__).resolve().parent.parent
-    / "scripts"
-    / "evals"
-    / "prepare-skill-evals.py",
-)
-assert _spec is not None and _spec.loader is not None
-prepare_skill_evals = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(prepare_skill_evals)
+prepare_skill_evals = _load("prepare-skill-evals.py")
 
 
 def _write_skill(root: Path, target: str, plugin: str, skill: str, body: str) -> None:

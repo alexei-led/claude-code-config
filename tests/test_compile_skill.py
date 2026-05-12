@@ -21,13 +21,11 @@ from pathlib import Path
 
 import frontmatter
 import pytest
+from conftest import REPO_ROOT, TARGETS, make_skill_staging_root
 
-TARGETS = ("claude", "codex", "gemini", "pi")
 GOLDEN_SKILLS = ("committing-code", "reviewing-code", "playwright-skill")
 
-_REPO_ROOT = Path(__file__).resolve().parent.parent
-_GOLDENS = _REPO_ROOT / "tests" / "fixtures" / "golden_skills"
-_SRC_SKILLS = _REPO_ROOT / "src" / "skills"
+_GOLDENS = REPO_ROOT / "tests" / "fixtures" / "golden_skills"
 
 
 @pytest.fixture(scope="module")
@@ -36,22 +34,6 @@ def cs(load_script):
     # compile.py must load first so `compile_skill` can import it.
     load_script("build/compile.py")
     return load_script("build/compile_skill.py")
-
-
-def _staging_root(tmp_path: Path) -> Path:
-    """Layout a tmp repo that mirrors what compile_skill expects.
-
-    Symlinks `src/` and `scripts/build/preambles/` so resolved paths line up
-    with how `output_dirs` and `load_preamble` interpret their `root` arg.
-    """
-    root = tmp_path / "repo"
-    (root / "src").mkdir(parents=True)
-    (root / "src" / "skills").symlink_to(_SRC_SKILLS)
-    (root / "scripts" / "build" / "preambles").mkdir(parents=True)
-    preambles_src = _REPO_ROOT / "scripts" / "build" / "preambles"
-    for entry in preambles_src.iterdir():
-        (root / "scripts" / "build" / "preambles" / entry.name).symlink_to(entry)
-    return root
 
 
 def _diff_trees(golden: Path, actual: Path) -> list[str]:
@@ -122,7 +104,7 @@ def _diff_file(golden: Path, actual: Path, rel: Path) -> str | None:
 def test_compile_skill_matches_golden(
     cs, tmp_path: Path, skill: str, target: str
 ) -> None:
-    root = _staging_root(tmp_path)
+    root = make_skill_staging_root(tmp_path)
     skill_dir = root / "src" / "skills" / skill
 
     # Pin an owning plugin so plugin-grouped targets resolve to the same

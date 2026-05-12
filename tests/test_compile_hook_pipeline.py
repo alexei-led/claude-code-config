@@ -21,6 +21,7 @@ import stat
 from pathlib import Path
 
 import pytest
+from conftest import REPO_ROOT
 
 
 @pytest.fixture(scope="module")
@@ -394,8 +395,7 @@ def test_pi_no_manifest(ch, tmp_path):
 
 def test_real_src_hooks_compile(ch):
     """Smoke: every src/hooks/<name>/ loads cleanly."""
-    repo = Path(__file__).resolve().parents[1]
-    hook_root = repo / "src" / "hooks"
+    hook_root = REPO_ROOT / "src" / "hooks"
     if not hook_root.is_dir():
         pytest.skip("src/hooks not present")
     hooks = sorted(p for p in hook_root.iterdir() if p.is_dir())
@@ -408,8 +408,7 @@ def test_real_src_hooks_compile(ch):
 
 def test_real_src_hooks_gemini_manifest(ch, tmp_path):
     """End-to-end: compile every real hook for Gemini and inspect the manifest."""
-    repo = Path(__file__).resolve().parents[1]
-    hook_root = repo / "src" / "hooks"
+    hook_root = REPO_ROOT / "src" / "hooks"
     if not hook_root.is_dir():
         pytest.skip("src/hooks not present")
     hooks = sorted(p for p in hook_root.iterdir() if p.is_dir())

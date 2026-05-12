@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-import textwrap
-
 import pytest
+from conftest import dedent_md
 
 
 @pytest.fixture(scope="module")
@@ -12,13 +11,9 @@ def ov(load_script):
     return load_script("build/overlay.py")
 
 
-def _md(s: str) -> str:
-    return textwrap.dedent(s).lstrip("\n")
-
-
 def test_full_replacement_when_top_header_differs(ov) -> None:
     """Overlay topic differs entirely from base — no header paths overlap."""
-    base = _md(
+    base = dedent_md(
         """
         # Playwright Browser Automation
 
@@ -29,7 +24,7 @@ def test_full_replacement_when_top_header_differs(ov) -> None:
         base body
         """
     )
-    overlay = _md(
+    overlay = dedent_md(
         """
         # Playwright Helper for Pi
 
@@ -61,7 +56,7 @@ def test_empty_overlay_returns_base_unchanged(ov) -> None:
 
 
 def test_mirror_mode_when_top_header_matches(ov) -> None:
-    base = _md(
+    base = dedent_md(
         """
         # Top
 
@@ -74,7 +69,7 @@ def test_mirror_mode_when_top_header_matches(ov) -> None:
         base-b
         """
     )
-    overlay = _md(
+    overlay = dedent_md(
         """
         # Top
 
@@ -91,7 +86,7 @@ def test_mirror_mode_when_top_header_matches(ov) -> None:
 
 def test_mirror_mode_when_any_suffix_present(ov) -> None:
     """Append/prepend suffix anywhere forces mirror mode (no full-replace)."""
-    base = _md(
+    base = dedent_md(
         """
         # Different Base
 
@@ -100,7 +95,7 @@ def test_mirror_mode_when_any_suffix_present(ov) -> None:
         base-workflow
         """
     )
-    overlay = _md(
+    overlay = dedent_md(
         """
         # Different Base
 
@@ -121,7 +116,7 @@ def test_mixed_mode_resolves_to_mirror(ov) -> None:
     Documented behavior: any path overlap forces mirror; non-matching overlay
     headers are added as new subsections under their parent.
     """
-    base = _md(
+    base = dedent_md(
         """
         # Top
 
@@ -130,7 +125,7 @@ def test_mixed_mode_resolves_to_mirror(ov) -> None:
         base-existing
         """
     )
-    overlay = _md(
+    overlay = dedent_md(
         """
         # Top
 
@@ -156,7 +151,7 @@ def test_full_replacement_when_only_deep_header_collides_by_title(ov) -> None:
     Path match uses the full header chain. Same `## Path resolution` under a
     different top header is a different path.
     """
-    base = _md(
+    base = dedent_md(
         """
         # Base Topic
 
@@ -165,7 +160,7 @@ def test_full_replacement_when_only_deep_header_collides_by_title(ov) -> None:
         base path
         """
     )
-    overlay = _md(
+    overlay = dedent_md(
         """
         # Overlay Topic
 
@@ -189,7 +184,7 @@ def test_full_replacement_preserves_exact_overlay_text(ov) -> None:
 
 def test_mirror_path_match_at_any_depth(ov) -> None:
     """Mirror mode triggers when overlay shares a deep path with base."""
-    base = _md(
+    base = dedent_md(
         """
         # Top
 
@@ -200,7 +195,7 @@ def test_mirror_path_match_at_any_depth(ov) -> None:
         base-detail
         """
     )
-    overlay = _md(
+    overlay = dedent_md(
         """
         # Top
 
