@@ -15,7 +15,8 @@ argument-hint: '[--dry-run]'
 context: fork
 description: Audit AI coding-agent configuration against current features and local
   usage. Use when the user wants to improve Claude Code, Pi, Codex, Gemini, skill,
-  hook, or agent configuration.
+  hook, or agent configuration. NOT for writing new application code, fixing bugs,
+  or any task that isn't about agent/tool configuration files.
 model: sonnet
 name: evolving-config
 user-invocable: true

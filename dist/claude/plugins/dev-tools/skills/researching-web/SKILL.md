@@ -9,7 +9,8 @@ allowed-tools:
 context: fork
 description: Web research via Pi web providers. Use for technical comparisons, recent
   facts, best practices, standards, pros and cons, or questions needing grounded web
-  evidence.
+  evidence. NOT for API syntax lookup or code examples — use context7-cli for those.
+  NOT for repo-specific questions — search local files first.
 name: researching-web
 ---
 

@@ -1,7 +1,8 @@
 ---
 description: Initialize a `.spec/` project or extract requirements from a document.
   Use when there is no `.spec/` directory yet, or to add requirements from an existing
-  design doc.
+  design doc. NOT for one-off task/req creation (spec-new) or deep PRD-quality requirement
+  capture (spec-interview).
 name: spec-init
 ---
 
@@ -87,6 +88,8 @@ Next: use the `spec-work` skill to start implementing tasks
 ## Mode B: Add requirements (`.spec/` exists + file argument)
 
 ### Step 2: Read input
+
+Confirm the file exists and is readable text. If not, say "File not found or not readable." and stop.
 
 Read the user-provided document. Extract:
 

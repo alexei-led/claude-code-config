@@ -1,7 +1,8 @@
 ---
 description: Explore public GitHub repositories in Pi using GitHub CLI, local clones,
   and web tools. Use when the user asks how a public repo works, wants architecture
-  orientation, or needs repo-level Q&A.
+  orientation, or needs repo-level Q&A. NOT for library API docs (use context7-cli)
+  or local private codebases (use searching-code).
 name: exploring-repos
 ---
 
@@ -40,6 +41,12 @@ For a temporary clone:
 ```bash
 git clone --depth=1 https://github.com/owner/name /tmp/name-repo
 ```
+
+## Failure Handling
+
+- Repo not found or private: report the `gh` error, ask the user to confirm the `owner/name` slug or check access.
+- `gh` not installed: fall back to `git clone --depth=1` and `web_search` for public docs; note the limitation.
+- Clone too large (>500 MB): warn before cloning, offer shallow clone or `gh repo view` summary only.
 
 ## Output Contract
 

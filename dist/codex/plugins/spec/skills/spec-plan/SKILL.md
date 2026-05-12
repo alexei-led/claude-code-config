@@ -1,7 +1,8 @@
 ---
 description: Turn a requirement or idea into an EPIC with vertical-slice TASKs. Use
   when you have a REQ file or feature idea and need an executable plan with dependencies
-  and acceptance criteria.
+  and acceptance criteria. NOT for capturing requirements — use spec-interview. NOT
+  for implementing tasks — use spec-work.
 name: spec-plan
 ---
 
@@ -9,7 +10,7 @@ name: spec-plan
 
 CLI at `scripts/specctl`. Turn a requirement (or idea) into an `EPIC-*.md` + a set of independently grabbable `TASK-*.md` files with dependencies, blockers, and acceptance criteria.
 
-**Role**: technical planner. **Goal**: epic + tasks. **Out of scope**: implementation code.
+Role: technical planner. Goal: epic + tasks. Out of scope: implementation code.
 
 ## Input
 
@@ -31,7 +32,9 @@ mkdir -p .spec/epics .spec/tasks
 ## Step 1: Load context
 
 - **REQ id** → `scripts/specctl show REQ-<id>` and read the file.
+  - If REQ-id not found: tell the user "REQ-<id> does not exist. Run `spec-status` to list requirements." Stop.
 - **EPIC id** → `scripts/specctl show EPIC-<id>` — refinement; may add/update tasks.
+  - If the epic already has in-progress or done tasks, warn: "EPIC-<id> has tasks in progress. Adding tasks may create dependency conflicts. Proceed?" Require explicit confirmation.
 - **Idea text** → ask 3–5 quick questions.
 
 ## Step 2: Research (optional)
@@ -234,8 +237,7 @@ Next steps:
 
 Plans describe WHAT, not HOW.
 
-**Allowed**: signatures, interfaces, pattern references with `file:line`, API notes from docs.
-
-**Forbidden**: complete function implementations, copy-paste-ready code blocks (>10 lines), "here's what you'll write" snippets.
+- **Allowed**: signatures, interfaces, pattern references with `file:line`, API notes from docs.
+- **Forbidden**: complete function implementations, copy-paste-ready code blocks (>10 lines), "here's what you'll write" snippets.
 
 Implementation happens in the `spec-work` skill.

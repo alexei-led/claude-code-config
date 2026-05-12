@@ -1,7 +1,8 @@
 ---
 description: Sequential E2E workflow. Use when running existing Playwright tests,
   generating browser checks, recording a visible session, or verifying a user flow
-  end-to-end.
+  end-to-end. Not for unit tests, API-only tests, or logic tests where curl or JSDOM
+  suffices — use improving-tests or fixing-code instead.
 name: testing-e2e
 ---
 
@@ -50,6 +51,12 @@ npx playwright test /tmp/e2e-check.spec.ts --reporter=list
 - Use `waitForSelector`, `waitForURL`, or assertions on visible UI state.
 - Capture screenshots, traces, or HTML reports when failures need evidence.
 - Do not declare success while tests fail.
+
+## Failure handling
+
+- No dev server running: read project docs and `package.json` scripts for a start command; ask the user if none found.
+- Test still failing after two fix attempts: capture a screenshot/trace, report the exact failure line, and stop — do not loop blindly.
+- No `playwright.config.*` found: generate a minimal temporary config under `/tmp`; do not write into the project without asking.
 
 ## Output Contract
 

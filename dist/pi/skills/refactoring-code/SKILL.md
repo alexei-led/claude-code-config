@@ -1,7 +1,8 @@
 ---
 description: Batch refactoring via MorphLLM edit_file. Use for "refactor across files",
   "batch rename", "update pattern everywhere", large files (500+ lines), 5+ edits
-  in same file, or applying an approved architecture-deepening refactor.
+  in same file, or applying an approved architecture-deepening refactor. NOT for single-file
+  targeted edits (use built-in Edit) or code review (use reviewing-code).
 name: refactoring-code
 ---
 

@@ -69,6 +69,13 @@ Worktrees are **sibling directories** (not nested inside the repo):
 - User wants to try multiple approaches to the same problem
 - User has uncommitted changes and wants to start something else
 
+## Failure handling
+
+- Worktree path already exists: pick a different sibling name; never force-overwrite.
+- Branch already exists remotely: use `git worktree add ../name branch` (no `-b`) to check it out.
+- Dirty main repo when user wants a new worktree: ask to commit, stash, or proceed anyway — do not silently stash.
+- `git worktree remove` fails with "is dirty": confirm with user before running `git worktree remove --force`.
+
 ## References
 
 - [WORKFLOW.md](references/WORKFLOW.md) - Detailed steps, project setup, common mistakes

@@ -1,7 +1,8 @@
 ---
 description: Audit AI coding-agent configuration against current features and local
   usage. Use when the user wants to improve Claude Code, Pi, Codex, Gemini, skill,
-  hook, or agent configuration.
+  hook, or agent configuration. NOT for writing new application code, fixing bugs,
+  or any task that isn't about agent/tool configuration files.
 name: evolving-config
 ---
 
@@ -41,6 +42,12 @@ Review:
 - hooks that can block safe work or hide errors
 - secrets or private data in prompt/config files
 - generated files edited by hand
+
+## Failure Cases
+
+- Config target is ambiguous (e.g., user says "my config" with multiple agents present): list all detected config surfaces and ask which to audit.
+- Generated file detected (e.g., `dist/` overlay or exported skill): do not edit it; report the source path and regeneration command instead.
+- Validation command fails after a proposed change: revert the change and report the failure with the exact error line.
 
 ## Output Contract
 

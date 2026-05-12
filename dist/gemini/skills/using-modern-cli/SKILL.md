@@ -1,11 +1,8 @@
 ---
-description: 'Prefer modern CLI tools for better performance: rg (ripgrep) instead
-  of grep for text searching, fd instead of find for file discovery, bat instead of
-  cat for viewing files, sd instead of sed for text replacement, eza instead of ls
-  for directory listing, dust instead of du, procs instead of ps. Use when writing
-  bash scripts, optimizing command chains, working with file searches, or replacing
-  grep/find/cat in workflows. These tools are faster, respect .gitignore, and have
-  better output formatting.'
+description: Prefer modern CLI tools — rg, fd, bat, eza, sd, dust, procs — over grep,
+  find, cat, ls, sed, du, ps. Use when writing bash scripts, optimizing command chains,
+  working with file searches, or replacing legacy Unix tools in workflows. NOT for
+  application code logic, test writing, or infrastructure configuration.
 name: using-modern-cli
 ---
 
@@ -48,9 +45,7 @@ eza --tree -L 2               # Tree view, 2 levels
 # Replace: sd instead of sed
 sd "old" "new" file.txt       # Simple replacement
 sd -p "pattern" "new" file    # Preview changes first
-sd -p 'colour' 'color' docs/**/*.md  # Preview British→US spelling; do not apply
-
-For preview-only replacement tasks, always include `sd -p 'colour' 'color' <files>` or equivalent and state it is preview-only; do not show a non-preview `sd` command unless the user asked to apply.
+sd -p 'colour' 'color' docs/**/*.md  # Preview only; do not apply without explicit ask
 
 # Disk: dust instead of du
 dust -d 2                     # 2 levels deep
@@ -58,6 +53,12 @@ dust -d 2                     # 2 levels deep
 # Processes: procs instead of ps
 procs --tree                  # Process tree
 ```
+
+## Rules
+
+- For preview-only replacement tasks, use `sd -p` and state it is preview-only. Do not emit a non-preview `sd` command unless the user explicitly asked to apply.
+- If a modern tool is not on `PATH`, fall back to the legacy equivalent and note the fallback.
+- Do not install missing tools silently; report what is missing and suggest `brew install <tool>`.
 
 ## Productivity Tools
 

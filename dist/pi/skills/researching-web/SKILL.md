@@ -1,7 +1,8 @@
 ---
 description: Web research via Pi web providers. Use for technical comparisons, recent
   facts, best practices, standards, pros and cons, or questions needing grounded web
-  evidence.
+  evidence. NOT for API syntax lookup or code examples — use context7-cli for those.
+  NOT for repo-specific questions — search local files first.
 name: researching-web
 ---
 
@@ -40,6 +41,12 @@ or local code exploration. Use local search first for repo-specific questions.
    will arrive asynchronously.
 5. Compare claims against local project constraints before recommending changes.
 6. Report uncertainty and source gaps directly.
+
+## Failure Cases
+
+- Web tools return no useful results: report the gap directly in the Gaps section; do not fabricate sources.
+- Question requires private code or credentials to answer: refuse the web query, answer from local context only, and note the limitation.
+- `web_research` is unavailable: fall back to `web_search` + `web_answer` and note the fallback.
 
 ## Output Contract
 

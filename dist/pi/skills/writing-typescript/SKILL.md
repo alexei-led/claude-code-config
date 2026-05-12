@@ -1,7 +1,8 @@
 ---
 description: Idiomatic TypeScript development. Use when writing TypeScript code, Node.js
   services, React apps, or discussing TS patterns. Emphasizes strict typing, composition,
-  and modern tooling (bun/vite).
+  and modern tooling (bun/vite). NOT for Go, Python, plain HTML/CSS/JS, or server-rendered
+  templates (use writing-web for those).
 name: writing-typescript
 ---
 
@@ -25,30 +26,35 @@ name: writing-typescript
 
 ## Core Philosophy
 
-1. **Strict Mode Always**
-   - Enable all strict checks in tsconfig
-   - Treat `any` as a bug—use `unknown` for untrusted input
-   - noUncheckedIndexedAccess, exactOptionalPropertyTypes
+### Strict Mode Always
 
-2. **Interface vs Type**
-   - interface for object shapes (extensible, mergeable)
-   - type for unions, intersections, mapped types
-   - interface for React props and public APIs
+- Enable all strict checks in tsconfig
+- Treat `any` as a bug—use `unknown` for untrusted input
+- noUncheckedIndexedAccess, exactOptionalPropertyTypes
 
-3. **Discriminated Unions**
-   - Literal `kind`/`type` tag for variants
-   - Exhaustive switch with never check
-   - Model states as unions, not boolean flags
+### Interface vs Type
 
-4. **Flat Control Flow**
-   - Guard clauses with early returns
-   - Type guards and predicate helpers
-   - Maximum 2 levels of nesting
+- interface for object shapes (extensible, mergeable)
+- type for unions, intersections, mapped types
+- interface for React props and public APIs
 
-5. **Result Type Pattern**
-   - Result<T, E> for explicit error handling
-   - Discriminated union for success/failure
-   - Custom Error subclasses for instanceof
+### Discriminated Unions
+
+- Literal `kind`/`type` tag for variants
+- Exhaustive switch with never check
+- Model states as unions, not boolean flags
+
+### Flat Control Flow
+
+- Guard clauses with early returns
+- Type guards and predicate helpers
+- Maximum 2 levels of nesting
+
+### Result Type Pattern
+
+- Result<T, E> for explicit error handling
+- Discriminated union for success/failure
+- Custom Error subclasses for instanceof
 
 ## Quick Patterns
 
@@ -199,3 +205,8 @@ bun run format --check
 ```
 
 Use the project's configured commands if different.
+
+## Failure Cases
+
+- **No tsconfig.json found**: run `find . -name 'tsconfig.json'` to locate the project root before generating code; do not assume a single root.
+- **`tsc --noEmit` or test failure after generation**: quote the failing line, state the cause, show the exact fix. For `Type 'X' is not assignable to type 'Y'` errors, check discriminated union tags and generic constraints before widening types.

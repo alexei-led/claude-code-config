@@ -14,6 +14,7 @@ argument-hint: '[idea | REQ-id | file]'
 context: fork
 description: Capture PRD-quality requirements through structured Q&A. Use when a new
   requirement needs deep exploration — produces a `REQ-*.md` via 8–15 targeted questions.
+  NOT for creating tasks or implementation plans — use spec-plan for that.
 model: sonnet
 name: spec-interview
 user-invocable: true
@@ -26,7 +27,9 @@ CLI at `scripts/specctl`. Extract complete requirements through structured Q&A. 
 ## Step 1: Load context
 
 - If input is a `REQ-id`: run `scripts/specctl show <REQ-id>` and read the file. Interview to refine.
+  - If REQ-id not found: tell the user "REQ-<id> does not exist. Run `spec-status` to list existing requirements." Stop.
 - If input is a file path: read it. Use content as starting context.
+  - If the file is unreadable: tell the user the path and ask them to re-check it. Stop.
 - If input is idea text: start fresh.
 - If empty: ask "What feature or requirement would you like to explore?"
 
@@ -44,13 +47,13 @@ Use the domain vocabulary from `CONTEXT.md`. If the user uses an overloaded term
 
 ## Step 2: Interview process
 
-**Ask one question at a time** using the runtime's multi-choice / structured-question mechanism. Do not output questions as plain prose paragraphs — use the structured question facility so answers are clean to parse.
+Ask one question at a time using the runtime's multi-choice / structured-question mechanism. Do not output questions as plain prose paragraphs — use the structured question facility so answers are clean to parse.
 
 Plan for 8–15 questions in total; go longer only for genuinely complex requirements. Stop when success criteria, scope, constraints, and blockers are clear.
 
 ### Question categories (ask in this order, adapt based on answers)
 
-**1. Problem & scope** (5–8)
+### 1. Problem & scope (5–8)
 
 - What problem does this solve?
 - Who experiences this problem?
@@ -58,28 +61,28 @@ Plan for 8–15 questions in total; go longer only for genuinely complex require
 - What's in scope vs explicitly out of scope?
 - Is this a new capability or improving existing?
 
-**2. Users & stakeholders** (4–6)
+### 2. Users & stakeholders (4–6)
 
 - Primary users? Secondary users (admin, support)?
 - What do users need to accomplish?
 - How do they do it today?
 - Accessibility requirements?
 
-**3. Success criteria** (5–8)
+### 3. Success criteria (5–8)
 
 - What does "done" look like?
 - How will users know it works?
 - Performance / scale requirements?
 - Compliance / regulatory requirements?
 
-**4. Constraints** (4–6)
+### 4. Constraints (4–6)
 
 - Technical (must use X, can't use Y)?
 - Business (timeline, budget, dependencies)?
 - Compatibility (browsers, devices, APIs)?
 - Security (auth, data protection)?
 
-**5. Edge cases & failures** (6–10)
+### 5. Edge cases & failures (6–10)
 
 - Invalid input behavior?
 - Offline / disconnected?
@@ -88,14 +91,14 @@ Plan for 8–15 questions in total; go longer only for genuinely complex require
 - Error states and communication?
 - Rate-limiting / abuse concerns?
 
-**6. Data & state** (4–6)
+### 6. Data & state (4–6)
 
 - What data is needed? Where does it come from?
 - Effects on existing data?
 - Retention / deletion?
 - Privacy considerations?
 
-**7. Unknowns & risks** (3–5)
+### 7. Unknowns & risks (3–5)
 
 - Most uncertain area?
 - What could derail this?

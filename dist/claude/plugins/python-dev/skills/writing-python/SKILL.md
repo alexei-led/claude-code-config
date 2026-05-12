@@ -8,7 +8,7 @@ allowed-tools:
 context: fork
 description: Idiomatic Python 3.12+ development. Use when writing Python code, CLI
   tools, scripts, or services. Emphasizes stdlib, type hints, uv/ruff/pyright toolchain,
-  and minimal dependencies.
+  and minimal dependencies. NOT for Go, TypeScript, or shell-only tasks.
 name: writing-python
 user-invocable: false
 ---
@@ -27,33 +27,38 @@ user-invocable: false
 
 ## Core Philosophy
 
-1. **Stdlib and Mature Libraries First**
-   - Always prefer Python stdlib solutions
-   - External deps only when stdlib insufficient
-   - Prefer dataclasses over attrs, pathlib over os.path
+### Stdlib and Mature Libraries First
 
-2. **Type Hints Everywhere (No Any)**
-   - Use `X | Y` union syntax (3.10+), PEP 695 generics (3.12+)
-   - Use Protocol for structural typing (duck typing)
-   - Avoid Any—use concrete types or generics
+- Prefer Python stdlib solutions; prefer dataclasses over attrs, pathlib over os.path
+- Add a library only when real requirements beat stdlib simplicity
 
-3. **Protocol Over ABC**
-   - Protocol for implicit interface satisfaction
-   - ABC only when runtime isinstance() needed
+### Type Hints Everywhere (No Any)
 
-4. **Flat Control Flow**
-   - Guard clauses with early returns
-   - Pattern matching to flatten conditionals
-   - Maximum 2 levels of nesting
+- Use `X | Y` union syntax (3.10+), PEP 695 generics (3.12+)
+- Use Protocol for structural typing (duck typing)
+- Avoid Any—use concrete types or generics
 
-5. **Explicit Error Handling**
-   - Custom exception hierarchy for domain errors
-   - Raise early, handle at boundaries
-   - Specific exception types (never bare `except Exception`)
+### Protocol Over ABC
 
-6. **Structured Logging**
-   - Use `structlog` for structured, contextualized logging
-   - Never use `print()` for operational output
+- Protocol for implicit interface satisfaction
+- ABC only when runtime isinstance() needed
+
+### Flat Control Flow
+
+- Guard clauses with early returns
+- Pattern matching to flatten conditionals
+- Maximum 2 levels of nesting
+
+### Explicit Error Handling
+
+- Custom exception hierarchy for domain errors
+- Raise early, handle at boundaries
+- Specific exception types (never bare `except Exception`)
+
+### Structured Logging
+
+- Use `structlog` for structured, contextualized logging
+- Never use `print()` for operational output
 
 ## Quick Patterns
 
@@ -191,3 +196,8 @@ Use the project's configured commands if different. If checks fail:
 2. Fix type errors flagged by pyright
 3. Re-run: `ruff check . && ruff format --check . && pyright`
 4. Repeat until all checks pass — only then consider the task complete
+
+## Failure Cases
+
+- **No pyproject.toml / ambiguous project root**: run `find . -name 'pyproject.toml'` to locate the project before generating code; do not assume a single root.
+- **pyright or ruff failure after generation**: quote the failing line, state the cause, show the exact fix. Do not retry blindly—diagnose first. For pyright `Cannot access attribute` errors, check import paths and `__init__.py` exports before touching type annotations.

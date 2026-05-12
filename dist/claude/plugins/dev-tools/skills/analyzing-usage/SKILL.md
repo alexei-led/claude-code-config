@@ -11,15 +11,14 @@ context: fork
 description: Analyze Claude Code usage, cost, efficiency, and burn rate using ccusage
   and termgraph. Use when user says "usage", "cost", "spending", "tokens", "analyze
   usage", "how much did I spend", "usage report", "budget", "burn rate", "efficiency",
-  "cache hits", "ccusage", "ccw", "ccp".
+  "cache hits", "ccusage", "ccw", "ccp". NOT for general shell scripting, non-Claude
+  API cost analysis, or cloud infrastructure billing (use using-cloud-cli).
 model: sonnet
 name: analyzing-usage
 user-invocable: true
 ---
 
 # Analyze Claude Code Usage
-
-Visual usage reports with cost, token, and efficiency analysis.
 
 ## Critical Output Rules
 

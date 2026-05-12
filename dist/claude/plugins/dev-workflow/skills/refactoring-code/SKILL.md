@@ -9,7 +9,8 @@ allowed-tools:
 context: fork
 description: Batch refactoring via MorphLLM edit_file. Use for "refactor across files",
   "batch rename", "update pattern everywhere", large files (500+ lines), 5+ edits
-  in same file, or applying an approved architecture-deepening refactor.
+  in same file, or applying an approved architecture-deepening refactor. NOT for single-file
+  targeted edits (use built-in Edit) or code review (use reviewing-code).
 name: refactoring-code
 user-invocable: false
 ---
@@ -57,7 +58,7 @@ When the request is architectural, use this vocabulary:
 - **Leverage** — caller value from depth.
 - **Locality** — change and verification concentrated in one place.
 
-Apply the deletion test before editing: if deleting a module makes complexity vanish, it was a pass-through. If complexity reappears across callers, the module was earning its keep.
+Deletion test: if deleting a module makes complexity vanish, it was a pass-through. If complexity reappears across callers, the module was earning its keep.
 
 Seam rule: one adapter means a hypothetical seam; two adapters means a real seam. Do not add interfaces without real variation.
 
@@ -129,6 +130,12 @@ code_edit: Shows import section with changes
 instruction: "Rename getUserById to findUser throughout file"
 code_edit: Shows all locations with changes
 ```
+
+## Failure handling
+
+- `edit_file` unavailable → fall back to built-in Edit/MultiEdit; warn the user that large batches may be slower
+- Tests fail after a batch edit → revert the last file edit, inspect the diff, and fix the conflict before continuing
+- Scope unclear (user says "refactor this") → ask: "Which files and what behavior to preserve?" before touching anything
 
 ## Tips
 

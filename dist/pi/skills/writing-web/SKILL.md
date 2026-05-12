@@ -12,12 +12,20 @@ name: writing-web
 
 # Web Development (Simple, Modern)
 
+## Critical Output Rules
+
+- Use semantic HTML elements before reaching for CSS or JS: `<button>`, `<dialog>`, `<details>`, `<summary>`, `<nav>`, `<article>`.
+- CSS custom properties (`--var`) for all repeated values; no magic numbers.
+- HTMX for server-driven interactivity; vanilla JS only when HTML/CSS/HTMX cannot do it.
+- Include a verification plan for every generated page or component: manual browser check, responsive check at mobile/desktop, and a Playwright step when behavior changed.
+- Do not run destructive shell commands. For broad or risky changes, state the risk and ask before acting.
+
 ## Philosophy
 
-1. **HTML first** - Semantic markup does the work
-2. **Responsive simple CSS second** - Small stylesheets, fluid layout, mobile-first sizing, and media/container queries only when needed
-3. **HTMX third** - Server-driven interactivity
-4. **JS last** - Only when nothing else works
+- HTML first: semantic markup does the work
+- CSS second: small stylesheets, fluid layout, mobile-first, media/container queries only when needed
+- HTMX third: server-driven interactivity
+- JS last: only when nothing else works
 
 ## Patterns
 
@@ -93,7 +101,6 @@ document.body.addEventListener("click", (e) => {
 
 ## Avoid
 
-- Destructive shell commands; ask before deleting or overwriting user files
 - JS for things HTML can do (accordions, modals)
 - CSS for things HTML can do (form validation)
 - Fetch when HTMX works
@@ -110,11 +117,14 @@ npx html-validate . 2>&1 || true
 # bunx html-validate . 2>&1 || true
 ```
 
-For small HTMX/form answers, explicitly mention simple responsive CSS and include a basic browser/manual or Playwright verification plan.
-
 Verification plan must include:
 
 1. Manual/browser check for the changed page or component.
 2. Responsive check at mobile and desktop widths.
 3. Playwright or equivalent browser test when behavior changed.
 4. Screenshot or concise pass/fail notes for visual changes.
+
+## Failure Cases
+
+- **html-validate reports errors**: fix semantic/attribute issues before considering the task done; do not suppress with `|| true` in CI.
+- **HTMX request not firing**: check `hx-trigger`, `hx-target` selector, and CSRF header presence before adding JS fallback.

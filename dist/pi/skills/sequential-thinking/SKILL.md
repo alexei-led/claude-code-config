@@ -28,14 +28,14 @@ If none of these hold, answer directly — protocol overhead on a simple questio
 
 ## Why a visible protocol (not just internal CoT)
 
-Modern reasoning models already think internally. They don't need to be _taught_ to reason; they need a shared on-the-page format so:
+Modern reasoning models already think internally. They need a shared on-the-page format so:
 
 - the user can audit which step a wrong conclusion came from,
 - revisions can point at the specific thought they replace,
 - branches can be compared side by side instead of overwriting each other,
 - a downstream agent or reviewer can parse the structure.
 
-Do not try to suppress, expose, or paraphrase the model's hidden reasoning trace. Use this protocol _in addition_ to it — write the durable, reviewable summary as Thought blocks; let the internal trace stay internal.
+Do not try to suppress, expose, or paraphrase the model's hidden reasoning trace. Use this protocol in addition to it — write the durable, reviewable summary as Thought blocks; let the internal trace stay internal.
 
 ## Protocol
 

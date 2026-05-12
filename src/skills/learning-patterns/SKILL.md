@@ -1,6 +1,6 @@
 ---
 name: learning-patterns
-description: Extract durable learnings from a session and propose project customizations — agent-instructions file, CONTEXT.md, ADRs, project skills, hooks. Use when the user says "learn", "extract learnings", "what did we learn", "save learnings", "adapt config", "capture domain language", or wants to encode session patterns durably.
+description: Extract durable learnings from a session and propose project customizations — agent-instructions file, CONTEXT.md, ADRs, project skills, hooks. Use when the user says "learn", "extract learnings", "what did we learn", "save learnings", "adapt config", "capture domain language", or wants to encode session patterns durably. NOT for documentation edits (use documenting-code) or committing changes (use committing-code).
 ---
 
 # Learn from Session
@@ -16,16 +16,6 @@ Extract actionable, durable learnings and propose project-specific customization
 - Always name the exact target artifact before proposing persistence.
 
 ## Workflow
-
-1. Discover existing customizations
-2. Extract learnings from the conversation
-3. Categorize by artifact type
-4. Distill to concrete artifacts
-5. Deduplicate against existing
-6. Budget check
-7. Present and confirm
-8. Apply approved changes
-9. Verify each changed file
 
 If the user passed a topic, scope extraction to that topic. If the user passed `--dry-run`, run Phases 1–7 only.
 
@@ -102,7 +92,7 @@ CONTEXT.md entry shape:
 ```markdown
 **Term**:
 One-sentence definition.
-_Avoid_: overloaded synonym.
+Avoid: overloaded synonym.
 ```
 
 ADR entry shape (`docs/adr/NNNN-slug.md`):

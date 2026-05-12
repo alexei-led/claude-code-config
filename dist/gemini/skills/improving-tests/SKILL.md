@@ -1,7 +1,8 @@
 ---
 description: Improve test design and coverage, including TDD/red-green-refactor guidance.
   Use when improving tests, refactoring tests, adding coverage, using TDD, or removing
-  test waste.
+  test waste. NOT for fixing production bugs (use fixing-code) or reviewing non-test
+  code quality (use reviewing-code).
 name: improving-tests
 ---
 

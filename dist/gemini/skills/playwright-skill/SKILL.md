@@ -11,8 +11,6 @@ name: playwright-skill
 
 Provides primitives for browser automation: dev-server detection, a script runner (`scripts/run.js`), and helper utilities (`scripts/lib/helpers.js`).
 
-## Path resolution
-
 ## Critical workflow
 
 1. **Detect dev servers first** for localhost testing:
@@ -60,6 +58,13 @@ PW_EXTRA_HEADERS='{"X-Automated-By":"playwright-skill","X-Debug":"true"}' \
 ```
 
 Headers apply automatically when scripts use `helpers.createContext(browser)`. For raw `browser.newContext(...)`, wrap options with `getContextOptionsWithHeaders(...)`.
+
+## Failure handling
+
+- `run.js` not found: check that `playwright-skill` dir is on the skill path; run from that directory explicitly.
+- Dev server not detected: ask the user for the URL rather than assuming localhost:3000.
+- Script syntax error: quote the failing line, state the cause, rewrite the offending section — do not re-run the broken script.
+- Playwright not installed: `run.js` auto-installs on first run; if that fails, run `cd <skill-dir> && bun install` or `npm install`.
 
 ## References
 

@@ -2,7 +2,8 @@
 description: Code review covering security, quality, tests, implementation, documentation,
   and architecture / module-depth. Use when the user asks to review code, check changes,
   audit a PR or diff, find refactoring opportunities, or look for shallow modules
-  and over-abstraction.
+  and over-abstraction. NOT for fixing the issues found (use fixing-code) or applying
+  refactors (use refactoring-code).
 name: reviewing-code
 ---
 
@@ -37,14 +38,14 @@ Scan the changed-file extensions and identify which language reviewers are neede
 
 For each detected language, delegate to the agent(s) below in parallel if the runtime supports parallel sub-agents. Pass each agent: the scope, the project conventions (read `CONTEXT.md`/`docs/adr/` first), and whether architecture focus is requested.
 
-**Standard review** — one agent per language:
+### Standard review — one agent per language
 
 - Go → `go-engineer`
 - Python → `python-engineer`
 - TypeScript → `typescript-engineer`
 - Web (HTML / CSS / JS) → `web-engineer`
 
-**Thorough review** — full dimension coverage per language:
+### Thorough review — full dimension coverage per language
 
 - Go: `go-qa`, `go-idioms`, `go-tests`, `go-impl`, `go-docs`, `go-simplify`
 - Python: `py-qa`, `py-idioms`, `py-tests`, `py-impl`, `py-docs`, `py-simplify`
@@ -82,9 +83,9 @@ Apply when the user asks for architecture focus. Pass these terms into reviewer 
 - **Leverage** — caller value from depth.
 - **Locality** — change, bugs, and verification concentrated in one place.
 
-**Deletion test**: if deleting a module makes complexity vanish, it was a pass-through. If complexity reappears across callers, the module was earning its keep.
+Deletion test: if deleting a module makes complexity vanish, it was a pass-through. If complexity reappears across callers, the module was earning its keep.
 
-**Seam rule**: one adapter means a hypothetical seam; two adapters means a real seam. Do not propose ports without real variation.
+Seam rule: one adapter means a hypothetical seam; two adapters means a real seam. Do not propose ports without real variation.
 
 ## Historical context (optional)
 

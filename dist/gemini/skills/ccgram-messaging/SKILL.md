@@ -48,7 +48,7 @@ ccgram msg read <msg-id>  # mark as read + display full message
 1. Summarize them to the user
 2. Ask before processing (unless spawned with `--auto`)
 
-**When to check inbox:** after completing a task, when idle, or when the user asks.
+Check inbox after completing a task, when idle, or when the user asks.
 
 ## Step 4: Send Messages
 
@@ -93,7 +93,7 @@ ccgram msg spawn --provider claude --cwd ~/project --prompt "run tests" --auto
 
 Use `--auto` only for autonomous tasks that need no user interaction.
 
-**Prefer messaging an existing peer over spawning** when someone is already working in the relevant codebase.
+Prefer messaging an existing peer over spawning when someone is already working in the relevant codebase.
 
 ## Handling Incoming Messages
 
@@ -105,8 +105,8 @@ ccgram msg reply <msg-id> "your answer"
 
 ## Rate Limits and Safety
 
-- **10 messages per 5 minutes** per window (send + broadcast combined)
-- **3 spawns per hour** per window
+- 10 messages per 5 minutes per window (send + broadcast combined)
+- 3 spawns per hour per window
 - The broker detects A-B-A-B message loops and pauses delivery automatically
 - Messages over 10KB: use `--file <path>` instead of inline body
 - Merged delivery: multiple pending messages may arrive as a single batch
@@ -124,15 +124,13 @@ When reporting messaging status to the user, include what command was run or why
 ```
 ## Swarm Status
 
-**My ID**: ccgram:@3 (api-gateway)
-**Peers**: 4 active
+My ID: ccgram:@3 (api-gateway)
+Peers: 4 active
 
-| Peer | Window | Team | Task | Branch |
-|------|--------|------|------|--------|
-| ccgram:@0 | payment-svc | backend | refactor checkout | feat/checkout |
-| ccgram:@5 | web-ui | frontend | dashboard | feat/dashboard |
+- ccgram:@0 | payment-svc | backend | refactor checkout | feat/checkout
+- ccgram:@5 | web-ui | frontend | dashboard | feat/dashboard
 
-**Inbox**: 2 pending messages
+Inbox: 2 pending messages
 1. [request] from @0 (payment-svc): "Need API schema for /orders endpoint"
 2. [notify] from @5 (web-ui): "Dashboard types updated"
 ```

@@ -1,7 +1,8 @@
 ---
 description: Idiomatic Go 1.25+ development. Use when writing Go code, designing APIs,
   discussing Go patterns, or reviewing Go implementations. Emphasizes stdlib, concrete
-  types, simple error handling, and minimal dependencies.
+  types, simple error handling, and minimal dependencies. NOT for Python, TypeScript,
+  or shell scripting tasks.
 name: writing-go
 ---
 
@@ -24,31 +25,34 @@ name: writing-go
 
 ## Core Philosophy
 
-1. **Stdlib and Mature Libraries First**
-   - Always prefer Go stdlib solutions
-   - External deps only when stdlib is insufficient
-   - Choose mature, well-maintained libs when needed
-   - Don't reinvent the wheel—use existing solutions
+### Stdlib and Mature Libraries First
 
-2. **Concrete Types Over `any`**
-   - Never use `interface{}` or `any` when concrete type works
-   - Generics for reusable utilities, concrete types for business logic
-   - Accept interfaces, return structs
+- Prefer Go stdlib solutions; add a library only when concrete requirements beat stdlib simplicity
+- Choose mature, well-maintained libs when needed
 
-3. **Private Interfaces at Consumer**
-   - Define interfaces private (lowercase) where used
-   - Decouples code, enables testing
-   - Implementation returns concrete types
+### Concrete Types Over `any`
 
-4. **Flat Control Flow**
-   - Early returns, guard clauses
-   - No nested IFs—max 2 levels
-   - Switch for multi-case logic
+- Never use `interface{}` or `any` when a concrete type works
+- Generics for reusable utilities, concrete types for business logic
+- Accept interfaces, return structs
 
-5. **Explicit Error Handling**
-   - Always wrap with context
-   - Use `errors.Is()`/`errors.As()`
-   - No bare `return err`
+### Private Interfaces at Consumer
+
+- Define interfaces private (lowercase) where used
+- Decouples code, enables testing
+- Implementation returns concrete types
+
+### Flat Control Flow
+
+- Early returns, guard clauses
+- No nested IFs—max 2 levels
+- Switch for multi-case logic
+
+### Explicit Error Handling
+
+- Always wrap with context
+- Use `errors.Is()`/`errors.As()`
+- No bare `return err`
 
 ## Quick Patterns
 
@@ -184,3 +188,8 @@ golangci-lint run ./...
 ```
 
 Use the project's configured commands if different.
+
+## Failure Cases
+
+- **No Go files in repo / ambiguous project root**: run `find . -name 'go.mod'` to locate modules before generating code; do not assume a single root.
+- **Compilation or test failure after generation**: quote the failing line, state the cause, show the exact fix. Do not retry blindly—diagnose first.

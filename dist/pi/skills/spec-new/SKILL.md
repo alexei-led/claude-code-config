@@ -1,6 +1,7 @@
 ---
 description: Create a single TASK or REQ file from a template. Use for one-off artifact
-  creation without the full planning workflow.
+  creation without the full planning workflow. NOT for full project bootstrap (spec-init)
+  or multi-task planning from a requirement (spec-plan).
 name: spec-new
 ---
 

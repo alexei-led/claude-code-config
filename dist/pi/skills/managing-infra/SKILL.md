@@ -2,7 +2,8 @@
 description: Infrastructure patterns for Kubernetes, Terraform, Helm, Kustomize, and
   GitHub Actions. Use when making K8s architectural decisions, choosing between Helm
   vs Kustomize, structuring Terraform modules, writing CI/CD workflows, or applying
-  security best practices.
+  security best practices. NOT for cloud CLI commands (see using-cloud-cli) or deploy
+  validation and apply workflows (see deploying-infra).
 name: managing-infra
 ---
 
@@ -35,11 +36,6 @@ If the user explicitly asks to apply, confirm before executing.
 - **Makefile** — Build automation, self-documenting targets
 - **Dockerfile** — Container builds, multi-stage, multi-arch
 
-## Quick Decisions
-
-**Kustomize** when: Simple env differences, readable manifests, patching YAML
-**Helm** when: Complex templating, third-party charts, release management
-
 ## K8s Security Defaults
 
 Every workload: non-root user, read-only filesystem, no privilege escalation, dropped capabilities, network policies.
@@ -61,6 +57,11 @@ For shared VPC, service accounts, and app environments:
 - Choose backend/state boundaries deliberately: shared foundations change slowly; app environments can have separate state for safer rollout and ownership.
 - Apply least-privilege IAM per service account and environment.
 - Require CI validation for changed Terraform stacks: `terraform fmt -check`, `terraform init -backend=false`, `terraform validate`, and `terraform plan` where credentials allow.
+
+## Failure Cases
+
+- User asks to apply without reviewing a plan: stop, run the read-only equivalent first, present the diff, then require explicit confirmation.
+- Terraform plan shows unexpected resource destruction: halt, surface the full destroy list, do not proceed until the user explicitly confirms each affected resource.
 
 ## References
 

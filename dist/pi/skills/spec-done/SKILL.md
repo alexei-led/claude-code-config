@@ -1,7 +1,8 @@
 ---
 description: Mark a task complete with evidence. Use when finishing a task, discovering
   which in-progress tasks look done from git history, or verifying quality gates before
-  closing out. Handles follow-up task creation and durable learnings.
+  closing out. Handles follow-up task creation and durable learnings. NOT for reporting
+  progress (spec-status).
 name: spec-done
 ---
 
@@ -77,6 +78,8 @@ Record durable decisions if needed:
 If a follow-up task was discovered, create it using the `spec-new` skill and link it back: `scripts/specctl dep add TASK-<new> TASK-<id> --type discovered-from`.
 
 ## Discover potentially done tasks
+
+First check if any tasks have `status: in-progress`. If none exist, say "No in-progress tasks found." and stop.
 
 For each task with `status: todo` or `status: in-progress`:
 

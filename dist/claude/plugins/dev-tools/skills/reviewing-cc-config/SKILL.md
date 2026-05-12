@@ -15,7 +15,8 @@ description: Review Claude Code configuration for context efficiency, signal den
   and anti-patterns. Use when user says "review config", "review setup", "check configuration",
   "review cc config", "context review", "config review", "review my setup", "review
   skills", "review agents", "review hooks", or wants feedback on their Claude Code
-  configuration quality.
+  configuration quality. NOT for editing config files — review only; user applies
+  fixes unless --fix is passed.
 model: opus
 name: reviewing-cc-config
 user-invocable: true
@@ -27,7 +28,7 @@ Review configuration against context engineering principles derived from
 Anthropic's "Effective Context Engineering for AI Agents" and
 "Best Practices for Claude Code."
 
-Track these 4 phases. Keep work scoped to ONLY these review targets and keep agent prompts/output compact:
+Track these 5 phases. Keep work scoped to ONLY these review targets and keep agent prompts/output compact:
 
 1. Discover and inventory configuration
 2. Measure context budget impact
@@ -71,18 +72,14 @@ plugins/*/commands/**/*.md
 Extract hook script paths from settings.json `hooks` field. Read each script.
 Extract MCP server names from settings.json `mcpServers` field. Count them.
 
-Build inventory table:
+Build inventory list:
 
-```markdown
-| Component   | Count | Token Est | Details                |
-| ----------- | ----- | --------- | ---------------------- |
-| CLAUDE.md   | N     | ~Nt       | paths                  |
-| Skills      | N     | ~Nt       | names (auto/invocable) |
-| Agents      | N     | ~Nt       | names (model)          |
-| Hooks       | N     | ~Nt       | events                 |
-| Commands    | N     | ~Nt       | names                  |
-| MCP servers | N     | —         | names                  |
-```
+- **CLAUDE.md**: count, ~N tokens, paths
+- **Skills**: count, ~N tokens, names (auto/invocable)
+- **Agents**: count, ~N tokens, names (model)
+- **Hooks**: count, ~N tokens, events
+- **Commands**: count, ~N tokens, names
+- **MCP servers**: count, names
 
 Token estimation: `word_count * 1.3` for English text.
 
@@ -144,27 +141,27 @@ Each agent prompt must include:
 3. The relevant rules from RUBRIC.md (paste the rule IDs and one-line checks)
 4. The output format specified below
 
-**Agent 1: CLAUDE.md Reviewer** — Rules: SD-CLAUDE-MD, AR-HOOK-DETERMINISTIC,
-AR-SKILL-DEMAND, AP-OVER-SPECIFIED (>150 lines), CB-STARTUP (<3K tokens).
-Output per file: `### path (lines, ~tokens)` + rule/verdict/notes table.
+### Agent 1: CLAUDE.md Reviewer
+
+Rules: SD-CLAUDE-MD, AR-HOOK-DETERMINISTIC, AR-SKILL-DEMAND, AP-OVER-SPECIFIED (>150 lines), CB-STARTUP (<3K tokens).
+Output per file: `### path (lines, ~tokens)` + rule/verdict/notes list.
 Keep under 1500 tokens.
 
-**Agent 2: Skills Reviewer** — Rules: SD-DESCRIPTION, CB-FORK, SD-TOOL-MINIMAL,
-AR-VERIFY, AR-MODEL-MATCH, AP-TRIGGER-OVERLAP, AP-OVER-SPECIFIED (>200 lines),
-CB-PROGRESSIVE. Output per skill: `### name (model, invocable, lines)` +
-rule/verdict/notes table + trigger overlap matrix (conflicts only).
+### Agent 2: Skills Reviewer
+
+Rules: SD-DESCRIPTION, CB-FORK, SD-TOOL-MINIMAL, AR-VERIFY, AR-MODEL-MATCH, AP-TRIGGER-OVERLAP, AP-OVER-SPECIFIED (>200 lines), CB-PROGRESSIVE.
+Output per skill: `### name (model, invocable, lines)` + rule/verdict/notes list + trigger overlap (conflicts only).
 Keep under 2000 tokens.
 
-**Agent 3: Agents & Commands Reviewer** — Rules: AR-ISOLATION, SD-TOOL-MINIMAL,
-SD-RETURN, AP-SCOPE-UNBOUNDED, AR-MODEL-MATCH, AP-OVER-SPECIFIED (>100 lines).
-Output per agent/command: `### name (model, tools, lines)` +
-rule/verdict/notes table. Keep under 1500 tokens.
+### Agent 3: Agents & Commands Reviewer
 
-**Agent 4: Hooks Reviewer** — Rules: AR-HOOK-DETERMINISTIC, plus: performance
-(<2s), exit code discipline (0=context, 2=blocking), event appropriateness
-(PreToolUse=validation, PostToolUse=verification, SessionStart=setup,
-Notification=alerts, PostCompact=metrics). Output per hook:
-`### name (event, lines)` + check/verdict/notes table. Keep under 1000 tokens.
+Rules: AR-ISOLATION, SD-TOOL-MINIMAL, SD-RETURN, AP-SCOPE-UNBOUNDED, AR-MODEL-MATCH, AP-OVER-SPECIFIED (>100 lines).
+Output per agent/command: `### name (model, tools, lines)` + rule/verdict/notes list. Keep under 1500 tokens.
+
+### Agent 4: Hooks Reviewer
+
+Rules: AR-HOOK-DETERMINISTIC, plus: performance (<2s), exit code discipline (0=context, 2=blocking), event appropriateness (PreToolUse=validation, PostToolUse=verification, SessionStart=setup, Notification=alerts, PostCompact=metrics).
+Output per hook: `### name (event, lines)` + check/verdict/notes list. Keep under 1000 tokens.
 
 ## Phase 4: Aggregate, Cross-Check & Present
 
@@ -184,7 +181,7 @@ Report structure:
 
 ## Phase 5: Apply Fixes (only if `--fix` in arguments)
 
-### Skip this phase entirely unless `--fix` is in `$ARGUMENTS`
+Skip this phase entirely unless `--fix` is in `$ARGUMENTS`.
 
 If `--fix` is NOT present, use `AskUserQuestion`. Ask one question at a time:
 
@@ -199,9 +196,9 @@ Apply only approved fixes. Confirm before deleting files, removing hooks, broad 
 
 After each fix, show the diff. Do NOT make changes beyond what was flagged.
 
-**Post-fix verification**: After all fixes are applied, re-check modified
-components against the rules that triggered the fix. Confirm each finding
-is resolved. Report any regressions.
+### Post-fix verification
+
+After all fixes are applied, re-check modified components against the rules that triggered the fix. Confirm each finding is resolved. Report any regressions.
 
 ## Examples
 
@@ -213,4 +210,4 @@ is resolved. Report any regressions.
 /reviewing-cc-config all --fix          # Review everything, then apply fixes
 ```
 
-### Execute this workflow now
+Execute this workflow now.

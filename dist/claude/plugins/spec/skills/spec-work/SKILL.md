@@ -33,6 +33,7 @@ context: fork
 description: Implement the next ready task. Use when starting a development session
   — selects the highest-priority ready task, plans with a specialist subagent, implements
   with approval at every step, verifies quality gates, and commits. One task per session.
+  NOT for batch task execution or planning new work — use spec-plan for planning.
 model: sonnet
 name: spec-work
 user-invocable: true

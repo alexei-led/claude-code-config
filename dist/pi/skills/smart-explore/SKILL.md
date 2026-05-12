@@ -1,7 +1,9 @@
 ---
 description: Token-efficient code navigation via AST parsing. Use when exploring file
   structure, cross-file symbol discovery, or targeted function extraction with smart_outline,
-  smart_search, and smart_unfold. 10-20x fewer tokens than reading full files.
+  smart_search, and smart_unfold. 10-20x fewer tokens than reading full files. NOT
+  for semantic cross-file flow tracing (use searching-code/WarpGrep) or full-file
+  content where AST structure is irrelevant.
 name: smart-explore
 ---
 

@@ -1,6 +1,6 @@
 ---
 description: Monitor a Claude Code team in tmux, auto-approve prompts, and report
-  status
+  status. Not for single-agent monitoring, non-tmux setups, or general process supervision.
 name: watch-team
 ---
 
@@ -52,3 +52,26 @@ done
 ```
 
 Then commit remaining work manually with git.
+
+## Failure handling
+
+- No tmux session found: list sessions with `tmux ls`; ask the user which window to watch.
+- `~/.claude/tasks/<team>/` missing: skip task-status check and note it in the report.
+- Auto-approve loop exits with no prompts seen: report "no prompts detected in <N>s" — do not re-run silently.
+
+## Output format
+
+```
+## Team Status — <window>
+
+Watched: <duration>s | Panes: <N>
+
+### Unblocked
+- pane <N>: approved prompt at <HH:MM:SS>
+
+### Task States
+- <task>: in_progress / pending / done
+
+### Warnings
+- lead pane at <X>% context budget
+```

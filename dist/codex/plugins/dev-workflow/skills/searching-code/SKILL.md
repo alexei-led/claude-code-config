@@ -29,11 +29,11 @@ Return a bounded code map:
 4. Unknowns or unverified assumptions.
 5. Read-next list, top 3 files only.
 
-## How It Works
+## WarpGrep Characteristics
 
-- **8 parallel searches** per turn (explores multiple hypotheses)
-- **4 reasoning turns** (follows causal chains across files)
-- **F1=0.73** in ~3.8 steps (vs 12.4 for standard search)
+- 8 parallel searches per turn (explores multiple hypotheses)
+- 4 reasoning turns (follows causal chains across files)
+- F1=0.73 in ~3.8 steps (vs 12.4 for standard search)
 
 ## When to Use Which Tool
 
@@ -61,11 +61,11 @@ Built-in Grep:
 - Known file patterns
 - Quick needle lookups
 
-**When available**, prefer Smart Explore for structural queries (10-20x fewer tokens). Use WarpGrep for semantic/reasoning queries across files.
+When available, prefer Smart Explore for structural queries (10-20x fewer tokens). Use WarpGrep for semantic/reasoning queries across files.
 
 ## Query Formulation
 
-**Good queries** (reasoning required):
+### Good queries (reasoning required)
 
 ```
 "How does authentication flow from the login handler to the database?"
@@ -73,7 +73,7 @@ Built-in Grep:
 "Trace the request lifecycle from router to response"
 ```
 
-**Bad queries** (use Grep instead):
+### Bad queries (use Grep instead)
 
 ```
 "Find UserService" → use Grep
@@ -113,9 +113,8 @@ search_string: "natural language description of what to find"
 repo_path: "/absolute/path/to/repo"
 ```
 
-## Tips
+## Failure Handling
 
-- Be specific about the behavior or flow you're investigating
-- Include context: "in the API layer" or "during startup"
-- WarpGrep handles ambiguity better than exact pattern matching
-- Results include surrounding context for understanding
+- WarpGrep unavailable: fall back to `rg`/`fd` for targeted searches and Read for specific files; say which tool is being used.
+- Request too vague ("explain everything"): refuse the full dump, offer a zoom-out map scoped to a specific module or flow, and ask for a narrowing constraint.
+- No results found: broaden the query, check for alternate naming conventions (`rg -i`), or report the gap explicitly — never fabricate results.

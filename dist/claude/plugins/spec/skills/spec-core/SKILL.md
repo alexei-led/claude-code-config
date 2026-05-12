@@ -9,7 +9,8 @@ allowed-tools:
 context: fork
 description: Spec-driven development orientation and quick reference. Use when starting
   spec-driven development, unsure which sub-skill to use, or wanting a pipeline overview
-  and current project state.
+  and current project state. NOT for executing tasks (spec-work) or marking them done
+  (spec-done).
 model: sonnet
 name: spec-core
 user-invocable: true
@@ -21,10 +22,7 @@ Show the user this quick reference, check `.spec/` state, and direct them to the
 
 ## Pipeline
 
-```
-spec-init → spec-interview → spec-plan → spec-work → spec-done
-                                               ↑___|  (loop until epic complete)
-```
+`spec-init` → `spec-interview` → `spec-plan` → `spec-work` → `spec-done` (loop until epic complete)
 
 `spec-status` reads state at any point.
 

@@ -13,9 +13,7 @@ name: looking-up-docs
 
 # Documentation Lookup Router
 
-This skill preserves the old `looking-up-docs` trigger while routing the actual
-workflow to `context7-cli`. Do not maintain a second competing docs lookup flow
-here.
+Thin router: preserve `looking-up-docs` trigger, delegate all work to `context7-cli`. Do not maintain a parallel docs lookup flow here.
 
 ## Route
 

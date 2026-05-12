@@ -3,12 +3,14 @@ description:
   Token-efficient code navigation via AST parsing. Use when exploring file
   structure, cross-file symbol discovery, or targeted function extraction with smart_outline,
   smart_search, and smart_unfold. 10-20x fewer tokens than reading full files.
+  NOT for semantic cross-file flow tracing (use searching-code/WarpGrep) or
+  full-file content where AST structure is irrelevant.
 name: smart-explore
 ---
 
 # Smart Explore: AST-Based Code Navigation
 
-Use these tools **when available** (requires claude-mem plugin). Fall back to Read/Grep/Glob if unavailable.
+Use these tools when available (requires claude-mem plugin). Fall back to Read/Grep/Glob if unavailable.
 
 ## When to Use Which
 
@@ -31,3 +33,9 @@ Use these tools **when available** (requires claude-mem plugin). Fall back to Re
 - **Structural views** show all symbols without reading full file content
 - **Predictable cost**: 1 tool call per operation, consistent token ranges
 - **Composable**: outline → search → unfold chain naturally
+
+## Failure Handling
+
+- claude-mem plugin unavailable: fall back to Read for full files, Bash `rg`/`fd` for searches; note the token cost difference.
+- `smart_outline` returns no symbols (binary or non-source file): skip to Read and report the file type.
+- `smart_search` returns too many matches: narrow with a more specific term or add a path filter.

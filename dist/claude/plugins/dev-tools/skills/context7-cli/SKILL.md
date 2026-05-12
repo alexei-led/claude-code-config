@@ -100,8 +100,7 @@ For docs lookup results, return:
 4. Fallback source used, if any.
 5. Boundary note when the user is asking for comparison or broad research.
 
-## References
+## Failure Cases
 
-- [Documentation commands](references/docs.md)
-- [Skill commands](references/skills.md)
-- [CLI setup](references/setup.md)
+- `ctx7 library` returns no match: try a shorter or alternate name; if still no match, fall back to `web_search` for the library's official docs URL and fetch from there.
+- Docs returned are clearly outdated (version mismatch): note the discrepancy, state the version found vs the version needed, and use `web_search` for the specific version's release notes as fallback.
