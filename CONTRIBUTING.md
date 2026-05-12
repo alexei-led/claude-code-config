@@ -271,31 +271,44 @@ To divert a Claude-only chunk: add a mirror overlay in
 
 ## Pi Install
 
-Pi consumes the flat tree under `dist/pi/`. No `install-pi-exports.sh`
-helper; symlink manually (one time):
+Pi consumes the flat tree under `dist/pi/`. The root `package.json` declares
+`pi.extensions` and `pi.skills` pointing at `dist/pi/extensions` and
+`dist/pi/skills`, so `pi install` handles both automatically.
+
+**Extensions and skills** — install directly from GitHub (no local clone needed):
 
 ```bash
-ln -snf "$(pwd)/dist/pi/agents"  ~/.pi/agent/agents
+pi install git:github.com/alexei-led/cc-thingz
+```
+
+For local development (after `make build`):
+
+```bash
 pi install "$(pwd)"
 ```
 
-The root `package.json` declares `pi.extensions` and `pi.skills` pointing at
-`dist/pi/extensions` and `dist/pi/skills`. `pi install "$(pwd)"` registers the
-whole package via Pi's loader — existing extensions from other sources are
-preserved. Re-run `pi install "$(pwd)"` after `make build` to pick up changes.
+Re-run `pi install` after `make build` to pick up changes. Existing extensions
+from other packages are preserved — Pi's loader merges packages.
 
-Extensions are **required**, not optional. Several hooks depend on
-bundled extensions being loaded:
+**Agents** — `pi install` does not register agents; the `@tintinweb/pi-subagents`
+loader reads them from `~/.pi/agent/agents/`. Symlink once from a local clone:
+
+```bash
+git clone https://github.com/alexei-led/cc-thingz.git ~/src/cc-thingz
+cd ~/src/cc-thingz && make build
+ln -snf "$(pwd)/dist/pi/agents" ~/.pi/agent/agents
+```
+
+Extensions are required, not optional. Several hooks depend on bundled
+extensions:
 
 - `smart-lint.sh` calls the `ask_user_question` tool (from `ask-user-question.ts`)
 - `file-protector.sh` enforces path rules backed by `protected-paths.ts`
-- `notify.ts` fires `terminal-notifier` on agent completion (requires `terminal-notifier` via `brew install terminal-notifier`)
-
-Without the `extensions` symlink, these features silently degrade.
+- `notify.ts` fires `terminal-notifier` on agent completion (requires `terminal-notifier` — `brew install terminal-notifier`)
 
 Override the target with `PI_CODING_AGENT_DIR=<dir>` instead of
 `~/.pi/agent` if you run Pi from a non-default location. Restart Pi or
-run `/reload` after creating the symlinks.
+run `/reload` after installing.
 
 Rules for Pi-compatible content:
 
