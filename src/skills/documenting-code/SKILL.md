@@ -2,11 +2,12 @@
 description:
   Update project documentation based on code changes. Use when the user
   asks to update docs, document behavior, add README content, or align docs with recent
-  implementation changes.
+  implementation changes. NOT for extracting session learnings (use learning-patterns)
+  or code-quality feedback (use reviewing-code).
 name: documenting-code
 ---
 
-# Documenting Code in Pi
+# Documenting Code
 
 Update docs from code facts, not vibes. Keep docs close to the behavior they
 explain.

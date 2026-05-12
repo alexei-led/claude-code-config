@@ -1,22 +1,27 @@
 # Documentation Update
 
+Scope: documentation files only. Not for session-learning extraction (use learning-patterns) or code-quality review (use reviewing-code).
+
 Update project documentation to reflect current code state. Do not delete or overwrite existing docs without confirmation. If verification fails or required evidence is unavailable, report the failure instead of claiming docs are current.
 
-**Use TaskCreate / TaskUpdate** to track these 5 phases:
+**Use TaskCreate / TaskUpdate** to track these 4 phases:
 
 1. Determine documentation scope
 2. Analyze recent changes
 3. Analyze and update documentation
-4. Verify examples and links
-5. Verify and report
+4. Verify and report
 
 ## Phase 1: Determine Scope
 
 Ask one question at a time:
 
-- **Doc scope** — What documentation should I update? Options: 1. **Auto-detect** - Scan for outdated docs based on recent changes 2. **README** - Update project README 3. **API docs** - Update API/function documentation 4. **All** - Comprehensive documentation refresh
+- **Doc scope** — What documentation should I update?
+  1. **Auto-detect** — scan for outdated docs based on recent changes
+  2. **README** — update project README
+  3. **API docs** — update API/function documentation
+  4. **All** — comprehensive documentation refresh
 
-## Phase 2-4: Analyze and Update Documentation
+## Phase 2-3: Analyze and Update Documentation
 
 Use a documentation subagent when available; otherwise inspect and update docs directly.
 
@@ -55,11 +60,7 @@ Updated:
 Verified: All links valid, examples compile"
 ```
 
-## Phase 4: Research Best Practices (If Needed)
-
-Use available docs lookup tools for GoDoc, Sphinx, or framework-specific documentation patterns.
-
-## Phase 5: Verify and Present Summary
+## Phase 4: Verify and Present Summary
 
 **Independent verification** (do not trust the agent's self-report):
 
@@ -70,8 +71,19 @@ When describing parent verification, explicitly mention checking runnable code e
 3. Run or compile documented code examples and commands when practical; if not practical, state why the check was skipped
 4. If no files changed, report that no documentation modifications were needed
 
-Report what was updated, verified diffs, and any issues found.
-
 If no recent changes are found or documentation scope is unclear, ask the user what to document rather than generating speculative documentation.
 
-### Execute documentation update now
+Report using this format:
+
+```
+## Documentation Update
+
+Updated:
+- <file> — <one-line change summary>
+
+Verified:
+- git diff confirmed N files changed
+- <check>: passed / skipped (<reason>)
+
+Issues: <issue> or "none"
+```
