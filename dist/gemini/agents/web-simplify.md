@@ -35,7 +35,7 @@ Avoid over-simplification that could:
 
 Before reviewing, consider researching current web best practices:
 
-- **Use Perplexity** (`mcp__perplexity-ask__perplexity_ask`) for questions like "modern HTML5 features replacing JavaScript 2025" or "CSS features that replace JS"
+- **Use Perplexity** for questions like "modern HTML5 features replacing JavaScript 2025" or "CSS features that replace JS"
 - **Use ctx7** (`ctx7 library <name>` then `ctx7 docs /org/project "<topic>"`) for current MDN/web platform docs on newer features
 - Stay current with: `<dialog>`, `<details>`, CSS `@layer`, `:has()`, `@container`, `popover`, `<search>`, anchor positioning
 

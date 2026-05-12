@@ -96,7 +96,7 @@ The skill produces numbered Thought blocks with explicit revisions and branches 
 
 ### Memory (claude-mem)
 
-When available, use `mcp__plugin_claude-mem_mcp-search__*` tools:
+When available, use claude-mem tools:
 
 - **Before implementing**: Run `get_observations` on files you're about to change to surface past notes and known gotchas
 - **For past decisions**: Run `search` with the feature name or file path to find relevant history

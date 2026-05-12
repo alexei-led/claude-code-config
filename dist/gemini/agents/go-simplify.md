@@ -35,7 +35,7 @@ Avoid over-simplification that could:
 
 Before reviewing, consider researching current Go best practices:
 
-- **Use Perplexity** (`mcp__perplexity-ask__perplexity_ask`) for questions like "Go 1.22+ simplification patterns" or "modern Go error handling idioms 2025"
+- **Use Perplexity** for questions like "Go 1.22+ simplification patterns" or "modern Go error handling idioms 2025"
 - **Use ctx7** (`ctx7 library go` then `ctx7 docs /golang/go "<topic>"`) for current Go stdlib docs on newer APIs that simplify code
 - Stay current with range-over-func, improved iterators, and stdlib additions
 

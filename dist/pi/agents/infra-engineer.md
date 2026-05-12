@@ -158,7 +158,7 @@ aws s3 ls s3://bucket --region us-west-2
 
 ### Memory (claude-mem)
 
-When available, use `mcp__plugin_claude-mem_mcp-search__*` tools:
+When available, use claude-mem tools:
 
 - **Before implementing**: Run `get_observations` on files you're about to change to surface past notes and known gotchas
 - **For past decisions**: Run `search` with the feature name or file path to find relevant history
