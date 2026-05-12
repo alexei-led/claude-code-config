@@ -29,6 +29,8 @@ The user may pass:
 - `--model <name>` to override model-specific rule selection (e.g. `--model claude`, `--model gemini`, `--model openai`)
 - Plugin name without path separator → expand to `src/plugins/<name>/`
 
+Do not review non-instruction files (source code, tests, config, READMEs). Scope: SKILL.md, AGENT.md, AGENTS.md, and CLAUDE.md files only. Do not overlap with reviewing-code (code quality) or reviewing-cc-config (harness configuration) — those are separate skills.
+
 ## Model Context Resolution
 
 For each instruction file under review:
@@ -49,6 +51,8 @@ Surface the resolution as a one-line header in the report: `Model context: claud
 ```bash
 uv run python src/skills/reviewing-instructions/scripts/lint-instructions.py
 ```
+
+If the script fails (missing deps, sandbox restriction, uv cache error), skip the structural pre-pass and record "skipped (script unavailable)" in the Summary. Proceed with semantic review only.
 
 Record which rule IDs flagged (U-SCOPE, K-DESC, F-NO-TABLE, etc.). The semantic review below is authoritative — this is a heuristic baseline.
 
