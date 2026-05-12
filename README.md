@@ -10,7 +10,7 @@
 [![Plugins](https://img.shields.io/badge/plugins-9-green)](src/plugins/)
 [![Skills](https://img.shields.io/badge/skills-37-green)](src/plugins/)
 
-A multi-agent skill suite for **Claude Code**, **Codex CLI**, **Gemini CLI**, and **Pi** — 37 skills, 38 agents, 9 hooks, and 9 commands. One source of truth in `src/`, compiled to platform-optimized output for each tool. Supports [AGENTS.md](https://agents.md)-compatible tools too. Built over 6+ months of daily use and continuous refinement.
+A multi-agent skill suite for **Claude Code**, **Codex CLI**, **Gemini CLI**, and **Pi** — 37 skills, 38 agents, and 9 hooks. One source of truth in `src/`, compiled to platform-optimized output for each tool. Supports [AGENTS.md](https://agents.md)-compatible tools too. Built over 6+ months of daily use and continuous refinement.
 
 ## Why This Exists
 
@@ -33,9 +33,7 @@ Every skill has been manually crafted and refined through real-world use — not
 > [Gemini CLI](https://github.com/google-gemini/gemini-cli),
 > [Pi](https://pi.dev/docs/latest/quickstart)).
 > All targets consume artifacts from `dist/<target>/`, which is regenerated
-> from `src/` by `make build`. See
-> [`docs/skill-compiler-design.md`](docs/skill-compiler-design.md) for the
-> source layout and compiler design.
+> from `src/` by `make build`.
 
 ### Claude Code
 
@@ -99,11 +97,8 @@ gemini extensions link /path/to/cc-thingz
 Gemini reads `gemini-extension.json` at the repo root, loads context from
 `AGENTS.md` (auto-generated; shared with Codex and other AGENTS.md-aware
 tools), and discovers per-skill SKILL.md files under `dist/gemini/skills/`.
-Root-level `skills/` and `hooks/` symlinks point into `dist/gemini/` so
-Gemini's extension loader (which scans extension-root subdirs by hard-coded
-name) finds them.
 
-`hooks/hooks.json` (a symlink to `dist/gemini/hooks/hooks.json`) registers:
+`dist/gemini/hooks/hooks.json` registers:
 
 - `BeforeTool` on `write_file|replace` → `file-protector.sh` (blocks writes
   to `.env`, credentials, `.pem`/`.key` files)
@@ -166,9 +161,7 @@ location. Restart Pi or run `/reload` after creating the symlinks.
 | `subagent/`            | Spawns isolated `pi` processes (single, parallel, chain) |
 | `structured-output.ts` | `structured_output` tool that terminates the agent loop  |
 
-**Pi gets**: all skills mirrored from `src/`, plus Pi-only planning skills
-(`planning-common`, `planning-make`, `planning-exec`, `planning-review`) and
-runtime subagents (`scout`, `planner`, `reviewer`, `worker`, `playwright-tester`).
+**Pi gets**: all skills from `src/`, plus Pi-only runtime subagents (`scout`, `planner`, `reviewer`, `worker`, `playwright-tester`).
 
 ### Other AGENTS.md-Compatible Tools
 
@@ -238,7 +231,7 @@ All agents and several skills optionally integrate with [claude-mem](https://git
 | [**spec-system**](src/plugins/spec-system/plugin.yaml)       | 1      | 1      | Spec-driven development: requirements, tasks, and planning workflows               |
 | [**testing-e2e**](src/plugins/testing-e2e/plugin.yaml)       | 2      | 1      | E2E testing with Playwright: browser automation and test generation                |
 
-**Totals**: 37 skills, 34 agents (plugin-owned), 9 hooks, 9 commands
+**Totals**: 37 skills, 34 agents (plugin-owned), 9 hooks
 
 ## Skills
 
@@ -271,7 +264,6 @@ Invoke as `/skill-name` or let the skill enforcer suggest them.
 | `learning-patterns`             | Extract learnings and generate customizations     | "learn", "extract learnings"             |
 | `linting-instructions`          | Lint plugin prompts against Anthropic model cards | "lint instructions", "audit prompts"     |
 | `reviewing-cc-config`           | Review CC config for context efficiency           | "review config", "config review"         |
-| `using-gemini`                  | Consult Gemini CLI for second opinions            | "ask gemini", "gemini search"            |
 | `using-git-worktrees`           | Isolated git worktrees for parallel development   | "worktree", "isolate"                    |
 
 ### Auto-Activated
@@ -294,9 +286,7 @@ These activate silently when relevant patterns are detected — no `/skill-name`
 
 ## Agents
 
-Claude Code uses the full plugin agent set below. Pi receives all 38 agents: the
-complete plugin set plus `planner`, `reviewer`, `scout`, and `worker` — Pi-only
-planning agents with no plugin assignment.
+Claude Code uses the full plugin agent set below. Pi adds `planner`, `reviewer`, `scout`, and `worker` — runtime orchestration agents with no plugin assignment.
 
 | Need                       | Agent                       | Model  |
 | -------------------------- | --------------------------- | ------ |
@@ -317,31 +307,29 @@ planning agents with no plugin assignment.
 
 ## Hooks (Claude Code only)
 
-| Hook                     | Event            | What It Does                                 |
-| ------------------------ | ---------------- | -------------------------------------------- |
-| `session-start.sh`       | SessionStart     | Shows git branch, last commit, file context  |
-| `skill-enforcer.sh`      | UserPromptSubmit | Pattern-matches prompt and suggests skills   |
-| `file-protector.sh`      | PreToolUse       | Blocks edits to settings.json, secrets       |
-| `git-guardrails.sh`      | PreToolUse       | Blocks destructive git commands              |
-| `smart-lint.sh`          | PostToolUse      | Auto-runs linter after file edits            |
-| `test-runner.sh`         | PostToolUse      | Auto-runs tests after implementation changes |
-| `notify.sh`              | Notification     | Desktop notifications for long operations    |
-| `performance-monitor.sh` | PostCompact      | Tracks context compaction metrics            |
-| `worktree-create.sh`     | WorktreeCreate   | Sets up isolated git worktree environment    |
-| `worktree-remove.sh`     | WorktreeRemove   | Cleans up worktree on exit                   |
+| Hook                 | Event            | What It Does                                 |
+| -------------------- | ---------------- | -------------------------------------------- |
+| `session-start.sh`   | SessionStart     | Shows git branch, last commit, file context  |
+| `skill-enforcer.sh`  | UserPromptSubmit | Pattern-matches prompt and suggests skills   |
+| `file-protector.sh`  | PreToolUse       | Blocks edits to settings.json, secrets       |
+| `git-guardrails.sh`  | PreToolUse       | Blocks destructive git commands              |
+| `smart-lint.sh`      | PostToolUse      | Auto-runs linter after file edits            |
+| `test-runner.sh`     | PostToolUse      | Auto-runs tests after implementation changes |
+| `notify.sh`          | Notification     | Desktop notifications for long operations    |
+| `worktree-create.sh` | WorktreeCreate   | Sets up isolated git worktree environment    |
+| `worktree-remove.sh` | WorktreeRemove   | Cleans up worktree on exit                   |
 
 ## Skill Export Architecture
 
 One source of truth (`src/`) compiles into per-target trees (`dist/<target>/`).
-The compiler is `scripts/build/compile.py`; design is documented in
-[`docs/skill-compiler-design.md`](docs/skill-compiler-design.md).
+The compiler is `scripts/build/compile.py`.
 
-| Target      | Output                                               | Notes                                                    |
-| ----------- | ---------------------------------------------------- | -------------------------------------------------------- |
-| Claude Code | `dist/claude/plugins/<plugin>/`                      | Skills + markdown agents + hooks + commands per plugin   |
-| Codex CLI   | `dist/codex/plugins/<plugin>/`, `dist/codex/agents/` | Skills + hooks per plugin; standalone TOML agents        |
-| Gemini CLI  | `dist/gemini/{skills,agents,hooks}/`                 | Flat per kind; root `skills`/`hooks` symlinks for loader |
-| Pi          | `dist/pi/{skills,agents,extensions}/`                | Flat layout; symlinked into `~/.pi/agent/`               |
+| Target      | Output                                               | Notes                                                  |
+| ----------- | ---------------------------------------------------- | ------------------------------------------------------ |
+| Claude Code | `dist/claude/plugins/<plugin>/`                      | Skills + markdown agents + hooks + commands per plugin |
+| Codex CLI   | `dist/codex/plugins/<plugin>/`, `dist/codex/agents/` | Skills + hooks per plugin; standalone TOML agents      |
+| Gemini CLI  | `dist/gemini/{skills,agents,hooks}/`                 | Flat per kind                                          |
+| Pi          | `dist/pi/{skills,agents,extensions}/`                | Flat layout; symlinked into `~/.pi/agent/`             |
 
 ### Structure
 
@@ -363,8 +351,6 @@ dist/                                # ALL generated; linguist-generated=true
 .agents/plugins/marketplace.json     # → ./dist/codex/plugins/*
 gemini-extension.json                # → ${extensionPath}/dist/gemini/
 AGENTS.md                            # AGENTS.md catalog
-skills      -> dist/gemini/skills    # symlink (Gemini convention)
-hooks       -> dist/gemini/hooks     # symlink (Gemini convention)
 ```
 
 Regenerate everything with:

@@ -8,6 +8,32 @@ major = breaking config/hook changes, minor = new skills/features, patch = fixes
 
 ## [Unreleased]
 
+## [4.0.2] - 2026-05-12
+
+### Changed
+
+- **README and CONTRIBUTING** updated to match current project structure:
+  removed references to deleted `docs/skill-compiler-design.md`, removed stale
+  root-level `skills`/`hooks` symlinks and `GEMINI.md` from layout docs,
+  corrected `dist/pi/` path to include `extensions/`, fixed Gemini hooks path,
+  dropped non-existent `using-gemini` skill and `performance-monitor` hook from
+  reference tables, removed phantom "9 commands" count from totals.
+- **LLM-optimized formatting** applied across all 182 agent and skill instruction
+  files: removed horizontal rule separators, converted standalone bold pseudo-headers
+  to real `###` headers, stripped low-signal italic markup. Reduces token waste
+  without changing instruction semantics.
+- **Format lint rules** added (`docs/instruction-lint-rules.md`) and enforced via
+  `scripts/validate/lint-instructions.py` (rules: F-NO-TABLE, F-NO-DIAGRAM,
+  F-NO-HR, F-NO-ITALIC, F-BOLD-SPARSE).
+- **AGENTS.md** consolidated into single project instruction file; `CLAUDE.md`
+  now imports it via `@AGENTS.md` to eliminate duplication.
+
+### Removed
+
+- `docs/skill-compiler-design.md` — design is encoded in the compiler source
+  and the `CONTRIBUTING.md` layout; the separate design doc was stale.
+- Legacy top-level `hooks/`, `agents/`, and `skills/` symlinks removed.
+
 ## [4.0.1] - 2026-05-11
 
 ### Fixed
