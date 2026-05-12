@@ -151,15 +151,20 @@ location. Restart Pi or run `/reload` after creating the symlinks.
 
 **Bundled Pi extensions** (`dist/pi/extensions/`):
 
-| Extension              | Role                                                     |
-| ---------------------- | -------------------------------------------------------- |
-| `ask-user-question.ts` | `ask_user_question` tool with structured options         |
-| `permission-gate.ts`   | Confirms dangerous bash (rm -rf, sudo, chmod 777)        |
-| `protected-paths.ts`   | Blocks writes to `.env`, `.git/`, `node_modules/`        |
-| `plan-mode/`           | `/plan` toggle for read-only exploration, step tracking  |
-| `todo.ts`              | `todo` tool + `/todos` command, branch-aware state       |
-| `subagent/`            | Spawns isolated `pi` processes (single, parallel, chain) |
-| `structured-output.ts` | `structured_output` tool that terminates the agent loop  |
+| Extension              | Role                                                                          |
+| ---------------------- | ----------------------------------------------------------------------------- |
+| `ask-user-question.ts` | `ask_user_question` tool with structured options                              |
+| `permission-gate.ts`   | Confirms dangerous bash (rm -rf, sudo, chmod 777)                             |
+| `protected-paths.ts`   | Blocks writes to `.env`, `.git/`, `node_modules/`                             |
+| `plan-mode/`           | `/plan` toggle for read-only exploration, step tracking                       |
+| `todo.ts`              | `todo` tool + `/todos` command, branch-aware state                            |
+| `subagent/`            | Spawns isolated `pi` processes (single, parallel, chain)                      |
+| `structured-output.ts` | `structured_output` tool that terminates the agent loop                       |
+| `notify.ts`            | macOS notification via `terminal-notifier` on agent completion (Kitty + tmux) |
+
+The `extensions` symlink is required for several hooks to work:
+`smart-lint.sh` calls `ask_user_question`, `protected-paths.ts` backs the file-protector hook,
+and `notify.ts` delivers completion notifications. Without the symlink, these silently degrade.
 
 **Pi gets**: all 38 agents (requires [`@tintinweb/pi-subagents`](https://github.com/tintinweb/pi-subagents) for subagent support), all skills, and bundled extensions. Each agent has a Pi-specific frontmatter overlay tuned for OpenAI Codex models (`openai-codex/gpt-5.5`, `gpt-5.4`, `gpt-5.4-mini`), thinking levels, tool restrictions, and turn limits. The four pipeline agents (`scout`, `planner`, `reviewer`, `worker`) are Pi-only — they implement the scout→planner→worker→reviewer orchestration pattern.
 

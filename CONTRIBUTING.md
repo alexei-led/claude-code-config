@@ -277,8 +277,17 @@ helper; symlink manually (one time):
 ```bash
 ln -snf "$(pwd)/dist/pi/skills"      ~/.pi/agent/skills
 ln -snf "$(pwd)/dist/pi/agents"      ~/.pi/agent/agents
-ln -snf "$(pwd)/dist/pi/extensions"  ~/.pi/agent/extensions   # if present
+ln -snf "$(pwd)/dist/pi/extensions"  ~/.pi/agent/extensions
 ```
+
+The `extensions` symlink is **required**, not optional. Several hooks depend on
+bundled extensions being loaded:
+
+- `smart-lint.sh` calls the `ask_user_question` tool (from `ask-user-question.ts`)
+- `file-protector.sh` enforces path rules backed by `protected-paths.ts`
+- `notify.ts` fires `terminal-notifier` on agent completion (requires `terminal-notifier` via `brew install terminal-notifier`)
+
+Without the `extensions` symlink, these features silently degrade.
 
 Override the target with `PI_CODING_AGENT_DIR=<dir>` instead of
 `~/.pi/agent` if you run Pi from a non-default location. Restart Pi or
