@@ -49,6 +49,7 @@ shopt -s nullglob
 plugin_yamls=(src/plugins/*/plugin.yaml)
 project_version_files=(
 	pyproject.toml
+	uv.lock
 	package.json
 	src/skills/playwright-skill/scripts/package.json
 	tests/fixtures/golden_skills/playwright-skill/*/scripts/package.json
@@ -76,10 +77,19 @@ make build
 # Add CHANGELOG entry if not already present
 if ! grep -q "\[$VERSION\]" CHANGELOG.md; then
 	DATE=$(date +%Y-%m-%d)
-	sed -i '' "/^## \[/i\\
-## [$VERSION] - $DATE\\
-\\
-" CHANGELOG.md
+	python3 - "$VERSION" "$DATE" <<'PY'
+from pathlib import Path
+import sys
+
+version, date = sys.argv[1:3]
+path = Path("CHANGELOG.md")
+text = path.read_text()
+marker = "## [Unreleased]\n"
+entry = f"\n## [{version}] - {date}\n\n"
+if marker not in text:
+    raise SystemExit("CHANGELOG.md missing ## [Unreleased] marker")
+path.write_text(text.replace(marker, marker + entry, 1))
+PY
 	echo "Added CHANGELOG entry for $VERSION — edit it before pushing."
 fi
 
