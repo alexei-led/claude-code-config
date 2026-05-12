@@ -30,6 +30,12 @@ major = breaking config/hook changes, minor = new skills/features, patch = fixes
   `typescript-engineer`, `web-engineer`, `web-simplify` previously had `targets: [claude]`
   or `targets: [claude, pi]`. Targets restriction removed — they now compile for Claude,
   Codex, Gemini, and Pi.
+- **`analyzing-usage` skill expanded to Codex and Pi**: targets extended from `[claude]`
+  to `[claude, codex, pi]`. Adds `pi/body.md` (ccusage-pi queries, `sessionId` / `projectPath`
+  fields), `codex/body.md` (ccusage-codex queries, `costUSD` fields), and matching
+  `references/ccusage-pi.md` and `references/ccusage-codex.md` reference sheets.
+  Claude-specific content (session profiles, 11 termgraph views) moved to `claude/body.md`
+  overlay to prevent leakage into other platforms.
 
 ### Improved
 

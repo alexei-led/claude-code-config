@@ -8,9 +8,9 @@
 [![Codex CLI](https://img.shields.io/badge/Codex_CLI-skill_export-10A37F)](https://developers.openai.com/codex/plugins)
 [![Gemini CLI](https://img.shields.io/badge/Gemini_CLI-skill_export-4285F4)](https://geminicli.com/docs/extensions)
 [![Plugins](https://img.shields.io/badge/plugins-9-green)](src/plugins/)
-[![Skills](https://img.shields.io/badge/skills-37-green)](src/plugins/)
+[![Skills](https://img.shields.io/badge/skills-44-green)](src/plugins/)
 
-A multi-agent skill suite for **Claude Code**, **Codex CLI**, **Gemini CLI**, and **Pi** — 37 skills, 38 agents, and 9 hooks. One source of truth in `src/`, compiled to platform-optimized output for each tool. Supports [AGENTS.md](https://agents.md)-compatible tools too. Built over 6+ months of daily use and continuous refinement.
+A multi-agent skill suite for **Claude Code**, **Codex CLI**, **Gemini CLI**, and **Pi** — 44 skills, 38 agents, and 9 hooks. One source of truth in `src/`, compiled to platform-optimized output for each tool. Supports [AGENTS.md](https://agents.md)-compatible tools too. Built over 6+ months of daily use and continuous refinement.
 
 ## Why This Exists
 
@@ -241,30 +241,30 @@ Skills teach the AI model domain-specific knowledge and workflows. All skills ar
 
 Invoke as `/skill-name` or let the skill enforcer suggest them.
 
-| Skill                           | What It Does                                      | Example Trigger                          |
-| ------------------------------- | ------------------------------------------------- | ---------------------------------------- |
-| `brainstorming-ideas`           | Brainstorm ideas and stress-test draft plans      | "brainstorm", "design feature"           |
-| `grill-me`                      | Relentless decision-tree interview on one plan    | "grill me", "stress-test this plan"      |
-| `improve-codebase-architecture` | Find deepening opportunities, module/seam vocab   | "improve architecture", "deepen modules" |
-| `committing-code`               | Smart git commits with logical grouping           | "commit", "save changes"                 |
-| `debating-ideas`                | Dialectic agents stress-test design decisions     | "debate", "pros and cons"                |
-| `deploying-infra`               | Validate + deploy K8s/Terraform/Helm              | "deploy to staging", "rollout"           |
-| `documenting-code`              | Update docs based on recent changes               | "update docs", "document"                |
-| `evolving-config`               | Audit config against latest Claude Code features  | "evolve", "audit config"                 |
-| `exploring-repos`               | Explore public GitHub repos and architecture      | "explore repo", "how does repo work"     |
-| `fixing-code`                   | Parallel agents fix all issues, zero tolerance    | "fix errors", "make it pass"             |
-| `improving-tests`               | Refactor tests: combine to tabular, fill gaps     | "improve tests", "coverage"              |
-| `context7-cli`                  | Current library docs via ctx7 CLI                 | "ctx7", "context7", "current docs"       |
-| `looking-up-docs`               | Router for Context7 CLI docs lookup               | "look up docs", "API ref"                |
-| `mem-history`                   | Query project history and prior decisions         | "last session", "what happened"          |
-| `researching-web`               | Web research via Perplexity AI                    | "research", "X vs Y"                     |
-| `reviewing-code`                | Multi-agent review (security, quality, idioms)    | "review code", "check this"              |
-| `testing-e2e`                   | Playwright browser automation and test gen        | "e2e test", "playwright"                 |
-| `analyzing-usage`               | Analyze Claude Code usage, cost, and efficiency   | "usage", "cost", "spending"              |
-| `learning-patterns`             | Extract learnings and generate customizations     | "learn", "extract learnings"             |
-| `linting-instructions`          | Lint plugin prompts against Anthropic model cards | "lint instructions", "audit prompts"     |
-| `reviewing-cc-config`           | Review CC config for context efficiency           | "review config", "config review"         |
-| `using-git-worktrees`           | Isolated git worktrees for parallel development   | "worktree", "isolate"                    |
+| Skill                           | What It Does                                                          | Example Trigger                          |
+| ------------------------------- | --------------------------------------------------------------------- | ---------------------------------------- |
+| `brainstorming-ideas`           | Brainstorm ideas and stress-test draft plans                          | "brainstorm", "design feature"           |
+| `grill-me`                      | Relentless decision-tree interview on one plan                        | "grill me", "stress-test this plan"      |
+| `improve-codebase-architecture` | Find deepening opportunities, module/seam vocab                       | "improve architecture", "deepen modules" |
+| `committing-code`               | Smart git commits with logical grouping                               | "commit", "save changes"                 |
+| `debating-ideas`                | Dialectic agents stress-test design decisions                         | "debate", "pros and cons"                |
+| `deploying-infra`               | Validate + deploy K8s/Terraform/Helm                                  | "deploy to staging", "rollout"           |
+| `documenting-code`              | Update docs based on recent changes                                   | "update docs", "document"                |
+| `evolving-config`               | Audit config against latest Claude Code features                      | "evolve", "audit config"                 |
+| `exploring-repos`               | Explore public GitHub repos and architecture                          | "explore repo", "how does repo work"     |
+| `fixing-code`                   | Parallel agents fix all issues, zero tolerance                        | "fix errors", "make it pass"             |
+| `improving-tests`               | Refactor tests: combine to tabular, fill gaps                         | "improve tests", "coverage"              |
+| `context7-cli`                  | Current library docs via ctx7 CLI                                     | "ctx7", "context7", "current docs"       |
+| `looking-up-docs`               | Router for Context7 CLI docs lookup                                   | "look up docs", "API ref"                |
+| `mem-history`                   | Query project history and prior decisions                             | "last session", "what happened"          |
+| `researching-web`               | Web research via Perplexity AI                                        | "research", "X vs Y"                     |
+| `reviewing-code`                | Multi-agent review (security, quality, idioms)                        | "review code", "check this"              |
+| `testing-e2e`                   | Playwright browser automation and test gen                            | "e2e test", "playwright"                 |
+| `analyzing-usage`               | Analyze AI agent usage, cost, and efficiency (Claude Code, Codex, Pi) | "usage", "cost", "spending"              |
+| `learning-patterns`             | Extract learnings and generate customizations                         | "learn", "extract learnings"             |
+| `reviewing-instructions`        | Review and score AI agent/skill instructions (8-dimension quality)    | "lint instructions", "audit prompts"     |
+| `reviewing-cc-config`           | Review CC config for context efficiency                               | "review config", "config review"         |
+| `using-git-worktrees`           | Isolated git worktrees for parallel development                       | "worktree", "isolate"                    |
 
 ### Auto-Activated
 
