@@ -2,7 +2,8 @@
 description:
   Cloud CLI patterns for GCP and AWS. Use when running bq queries, gcloud
   commands, aws commands, or making decisions about cloud services. Covers BigQuery
-  cost optimization and operational best practices.
+  cost optimization and operational best practices. NOT for Terraform or Kubernetes
+  architectural decisions (see managing-infra).
 name: using-cloud-cli
 ---
 
@@ -79,7 +80,7 @@ aws ec2 run-instances --dry-run ...
 
 ### Authentication Failures
 
-### GCP auth issues
+#### GCP auth issues
 
 ```bash
 # Check current auth status
@@ -95,7 +96,7 @@ gcloud auth application-default login
 gcloud auth activate-service-account --key-file=key.json
 ```
 
-### AWS auth issues
+#### AWS auth issues
 
 ```bash
 # Check current identity
@@ -111,7 +112,7 @@ aws s3 ls --profile production
 aws sso login --profile my-sso-profile
 ```
 
-### Common auth errors
+#### Common auth errors
 
 - **`UNAUTHENTICATED`** — No credentials; run `gcloud auth login`
 - **`AccessDenied`** — Wrong permissions; check IAM roles
@@ -120,13 +121,13 @@ aws sso login --profile my-sso-profile
 
 ### Rate Limiting
 
-### Symptoms
+#### Symptoms
 
 - `429 Too Many Requests`
 - `RESOURCE_EXHAUSTED`
 - `Throttling` errors
 
-### Mitigation
+#### Mitigation
 
 ```bash
 # Add delays between operations
@@ -142,14 +143,14 @@ aws ec2 describe-instances --max-items 100 --starting-token "$TOKEN"
 bq query --batch 'SELECT ...'  # Lower priority, less throttling
 ```
 
-### API quotas
+#### API quotas
 
 - Check quotas: `gcloud compute project-info describe --project=PROJECT`
 - Request increase: Console → IAM → Quotas
 
 ### Common Error Patterns
 
-### Resource not found
+#### Resource not found
 
 ```bash
 # Verify resource exists first
@@ -159,7 +160,7 @@ gcloud compute instances describe NAME --zone=ZONE 2>/dev/null || echo "Not foun
 gcloud compute zones list --filter="region:us-central1"
 ```
 
-### Permission denied
+#### Permission denied
 
 ```bash
 # Check your roles
@@ -171,7 +172,7 @@ aws iam get-user
 aws iam list-attached-user-policies --user-name USERNAME
 ```
 
-### Region/zone mismatch
+#### Region/zone mismatch
 
 ```bash
 # Always specify explicitly
@@ -179,7 +180,7 @@ gcloud compute instances create NAME --zone=us-central1-a  # Not just region!
 aws ec2 run-instances --region us-west-2 ...
 ```
 
-### Retry Patterns
+#### Retry Patterns
 
 ```bash
 # Simple retry with backoff
