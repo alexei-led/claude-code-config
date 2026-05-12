@@ -144,9 +144,16 @@ Proceed to Phase 4.
 
 Jump directly to Phase 5 (Present Approaches).
 
+### Failure cases
+
+- If codebase exploration returns no relevant matches: state "no prior implementation found" and proceed to Phase 5 without fabricating patterns.
+- If user abandons mid-session: offer to write a partial design note before stopping.
+
 ## Phase 4: Research Similar Solutions (If Requested)
 
 Only run when user explicitly chose research in Phase 3.
+
+If Perplexity is unavailable: skip to WebFetch with a direct search query; do not fabricate patterns.
 
 ### 4a. Perplexity Query
 
@@ -229,7 +236,7 @@ If the brainstorm resolved domain language, update `CONTEXT.md` or the relevant 
 
 **Term**:
 One-sentence definition.
-_Avoid_: fuzzy synonym, overloaded alias
+Avoid: fuzzy synonym, overloaded alias
 ```
 
 If a qualifying architectural/product decision crystallized, create a short ADR under `docs/adr/NNNN-slug.md`:
@@ -257,16 +264,6 @@ Include only: Problem, Chosen approach, Trade-offs, Open questions, Testing stra
 Use AskUserQuestion:
 
 - **Next steps** — Ready to proceed with implementation? Options: 1. **Create worktree** - Isolated workspace via using-git-worktrees 2. **Create plan** - Detailed implementation steps 3. **Done for now** - Just save the design
-
-## Methodology Reference
-
-This skill incorporates proven brainstorming techniques:
-
-- **Starbursting (5WH)** — Structured questions in Phase 2
-- **Design Thinking** — Empathize (context) → Define (WHY) → Ideate → Prototype (design sections)
-- **SCAMPER** — For modifications: Substitute, Combine, Adapt, Modify, Put to other use, Eliminate, Reverse
-- **Reverse Brainstorming** — "How could this fail?" during validation
-- **Mind Mapping** — Architecture section visualizes relationships
 
 ## Examples
 
