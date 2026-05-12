@@ -1,6 +1,5 @@
 ---
-description:
-  Smart git commits with logical grouping. Use when user says "commit",
+description: Smart git commits with logical grouping. Use when user says "commit",
   "commit changes", "save changes", "create commit", "bundle commits", "git commit",
   or wants to commit their work.
 name: committing-code
@@ -38,7 +37,7 @@ Group files by: feature (impl+tests), fix (bug+test), refactor, docs, config.
 
 Match commit style from recent history.
 
-**Present proposed commits:**
+### Present proposed commits
 
 ```
 Proposed commits:
