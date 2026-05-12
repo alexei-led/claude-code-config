@@ -5,8 +5,7 @@
 #
 # This script:
 # 1. Validates the version format (vX.Y.Z)
-# 2. Bumps versions in the YAML source of truth (src/plugins/marketplace.yaml
-#    and src/plugins/*/plugin.yaml)
+# 2. Bumps versions in source plugin and project metadata
 # 3. Runs `make build` to regenerate root manifests and dist/
 # 4. Updates CHANGELOG.md with a placeholder entry
 # 5. Commits the version bump
@@ -48,6 +47,12 @@ sed -i '' "s/^version:.*/version: $VERSION/" src/plugins/marketplace.yaml
 # Bump per-plugin src/plugins/*/plugin.yaml versions
 shopt -s nullglob
 plugin_yamls=(src/plugins/*/plugin.yaml)
+project_version_files=(
+	pyproject.toml
+	package.json
+	src/skills/playwright-skill/scripts/package.json
+	tests/fixtures/golden_skills/playwright-skill/*/scripts/package.json
+)
 shopt -u nullglob
 if [ ${#plugin_yamls[@]} -eq 0 ]; then
 	echo "ERROR: no src/plugins/*/plugin.yaml files found"
@@ -56,8 +61,15 @@ fi
 for f in "${plugin_yamls[@]}"; do
 	sed -i '' "s/^version:.*/version: $VERSION/" "$f"
 done
+for f in "${project_version_files[@]}"; do
+	if [[ "$f" == *.toml ]]; then
+		sed -i '' "s/^version = .*/version = \"$VERSION\"/" "$f"
+	else
+		sed -i '' "s/\"version\": \"[^\"]*\"/\"version\": \"$VERSION\"/" "$f"
+	fi
+done
 
-# Regenerate dist/ and root manifests from the bumped YAML sources
+# Regenerate dist/ and root manifests from the bumped sources
 echo "Running 'make build' to regenerate manifests..."
 make build
 
@@ -81,6 +93,7 @@ echo ""
 git add \
 	src/plugins/marketplace.yaml \
 	"${plugin_yamls[@]}" \
+	"${project_version_files[@]}" \
 	.claude-plugin/marketplace.json \
 	.agents/plugins/marketplace.json \
 	gemini-extension.json \
