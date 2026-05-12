@@ -8,6 +8,32 @@ major = breaking config/hook changes, minor = new skills/features, patch = fixes
 
 ## [Unreleased]
 
+## [4.2.0] - 2026-05-12
+
+### Added
+
+- **`notify.ts` Pi extension**: fires `terminal-notifier` on `agent_end` — mirrors
+  `notify.sh` behavior for Claude Code. Displays `[project] Pi` title, activates the
+  Kitty terminal tab via `kitten @ focus-tab`, and focuses the tmux pane. Falls back
+  silently if `terminal-notifier` is not installed (`brew install terminal-notifier`).
+- **`analyzing-usage` expanded to Pi and Codex**: adds `pi/body.md` (ccusage-pi queries
+  with `sessionId`/`projectPath` fields) and `codex/body.md` (ccusage-codex queries with
+  `costUSD` fields), plus matching reference sheets. Claude-specific content moved to
+  `claude/body.md` overlay.
+- **`releasing` project skill** (`docs(releasing)`): critical warning against
+  `gh release create` with recovery steps; CI creates the release from the pushed tag.
+
+### Fixed
+
+- **Codex marketplace authentication**: `ON_FIRST_USE` → `ON_USE` in
+  `.agents/plugins/marketplace.json` — `ON_FIRST_USE` is not a valid Codex value.
+
+### Improved
+
+- **Pi install documentation**: `pi install git:github.com/alexei-led/cc-thingz` is now
+  the primary install path for extensions and skills; agents still require a symlink.
+  README and CONTRIBUTING updated for all four platforms (Claude Code, Codex, Gemini, Pi).
+
 ## [4.1.0] - 2026-05-12
 
 ### Added

@@ -1,5 +1,5 @@
 name: testing-e2e
-version: 4.1.0
+version: 4.2.0
 description: End-to-end testing with Playwright for browser automation and UI testing
 skills:
   - playwright-skill
