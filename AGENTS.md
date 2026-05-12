@@ -27,8 +27,7 @@ Specific rules:
 - `---` before `##` or `**bold` → remove (redundant section break)
 - `---` before ` ```` ` fence → keep (it's template content showing proposal format)
 
-Run format lint: `python3 scripts/validate/lint-instructions.py`
-Rules in: `docs/instruction-lint-rules.md` (F-NO-TABLE, F-NO-DIAGRAM, F-NO-HR, F-NO-ITALIC, F-BOLD-SPARSE)
+Run format lint: `make lint-instructions` or use the `/reviewing-instructions` skill for full scoring.
 
 ## Development Workflow
 

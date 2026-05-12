@@ -415,11 +415,6 @@ BATCH_2[:] = [
         source_plugin_dir=ROOT / "plugins" / "infra-ops",
     ),
     MigrationSpec(
-        name="linting-instructions",
-        source_plugin_dir=ROOT / "plugins" / "dev-tools",
-        targets_restriction=["claude"],
-    ),
-    MigrationSpec(
         name="analyzing-usage",
         source_plugin_dir=ROOT / "plugins" / "dev-tools",
         targets_restriction=["claude"],

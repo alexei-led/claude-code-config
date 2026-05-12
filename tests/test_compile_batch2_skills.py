@@ -47,7 +47,6 @@ BATCH_2_ALL_TARGETS = (
 BATCH_2_CLAUDE_ONLY = (
     "reviewing-cc-config",
     "deploying-infra",
-    "linting-instructions",
     "analyzing-usage",
 )
 

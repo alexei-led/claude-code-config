@@ -108,7 +108,7 @@ validate-genericity: ## Reject Claude-only tokens in vendor-neutral base SKILL.m
 	uv run python scripts/validate/validate_genericity.py
 
 lint-instructions: ## Lint agent/skill instructions (advisory)
-	@uv run python scripts/validate/lint-instructions.py
+	@uv run python src/skills/reviewing-instructions/scripts/lint-instructions.py
 
 validate-executables: ## Check shell + Python entry scripts have executable bit
 	@fail=0; \

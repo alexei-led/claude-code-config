@@ -276,10 +276,10 @@ if echo "$PROMPT_LOWER" | grep -qE '\b(code|file)\s*structure\b|\boutline\b.*\b(
 	skills+="smart-explore "
 fi
 
-# linting-instructions: Lint plugin prompts against Anthropic model cards
-# Triggers: only when working on skills/agents/plugins — lint prompts, audit instructions, model card review
-if echo "$PROMPT_LOWER" | grep -qE '\blint\s*(the|my|all)?\s*(skill|agent|plugin)?\s*instructions?\b|\breview\s*(the|my|all)?\s*(skill|agent|plugin)\s*(prompts?|instructions?)\b|\baudit\s*(the|my)?\s*(skill|agent|plugin)\s*(prompts?|instructions?)\b|\binstruction\s*quality\b|\bprompt\s*quality\b|\bmodel\s*card\s*(lint|review|check|rules?)\b|\bsystem\s*card\s*(lint|review|check|rules?)\b'; then
-	skills+="linting-instructions "
+# reviewing-instructions: Review and score AI agent/skill instructions for quality
+# Triggers: reviewing/linting/scoring skills, agents, SKILL.md, AGENTS.md, CLAUDE.md, instruction files
+if echo "$PROMPT_LOWER" | grep -qE '\b(lint|audit|review|score|check)\s+(the\s+|my\s+|this\s+|all\s+|a\s+)?(skill|agent|plugin|instruction|prompt)s?\b|\b(reviewing|auditing|scoring)[- ]instructions\b|\b(skill|agent|instruction|prompt)\s*(quality|score|audit|review|lint)\b|\breview\s+\S*(skill\.md|agents?\.md|claude\.md)\b|\bsignal\s+density\b|\bfluff\s+(meter|score)\b|\bprompt\s*(quality|lint|audit|review|score)\b|\binstruction\s*(quality|lint|audit|review|score)\b|\bmodel\s*card\s*(lint|review|check|rules?)\b'; then
+	skills+="reviewing-instructions "
 fi
 
 # ccgram-messaging: Inter-agent messaging via ccgram swarm

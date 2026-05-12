@@ -6,9 +6,9 @@
 """Lint agent/skill instructions against system card rules.
 
 Advisory linter — always exits 0. Prints warnings for issues
-that the model-based /linting-instructions skill should verify.
+that the model-based /reviewing-instructions skill should verify.
 
-Rules: docs/instruction-lint-rules.md
+Rules: src/skills/reviewing-instructions/references/scoring-rubric.md
 """
 
 from __future__ import annotations
@@ -21,7 +21,8 @@ from pathlib import Path
 import frontmatter
 
 ROOT = next(
-    p for p in Path(__file__).resolve().parents if (p / "pyproject.toml").is_file()
+    (p for p in [Path.cwd(), *Path.cwd().parents] if (p / "pyproject.toml").is_file()),
+    Path.cwd(),
 )
 
 

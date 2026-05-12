@@ -8,6 +8,56 @@ major = breaking config/hook changes, minor = new skills/features, patch = fixes
 
 ## [Unreleased]
 
+## [4.0.5] - 2026-05-12
+
+### Added
+
+- **`reviewing-instructions` skill** (replaces `linting-instructions`): model-agnostic instruction
+  quality review with 8-dimension scoring (Signal Density, Scope Specificity, Output Structure,
+  Format Efficiency, Failure Handling, Grounding Discipline, Routing Precision, Progressive
+  Disclosure). Supports `--model` override; looks up model-specific guides from bundled
+  `references/models/` (claude, gemini, openai, generic). Bundled linter script
+  (`scripts/lint-instructions.py`) moved into the skill; scoring rubric and model-specific
+  lint rules (O-prefix, S-prefix) consolidated into `references/` sibling files.
+  Multi-target: compiles to all four platforms (claude, codex, gemini, pi).
+- **`releasing` project skill** (`.claude/skills/releasing.md`): guided release workflow —
+  preflight checks, CHANGELOG update, `scripts/release/release-tag`, and push instructions.
+
+### Removed
+
+- **`linting-instructions` skill** — replaced by `reviewing-instructions`.
+  `scripts/validate/lint-instructions.py` moved into the skill bundle.
+  `docs/instruction-lint-rules.md` merged into `references/scoring-rubric.md` and
+  `references/models/claude.md`.
+
+## [4.0.4] - 2026-05-12
+
+### Fixed
+
+- **Pre-push hook**: auto-commits stale `dist/` artifacts instead of failing hard —
+  prevents push blocking when `make build` output wasn't staged before push.
+- **CONTRIBUTING.md**: corrected inaccuracies introduced by recent refactors (build paths,
+  hook names, script locations).
+
+### Changed
+
+- **Tests**: unified design, eliminated duplication, added coverage configuration across
+  all test modules.
+
+## [4.0.3] - 2026-05-12
+
+### Changed
+
+- **`spec` skill** split from monolithic design into 8 hierarchical sub-skills
+  (`spec-core`, `spec-init`, `spec-interview`, `spec-plan`, `spec-work`, `spec-status`,
+  `spec-done`, `spec-help`) using hyphen-based naming. Trigger patterns and
+  skill-enforcer updated accordingly.
+
+### Fixed
+
+- Specctl test path updated after `spec` → `spec-core` rename.
+- Golden test fixtures regenerated for playwright-skill and preamble changes.
+
 ## [4.0.2] - 2026-05-12
 
 ### Changed
