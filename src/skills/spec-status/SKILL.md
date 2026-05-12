@@ -1,6 +1,6 @@
 ---
 name: spec-status
-description: Report spec progress. Use when checking overall project state, viewing a specific task with its linked req/epic, listing tasks by status, or running a quality audit for orphans, cycles, and missing fields.
+description: Report spec progress. Use when checking overall project state, viewing a specific task with its linked req/epic, listing tasks by status, or running a quality audit for orphans, cycles, and missing fields. NOT for mutating state — read-only; use spec-done or spec-work for state changes.
 ---
 
 # `spec status` — report progress
@@ -53,7 +53,9 @@ spec-status check  # quality audit
 
 ## Specific task
 
-User passed a `TASK-id`. Read the task file and any linked epic / requirement.
+User passed a `TASK-id`. If no matching file exists under `.spec/tasks/`, say "Task not found." and stop.
+
+Read the task file and any linked epic / requirement.
 
 Show:
 
