@@ -43,8 +43,8 @@
       "version": "4.0.2"
     },
     {
-      "name": "spec-system",
-      "source": "./dist/claude/plugins/spec-system",
+      "name": "spec",
+      "source": "./dist/claude/plugins/spec",
       "description": "Spec-driven development with structured requirements and planning",
       "version": "4.0.2"
     },

@@ -70,7 +70,7 @@ Ask questions **one at a time** using AskUserQuestion. Adapt based on idea type.
 
 ### 2b. Plan Grill Mode
 
-If the user passed `plan`, `grill`, or asked to stress-test/challenge a plan, interrogate the plan one decision at a time. Keep it focused on design quality and assumptions, not task breakdown; use `/spec:plan` for implementation tasks.
+If the user passed `plan`, `grill`, or asked to stress-test/challenge a plan, interrogate the plan one decision at a time. Keep it focused on design quality and assumptions, not task breakdown; use the `spec-plan` skill for implementation tasks.
 
 For each question:
 

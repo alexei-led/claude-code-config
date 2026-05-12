@@ -12,13 +12,13 @@ First-time installation of Playwright and Chromium for the bundled `scripts/run.
 ### With bun (preferred)
 
 ```bash
-cd $SKILL_DIR/scripts && bun install && bunx playwright install chromium
+cd scripts && bun install && bunx playwright install chromium
 ```
 
 ### With npm (fallback)
 
 ```bash
-cd $SKILL_DIR/scripts && npm install && npx playwright install chromium
+cd scripts && npm install && npx playwright install chromium
 ```
 
 That installs the `playwright` Node package locally and pulls the Chromium browser.
@@ -26,7 +26,7 @@ That installs the `playwright` Node package locally and pulls the Chromium brows
 ## Verify
 
 ```bash
-node $SKILL_DIR/scripts/run.js "console.log(await chromium.launch().then(b => b.version()).then(v => (b => v)(b)))"
+node scripts/run.js "console.log(await chromium.launch().then(b => b.version()).then(v => (b => v)(b)))"
 ```
 
 If it prints a Chromium version, setup is good.
@@ -41,14 +41,14 @@ The default install only fetches Chromium. To use Firefox or WebKit:
 
 ```bash
 # bun
-cd $SKILL_DIR/scripts && bunx playwright install firefox webkit
+cd scripts && bunx playwright install firefox webkit
 
 # npm
-cd $SKILL_DIR/scripts && npx playwright install firefox webkit
+cd scripts && npx playwright install firefox webkit
 ```
 
 Or all three at once via the `install-all-browsers` script:
 
 ```bash
-cd $SKILL_DIR/scripts && bun run install-all-browsers   # or: npm run install-all-browsers
+cd scripts && bun run install-all-browsers   # or: npm run install-all-browsers
 ```

@@ -60,10 +60,10 @@
       }
     },
     {
-      "name": "spec-system",
+      "name": "spec",
       "source": {
         "source": "local",
-        "path": "./dist/codex/plugins/spec-system"
+        "path": "./dist/codex/plugins/spec"
       },
       "policy": {
         "installation": "AVAILABLE",

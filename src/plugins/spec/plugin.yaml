@@ -1,0 +1,15 @@
+name: spec
+version: 4.0.2
+description: Spec-driven development with structured requirements and planning
+skills:
+  - spec-core
+  - spec-init
+  - spec-interview
+  - spec-plan
+  - spec-new
+  - spec-work
+  - spec-done
+  - spec-status
+agents:
+  - spec-planner
+hooks: []

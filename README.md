@@ -231,10 +231,10 @@ All agents and several skills optionally integrate with [claude-mem](https://git
 | [**web-dev**](src/plugins/web-dev/plugin.yaml)               | 1      | 1      | Web frontend with vanilla HTML, CSS, JavaScript, and HTMX                          |
 | [**infra-ops**](src/plugins/infra-ops/plugin.yaml)           | 3      | 1      | Kubernetes, Terraform, Helm, GitHub Actions, AWS, GCP                              |
 | [**dev-tools**](src/plugins/dev-tools/plugin.yaml)           | 17     | 2      | Modern CLI, git worktrees, docs lookup, web research, config review, brainstorming |
-| [**spec-system**](src/plugins/spec-system/plugin.yaml)       | 1      | 1      | Spec-driven development: requirements, tasks, and planning workflows               |
+| [**spec**](src/plugins/spec/plugin.yaml)                     | 8      | 1      | Spec-driven development: requirements, tasks, and planning workflows               |
 | [**testing-e2e**](src/plugins/testing-e2e/plugin.yaml)       | 2      | 1      | E2E testing with Playwright: browser automation and test generation                |
 
-**Totals**: 37 skills, 34 agents (plugin-owned), 9 hooks
+**Totals**: 44 skills, 34 agents (plugin-owned), 9 hooks
 
 ## Skills
 

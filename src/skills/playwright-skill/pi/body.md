@@ -4,8 +4,6 @@ Playwright primitives for browser automation on Pi: dev-server detection, a scri
 
 ## Path resolution
 
-Resolve `$SKILL_DIR` to the directory holding this `SKILL.md`. Common Pi deployment path:
-
 ```text
 ~/.pi/agent/skills/playwright-skill
 ```
@@ -17,7 +15,7 @@ See [`references/setup.md`](references/setup.md). First invocation of `run.js` a
 ## Detect dev servers
 
 ```bash
-node -e "require('$SKILL_DIR/scripts/lib/helpers').detectDevServers().then(s => console.log(JSON.stringify(s)))"
+node -e "require('scripts/lib/helpers').detectDevServers().then(s => console.log(JSON.stringify(s)))"
 ```
 
 If multiple servers are found, ask the user which to test.
@@ -27,7 +25,7 @@ If multiple servers are found, ask the user which to test.
 Write scripts outside the skill directory (typically under `/tmp`), then:
 
 ```bash
-node $SKILL_DIR/scripts/run.js /tmp/playwright-check.js
+node scripts/run.js /tmp/playwright-check.js
 ```
 
 ## Rules

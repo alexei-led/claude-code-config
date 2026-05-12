@@ -19,8 +19,8 @@ context: fork
 description: Brainstorm ideas and stress-test draft plans before coding. Use when
   brainstorming, exploring approaches, designing a feature/API/flow, grilling a plan,
   challenging assumptions, or resolving terminology that blocks the design. NOT for
-  implementation task breakdown; use /spec:plan. NOT for general documentation updates;
-  use documenting-code or learning-patterns.
+  implementation task breakdown; use the spec-plan skill. NOT for general documentation
+  updates; use documenting-code or learning-patterns.
 name: brainstorming-ideas
 user-invocable: true
 ---
@@ -97,7 +97,7 @@ Ask questions **one at a time** using AskUserQuestion. Adapt based on idea type.
 
 ### 2b. Plan Grill Mode
 
-If the user passed `plan`, `grill`, or asked to stress-test/challenge a plan, interrogate the plan one decision at a time. Keep it focused on design quality and assumptions, not task breakdown; use `/spec:plan` for implementation tasks.
+If the user passed `plan`, `grill`, or asked to stress-test/challenge a plan, interrogate the plan one decision at a time. Keep it focused on design quality and assumptions, not task breakdown; use the `spec-plan` skill for implementation tasks.
 
 For each question:
 
