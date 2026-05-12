@@ -6,13 +6,6 @@ description: Extract durable learnings from a session and propose project custom
 name: learning-patterns
 ---
 
-<!-- Platform guidance for non-Claude models (Codex CLI, Gemini CLI) -->
-<!-- Persistence: Keep going until the task is fully resolved. Do not stop at the first obstacle. -->
-<!-- Tool use: Use available tools to verify — do not guess at file contents, paths, or command output. -->
-<!-- Planning: Reflect between steps. Decompose complex problems into logical sub-steps before acting. -->
-<!-- Reliability: Assess risk before irreversible actions. Ask for clarification on ambiguity. -->
-<!-- Completeness: Generate complete responses without truncating. Review your output against the original constraints. -->
-
 # Learn from Session
 
 Extract actionable, durable learnings and propose project-specific customizations. Ground every change in actual conversation or tool evidence. Ask one question at a time when confirmation is needed.
