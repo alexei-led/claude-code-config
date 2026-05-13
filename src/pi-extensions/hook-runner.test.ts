@@ -340,3 +340,29 @@ describe("session_compact → PostCompact", () => {
 		await expect(handler({ fromExtension: false }, makeCtx())).resolves.toBeUndefined();
 	});
 });
+
+// ---------------------------------------------------------------------------
+// agent_end → Stop + Notification
+// ---------------------------------------------------------------------------
+
+describe("agent_end → Stop + Notification", () => {
+	const handler = handlers.get("agent_end") as EventHandler;
+
+	it("dispatches Notification with idle_prompt payload", async () => {
+		// Stop hook (ccgram) + Notification hook (notify.sh) both fire async
+		await handler({}, makeCtx());
+		const notifCommand = capturedCommands.find((c) => c.includes("notify.sh"));
+		expect(notifCommand).toBeDefined();
+	});
+
+	it("sends notification_type=idle_prompt in stdin", async () => {
+		// Capture the last stdin written — notify.sh is last dispatched
+		await handler({}, makeCtx());
+		if (capturedStdin) {
+			const stdin = JSON.parse(capturedStdin);
+			expect(stdin.notification_type).toBe("idle_prompt");
+			expect(stdin.hook_event_name).toBe("Notification");
+			expect(stdin.title).toBe("Pi");
+		}
+	});
+});

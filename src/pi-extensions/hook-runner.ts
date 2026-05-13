@@ -68,6 +68,7 @@ interface HooksConfig {
 	Stop?: HookGroup[];
 	PreCompact?: HookGroup[];
 	PostCompact?: HookGroup[];
+	Notification?: HookGroup[];
 	[key: string]: HookGroup[] | undefined; // extensible for user configs
 }
 
@@ -114,6 +115,7 @@ const BUILTIN_HOOKS: HooksConfig = {
 		},
 	],
 	Stop: [{ hooks: [{ type: "command", command: "ccgram hook", timeout: 5, async: true }] }],
+	Notification: [{ hooks: [{ type: "command", command: hookPath("notify.sh"), timeout: 10, async: true }] }],
 };
 
 // ---------------------------------------------------------------------------
@@ -320,7 +322,7 @@ export default function (pi: ExtensionAPI): void {
 		}
 	});
 
-	// --- agent_end → Stop ---
+	// --- agent_end → Stop + Notification ---
 	pi.on("agent_end", async (_event: AgentEndEvent, ctx: ExtensionContext) => {
 		const stdin = JSON.stringify(baseStdin("Stop", ctx));
 		for (const group of resolvedConfig().Stop ?? []) {
@@ -342,7 +344,18 @@ export default function (pi: ExtensionAPI): void {
 				}
 			}
 		}
-		// Note: notify.ts handles the Notification/terminal-notifier equivalent
+
+		const notifStdin = JSON.stringify({
+			...baseStdin("Notification", ctx),
+			title: "Pi",
+			message: "Ready for input",
+			notification_type: "idle_prompt",
+		});
+		for (const group of resolvedConfig().Notification ?? []) {
+			for (const entry of group.hooks) {
+				runHookAsync(entry, notifStdin, (msg, lvl) => ctx.ui.notify(msg, lvl));
+			}
+		}
 	});
 
 	// --- session_before_compact → PreCompact ---
