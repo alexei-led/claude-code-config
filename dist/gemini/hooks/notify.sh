@@ -1,30 +1,51 @@
 #!/usr/bin/env bash
-# notify.sh - Notification hook for Claude Code with project context
+# notify.sh - Notification hook for AI coding agents (Claude Code, Pi, Codex, Gemini)
 #
-# Input JSON fields: session_id, cwd, message, notification_type,
-#                    transcript_path, permission_mode
+# Input JSON fields (common): title, message, notification_type, session_id, cwd
+# Input JSON fields (CC only): transcript_path, permission_mode
 #
-# Env vars used (inherited from Claude Code process):
+# Env vars used:
+#   CLAUDE_CODE_VERSION                            - Claude Code detection (title fallback)
 #   KITTY_LISTEN_ON, KITTY_PID, KITTY_WINDOW_ID  - kitty detection + navigation
 #   TMUX_PANE                                      - tmux pane navigation
 #   TERM_PROGRAM                                   - fallback terminal detection
-#   CLAUDE_TERMINAL_BUNDLE_ID                      - manual override
+#   CLAUDE_TERMINAL_BUNDLE_ID                      - manual override (all agents)
 
 set -uo pipefail
 
 # --- Parse input ---
 json_input="${1:-$(cat)}"
 
-title=$(echo "$json_input" | jq -r '.title // "Claude Code"')
-message=$(echo "$json_input" | jq -r '.message // "No message"')
+title=$(echo "$json_input" | jq -r '.title // ""')
+message=$(echo "$json_input" | jq -r '.message // "Done"')
 cwd=$(echo "$json_input" | jq -r '.cwd // ""')
 notification_type=$(echo "$json_input" | jq -r '.notification_type // ""')
 session_id=$(echo "$json_input" | jq -r '.session_id // ""')
 permission_mode=$(echo "$json_input" | jq -r '.permission_mode // ""')
 
+# --- Agent name: JSON title → env detection → generic fallback ---
+if [[ -z "$title" ]]; then
+	if [[ -n "${CLAUDE_CODE_VERSION:-}" ]]; then
+		title="Claude Code"
+	else
+		title="Agent"
+	fi
+fi
+
+# Slug for -group: lowercase, spaces → hyphens (e.g. "Claude Code" → "claude-code")
+agent_slug=$(echo "$title" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
+
 # --- Title: prepend project name ---
 if [[ -n "$cwd" ]]; then
 	title="[$(basename "$cwd")] $title"
+fi
+
+# --- Git context: branch for subtitle, last commit for idle message ---
+git_branch=""
+git_last_commit=""
+if [[ -n "$cwd" && -d "$cwd/.git" ]]; then
+	git_branch=$(git -C "$cwd" branch --show-current 2>/dev/null || true)
+	git_last_commit=$(git -C "$cwd" log --oneline -1 2>/dev/null | sed 's/^[a-f0-9]* //' || true)
 fi
 
 # --- Emoji prefix + subtitle by type ---
@@ -41,6 +62,9 @@ permission_prompt)
 idle_prompt)
 	title="💤 $title"
 	subtitle="Waiting for input"
+	[[ -n "$git_branch" ]] && subtitle="$subtitle · $git_branch"
+	# Replace generic agent message with last commit subject (more useful context)
+	[[ -n "$git_last_commit" ]] && message="$git_last_commit"
 	;;
 esac
 
@@ -107,7 +131,7 @@ tn_args=(
 	-activate "$BUNDLE_ID"
 )
 [[ -n "$subtitle" ]] && tn_args+=(-subtitle "$subtitle")
-[[ -n "$session_id" ]] && tn_args+=(-group "claude-${session_id}")
+[[ -n "$session_id" ]] && tn_args+=(-group "${agent_slug}-${session_id}")
 [[ ${#sound_flag[@]} -gt 0 ]] && tn_args+=("${sound_flag[@]}")
 [[ -n "$execute_cmd" ]] && tn_args+=(-execute "$execute_cmd")
 
