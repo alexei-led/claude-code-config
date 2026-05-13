@@ -8,6 +8,38 @@ major = breaking config/hook changes, minor = new skills/features, patch = fixes
 
 ## [Unreleased]
 
+## [4.4.0] - 2026-05-13
+
+### Added
+
+- **`file-protector` Codex support**: hook now handles `apply_patch` multi-file
+  patches, blocking any patch that touches a protected path and warning on lock files.
+  Wired into Codex `PreToolUse` with `^apply_patch$` matcher in
+  `codex.hooks.json`.
+
+### Changed
+
+- **`file-protector` rewritten in Python**: replaces the shell script with a
+  config-driven Python hook supporting both `file_path` (Claude Code / Gemini) and
+  `patch` (Codex) input formats. Config overrides via
+  `~/.claude/hook-config.json` — set `protectedPatterns: []` or
+  `lockFilePatterns: []` to clear defaults.
+- **Hook entry-point naming**: convention changed from `HOOK.*` to `hook.*`;
+  build pipeline glob updated accordingly.
+
+### Fixed
+
+- **`_load_patterns` empty-list override**: `protectedPatterns: []` or
+  `lockFilePatterns: []` in config now correctly clears the default pattern
+  list instead of silently restoring it (was using truthiness instead of
+  `is not None`).
+
+### Tests
+
+- Replaced `test_file_protector.bats` with a pytest suite covering single-file,
+  `apply_patch` multi-file, malformed input, and config-override cases including
+  explicit empty-list clearing.
+
 ## [4.3.0] - 2026-05-12
 
 ### Fixed
@@ -44,7 +76,6 @@ major = breaking config/hook changes, minor = new skills/features, patch = fixes
 - **Pi install documentation**: `pi install git:github.com/alexei-led/cc-thingz` is now
   the primary install path for extensions and skills; agents still require a symlink.
   README and CONTRIBUTING updated for all four platforms (Claude Code, Codex, Gemini, Pi).
-
 
 ## [4.1.0] - 2026-05-12
 
@@ -83,7 +114,6 @@ major = breaking config/hook changes, minor = new skills/features, patch = fixes
 - **Skill instruction quality**: 9 skill files updated with failure-handling sections, NOT
   guards, and structural fixes.
 
-
 ## [4.0.5] - 2026-05-12
 
 ### Added
@@ -106,7 +136,6 @@ major = breaking config/hook changes, minor = new skills/features, patch = fixes
   `docs/instruction-lint-rules.md` merged into `references/scoring-rubric.md` and
   `references/models/claude.md`.
 
-
 ## [4.0.4] - 2026-05-12
 
 ### Fixed
@@ -121,7 +150,6 @@ major = breaking config/hook changes, minor = new skills/features, patch = fixes
 - **Tests**: unified design, eliminated duplication, added coverage configuration across
   all test modules.
 
-
 ## [4.0.3] - 2026-05-12
 
 ### Changed
@@ -135,7 +163,6 @@ major = breaking config/hook changes, minor = new skills/features, patch = fixes
 
 - Specctl test path updated after `spec` → `spec-core` rename.
 - Golden test fixtures regenerated for playwright-skill and preamble changes.
-
 
 ## [4.0.2] - 2026-05-12
 
@@ -163,7 +190,6 @@ major = breaking config/hook changes, minor = new skills/features, patch = fixes
   and the `CONTRIBUTING.md` layout; the separate design doc was stale.
 - Legacy top-level `hooks/`, `agents/`, and `skills/` symlinks removed.
 
-
 ## [4.0.1] - 2026-05-11
 
 ### Fixed
@@ -174,7 +200,6 @@ major = breaking config/hook changes, minor = new skills/features, patch = fixes
 - **Plugin metadata URLs** corrected in all nine plugin manifests — `homepage` and
   `repository` fields now reference the `cc-thingz` repository instead of the old
   `cc-forge` URL.
-
 
 ## [4.0.0] - 2026-05-11
 
@@ -264,7 +289,6 @@ major = breaking config/hook changes, minor = new skills/features, patch = fixes
 - **`performance-monitor.sh`** — never wired into `hooks.source.yaml` and
   the README's "PostCompact" claim did not match any registered event.
 
-
 ## [2.2.0] - 2026-05-09
 
 ### Added
@@ -314,7 +338,6 @@ major = breaking config/hook changes, minor = new skills/features, patch = fixes
   chezmoi-tracked) now runs `bun install --no-save` for any cached version
   whose `node_modules/zod` is missing — durable across machines, idempotent.
 
-
 ## [2.1.0] - 2026-05-09
 
 ### Added
@@ -340,7 +363,6 @@ major = breaking config/hook changes, minor = new skills/features, patch = fixes
   `$PLUGIN_ROOT` is the variable Codex injects for plugin-sourced hooks; the old
   `$CLAUDE_PLUGIN_ROOT` alias still works as a compatibility alias but `$PLUGIN_ROOT`
   is now canonical.
-
 
 ## [2.0.0] - 2026-05-09
 
@@ -411,13 +433,11 @@ and an overhauled skill-enforcer hook.
 - **Pi users (new)**: install `@tintinweb/pi-subagents` then run
   `scripts/install-pi-exports.sh --apply`. See README "Pi" section.
 
-
 ## [1.10.1] - 2026-05-08
 
 ### Fixed
 
 - **CI workflow startup**: moved skill-eval workspace configuration out of the invalid `runner.temp` job-level context so GitHub Actions can start CI jobs.
-
 
 ## [1.10.0] - 2026-05-08
 
@@ -438,7 +458,6 @@ and an overhauled skill-enforcer hook.
 - **Gemini drift**: `GEMINI.md` now includes all 35 flat Codex/Gemini skills and the root Gemini extension version/count is current.
 - **Overlay portability**: stripped Claude-specific MCP/tool names from generated Codex/Gemini skill overlays.
 
-
 ## [1.9.1] - 2026-05-03
 
 ### Added
@@ -452,7 +471,6 @@ and an overhauled skill-enforcer hook.
 
 - `lint_shell()` now skips `.claude-hooks-config.sh` files. They are sourced (not executed) and routinely written without shebangs, so shellcheck's `SC2148` was incorrectly blocking edits when a project added per-project hook config.
 
-
 ## [1.9.0] - 2026-05-03
 
 ### Added
@@ -463,7 +481,6 @@ and an overhauled skill-enforcer hook.
 ### Changed
 
 - **`brainstorming-ideas`** description: routes pure "grill me" requests on a single plan to the new `grill-me` skill; brainstorming-ideas remains the broader brainstorm/design/grill flow.
-
 
 ## [1.8.0] - 2026-04-30
 
@@ -484,9 +501,7 @@ and an overhauled skill-enforcer hook.
 
 - **Spec completion docs**: removed references to unsupported `specctl done --evidence` usage and aligned examples with the actual CLI flags.
 
-
 ## [1.9.1] - 2026-05-03
-
 
 ## [1.7.1] - 2026-04-19
 
@@ -509,9 +524,7 @@ and an overhauled skill-enforcer hook.
 - All 9 plugins bumped to 1.7.1 to align with marketplace tag
 - PR #6 (yogesh-tessl) closed without merge: the "frontmatter validation fix" was based on a third-party Tessl validator, not the Claude Code spec — which explicitly accepts both YAML lists and space-separated strings for `allowed-tools`. Useful prose changes (verify loops) cherry-picked manually
 
-
 ## [1.9.1] - 2026-05-03
-
 
 ## [1.7.0] - 2026-04-17
 
@@ -525,9 +538,7 @@ and an overhauled skill-enforcer hook.
 - **Plugin manifests**: All `plugin.json` and `marketplace.json` files enriched with full metadata — `author.email`, `author.url`, `homepage` URLs, expanded `keywords` arrays across all 9 plugins
 - **`make push`**: Simplified to plain dual-push (`origin` + mirror remotes); CI on mirror repos handles manifest rewrites automatically
 
-
 ## [1.9.1] - 2026-05-03
-
 
 ## [1.6.3] - 2026-04-16
 
@@ -536,9 +547,7 @@ and an overhauled skill-enforcer hook.
 - **`coding` skill**: Language-agnostic process discipline for all implementation tasks — surfaces assumptions before coding, defines verifiable success criteria first. Complements writing-go/python/typescript/web with process guardrails. Auto-activates on implement/write/create/build/add/develop intent; wired into go-engineer, python-engineer, typescript-engineer, web-engineer agents.
 - **`smart-lint.sh` skip gate**: Skip auto-linting via `SKIP_LINT=1 <command>` (transient) or `.nolint` file in project root (persistent, add to `.gitignore`). Useful when editing repos you don't own and want to avoid auto-formatting side-effects.
 
-
 ## [1.9.1] - 2026-05-03
-
 
 ## [1.6.2] - 2026-04-12
 
@@ -556,9 +565,7 @@ and an overhauled skill-enforcer hook.
 - **Skill descriptions**: Added trigger phrases and NOT-for exclusions to `looking-up-docs`, `researching-web`, `writing-web`, `reviewing-code` for cleaner routing
 - **skill-enforcer.sh**: Added negative patterns for 3 overlapping pairs (code/config review, docs/research, web/typescript) — all disambiguation tests pass
 
-
 ## [1.9.1] - 2026-05-03
-
 
 ## [1.6.0] - 2026-04-07
 
@@ -570,9 +577,7 @@ and an overhauled skill-enforcer hook.
 - Skill-enforcer trigger patterns for "review config", "config review", "context review", "review skills/agents/hooks"
 - Skill count: 31 → 32 (dev-tools: 14 → 15)
 
-
 ## [1.9.1] - 2026-05-03
-
 
 ## [1.5.0] - 2026-04-03
 
@@ -587,9 +592,7 @@ New skill: explore public GitHub repositories via DeepWiki AI-generated document
 - Clear DeepWiki vs Context7 decision table (architecture understanding vs API references)
 - Skill-enforcer trigger patterns for "explore repo", "deepwiki", "repo architecture", "how does owner/repo work"
 
-
 ## [1.9.1] - 2026-05-03
-
 
 ## [1.4.0] - 2026-04-02
 
@@ -616,9 +619,7 @@ AGENTS.md adoption and CC-first rebrand.
 
 - GEMINI.md skill drift: added 6 missing skills (`evolving-config`, `learning-patterns`, `linting-instructions`, `mem-history`, `smart-explore`, `using-gemini`) — now lists all 29 skills
 
-
 ## [1.9.1] - 2026-05-03
-
 
 ## [1.3.0] - 2026-04-02
 
@@ -654,9 +655,7 @@ Cross-platform plugin support for OpenAI Codex CLI and Google Gemini CLI.
 - README structure diagram expanded to show dual-manifest layout
 - CONTRIBUTING directory structure shows all 3 platform manifests
 
-
 ## [1.9.1] - 2026-05-03
-
 
 ## [1.2.2] - 2026-04-01
 
@@ -672,9 +671,7 @@ Documentation accuracy fixes for README.
 - Narrow linting-instructions enforcer triggers to skill/agent authoring context
 - Clarify linting-instructions description: references Anthropic model cards
 
-
 ## [1.9.1] - 2026-05-03
-
 
 ## [1.2.1] - 2026-04-01
 
@@ -707,9 +704,7 @@ System card-derived instruction hardening for all agents and skills.
 - Skill count: 29 → 30 (new linting-instructions in dev-tools)
 - All instruction fixes derived from Claude Opus 4.6 and Sonnet 4.6 system cards
 
-
 ## [1.9.1] - 2026-05-03
-
 
 ## [1.2.0] - 2026-03-31
 
@@ -732,9 +727,7 @@ Optional claude-mem integration for AST-based code navigation and cross-session 
 - All review agent frontmatter converted to multi-line tools format
 - Engineer agents gain `### Memory (claude-mem)` body section
 
-
 ## [1.9.1] - 2026-05-03
-
 
 ## [1.1.1] - 2026-03-31
 
@@ -774,9 +767,7 @@ Full repository review and cleanup.
 - Orphaned root files: claude-powerline.json, MCP_Sequential.md, .claude-hooks-config.sh, .claude-hooks-ignore
 - install-tools.sh (user-specific, not marketplace-related)
 
-
 ## [1.9.1] - 2026-05-03
-
 
 ## [1.1.0] - 2026-03-30
 
@@ -795,9 +786,7 @@ Restructured as a 9-plugin marketplace for community sharing.
 - Updated README with correct installation syntax per official plugin docs
 - Updated GUIDE with plugin-relative paths and companion tool notes
 
-
 ## [1.9.1] - 2026-05-03
-
 
 ## [1.0.0] - 2026-02-28
 
