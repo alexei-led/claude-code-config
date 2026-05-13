@@ -67,8 +67,8 @@ def test_repo_has_all_expected_hook_dirs():
 def test_every_hook_has_script_and_meta():
     for hook_dir in hook_dirs(REPO):
         assert (hook_dir / "meta.yaml").is_file(), hook_dir
-        scripts = list(hook_dir.glob("HOOK.*"))
-        assert len(scripts) == 1, f"{hook_dir} should have exactly one HOOK.*"
+        scripts = list(hook_dir.glob("hook.*"))
+        assert len(scripts) == 1, f"{hook_dir} should have exactly one hook.*"
         assert scripts[0].suffix in {".sh", ".py"}
 
 
@@ -84,7 +84,7 @@ def test_meta_required_fields(hook_dir: Path):
 
 def test_hook_scripts_are_executable():
     for hook_dir in hook_dirs(REPO):
-        script = next(hook_dir.glob("HOOK.*"))
+        script = next(hook_dir.glob("hook.*"))
         mode = script.stat().st_mode
         assert mode & stat.S_IXUSR, f"{script} should have user-exec bit"
 
@@ -107,8 +107,8 @@ def test_smart_lint_support_dir_mirrored():
 
 def test_session_start_is_python_hook():
     hook_dir = REPO / "src" / "hooks" / "session-start"
-    assert (hook_dir / "HOOK.py").is_file()
-    assert not (hook_dir / "HOOK.sh").exists()
+    assert (hook_dir / "hook.py").is_file()
+    assert not (hook_dir / "hook.sh").exists()
 
 
 def test_known_event_assignments():
@@ -195,9 +195,9 @@ def test_status_message_present_when_expected():
 
 @pytest.mark.parametrize("hook_dir", hook_dirs(REPO), ids=lambda p: p.name)
 def test_hook_dir_has_no_unexpected_files(hook_dir: Path):
-    """Source layout: only HOOK.*, meta.yaml, and known support dirs allowed."""
+    """Source layout: only hook.*, meta.yaml, and known support dirs allowed."""
     allowed_files = {"meta.yaml"}
-    allowed_files.update({f"HOOK{ext}" for ext in (".sh", ".py")})
+    allowed_files.update({f"hook{ext}" for ext in (".sh", ".py")})
     for entry in hook_dir.iterdir():
         if entry.is_dir():
             continue

@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-HOOK="$BATS_TEST_DIRNAME/../../src/hooks/git-guardrails/HOOK.sh"
+HOOK="$BATS_TEST_DIRNAME/../../src/hooks/git-guardrails/hook.sh"
 FIXTURES="$BATS_TEST_DIRNAME/fixtures"
 
 @test "git-guardrails: safe git command is allowed (exits 0)" {

@@ -21,7 +21,7 @@ HOOK = (
     / "src"
     / "hooks"
     / "session-start"
-    / "HOOK.py"
+    / "hook.py"
 )
 
 ANSI = re.compile(r"\x1b\[[0-9;]*m")

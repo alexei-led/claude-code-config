@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-HOOK="$BATS_TEST_DIRNAME/../../src/hooks/skill-enforcer/HOOK.sh"
+HOOK="$BATS_TEST_DIRNAME/../../src/hooks/skill-enforcer/hook.sh"
 FIXTURES="$BATS_TEST_DIRNAME/fixtures"
 
 @test "skill-enforcer: unrelated prompt is silent and exits 0" {

@@ -2,7 +2,7 @@
 
 Covers:
 
-- HookSpec loading from `meta.yaml` + lone `HOOK.*` resolution and validation
+- HookSpec loading from `meta.yaml` + lone `hook.*` resolution and validation
 - Script placement per target (flat vs plugin-grouped) with mode preservation
 - Support-dir mirroring alongside the script
 - Gemini aggregated `hooks.json` shape (BeforeTool/AfterTool/SessionStart,
@@ -52,7 +52,7 @@ def _write_hook(
     if status_message is not None:
         meta_lines.append(f"status_message: {status_message}")
     (hook_dir / "meta.yaml").write_text("\n".join(meta_lines) + "\n")
-    script = hook_dir / f"HOOK{ext}"
+    script = hook_dir / f"hook{ext}"
     script.write_text(body)
     if executable:
         script.chmod(script.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP)
@@ -95,7 +95,7 @@ def test_load_hook_with_status_message(ch, tmp_path):
 def test_load_hook_missing_meta(ch, tmp_path):
     hook_dir = tmp_path / "src" / "hooks" / "broken"
     hook_dir.mkdir(parents=True)
-    (hook_dir / "HOOK.sh").write_text("#!/bin/sh\n")
+    (hook_dir / "hook.sh").write_text("#!/bin/sh\n")
     with pytest.raises(FileNotFoundError, match="meta.yaml"):
         ch.load_hook(hook_dir)
 
@@ -104,7 +104,7 @@ def test_load_hook_missing_script(ch, tmp_path):
     hook_dir = tmp_path / "src" / "hooks" / "no-script"
     hook_dir.mkdir(parents=True)
     (hook_dir / "meta.yaml").write_text("name: x\nevent: postedit\ntimeout: 1\n")
-    with pytest.raises(FileNotFoundError, match="HOOK"):
+    with pytest.raises(FileNotFoundError, match="hook"):
         ch.load_hook(hook_dir)
 
 
@@ -112,8 +112,8 @@ def test_load_hook_multiple_scripts(ch, tmp_path):
     hook_dir = tmp_path / "src" / "hooks" / "dup"
     hook_dir.mkdir(parents=True)
     (hook_dir / "meta.yaml").write_text("name: dup\nevent: postedit\ntimeout: 1\n")
-    (hook_dir / "HOOK.sh").write_text("#!/bin/sh\n")
-    (hook_dir / "HOOK.py").write_text("#!/usr/bin/env python3\n")
+    (hook_dir / "hook.sh").write_text("#!/bin/sh\n")
+    (hook_dir / "hook.py").write_text("#!/usr/bin/env python3\n")
     with pytest.raises(ValueError, match="multiple"):
         ch.load_hook(hook_dir)
 
@@ -122,7 +122,7 @@ def test_load_hook_unknown_event(ch, tmp_path):
     hook_dir = tmp_path / "src" / "hooks" / "weird"
     hook_dir.mkdir(parents=True)
     (hook_dir / "meta.yaml").write_text("name: weird\nevent: madeup\ntimeout: 1\n")
-    (hook_dir / "HOOK.sh").write_text("#!/bin/sh\n")
+    (hook_dir / "hook.sh").write_text("#!/bin/sh\n")
     with pytest.raises(ValueError, match="unknown event"):
         ch.load_hook(hook_dir)
 
@@ -131,7 +131,7 @@ def test_load_hook_missing_required_field(ch, tmp_path):
     hook_dir = tmp_path / "src" / "hooks" / "partial"
     hook_dir.mkdir(parents=True)
     (hook_dir / "meta.yaml").write_text("name: partial\nevent: postedit\n")
-    (hook_dir / "HOOK.sh").write_text("#!/bin/sh\n")
+    (hook_dir / "hook.sh").write_text("#!/bin/sh\n")
     with pytest.raises(ValueError, match="timeout"):
         ch.load_hook(hook_dir)
 
@@ -146,7 +146,7 @@ def test_load_hook_rejects_unsafe_names(ch, tmp_path, bad_name):
     (hook_dir / "meta.yaml").write_text(
         f"name: {bad_name!r}\nevent: postedit\ntimeout: 10\n"
     )
-    (hook_dir / "HOOK.sh").write_text("#!/bin/sh\n")
+    (hook_dir / "hook.sh").write_text("#!/bin/sh\n")
     with pytest.raises(ValueError, match="name"):
         ch.load_hook(hook_dir)
 
@@ -348,16 +348,22 @@ def test_codex_manifest_skips_when_no_plugin(ch, tmp_path):
 
 def test_codex_manifest_drops_cc_only_events(ch, tmp_path):
     src = tmp_path / "src"
+    # preedit → PreToolUse/apply_patch (codex); userpromptsubmit/notification → None.
     h_pre = _write_hook(src, "file-protector", "preedit")
     h_ups = _write_hook(src, "skill-enforcer", "userpromptsubmit")
+    h_notif = _write_hook(src, "notify", "notification")
     plugin_index = {
         "file-protector": ["dev-workflow"],
         "skill-enforcer": ["dev-workflow"],
+        "notify": ["dev-workflow"],
     }
-    results = _compile_all(ch, [h_pre, h_ups], "codex", plugin_index, tmp_path)
+    results = _compile_all(ch, [h_pre, h_ups, h_notif], "codex", plugin_index, tmp_path)
     written = ch.write_hook_manifests(results, "codex", tmp_path)
-    # Both events have None for codex → no manifest written.
-    assert written == []
+    # userpromptsubmit and notification are None for codex; preedit emits a manifest.
+    assert len(written) == 1
+    manifest = json.loads(written[0].read_text())
+    assert "PreToolUse" in manifest["hooks"]
+    assert manifest["hooks"]["PreToolUse"][0]["matcher"] == "^apply_patch$"
 
 
 def test_codex_manifest_multi_plugin(ch, tmp_path):

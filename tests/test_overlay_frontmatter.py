@@ -41,7 +41,7 @@ def test_load_base_markdown_returns_metadata_and_body(ov, tmp_path: Path) -> Non
 
 def test_load_base_shell_with_comment_frontmatter(ov, tmp_path: Path) -> None:
     src = _write(
-        tmp_path / "HOOK.sh",
+        tmp_path / "hook.sh",
         """
         #!/usr/bin/env bash
         # ---
@@ -58,7 +58,7 @@ def test_load_base_shell_with_comment_frontmatter(ov, tmp_path: Path) -> None:
 
 
 def test_load_base_shell_without_frontmatter(ov, tmp_path: Path) -> None:
-    src = _write(tmp_path / "HOOK.sh", "#!/usr/bin/env bash\necho hi\n")
+    src = _write(tmp_path / "hook.sh", "#!/usr/bin/env bash\necho hi\n")
     meta, body = ov.load_base(src)
     assert meta == {}
     assert "echo hi" in body
