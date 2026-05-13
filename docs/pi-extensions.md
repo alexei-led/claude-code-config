@@ -23,6 +23,7 @@ Pi and the rest of cc-thingz.
 | `tool_result` (Write/Edit) | `smart-lint.sh`     | Injects lint errors into tool result (LLM feedback loop) |
 | `tool_result` (Write/Edit) | `test-runner.sh`    | Runs tests after edits (async, notifies on failure)      |
 | `agent_end`                | `ccgram hook`       | Tracks session end in ccgram (async)                     |
+| `agent_end`                | `notify.sh`         | Fires a macOS notification banner when the agent is idle |
 
 **User hooks:** Merge additional hooks on top of built-ins by adding a `hooks`
 key to `~/.pi/agent/settings.json` or `.pi/settings.json`:
@@ -56,17 +57,6 @@ case-insensitive regex matched against the CC tool name (e.g. `Write`, `Bash`,
 - `0` — allow; stdout shown to user (SessionStart) or injected as LLM context (UserPromptSubmit)
 - `1` — non-blocking error; logged and shown to user, execution continues
 - `2` — significant: blocks the tool call (PreToolUse), injects stderr into tool result so the LLM self-corrects (PostToolUse), or injects context before the prompt (UserPromptSubmit)
-
-### notify
-
-Fires a macOS `terminal-notifier` banner when Pi finishes an agent turn.
-Requires `terminal-notifier`:
-
-```bash
-brew install terminal-notifier
-```
-
-No configuration needed — it activates automatically on session end.
 
 ### ask-user-question
 
