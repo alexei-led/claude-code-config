@@ -8,7 +8,7 @@
           {
             "type": "command",
             "name": "file-protector",
-            "command": "${extensionPath}/hooks/file-protector.sh",
+            "command": "${extensionPath}/hooks/file-protector.py",
             "timeout": 10000
           }
         ]

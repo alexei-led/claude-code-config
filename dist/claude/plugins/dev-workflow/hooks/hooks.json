@@ -28,7 +28,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/file-protector.sh",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/file-protector.py",
             "timeout": 10
           }
         ]
