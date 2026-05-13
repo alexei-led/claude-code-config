@@ -8,6 +8,15 @@ major = breaking config/hook changes, minor = new skills/features, patch = fixes
 
 ## [Unreleased]
 
+## [4.5.1] - 2026-05-13
+
+### Fixed
+
+- **Hook script casing**: `HOOK.*` → `hook.*` rename now committed to git index;
+  macOS case-insensitive filesystem hid the mismatch from CI (Linux is case-sensitive).
+- **`rewrite-mirror` workflow**: install `pyyaml` and `uv` before running the script,
+  fixing CI failures on cc-forge mirror on every push.
+
 ## [4.5.0] - 2026-05-13
 
 ### Changed
