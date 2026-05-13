@@ -10,5 +10,5 @@
   "repository": "https://github.com/alexei-led/cc-thingz",
   "license": "MIT",
   "skills": "./skills",
-  "hooks": "./hooks/codex.hooks.json"
+  "hooks": "./hooks/hooks.json"
 }

@@ -7,7 +7,7 @@ Covers:
 - Support-dir mirroring alongside the script
 - Gemini aggregated `hooks.json` shape (BeforeTool/AfterTool/SessionStart,
   sequential markers, `${extensionPath}/hooks/<script>` substitution)
-- Codex per-plugin `codex.hooks.json` shape (PreToolUse/PostToolUse/
+- Codex per-plugin `hooks.json` shape (PreToolUse/PostToolUse/
   SessionStart, `$PLUGIN_ROOT/hooks/<script>` substitution, statusMessage)
 - Claude per-plugin `hooks.json` shape (PreToolUse/PostToolUse/SessionStart,
   `${CLAUDE_PLUGIN_ROOT}/hooks/<script>` substitution)
@@ -321,7 +321,7 @@ def test_codex_manifest_per_plugin(ch, tmp_path):
         / "plugins"
         / "dev-workflow"
         / "hooks"
-        / "codex.hooks.json"
+        / "hooks.json"
     )
     manifest = json.loads(written[0].read_text())
     assert set(manifest["hooks"]) == {"PreToolUse", "PostToolUse"}

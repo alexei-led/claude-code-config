@@ -409,10 +409,9 @@ def write_hook_manifests(
         for plugin, specs in by_plugin.items():
             if target == "claude":
                 manifest = _build_claude(specs)
-                manifest_name = "hooks.json"
             else:
                 manifest = _build_codex(specs)
-                manifest_name = "codex.hooks.json"
+            manifest_name = "hooks.json"
             if not manifest["hooks"]:
                 continue
             path = dist / "plugins" / plugin / "hooks" / manifest_name

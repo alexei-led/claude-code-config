@@ -246,8 +246,8 @@ def write_codex_plugin_manifests(
     """Write `.codex-plugin/plugin.json` under each compiled Codex plugin dir.
 
     Mirrors `write_claude_plugin_manifests` for Codex. When a plugin emits
-    a hooks manifest (`hooks/codex.hooks.json`), the relative path is
-    referenced so Codex resolves it without scanning.
+    a hooks manifest (`hooks/hooks.json`), the relative path is referenced
+    so Codex resolves it without scanning.
     """
     global_meta = load_global_meta(root)
     version = _resolve_version(global_meta, plugins)
@@ -266,9 +266,9 @@ def write_codex_plugin_manifests(
                 payload[key] = pub
         if (plugin_root / "skills").is_dir():
             payload["skills"] = "./skills"
-        hooks_manifest = plugin_root / "hooks" / "codex.hooks.json"
+        hooks_manifest = plugin_root / "hooks" / "hooks.json"
         if hooks_manifest.is_file():
-            payload["hooks"] = "./hooks/codex.hooks.json"
+            payload["hooks"] = "./hooks/hooks.json"
         out = plugin_root / ".codex-plugin" / "plugin.json"
         _write_json(out, payload)
         written.append(out)

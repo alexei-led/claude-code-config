@@ -305,7 +305,7 @@ def test_write_codex_plugin_manifests_basic_and_hooks(manifests, fake_root):
     # Add a codex hooks manifest for alpha so we get the hooks pointer.
     hooks_dir = fake_root / "dist" / "codex" / "plugins" / "alpha" / "hooks"
     hooks_dir.mkdir(parents=True, exist_ok=True)
-    (hooks_dir / "codex.hooks.json").write_text("{}\n")
+    (hooks_dir / "hooks.json").write_text("{}\n")
 
     plugins = manifests.load_plugins(fake_root)
     written = manifests.write_codex_plugin_manifests(plugins, fake_root)
@@ -323,7 +323,7 @@ def test_write_codex_plugin_manifests_basic_and_hooks(manifests, fake_root):
     )
     assert alpha["name"] == "alpha"
     assert alpha["skills"] == "./skills"
-    assert alpha["hooks"] == "./hooks/codex.hooks.json"
+    assert alpha["hooks"] == "./hooks/hooks.json"
     beta = json.loads(
         (
             fake_root
