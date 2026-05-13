@@ -79,12 +79,12 @@ EVENT_MAP: dict[str, dict[str, tuple[str, str | None] | None]] = {
     },
     "userpromptsubmit": {
         "claude": ("UserPromptSubmit", None),
-        "gemini": ("UserPromptSubmit", None),
+        "gemini": ("BeforeAgent", None),
         "codex": None,
     },
     "notification": {
         "claude": ("Notification", None),
-        "gemini": None,
+        "gemini": ("Notification", None),
         "codex": None,
     },
     "worktreecreate": {
@@ -104,7 +104,8 @@ GEMINI_EVENT_ORDER: tuple[str, ...] = (
     "BeforeTool",
     "AfterTool",
     "SessionStart",
-    "UserPromptSubmit",
+    "BeforeAgent",
+    "Notification",
 )
 CODEX_EVENT_ORDER: tuple[str, ...] = ("PreToolUse", "PostToolUse", "SessionStart")
 CLAUDE_EVENT_ORDER: tuple[str, ...] = (

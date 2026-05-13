@@ -58,7 +58,7 @@
         ]
       }
     ],
-    "UserPromptSubmit": [
+    "BeforeAgent": [
       {
         "hooks": [
           {
@@ -66,6 +66,18 @@
             "name": "skill-enforcer",
             "command": "${extensionPath}/hooks/skill-enforcer.sh",
             "timeout": 15000
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "name": "notify",
+            "command": "${extensionPath}/hooks/notify.sh",
+            "timeout": 10000
           }
         ]
       }

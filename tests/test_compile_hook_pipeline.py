@@ -275,13 +275,23 @@ def test_gemini_manifest_aggregates_events(ch, tmp_path):
 
 def test_gemini_manifest_drops_cc_only_events(ch, tmp_path):
     src = tmp_path / "src"
-    h_notify = _write_hook(src, "notify", "notification")
     h_wt = _write_hook(src, "worktree-create", "worktreecreate")
-    results = _compile_all(ch, [h_notify, h_wt], "gemini", {}, tmp_path)
+    results = _compile_all(ch, [h_wt], "gemini", {}, tmp_path)
     written = ch.write_hook_manifests(results, "gemini", tmp_path)
-    # Both events have no Gemini mapping → no manifest emitted.
     assert written == []
     assert not (tmp_path / "dist" / "gemini" / "hooks" / "hooks.json").exists()
+
+
+def test_gemini_manifest_notification_event(ch, tmp_path):
+    src = tmp_path / "src"
+    hook = _write_hook(src, "notify", "notification")
+    results = _compile_all(ch, [hook], "gemini", {}, tmp_path)
+    written = ch.write_hook_manifests(results, "gemini", tmp_path)
+    assert len(written) == 1
+    manifest = json.loads(written[0].read_text())
+    assert "Notification" in manifest["hooks"]
+    notif = manifest["hooks"]["Notification"][0]
+    assert notif["hooks"][0]["name"] == "notify"
 
 
 def test_gemini_manifest_prebash_routes_to_run_shell_command(ch, tmp_path):
