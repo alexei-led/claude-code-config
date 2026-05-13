@@ -8,6 +8,21 @@ major = breaking config/hook changes, minor = new skills/features, patch = fixes
 
 ## [Unreleased]
 
+## [4.5.2] - 2026-05-13
+
+### Fixed
+
+- **Codex hook manifest filename**: renamed `codex.hooks.json` → `hooks.json`;
+  Codex discovers plugin hooks via `hooks/hooks.json` by default and ignores
+  the `hooks` field in `plugin.json`, so hooks were silently not installed.
+  Added `codex_hooks = true` feature flag to `~/.codex/config.toml` (required
+  for hooks to fire at runtime).
+- **Gemini hook event mappings**: `userpromptsubmit` was mapped to the
+  non-existent `UserPromptSubmit` Gemini event; corrected to `BeforeAgent`
+  (fires after prompt submission, before planning). `notification` was mapped
+  to `None` for Gemini despite Gemini supporting the `Notification` event;
+  the `notify` hook is now wired in.
+
 ## [4.5.1] - 2026-05-13
 
 ### Fixed
