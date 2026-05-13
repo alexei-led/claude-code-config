@@ -304,7 +304,7 @@ Extensions are required, not optional. Several hooks depend on bundled
 extensions:
 
 - `smart-lint.sh` calls the `ask_user_question` tool (from `ask-user-question.ts`)
-- `file-protector.sh` enforces path rules backed by `protected-paths.ts`
+- `file-protector.py` enforces path rules backed by `protected-paths.ts`
 - `notify.ts` fires `terminal-notifier` on agent completion (requires `terminal-notifier` — `brew install terminal-notifier`)
 
 Override the target with `PI_CODING_AGENT_DIR=<dir>` instead of

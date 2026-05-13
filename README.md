@@ -50,13 +50,13 @@ Use `--scope project` to install into `.claude/settings.json` for team sharing.
 
 `dev-workflow` wires five hooks automatically on install:
 
-| Event          | Matcher             | Hook                 | Effect                                   |
-| -------------- | ------------------- | -------------------- | ---------------------------------------- |
-| `SessionStart` | —                   | `session-start.py`   | Prints branch, last commit, project type |
-| `UserPromptSubmit` | —               | `skill-enforcer.sh`  | Suggests relevant skills from prompt     |
-| `PreToolUse`   | `Write\|Edit`       | `file-protector.sh`  | Blocks writes to `.env`, keys, secrets   |
-| `PostToolUse`  | `Write\|Edit`       | `smart-lint.sh`      | Runs formatter/linter on changed files   |
-| `Notification` | —                   | `notify.sh`          | macOS notification (Kitty + tmux focus)  |
+| Event              | Matcher       | Hook                | Effect                                   |
+| ------------------ | ------------- | ------------------- | ---------------------------------------- |
+| `SessionStart`     | —             | `session-start.py`  | Prints branch, last commit, project type |
+| `UserPromptSubmit` | —             | `skill-enforcer.sh` | Suggests relevant skills from prompt     |
+| `PreToolUse`       | `Write\|Edit` | `file-protector.py` | Blocks writes to `.env`, keys, secrets   |
+| `PostToolUse`      | `Write\|Edit` | `smart-lint.sh`     | Runs formatter/linter on changed files   |
+| `Notification`     | —             | `notify.sh`         | macOS notification (Kitty + tmux focus)  |
 
 ### OpenAI Codex CLI
 
@@ -76,18 +76,18 @@ per-plugin skill directory directly:
 ```jsonc
 // ~/.codex/config.json (excerpt)
 {
-  "skills": ["~/src/cc-thingz/dist/codex/plugins/dev-workflow/skills"]
+  "skills": ["~/src/cc-thingz/dist/codex/plugins/dev-workflow/skills"],
 }
 ```
 
 `dev-workflow` wires three hooks via `dist/codex/plugins/dev-workflow/hooks/codex.hooks.json`:
 
-| Event         | Matcher        | Hook                | Effect                               |
-| ------------- | -------------- | ------------------- | ------------------------------------ |
-| `SessionStart`| —              | `session-start.py`  | Prints branch and last commit        |
-| `PreToolUse`  | `^Bash$`       | `git-guardrails.sh` | Blocks destructive git commands      |
-| `PostToolUse` | `^apply_patch$`| `smart-lint.sh`     | Auto-format and lint changed files   |
-| `PostToolUse` | `^apply_patch$`| `test-runner.sh`    | Runs tests for changed files         |
+| Event          | Matcher         | Hook                | Effect                             |
+| -------------- | --------------- | ------------------- | ---------------------------------- |
+| `SessionStart` | —               | `session-start.py`  | Prints branch and last commit      |
+| `PreToolUse`   | `^Bash$`        | `git-guardrails.sh` | Blocks destructive git commands    |
+| `PostToolUse`  | `^apply_patch$` | `smart-lint.sh`     | Auto-format and lint changed files |
+| `PostToolUse`  | `^apply_patch$` | `test-runner.sh`    | Runs tests for changed files       |
 
 All paths resolve via `$PLUGIN_ROOT`, the env var Codex injects for
 plugin-sourced hooks.
@@ -113,14 +113,14 @@ compiler regenerates these symlinks on every `make build`.
 
 `dist/gemini/hooks/hooks.json` registers:
 
-| Event              | Matcher              | Hook                | Effect                                   |
-| ------------------ | -------------------- | ------------------- | ---------------------------------------- |
-| `SessionStart`     | —                    | `session-start.py`  | Prints branch, last commit, project type |
-| `UserPromptSubmit` | —                    | `skill-enforcer.sh` | Suggests relevant skills from prompt     |
-| `BeforeTool`       | `write_file\|replace`| `file-protector.sh` | Blocks writes to `.env`, keys, secrets   |
-| `BeforeTool`       | `run_shell_command`  | `git-guardrails.sh` | Blocks destructive git commands          |
-| `AfterTool`        | `write_file\|replace`| `smart-lint.sh`     | Auto-format and lint changed files       |
-| `AfterTool`        | `write_file\|replace`| `test-runner.sh`    | Runs tests for changed files             |
+| Event              | Matcher               | Hook                | Effect                                   |
+| ------------------ | --------------------- | ------------------- | ---------------------------------------- |
+| `SessionStart`     | —                     | `session-start.py`  | Prints branch, last commit, project type |
+| `UserPromptSubmit` | —                     | `skill-enforcer.sh` | Suggests relevant skills from prompt     |
+| `BeforeTool`       | `write_file\|replace` | `file-protector.py` | Blocks writes to `.env`, keys, secrets   |
+| `BeforeTool`       | `run_shell_command`   | `git-guardrails.sh` | Blocks destructive git commands          |
+| `AfterTool`        | `write_file\|replace` | `smart-lint.sh`     | Auto-format and lint changed files       |
+| `AfterTool`        | `write_file\|replace` | `test-runner.sh`    | Runs tests for changed files             |
 
 All paths resolve via `${extensionPath}`, Gemini's substitution variable for
 the extension root.
@@ -170,15 +170,15 @@ non-default location. Restart Pi or run `/reload` after installing.
 
 **Bundled Pi extensions** (`dist/pi/extensions/`):
 
-| Extension              | Role                                                                               |
-| ---------------------- | ---------------------------------------------------------------------------------- |
-| `ask-user-question.ts` | `ask_user_question` tool with structured options UI                                |
-| `permission-gate.ts`   | Confirms dangerous bash commands (rm -rf, sudo, chmod 777)                         |
-| `protected-paths.ts`   | Blocks writes to `.env`, `.git/`, `node_modules/`                                  |
-| `plan-mode/`           | `/plan` toggle for read-only exploration and step tracking                         |
-| `todo.ts`              | `todo` tool + `/todos` command, branch-aware state                                 |
-| `subagent/`            | Spawns isolated `pi` processes (single, parallel, chain)                           |
-| `structured-output.ts` | `structured_output` tool that terminates the agent loop                            |
+| Extension              | Role                                                                                             |
+| ---------------------- | ------------------------------------------------------------------------------------------------ |
+| `ask-user-question.ts` | `ask_user_question` tool with structured options UI                                              |
+| `permission-gate.ts`   | Confirms dangerous bash commands (rm -rf, sudo, chmod 777)                                       |
+| `protected-paths.ts`   | Blocks writes to `.env`, `.git/`, `node_modules/`                                                |
+| `plan-mode/`           | `/plan` toggle for read-only exploration and step tracking                                       |
+| `todo.ts`              | `todo` tool + `/todos` command, branch-aware state                                               |
+| `subagent/`            | Spawns isolated `pi` processes (single, parallel, chain)                                         |
+| `structured-output.ts` | `structured_output` tool that terminates the agent loop                                          |
 | `notify.ts`            | macOS notification via `terminal-notifier` on completion (requires Homebrew `terminal-notifier`) |
 
 **Pi gets**: all 38 agents (requires `@tintinweb/pi-subagents`), all 44 skills,
@@ -342,7 +342,7 @@ Pi model names use the `openai-codex/` provider prefix (e.g. `openai-codex/gpt-5
 | -------------------- | ---------------- | -------------------------------------------- |
 | `session-start.sh`   | SessionStart     | Shows git branch, last commit, file context  |
 | `skill-enforcer.sh`  | UserPromptSubmit | Pattern-matches prompt and suggests skills   |
-| `file-protector.sh`  | PreToolUse       | Blocks edits to settings.json, secrets       |
+| `file-protector.py`  | PreToolUse       | Blocks edits to settings.json, secrets       |
 | `git-guardrails.sh`  | PreToolUse       | Blocks destructive git commands              |
 | `smart-lint.sh`      | PostToolUse      | Auto-runs linter after file edits            |
 | `test-runner.sh`     | PostToolUse      | Auto-runs tests after implementation changes |
