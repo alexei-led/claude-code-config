@@ -361,6 +361,50 @@ Pi model names use the `openai-codex/` provider prefix (e.g. `openai-codex/gpt-5
 | `worktree-create.sh` | WorktreeCreate   | Sets up isolated git worktree environment    |
 | `worktree-remove.sh` | WorktreeRemove   | Cleans up worktree on exit                   |
 
+### Hook Prerequisites
+
+`smart-lint.sh` and `test-runner.sh` auto-detect your project type and pick the best available tool. Missing tools produce a warning, not a failure.
+
+**Makefile escape hatch** — `test-runner.sh` checks for a Makefile _before_ any language detection. If it finds a `test`, `tests`, `check`, or `verify` target it runs `make <target>` and stops. This lets any project wire any tool or configuration without touching the hook. To opt out: add a `.nomake` file to the repo root (commit it for the whole team, or add to `.gitignore` for a local-only override), or set `SKIP_MAKE=1` in the environment for a one-off run.
+
+| Ecosystem       | Detection signal                                 | Test runner (fallback order)                                                      | Linter / Formatter               |
+| --------------- | ------------------------------------------------ | --------------------------------------------------------------------------------- | -------------------------------- |
+| Any             | `Makefile` with `test`/`tests`/`check`/`verify`  | `make <target>` — wins unconditionally                                            | —                                |
+| Python          | `pyproject.toml`, `setup.py`, `requirements.txt` | `uv run pytest` → `.venv/bin/pytest` → `python3 -m pytest`                        | `ruff` → `black` + `flake8`      |
+| JavaScript / TS | `package.json`                                   | `"test"` script → `vitest.config.*` → `jest.config.*` → `.mocharc.*` → `bun test` | `eslint` + `prettier`            |
+| Go              | `go.mod`                                         | `gotestsum ./...` → `go test ./...`                                               | `golangci-lint` + `go fmt`       |
+| Rust            | `Cargo.toml`                                     | `cargo test`                                                                      | `cargo clippy` + `rustfmt`       |
+| Ruby            | `Gemfile`                                        | `bundle exec rspec` → `bundle exec rake test`                                     | `rubocop`                        |
+| Java (Maven)    | `pom.xml`                                        | `mvn test`                                                                        | checkstyle / spotless via plugin |
+| Java (Gradle)   | `build.gradle[.kts]`                             | `./gradlew test` → `gradle test`                                                  | ktlint / spotless via plugin     |
+| .NET / C#       | `*.csproj`, `*.sln`                              | `dotnet test`                                                                     | `dotnet format`                  |
+| Elixir          | `mix.exs`                                        | `mix test`                                                                        | `credo` + `mix format`           |
+| PHP             | `composer.json`                                  | `vendor/bin/pest` → `vendor/bin/phpunit`                                          | `php-cs-fixer` + `phpstan`       |
+| Swift           | `Package.swift`                                  | `swift test`                                                                      | `swiftlint` + `swiftformat`      |
+| Shell / Bash    | `*.bats` files                                   | `bats .`                                                                          | `shellcheck` + `shfmt`           |
+
+Recommended installs for tools that don't ship with their language runtime:
+
+```bash
+# Python
+brew install uv           # manages interpreter + venv + lockfile
+brew install ruff         # linter + formatter, replaces flake8 + black
+
+# JavaScript / TypeScript
+brew install bun          # runtime + test runner + package manager
+
+# Go
+go install gotest.tools/gotestsum@latest   # cleaner output than go test
+brew install golangci-lint
+
+# Shell
+brew install bats-core    # Bash Automated Testing System
+brew install shellcheck shfmt
+
+# macOS notifications (used by notify.sh)
+brew install terminal-notifier
+```
+
 ## Skill Export Architecture
 
 One source of truth (`src/`) compiles into per-target trees (`dist/<target>/`).
