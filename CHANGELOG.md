@@ -8,6 +8,31 @@ major = breaking config/hook changes, minor = new skills/features, patch = fixes
 
 ## [Unreleased]
 
+## [4.5.3] - 2026-05-13
+
+### Added
+
+- **`test-runner.sh` multi-ecosystem support**: auto-detects 12 languages (Python,
+  JS/TS, Go, Rust, Ruby, Java/Maven, Gradle, .NET, Elixir, PHP, Swift, shell/bats).
+  Python uses `uv run pytest` → `.venv/bin/pytest` → `python3 -m pytest` — bare
+  `pytest` eliminated to avoid stale shebang wrapper failures.
+- **JS framework inference**: detects lockfile-based package manager (bun/pnpm/yarn/npm)
+  and infers test framework from config files (`vitest.config.*`, `jest.config.*`,
+  `.mocharc.*`) when no `"test"` script exists in `package.json`.
+- **Makefile escape hatch in `test-runner.sh`**: checks for `test`, `tests`, `check`,
+  or `verify` targets before any language detection — lets projects wire any tool
+  without touching the hook. Opt out with `.nomake` file or `SKIP_MAKE=1` env var.
+- **`notify.sh` multi-agent support**: agent name detected from JSON payload title,
+  `$CLAUDE_CODE_VERSION` env, or "Agent" fallback. Notification group is now
+  `${agent_slug}-${session_id}` for proper per-agent separation. Git branch and last
+  commit message appended to idle notifications.
+
+### Changed
+
+- README: "Hook Prerequisites" section added with 12-language detection matrix,
+  test runner fallback order, linter/formatter, and recommended installs per ecosystem.
+- README: Codex and Gemini hook configuration documentation updated.
+
 ## [4.5.2] - 2026-05-13
 
 ### Fixed
