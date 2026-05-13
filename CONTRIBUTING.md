@@ -262,11 +262,13 @@ To divert a Claude-only chunk: add a mirror overlay in
   `codex_toml.py`, `plugin_index.py`, `manifests.py`). New build-side code
   should slot into one of these modules rather than introduce a new
   top-level script.
-- Tests use `pytest`. Fixture tests under `tests/test_compile_*.py`
+- Python tests use `pytest` (`make test`). Fixture tests under `tests/test_compile_*.py`
   compile real skills/agents from `src/` and compare output against
   goldens — modify a golden only when you intend the output change.
-- The remaining `tests/hooks/*.bats` files exercise pure-bash hooks; new
-  hooks should be Python and tested with pytest under `tests/hooks/`.
+  Hook tests live under `tests/hooks/`.
+- Pi extension TypeScript tests use Bun (`make test-ts`). Test files live
+  alongside the sources they test (`src/pi-extensions/**/*.test.ts`) and are
+  excluded from `dist/` by the build compiler. Run both suites via `make ci`.
 
 ## Pi Install
 
@@ -303,9 +305,9 @@ ln -snf \
 Extensions are required, not optional. Several hooks depend on bundled
 extensions:
 
-- `smart-lint.sh` calls the `ask_user_question` tool (from `ask-user-question.ts`)
-- `file-protector.py` enforces path rules backed by `protected-paths.ts`
+- `hook-runner.ts` bridges all Pi lifecycle events to CC-compatible hook scripts (file-protector, git-guardrails, skill-enforcer, session-start, smart-lint, test-runner) and ccgram
 - `notify.ts` fires `terminal-notifier` on agent completion (requires `terminal-notifier` — `brew install terminal-notifier`)
+- `ask-user-question.ts` provides the `ask_user_question` tool used by `smart-lint.sh`
 
 Override the target with `PI_CODING_AGENT_DIR=<dir>` instead of
 `~/.pi/agent` if you run Pi from a non-default location. Restart Pi or
@@ -326,9 +328,11 @@ Rules for Pi-compatible content:
 
 ```bash
 make help             # List all targets
-make ci               # Full local CI (lint + validate + check + test)
-make lint             # Python (ruff) + shell (shellcheck/shfmt) + markdown
-make test             # pytest
+make ci               # Full local CI (lint + validate + check + test + test-ts)
+make lint             # Python (ruff) + shell (shellcheck/shfmt) + markdown + TypeScript (tsc)
+make lint-typescript  # Type-check Pi extension TypeScript (tsc --noEmit)
+make test             # pytest (Python tests)
+make test-ts          # Bun (TypeScript tests for Pi extensions)
 make validate         # Frontmatter, executable bits, plugin layout
 make build            # Regenerate every derived artifact
 make check            # build + git diff --exit-code (drift detection — CI gate)

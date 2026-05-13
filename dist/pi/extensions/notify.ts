@@ -3,7 +3,7 @@
  * Mirrors notify.sh: project name in title, Kitty + tmux click-to-navigate.
  */
 
-import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
+import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { execFile, execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { basename } from "node:path";
@@ -18,9 +18,7 @@ function hasTerminalNotifier(): boolean {
 }
 
 function buildExecuteCmd(): string {
-	const kittySocket =
-		process.env.KITTY_LISTEN_ON ??
-		(process.env.KITTY_PID ? `unix:/tmp/kitty-${process.env.KITTY_PID}` : "");
+	const kittySocket = process.env.KITTY_LISTEN_ON ?? (process.env.KITTY_PID ? `unix:/tmp/kitty-${process.env.KITTY_PID}` : "");
 	const kittySocketPath = kittySocket.replace(/^unix:/, "");
 
 	if (!kittySocket || !existsSync(kittySocketPath)) return "";
@@ -30,9 +28,7 @@ function buildExecuteCmd(): string {
 
 	const parts = ["/usr/bin/open -b net.kovidgoyal.kitty"];
 	if (process.env.KITTY_WINDOW_ID) {
-		parts.push(
-			`${kittyBin} @ --to ${kittySocket} focus-tab -m window_id:${process.env.KITTY_WINDOW_ID} 2>/dev/null`,
-		);
+		parts.push(`${kittyBin} @ --to ${kittySocket} focus-tab -m window_id:${process.env.KITTY_WINDOW_ID} 2>/dev/null`);
 	}
 	if (process.env.TMUX_PANE) {
 		parts.push(`${tmuxBin} select-pane -t ${process.env.TMUX_PANE} 2>/dev/null`);
@@ -47,18 +43,7 @@ function notify(cwd: string): void {
 	const title = `[${project}] Pi`;
 	const message = "Ready for input";
 
-	const args = [
-		"-title",
-		title,
-		"-message",
-		message,
-		"-sound",
-		"default",
-		"-group",
-		"pi-agent",
-		"-activate",
-		"net.kovidgoyal.kitty",
-	];
+	const args = ["-title", title, "-message", message, "-sound", "default", "-group", "pi-agent", "-activate", "net.kovidgoyal.kitty"];
 
 	const executeCmd = buildExecuteCmd();
 	if (executeCmd) args.push("-execute", executeCmd);

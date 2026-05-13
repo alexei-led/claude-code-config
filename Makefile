@@ -18,8 +18,8 @@ SKILL_EVAL_CLI ?= $(shell if command -v agent-skills-eval >/dev/null 2>&1; then 
 
 # --- Lint ---
 
-.PHONY: lint lint-python lint-shell lint-markdown
-lint: lint-python lint-shell lint-markdown ## Run all linters
+.PHONY: lint lint-python lint-shell lint-markdown lint-typescript
+lint: lint-python lint-shell lint-markdown lint-typescript ## Run all linters
 
 lint-python: ## Lint Python files with ruff
 	uv run ruff check .
@@ -36,13 +36,19 @@ lint-shell: ## Lint shell scripts with shellcheck + shfmt (matches CI's action-s
 
 lint-markdown: ## Lint Markdown files
 	@command -v markdownlint-cli2 >/dev/null 2>&1 || { echo "markdownlint-cli2 not installed — skipping"; exit 0; }
-	markdownlint-cli2 '**/*.md'
+	markdownlint-cli2 '**/*.md' '!node_modules/**'
+
+lint-typescript: ## Type-check Pi extension TypeScript
+	bun x tsc --noEmit
 
 # --- Test ---
 
-.PHONY: test skill-evals-prepare skill-evals skill-evals-fast skill-evals-both skill-evals-summary
-test: ## Run pytest
+.PHONY: test test-ts skill-evals-prepare skill-evals skill-evals-fast skill-evals-both skill-evals-summary
+test: ## Run pytest suite
 	uv run --extra test python -m pytest tests/ -v
+
+test-ts: ## Run Bun TypeScript tests (Pi extensions)
+	bun test src/pi-extensions
 
 skill-evals-prepare: ## Build temporary Agent Skills eval tree under /tmp
 	uv run python scripts/evals/prepare-skill-evals.py --out $(SKILL_EVAL_ROOT) --source-dir $(SKILL_EVAL_SOURCE)
@@ -112,7 +118,7 @@ lint-instructions: ## Lint agent/skill instructions (advisory)
 
 validate-executables: ## Check shell + Python entry scripts have executable bit
 	@fail=0; \
-	for f in $$(find src -name 'HOOK.*' -type f) \
+	for f in $$(find src -name 'hook.py' -type f) \
 		$$(find src scripts -name '*.sh') \
 		scripts/git-hooks/pre-commit scripts/git-hooks/pre-push scripts/release/release-tag; do \
 		[ -x "$$f" ] || { echo "ERROR: $$f is not executable"; fail=1; }; \
@@ -152,7 +158,7 @@ check: build ## Build, then fail if any tracked file changed (drift detection)
 # --- CI (runs everything) ---
 
 .PHONY: ci
-ci: lint validate check test ## Run full CI pipeline locally (lint + validate sources, build & check drift, run tests)
+ci: lint validate check test test-ts ## Run full CI pipeline locally (lint + validate + build & check drift + tests)
 
 # --- Setup ---
 

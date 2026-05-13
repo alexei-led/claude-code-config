@@ -50,4 +50,9 @@ make test || {
 	exit 1
 }
 
+make test-ts || {
+	echo "FAIL: make test-ts"
+	exit 1
+}
+
 echo "=== Pre-push passed ==="

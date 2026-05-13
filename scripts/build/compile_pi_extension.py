@@ -29,13 +29,16 @@ log = logging.getLogger("compile.pi_extension")
 def discover_pi_extensions(root: Path) -> list[Path]:
     """Return every direct child of `src/pi-extensions/` (files or dirs).
 
-    Hidden entries (leading dot) are skipped so editor metadata and stray
-    `.DS_Store` files do not leak into dist/.
+    Hidden entries (leading dot) and test files (*.test.ts) are skipped.
     """
     src = root / "src" / "pi-extensions"
     if not src.is_dir():
         return []
-    return sorted(p for p in src.iterdir() if not p.name.startswith("."))
+    return sorted(
+        p
+        for p in src.iterdir()
+        if not p.name.startswith(".") and not p.name.endswith(".test.ts")
+    )
 
 
 def compile_pi_extensions(root: Path) -> list[Path]:
@@ -53,7 +56,8 @@ def compile_pi_extensions(root: Path) -> list[Path]:
     for entry in discover_pi_extensions(root):
         dest = dest_root / entry.name
         if entry.is_dir():
-            shutil.copytree(entry, dest, dirs_exist_ok=True)
+            ignore = shutil.ignore_patterns("*.test.ts")
+            shutil.copytree(entry, dest, dirs_exist_ok=True, ignore=ignore)
         else:
             shutil.copy2(entry, dest)
         written.append(dest)

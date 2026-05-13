@@ -4,9 +4,6 @@
  * Built-in wiring dispatches to dist/pi/hooks/ scripts (file-protector, git-guardrails,
  * skill-enforcer, session-start, smart-lint, test-runner) and ccgram for session tracking.
  * User hooks in ~/.pi/agent/settings.json or .pi/settings.json are merged additive on top.
- *
- * Design inspired by pi-hooks (MIT, https://github.com/hsingjui/pi-hooks).
- * Differences: English error messages, async field honoured, correct compact trigger, typed.
  */
 
 import type {
@@ -17,15 +14,13 @@ import type {
 	ExtensionAPI,
 	ExtensionContext,
 	SessionBeforeCompactEvent,
-	SessionBeforeCompactResult,
 	SessionCompactEvent,
 	SessionShutdownEvent,
 	SessionStartEvent,
 	ToolCallEvent,
 	ToolCallEventResult,
 	ToolResultEvent,
-	ToolResultEventResult,
-} from "@mariozechner/pi-coding-agent";
+} from "@earendil-works/pi-coding-agent";
 import { execFile } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { homedir } from "node:os";
@@ -191,6 +186,14 @@ function resolvedConfig(): HooksConfig {
 	return _config ?? BUILTIN_HOOKS;
 }
 
+export function _resetForTesting(): void {
+	_config = null;
+	_configLoadedForCwd = "";
+	_ifWarningShown = false;
+}
+
+export { toCcToolName, matcherMatches, matchingGroups, mergeHooks };
+
 // ---------------------------------------------------------------------------
 // Matcher evaluation
 // ---------------------------------------------------------------------------
@@ -217,11 +220,10 @@ function runHook(entry: HookEntry, stdinJson: string, defaultTimeoutSec = 30): P
 		const timeoutMs = (entry.timeout ?? defaultTimeoutSec) * 1000;
 		const child = execFile("bash", ["-c", entry.command], { timeout: timeoutMs, env: process.env, maxBuffer: 1024 * 1024 }, (error, stdout, stderr) => {
 			if (error) {
-				const killed = (error as NodeJS.ErrnoException & { killed?: boolean }).killed ?? false;
-				// When process exits non-zero, error.code is the exit code (number).
-				// When killed by timeout, error.code is null or 'ETIMEDOUT'.
-				const code = (error as NodeJS.ErrnoException & { code?: unknown }).code;
-				const exitCode = typeof code === "number" ? code : killed ? 1 : 1;
+				const err = error as Error & { killed?: boolean; code?: unknown };
+				const killed = err.killed ?? false;
+				// code is a number when process exits non-zero; string/null when killed by timeout
+				const exitCode = typeof err.code === "number" ? err.code : 1;
 				resolve({ exitCode, stdout, stderr, timedOut: killed });
 			} else {
 				resolve({ exitCode: 0, stdout, stderr: stderr ?? "", timedOut: false });
@@ -331,7 +333,7 @@ export default function (pi: ExtensionAPI): void {
 				if (result.exitCode === 2 && result.stderr.trim()) {
 					// Simulate CC's "prevent stop": inject reason as a continuation prompt
 					try {
-						await ctx.sendUserMessage(result.stderr.trim(), { triggerTurn: true });
+						pi.sendUserMessage(result.stderr.trim(), { deliverAs: "followUp" });
 					} catch {
 						ctx.ui.notify(result.stderr.trim(), "warning");
 					}
@@ -344,7 +346,7 @@ export default function (pi: ExtensionAPI): void {
 	});
 
 	// --- session_before_compact → PreCompact ---
-	pi.on("session_before_compact", async (_event: SessionBeforeCompactEvent, ctx: ExtensionContext): Promise<SessionBeforeCompactResult | undefined> => {
+	pi.on("session_before_compact", async (_event: SessionBeforeCompactEvent, ctx: ExtensionContext) => {
 		const stdin = JSON.stringify({
 			...baseStdin("PreCompact", ctx),
 			trigger: "unknown", // Pi doesn't expose auto vs manual here
@@ -406,7 +408,7 @@ export default function (pi: ExtensionAPI): void {
 			message: {
 				customType: "hook-context",
 				content: [{ type: "text", text }],
-				display: text,
+				display: true,
 			},
 		};
 	});
@@ -436,7 +438,7 @@ export default function (pi: ExtensionAPI): void {
 	});
 
 	// --- tool_result → PostToolUse / PostToolUseFailure (LLM feedback loop) ---
-	pi.on("tool_result", async (event: ToolResultEvent, ctx: ExtensionContext): Promise<ToolResultEventResult | undefined> => {
+	pi.on("tool_result", async (event: ToolResultEvent, ctx: ExtensionContext) => {
 		const ccName = toCcToolName(event.toolName);
 		const hookName = event.isError ? "PostToolUseFailure" : "PostToolUse";
 		const stdin = JSON.stringify({

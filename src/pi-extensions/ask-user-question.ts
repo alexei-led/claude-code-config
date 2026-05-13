@@ -1,4 +1,4 @@
-import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
+import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { Type } from "typebox";
 
 type AskOption = {
@@ -57,7 +57,7 @@ function normalizeValue(option: AskOption): string {
 	return option.value ?? option.label;
 }
 
-function parseMultiSelect(input: string, options: AskOption[]): Array<{ label: string; value: string; source: "option" | "custom" }> {
+export function parseMultiSelect(input: string, options: AskOption[]): Array<{ label: string; value: string; source: "option" | "custom" }> {
 	const rawParts = input
 		.split(",")
 		.map((part) => part.trim())
