@@ -80,17 +80,27 @@ per-plugin skill directory directly:
 }
 ```
 
-`dev-workflow` wires three hooks via `dist/codex/plugins/dev-workflow/hooks/codex.hooks.json`:
+`dev-workflow` wires five hooks via `dist/codex/plugins/dev-workflow/hooks/hooks.json`:
 
-| Event          | Matcher         | Hook                | Effect                             |
-| -------------- | --------------- | ------------------- | ---------------------------------- |
-| `SessionStart` | —               | `session-start.py`  | Prints branch and last commit      |
-| `PreToolUse`   | `^Bash$`        | `git-guardrails.sh` | Blocks destructive git commands    |
-| `PostToolUse`  | `^apply_patch$` | `smart-lint.sh`     | Auto-format and lint changed files |
-| `PostToolUse`  | `^apply_patch$` | `test-runner.sh`    | Runs tests for changed files       |
+| Event          | Matcher         | Hook                | Effect                                   |
+| -------------- | --------------- | ------------------- | ---------------------------------------- |
+| `SessionStart` | —               | `session-start.py`  | Prints branch, last commit, project type |
+| `PreToolUse`   | `^apply_patch$` | `file-protector.py` | Blocks writes to `.env`, keys, secrets   |
+| `PreToolUse`   | `^Bash$`        | `git-guardrails.sh` | Blocks destructive git commands          |
+| `PostToolUse`  | `^apply_patch$` | `smart-lint.sh`     | Auto-format and lint changed files       |
+| `PostToolUse`  | `^apply_patch$` | `test-runner.sh`    | Runs tests for changed files             |
 
-All paths resolve via `$PLUGIN_ROOT`, the env var Codex injects for
-plugin-sourced hooks.
+Plugin hooks require two feature flags in `~/.codex/config.toml`:
+
+```toml
+[features]
+hooks = true          # enable user-defined hooks
+plugin_hooks = true   # enable plugin-bundled hooks (under development)
+```
+
+After enabling and restarting Codex, run `/hooks` to review and approve
+the hooks before they execute. Codex fingerprints each hook command;
+any change to name or command triggers a re-approval prompt.
 
 ### Google Gemini CLI
 
@@ -113,14 +123,15 @@ compiler regenerates these symlinks on every `make build`.
 
 `dist/gemini/hooks/hooks.json` registers:
 
-| Event              | Matcher               | Hook                | Effect                                   |
-| ------------------ | --------------------- | ------------------- | ---------------------------------------- |
-| `SessionStart`     | —                     | `session-start.py`  | Prints branch, last commit, project type |
-| `UserPromptSubmit` | —                     | `skill-enforcer.sh` | Suggests relevant skills from prompt     |
-| `BeforeTool`       | `write_file\|replace` | `file-protector.py` | Blocks writes to `.env`, keys, secrets   |
-| `BeforeTool`       | `run_shell_command`   | `git-guardrails.sh` | Blocks destructive git commands          |
-| `AfterTool`        | `write_file\|replace` | `smart-lint.sh`     | Auto-format and lint changed files       |
-| `AfterTool`        | `write_file\|replace` | `test-runner.sh`    | Runs tests for changed files             |
+| Event          | Matcher               | Hook                | Effect                                   |
+| -------------- | --------------------- | ------------------- | ---------------------------------------- |
+| `SessionStart` | —                     | `session-start.py`  | Prints branch, last commit, project type |
+| `BeforeAgent`  | —                     | `skill-enforcer.sh` | Suggests relevant skills from prompt     |
+| `BeforeTool`   | `write_file\|replace` | `file-protector.py` | Blocks writes to `.env`, keys, secrets   |
+| `BeforeTool`   | `run_shell_command`   | `git-guardrails.sh` | Blocks destructive git commands          |
+| `AfterTool`    | `write_file\|replace` | `smart-lint.sh`     | Auto-format and lint changed files       |
+| `AfterTool`    | `write_file\|replace` | `test-runner.sh`    | Runs tests for changed files             |
+| `Notification` | —                     | `notify.sh`         | macOS notification on agent completion   |
 
 All paths resolve via `${extensionPath}`, Gemini's substitution variable for
 the extension root.
