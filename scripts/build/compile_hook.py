@@ -60,7 +60,7 @@ EVENT_MAP: dict[str, dict[str, tuple[str, str | None] | None]] = {
     "preedit": {
         "claude": ("PreToolUse", "Write|Edit|MultiEdit"),
         "gemini": ("BeforeTool", "write_file|replace"),
-        "codex": None,
+        "codex": ("PreToolUse", "^apply_patch$"),
     },
     "prebash": {
         "claude": ("PreToolUse", "Bash"),
@@ -159,18 +159,18 @@ class HookCompileResult:
 
 
 def load_hook(hook_dir: Path) -> HookSpec:
-    """Parse `meta.yaml` and resolve the lone `HOOK.*` script in `hook_dir`."""
+    """Parse `meta.yaml` and resolve the lone `hook.*` script in `hook_dir`."""
     meta_path = hook_dir / "meta.yaml"
     if not meta_path.is_file():
         raise FileNotFoundError(f"missing meta.yaml in {hook_dir}")
     meta = yaml.safe_load(meta_path.read_text()) or {}
 
-    scripts = sorted(p for p in hook_dir.glob("HOOK.*") if p.is_file())
+    scripts = sorted(p for p in hook_dir.glob("hook.*") if p.is_file())
     if not scripts:
-        raise FileNotFoundError(f"no HOOK.* script in {hook_dir}")
+        raise FileNotFoundError(f"no hook.* script in {hook_dir}")
     if len(scripts) > 1:
         raise ValueError(
-            f"multiple HOOK.* scripts in {hook_dir}: {[s.name for s in scripts]}"
+            f"multiple hook.* scripts in {hook_dir}: {[s.name for s in scripts]}"
         )
 
     for field_name in ("name", "event", "timeout"):
