@@ -8,6 +8,14 @@ major = breaking config/hook changes, minor = new skills/features, patch = fixes
 
 ## [Unreleased]
 
+## [4.5.0] - 2026-05-13
+
+### Changed
+
+- **Pi Notification hook consolidated**: `notify.ts` Pi extension removed; `notify.sh`
+  is now wired directly in `hook-runner` as a `Notification` event dispatched from
+  `agent_end`. All Pi hooks now flow through the shared hook scripts.
+
 ## [4.4.0] - 2026-05-13
 
 ### Added
