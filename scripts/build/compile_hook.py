@@ -87,6 +87,11 @@ EVENT_MAP: dict[str, dict[str, tuple[str, str | None] | None]] = {
         "gemini": ("Notification", None),
         "codex": None,
     },
+    "exitplanmode": {
+        "claude": ("PreToolUse", "ExitPlanMode"),
+        "gemini": None,
+        "codex": None,
+    },
     "worktreecreate": {
         "claude": ("WorktreeCreate", None),
         "gemini": None,
@@ -139,6 +144,7 @@ class HookSpec:
     timeout: int
     script_path: Path
     status_message: str | None = None
+    targets: list[str] | None = None
 
     @property
     def script_basename(self) -> str:
@@ -190,12 +196,24 @@ def load_hook(hook_dir: Path) -> HookSpec:
             f"{meta_path}: name {name!r} must match {_SAFE_NAME_RE.pattern}"
         )
 
+    targets = meta.get("targets")
+    if targets is not None:
+        targets_valid = isinstance(targets, list) and all(
+            isinstance(t, str) for t in targets
+        )
+        if not targets_valid:
+            raise ValueError(f"{meta_path}: targets must be a list of target names")
+        unknown = sorted(set(targets) - set(_compile.TARGETS))
+        if unknown:
+            raise ValueError(f"{meta_path}: unknown targets: {unknown}")
+
     return HookSpec(
         name=name,
         event=event,
         timeout=int(meta["timeout"]),
         script_path=scripts[0],
         status_message=meta.get("status_message"),
+        targets=targets,
     )
 
 
@@ -248,6 +266,14 @@ def compile_hook(
     """Place the hook's script + support files at every resolved output path."""
     spec = load_hook(hook_dir)
     result = HookCompileResult(spec=spec)
+    if spec.targets is not None and target not in spec.targets:
+        log.debug(
+            "hook=%s target=%s skipped (not in targets:%s)",
+            spec.name,
+            target,
+            spec.targets,
+        )
+        return result
     for out_dir, plugin in hook_output_assignments(
         spec.name, target, plugin_index, root
     ):
@@ -388,7 +414,7 @@ def write_hook_manifests(
     written: list[Path] = []
 
     if target == "gemini":
-        specs = [r.spec for r in results]
+        specs = [r.spec for r in results if r.placements]
         manifest = _build_gemini(specs)
         if manifest["hooks"]:
             path = dist / "hooks" / "hooks.json"

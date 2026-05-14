@@ -44,6 +44,7 @@ def _write_hook(
     body: str = "#!/usr/bin/env bash\nexit 0\n",
     executable: bool = True,
     support_dirs: dict[str, dict[str, str]] | None = None,
+    targets: list[str] | None = None,
 ) -> Path:
     """Build a `src/hooks/<name>/` source tree under `src` and return its path."""
     hook_dir = src / "hooks" / name
@@ -51,6 +52,9 @@ def _write_hook(
     meta_lines = [f"name: {name}", f"event: {event}", f"timeout: {timeout}"]
     if status_message is not None:
         meta_lines.append(f"status_message: {status_message}")
+    if targets is not None:
+        meta_lines.append("targets:")
+        meta_lines.extend(f"  - {target}" for target in targets)
     (hook_dir / "meta.yaml").write_text("\n".join(meta_lines) + "\n")
     script = hook_dir / f"hook{ext}"
     script.write_text(body)
@@ -151,6 +155,32 @@ def test_load_hook_rejects_unsafe_names(ch, tmp_path, bad_name):
         ch.load_hook(hook_dir)
 
 
+@pytest.mark.parametrize(
+    "targets_yaml",
+    ["targets: pi", "targets: 1", "targets:\n  - pi\n  - 2"],
+)
+def test_load_hook_rejects_malformed_targets(ch, tmp_path, targets_yaml):
+    hook_dir = tmp_path / "src" / "hooks" / "bad-targets"
+    hook_dir.mkdir(parents=True)
+    (hook_dir / "meta.yaml").write_text(
+        f"name: bad-targets\nevent: postedit\ntimeout: 10\n{targets_yaml}\n"
+    )
+    (hook_dir / "hook.sh").write_text("#!/bin/sh\n")
+    with pytest.raises(ValueError, match="targets"):
+        ch.load_hook(hook_dir)
+
+
+def test_load_hook_rejects_unknown_targets(ch, tmp_path):
+    hook_dir = tmp_path / "src" / "hooks" / "unknown-target"
+    hook_dir.mkdir(parents=True)
+    (hook_dir / "meta.yaml").write_text(
+        "name: unknown-target\nevent: postedit\ntimeout: 10\ntargets:\n  - nope\n"
+    )
+    (hook_dir / "hook.sh").write_text("#!/bin/sh\n")
+    with pytest.raises(ValueError, match="unknown targets"):
+        ch.load_hook(hook_dir)
+
+
 # --- compile_hook (placement) ----------------------------------------------
 
 
@@ -230,6 +260,17 @@ def test_compile_hook_ignores_target_subdirs(ch, tmp_path):
     ch.compile_hook(hook_dir, "pi", {}, tmp_path)
     leaked = tmp_path / "dist" / "pi" / "hooks" / "claude"
     assert not leaked.exists()
+
+
+def test_compile_hook_honors_targets_restriction(ch, tmp_path):
+    src = tmp_path / "src"
+    hook_dir = _write_hook(src, "pi-only", "exitplanmode", targets=["pi"])
+    skipped = ch.compile_hook(hook_dir, "claude", {}, tmp_path)
+    assert skipped.placements == []
+    assert not (tmp_path / "dist" / "claude" / "hooks" / "pi-only.sh").exists()
+
+    result = ch.compile_hook(hook_dir, "pi", {}, tmp_path)
+    assert result.placements[0][0] == tmp_path / "dist" / "pi" / "hooks" / "pi-only.sh"
 
 
 # --- manifest building (Gemini) --------------------------------------------

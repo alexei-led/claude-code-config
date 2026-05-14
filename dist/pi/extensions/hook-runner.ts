@@ -1,9 +1,9 @@
 /**
- * Hook Runner — bridges Pi extension events to CC-compatible hook scripts.
+ * Hook Runner — maps Pi runtime events and synthetic extension events to CC-compatible hooks.
  *
- * Built-in wiring dispatches to dist/pi/hooks/ scripts (file-protector, git-guardrails,
- * skill-enforcer, session-start, smart-lint, test-runner) and ccgram for session tracking.
- * User hooks in ~/.pi/agent/settings.json or .pi/settings.json are merged additive on top.
+ * Hook defaults are loaded from bundled `hooks.json` (deployed with this extension), then
+ * merged with user/project overrides from Pi settings/hooks files.
+ * Extensions can invoke synthetic events over cc-hooks:invoke (PermissionRequest, ExitPlanMode, etc).
  */
 
 import type {
@@ -13,6 +13,8 @@ import type {
 	BeforeAgentStartEventResult,
 	ExtensionAPI,
 	ExtensionContext,
+	InputEvent,
+	InputEventResult,
 	SessionBeforeCompactEvent,
 	SessionCompactEvent,
 	SessionShutdownEvent,
@@ -20,12 +22,20 @@ import type {
 	ToolCallEvent,
 	ToolCallEventResult,
 	ToolResultEvent,
+	TurnEndEvent,
 } from "@earendil-works/pi-coding-agent";
 import { execFile } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+
+import {
+	HOOK_RUNNER_INVOKE_CHANNEL,
+	SYNTHETIC_HOOK_EVENT_NAMES,
+	type SyntheticHookInvocationRequest,
+	type SyntheticHookInvocationResult,
+} from "./hook-bridge.js";
 
 // ---------------------------------------------------------------------------
 // Path resolution — works regardless of where Pi cloned the package
@@ -35,20 +45,44 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 // dist/pi/extensions/hook-runner.ts → ../hooks → dist/pi/hooks
 const HOOKS_DIR = join(__dirname, "..", "hooks");
+const BUNDLED_HOOKS_CONFIG_PATH = join(__dirname, "hooks.json");
+const PI_HOOKS_DIR_PLACEHOLDER = "${PI_HOOKS_DIR}";
 
-function hookPath(script: string): string {
-	return join(HOOKS_DIR, script);
+function agentDir(): string {
+	return process.env.PI_CODING_AGENT_DIR || join(homedir(), ".pi", "agent");
 }
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
+const CORE_HOOK_EVENT_NAMES = [
+	"PostToolUse",
+	"PostToolUseFailure",
+	"SessionStart",
+	"SessionEnd",
+	"SubagentStart",
+	"SubagentStop",
+	"UserPromptSubmit",
+	"Stop",
+	"Notification",
+	"PreCompact",
+	"PostCompact",
+] as const;
+
+const HOOK_EVENT_NAMES = [...SYNTHETIC_HOOK_EVENT_NAMES, ...CORE_HOOK_EVENT_NAMES] as const;
+
+type HookEventName = (typeof HOOK_EVENT_NAMES)[number];
+
+function isHookEventName(value: unknown): value is HookEventName {
+	return typeof value === "string" && (HOOK_EVENT_NAMES as readonly string[]).includes(value);
+}
+
 interface HookEntry {
 	type: "command";
 	command: string;
 	timeout?: number; // seconds; default varies by hook family
-	async?: boolean; // fire-and-forget (PostToolUse only)
+	async?: boolean; // fire-and-forget
 }
 
 interface HookGroup {
@@ -60,15 +94,32 @@ interface HooksConfig {
 	PreToolUse?: HookGroup[];
 	PostToolUse?: HookGroup[];
 	PostToolUseFailure?: HookGroup[];
+	PostToolBatch?: HookGroup[];
 	SessionStart?: HookGroup[];
+	Setup?: HookGroup[];
 	SessionEnd?: HookGroup[];
 	SubagentStart?: HookGroup[];
 	SubagentStop?: HookGroup[];
 	UserPromptSubmit?: HookGroup[];
+	UserPromptExpansion?: HookGroup[];
 	Stop?: HookGroup[];
+	StopFailure?: HookGroup[];
+	TeammateIdle?: HookGroup[];
+	InstructionsLoaded?: HookGroup[];
+	ConfigChange?: HookGroup[];
+	CwdChanged?: HookGroup[];
+	FileChanged?: HookGroup[];
 	PreCompact?: HookGroup[];
 	PostCompact?: HookGroup[];
 	Notification?: HookGroup[];
+	PermissionRequest?: HookGroup[];
+	PermissionDenied?: HookGroup[];
+	TaskCreated?: HookGroup[];
+	TaskCompleted?: HookGroup[];
+	WorktreeCreate?: HookGroup[];
+	WorktreeRemove?: HookGroup[];
+	Elicitation?: HookGroup[];
+	ElicitationResult?: HookGroup[];
 	[key: string]: HookGroup[] | undefined; // extensible for user configs
 }
 
@@ -79,47 +130,32 @@ interface HookRunResult {
 	timedOut: boolean;
 }
 
-// ---------------------------------------------------------------------------
-// Built-in hook wiring
-// ---------------------------------------------------------------------------
+interface ParsedPreToolUseOutput {
+	decision?: "allow" | "ask" | "deny" | "defer";
+	reason?: string;
+	updatedInput?: Record<string, unknown>;
+	additionalContext?: string;
+}
 
-const BUILTIN_HOOKS: HooksConfig = {
-	SessionStart: [
-		{ hooks: [{ type: "command", command: hookPath("session-start.py"), timeout: 5 }] },
-		// ccgram: session tracking — async so it never delays the session start
-		{ hooks: [{ type: "command", command: "ccgram hook", timeout: 5, async: true }] },
-	],
-	SessionEnd: [{ hooks: [{ type: "command", command: "ccgram hook", timeout: 5, async: true }] }],
-	SubagentStart: [{ hooks: [{ type: "command", command: "ccgram hook", timeout: 5, async: true }] }],
-	SubagentStop: [{ hooks: [{ type: "command", command: "ccgram hook", timeout: 5, async: true }] }],
-	UserPromptSubmit: [{ hooks: [{ type: "command", command: hookPath("skill-enforcer.sh"), timeout: 15 }] }],
-	PreToolUse: [
-		{
-			matcher: "Write|Edit|MultiEdit",
-			hooks: [{ type: "command", command: hookPath("file-protector.py"), timeout: 10 }],
-		},
-		{
-			matcher: "Bash",
-			hooks: [{ type: "command", command: hookPath("git-guardrails.sh"), timeout: 10 }],
-		},
-	],
-	PostToolUse: [
-		{
-			matcher: "Write|Edit|MultiEdit",
-			hooks: [
-				// sync: inject lint errors into tool result so LLM sees and fixes them
-				{ type: "command", command: hookPath("smart-lint.sh"), timeout: 60, async: false },
-				// async: tests are slow; fire-and-forget, notify user on exit 2
-				{ type: "command", command: hookPath("test-runner.sh"), timeout: 120, async: true },
-			],
-		},
-	],
-	Stop: [{ hooks: [{ type: "command", command: "ccgram hook", timeout: 5, async: true }] }],
-	Notification: [{ hooks: [{ type: "command", command: hookPath("notify.sh"), timeout: 10, async: true }] }],
-};
+interface ParsedPermissionRequestOutput {
+	behavior?: "allow" | "deny";
+	message?: string;
+	interrupt?: boolean;
+	updatedInput?: Record<string, unknown>;
+}
+
+interface ParsedPermissionDeniedOutput {
+	retry?: boolean;
+}
+
+interface ParsedDecisionOutput {
+	block?: boolean;
+	reason?: string;
+	additionalContext?: string;
+}
 
 // ---------------------------------------------------------------------------
-// Tool name normalisation: Pi lowercase → CC CamelCase
+// Tool name normalization: Pi lowercase → CC names
 // ---------------------------------------------------------------------------
 
 const TOOL_NAME_MAP: Record<string, string> = {
@@ -129,8 +165,10 @@ const TOOL_NAME_MAP: Record<string, string> = {
 	multiedit: "MultiEdit",
 	read: "Read",
 	grep: "Grep",
-	find: "Find",
+	find: "Glob",
 	ls: "Ls",
+	subagent: "Agent",
+	ask_user_question: "AskUserQuestion",
 };
 
 function toCcToolName(piName: string): string {
@@ -140,6 +178,10 @@ function toCcToolName(piName: string): string {
 // ---------------------------------------------------------------------------
 // Config loading (lazy — on first session_start)
 // ---------------------------------------------------------------------------
+
+interface HookRunnerOptions {
+	disableBundledHooks?: boolean;
+}
 
 let _config: HooksConfig | null = null;
 let _configLoadedForCwd = "";
@@ -153,39 +195,117 @@ function mergeHooks(base: HooksConfig, user: HooksConfig): void {
 	}
 }
 
-function loadConfig(cwd: string): void {
-	if (_config && _configLoadedForCwd === cwd) return;
-	_config = structuredClone(BUILTIN_HOOKS);
+function normalizeHookConfig(raw: unknown): HooksConfig {
+	if (!isRecord(raw)) return {};
+	const normalized: HooksConfig = {};
+	for (const [key, groups] of Object.entries(raw)) {
+		if (key === "hookRunner") continue;
+		if (!Array.isArray(groups)) continue;
+		normalized[key] = groups as HookGroup[];
+	}
+	return normalized;
+}
+
+function resolveBundledHookPaths(config: HooksConfig): HooksConfig {
+	const resolved: HooksConfig = {};
+	for (const [eventName, groups] of Object.entries(config)) {
+		if (!groups) continue;
+		resolved[eventName] = groups.map((group) => ({
+			matcher: group.matcher,
+			hooks: group.hooks.map((entry) => ({
+				...entry,
+				command: entry.command.replaceAll(PI_HOOKS_DIR_PLACEHOLDER, HOOKS_DIR),
+			})),
+		}));
+	}
+	return resolved;
+}
+
+function extractHookRunnerOptions(parsed: unknown): HookRunnerOptions {
+	if (!isRecord(parsed)) return {};
+	const raw = parsed.hookRunner;
+	if (!isRecord(raw)) return {};
+	return {
+		disableBundledHooks: raw.disableBundledHooks === true,
+	};
+}
+
+function extractHooksConfig(parsed: unknown, configPath: string): HooksConfig {
+	if (!isRecord(parsed)) return {};
+	const nestedHooks = parsed.hooks;
+	if (isRecord(nestedHooks)) {
+		return normalizeHookConfig(nestedHooks);
+	}
+	if (configPath.endsWith("hooks.json")) {
+		return normalizeHookConfig(parsed);
+	}
+	return {};
+}
+
+function loadBundledHooksConfig(): HooksConfig {
+	try {
+		const raw = readFileSync(BUNDLED_HOOKS_CONFIG_PATH, "utf-8");
+		const parsed = JSON.parse(raw) as unknown;
+		const bundled = extractHooksConfig(parsed, BUNDLED_HOOKS_CONFIG_PATH);
+		return resolveBundledHookPaths(bundled);
+	} catch {
+		return {};
+	}
+}
+
+function hasUnsupportedIfPredicate(config: HooksConfig): boolean {
+	return Object.values(config)
+		.flat()
+		.flatMap((g) => g?.hooks ?? [])
+		.some((h) => "if" in h);
+}
+
+function loadConfig(cwd: string, force = false): void {
+	if (!force && _config && _configLoadedForCwd === cwd) return;
 	_configLoadedForCwd = cwd;
 
-	const configPaths = [join(homedir(), ".pi", "agent", "settings.json"), join(cwd, ".pi", "settings.json")];
+	const globalAgentDir = agentDir();
+	const configPaths = [
+		join(globalAgentDir, "settings.json"),
+		join(globalAgentDir, "hooks.json"),
+		join(cwd, ".pi", "settings.json"),
+		join(cwd, ".pi", "hooks.json"),
+	];
+
+	let disableBundledHooks = false;
+	const hookConfigs: HooksConfig[] = [];
 
 	for (const configPath of configPaths) {
 		try {
 			const raw = readFileSync(configPath, "utf-8");
-			const parsed: { hooks?: HooksConfig } = JSON.parse(raw);
-			if (parsed.hooks) {
-				mergeHooks(_config, parsed.hooks);
-				// Warn once if user config uses unsupported 'if' predicate field
-				if (!_ifWarningShown) {
-					const hasIf = Object.values(parsed.hooks)
-						.flat()
-						.flatMap((g) => g?.hooks ?? [])
-						.some((h) => "if" in h);
-					if (hasIf) {
-						_ifWarningShown = true;
-						console.warn("[hook-runner] 'if' predicate in hooks config is not supported in v1; use 'matcher' instead");
-					}
-				}
+			const parsed = JSON.parse(raw) as unknown;
+			const options = extractHookRunnerOptions(parsed);
+			if (typeof options.disableBundledHooks === "boolean") {
+				disableBundledHooks = options.disableBundledHooks;
+			}
+			const hooksConfig = extractHooksConfig(parsed, configPath);
+			if (Object.keys(hooksConfig).length > 0) {
+				hookConfigs.push(hooksConfig);
 			}
 		} catch {
 			// File absent or malformed: silently skip
 		}
 	}
+
+	const base = disableBundledHooks ? {} : loadBundledHooksConfig();
+	for (const hooksConfig of hookConfigs) {
+		mergeHooks(base, hooksConfig);
+		if (!_ifWarningShown && hasUnsupportedIfPredicate(hooksConfig)) {
+			_ifWarningShown = true;
+			console.warn("[hook-runner] 'if' predicate in hooks config is not supported in v1; use 'matcher' instead");
+		}
+	}
+
+	_config = base;
 }
 
 function resolvedConfig(): HooksConfig {
-	return _config ?? BUILTIN_HOOKS;
+	return _config ?? loadBundledHooksConfig();
 }
 
 export function _resetForTesting(): void {
@@ -194,7 +314,7 @@ export function _resetForTesting(): void {
 	_ifWarningShown = false;
 }
 
-export { toCcToolName, matcherMatches, matchingGroups, mergeHooks };
+export { toCcToolName, matcherMatches, matchingGroups };
 
 // ---------------------------------------------------------------------------
 // Matcher evaluation
@@ -211,6 +331,254 @@ function matcherMatches(matcher: string | undefined, ccToolName: string): boolea
 
 function matchingGroups(groups: HookGroup[], ccToolName: string): HookGroup[] {
 	return groups.filter((g) => matcherMatches(g.matcher, ccToolName));
+}
+
+// ---------------------------------------------------------------------------
+// Hook output parsing
+// ---------------------------------------------------------------------------
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function parseJsonObject(raw: string): Record<string, unknown> | undefined {
+	const trimmed = raw.trim();
+	if (!trimmed) return undefined;
+	try {
+		const parsed = JSON.parse(trimmed) as unknown;
+		if (!isRecord(parsed)) return undefined;
+		return parsed;
+	} catch {
+		return undefined;
+	}
+}
+
+function hookSpecificOutput(parsed: Record<string, unknown>, hookEventName: HookEventName): Record<string, unknown> | undefined {
+	const raw = parsed.hookSpecificOutput;
+	if (!raw || typeof raw !== "object" || Array.isArray(raw)) return undefined;
+	const value = raw as Record<string, unknown>;
+	const declared = value.hookEventName;
+	if (typeof declared === "string" && declared !== hookEventName) {
+		return undefined;
+	}
+	return value;
+}
+
+function parsePreToolUseOutput(stdout: string): ParsedPreToolUseOutput {
+	const parsed = parseJsonObject(stdout);
+	if (!parsed) return {};
+
+	const hso = hookSpecificOutput(parsed, "PreToolUse") ?? parsed;
+	const legacyDecision = typeof hso.decision === "string" ? hso.decision : typeof parsed.decision === "string" ? parsed.decision : undefined;
+	let decision = typeof hso.permissionDecision === "string" ? hso.permissionDecision : legacyDecision;
+	if (decision === "approve") decision = "allow";
+	if (decision === "block") decision = "deny";
+	if (decision && !["allow", "ask", "deny", "defer"].includes(decision)) {
+		decision = undefined;
+	}
+
+	const reason =
+		typeof hso.permissionDecisionReason === "string"
+			? hso.permissionDecisionReason
+			: typeof hso.reason === "string"
+				? hso.reason
+				: typeof parsed.reason === "string"
+					? parsed.reason
+					: undefined;
+
+	const updatedInputRaw = hso.updatedInput;
+	const updatedInput =
+		updatedInputRaw && typeof updatedInputRaw === "object" && !Array.isArray(updatedInputRaw) ? (updatedInputRaw as Record<string, unknown>) : undefined;
+
+	const additionalContext =
+		typeof hso.additionalContext === "string" ? hso.additionalContext : typeof parsed.additionalContext === "string" ? parsed.additionalContext : undefined;
+
+	return {
+		decision: decision as ParsedPreToolUseOutput["decision"],
+		reason,
+		updatedInput,
+		additionalContext,
+	};
+}
+
+function parsePermissionRequestOutput(stdout: string): ParsedPermissionRequestOutput {
+	const parsed = parseJsonObject(stdout);
+	if (!parsed) return {};
+	const hso = hookSpecificOutput(parsed, "PermissionRequest");
+	if (!hso) return {};
+	const rawDecision = hso.decision;
+	if (!rawDecision || typeof rawDecision !== "object" || Array.isArray(rawDecision)) {
+		return {};
+	}
+	const decision = rawDecision as Record<string, unknown>;
+	const behavior = decision.behavior;
+	if (behavior !== "allow" && behavior !== "deny") {
+		return {};
+	}
+	const updatedInputRaw = decision.updatedInput;
+	const updatedInput =
+		updatedInputRaw && typeof updatedInputRaw === "object" && !Array.isArray(updatedInputRaw) ? (updatedInputRaw as Record<string, unknown>) : undefined;
+	return {
+		behavior,
+		message: typeof decision.message === "string" ? decision.message : undefined,
+		interrupt: typeof decision.interrupt === "boolean" ? decision.interrupt : undefined,
+		updatedInput,
+	};
+}
+
+function parsePermissionDeniedOutput(stdout: string): ParsedPermissionDeniedOutput {
+	const parsed = parseJsonObject(stdout);
+	if (!parsed) return {};
+	const hso = hookSpecificOutput(parsed, "PermissionDenied");
+	if (!hso) return {};
+	return { retry: hso.retry === true };
+}
+
+function parseDecisionOutput(stdout: string, hookEventName: HookEventName): ParsedDecisionOutput {
+	const parsed = parseJsonObject(stdout);
+	if (!parsed) return {};
+	const hso = hookSpecificOutput(parsed, hookEventName) ?? parsed;
+	const decision = typeof hso.decision === "string" ? hso.decision : typeof parsed.decision === "string" ? parsed.decision : undefined;
+	const continueField = typeof hso.continue === "boolean" ? hso.continue : typeof parsed.continue === "boolean" ? parsed.continue : undefined;
+	const reason =
+		typeof hso.reason === "string"
+			? hso.reason
+			: typeof parsed.reason === "string"
+				? parsed.reason
+				: typeof hso.stopReason === "string"
+					? hso.stopReason
+					: typeof parsed.stopReason === "string"
+						? parsed.stopReason
+						: undefined;
+	const additionalContext =
+		typeof hso.additionalContext === "string" ? hso.additionalContext : typeof parsed.additionalContext === "string" ? parsed.additionalContext : undefined;
+	return {
+		block: decision === "block" || continueField === false,
+		reason,
+		additionalContext,
+	};
+}
+
+function replaceInput(target: Record<string, unknown>, replacement: Record<string, unknown>): void {
+	for (const key of Object.keys(target)) {
+		delete target[key];
+	}
+	Object.assign(target, replacement);
+}
+
+function serializeToolContent(content: Array<{ type: string; text?: string; source?: unknown; mediaType?: string }>): string {
+	const parts: string[] = [];
+	for (const block of content) {
+		if (block.type === "text" && typeof block.text === "string") {
+			parts.push(block.text);
+			continue;
+		}
+		if (block.type === "image") {
+			parts.push("[image]");
+		}
+	}
+	return parts.join("\n");
+}
+
+function parseSlashCommand(text: string): { commandName: string; commandArgs: string; prompt: string } | undefined {
+	const trimmed = text.trim();
+	if (!trimmed.startsWith("/") || trimmed.startsWith("//")) return undefined;
+	const withoutSlash = trimmed.slice(1).trim();
+	if (!withoutSlash) return undefined;
+	const [commandName, ...rest] = withoutSlash.split(/\s+/);
+	if (!commandName) return undefined;
+	return {
+		commandName,
+		commandArgs: rest.join(" "),
+		prompt: trimmed,
+	};
+}
+
+function sendHookMessageToAgent(pi: ExtensionAPI, ctx: ExtensionContext, text: string): void {
+	const payload = text.trim();
+	if (!payload) return;
+	try {
+		if (ctx.isIdle()) {
+			pi.sendUserMessage(payload);
+			return;
+		}
+		pi.sendUserMessage(payload, { deliverAs: "steer" });
+	} catch {
+		try {
+			pi.sendUserMessage(payload, { deliverAs: "followUp" });
+		} catch {
+			ctx.ui.notify(payload, "warning");
+		}
+	}
+}
+
+function discoverInstructionFiles(cwd: string): Array<{ file_path: string; memory_type: string; load_reason: string }> {
+	const files: Array<{ file_path: string; memory_type: string; load_reason: string }> = [];
+	const seen = new Set<string>();
+	const add = (filePath: string, memoryType: string, loadReason = "session_start") => {
+		if (!existsSync(filePath)) return;
+		if (seen.has(filePath)) return;
+		seen.add(filePath);
+		files.push({ file_path: filePath, memory_type: memoryType, load_reason: loadReason });
+	};
+
+	const userAgents = join(agentDir(), "AGENTS.md");
+	add(userAgents, "User");
+
+	let current = cwd;
+	while (true) {
+		add(join(current, "AGENTS.md"), "Project");
+		add(join(current, "CLAUDE.md"), "Project");
+		const rulesDir = join(current, ".claude", "rules");
+		if (existsSync(rulesDir)) {
+			try {
+				for (const file of readdirSync(rulesDir)) {
+					if (file.endsWith(".md")) {
+						add(join(rulesDir, file), "Project", "path_glob_match");
+					}
+				}
+			} catch {
+				// ignore unreadable rules dir
+			}
+		}
+		const parent = dirname(current);
+		if (parent === current) break;
+		current = parent;
+	}
+
+	return files;
+}
+
+function projectHooksConfigPath(cwd: string): string {
+	return join(cwd, ".pi", "hooks.json");
+}
+
+function readProjectHookRunnerOptions(cwd: string): HookRunnerOptions {
+	const path = projectHooksConfigPath(cwd);
+	try {
+		const raw = readFileSync(path, "utf-8");
+		const parsed = JSON.parse(raw) as unknown;
+		return extractHookRunnerOptions(parsed);
+	} catch {
+		return {};
+	}
+}
+
+function writeProjectHooksConfig(cwd: string, parsed: Record<string, unknown>): void {
+	const path = projectHooksConfigPath(cwd);
+	mkdirSync(dirname(path), { recursive: true });
+	writeFileSync(path, JSON.stringify(parsed, null, 2) + "\n", "utf-8");
+}
+
+function hooksSummary(config: HooksConfig): string {
+	const rows: string[] = [];
+	for (const [eventName, groups] of Object.entries(config)) {
+		if (!groups || groups.length === 0) continue;
+		const hookCount = groups.reduce((acc, group) => acc + group.hooks.length, 0);
+		rows.push(`${eventName}: ${groups.length} group(s), ${hookCount} hook(s)`);
+	}
+	if (rows.length === 0) return "No hooks configured.";
+	return rows.sort().join("\n");
 }
 
 // ---------------------------------------------------------------------------
@@ -251,14 +619,229 @@ function runHookAsync(entry: HookEntry, stdinJson: string, notifyFn: (msg: strin
 }
 
 // ---------------------------------------------------------------------------
-// Common stdin builder
+// Common stdin builders
 // ---------------------------------------------------------------------------
 
-function baseStdin(hookEventName: string, ctx: ExtensionContext): Record<string, unknown> {
+function baseStdin(hookEventName: HookEventName, ctx: ExtensionContext): Record<string, unknown> {
 	return {
 		session_id: ctx.sessionManager.getSessionId(),
 		cwd: ctx.cwd,
 		hook_event_name: hookEventName,
+	};
+}
+
+function baseStdinFromRecord(hookEventName: HookEventName, stdin: Record<string, unknown>): Record<string, unknown> {
+	return {
+		session_id: stdin.session_id,
+		cwd: stdin.cwd,
+		hook_event_name: hookEventName,
+	};
+}
+
+// ---------------------------------------------------------------------------
+// Core dispatchers
+// ---------------------------------------------------------------------------
+
+async function runPreToolUseGroups(
+	groups: HookGroup[],
+	ccToolName: string,
+	stdin: string,
+	ctx?: ExtensionContext,
+	defaultTimeout = 10,
+): Promise<SyntheticHookInvocationResult> {
+	let selectedDecision: "allow" | "ask" | "deny" | "defer" | undefined;
+	let selectedReason = "";
+	let selectedRank = 0;
+	let updatedInput: Record<string, unknown> | undefined;
+	const extraContexts: string[] = [];
+
+	const rank: Record<"allow" | "ask" | "defer" | "deny", number> = {
+		allow: 1,
+		ask: 2,
+		defer: 3,
+		deny: 4,
+	};
+
+	for (const group of matchingGroups(groups, ccToolName)) {
+		for (const entry of group.hooks) {
+			const result = await runHook(entry, stdin, defaultTimeout);
+			if (result.exitCode === 2) {
+				return {
+					blocked: true,
+					reason: result.stderr.trim() || "Blocked by hook",
+					decision: "deny",
+				};
+			}
+			if (result.exitCode !== 0) {
+				ctx?.ui.notify(`Pre-tool hook error (${entry.command.split("/").at(-1)}): ${result.stderr}`, "error");
+				continue;
+			}
+			const parsed = parsePreToolUseOutput(result.stdout);
+			if (parsed.updatedInput) {
+				updatedInput = parsed.updatedInput;
+			}
+			if (parsed.additionalContext) {
+				extraContexts.push(parsed.additionalContext);
+			}
+			if (parsed.decision) {
+				const currentRank = rank[parsed.decision];
+				if (currentRank > selectedRank) {
+					selectedRank = currentRank;
+					selectedDecision = parsed.decision;
+					selectedReason = parsed.reason ?? selectedReason;
+				}
+			}
+		}
+	}
+
+	if (selectedDecision === "deny") {
+		return {
+			blocked: true,
+			reason: selectedReason || "Blocked by hook",
+			decision: "deny",
+			updatedInput,
+			additionalContext: extraContexts.join("\n").trim() || undefined,
+		};
+	}
+	if (selectedDecision === "ask") {
+		return {
+			blocked: true,
+			reason: selectedReason || "Blocked by hook: confirmation required (decision=ask)",
+			decision: "ask",
+			updatedInput,
+			additionalContext: extraContexts.join("\n").trim() || undefined,
+		};
+	}
+	if (selectedDecision === "defer") {
+		return {
+			blocked: true,
+			reason: selectedReason || "Deferred by hook (unsupported in interactive Pi)",
+			decision: "defer",
+			updatedInput,
+			additionalContext: extraContexts.join("\n").trim() || undefined,
+		};
+	}
+
+	return {
+		blocked: false,
+		reason: selectedReason || undefined,
+		decision: selectedDecision,
+		updatedInput,
+		additionalContext: extraContexts.join("\n").trim() || undefined,
+	};
+}
+
+async function runPermissionRequestGroups(
+	groups: HookGroup[],
+	ccToolName: string,
+	stdin: string,
+	ctx?: ExtensionContext,
+	defaultTimeout = 10,
+): Promise<SyntheticHookInvocationResult> {
+	for (const group of matchingGroups(groups, ccToolName)) {
+		for (const entry of group.hooks) {
+			const result = await runHook(entry, stdin, defaultTimeout);
+			if (result.exitCode === 2) {
+				return { blocked: true, reason: result.stderr.trim() || "Permission denied by hook", behavior: "deny" };
+			}
+			if (result.exitCode !== 0) {
+				ctx?.ui.notify(`PermissionRequest hook error (${entry.command.split("/").at(-1)}): ${result.stderr}`, "error");
+				continue;
+			}
+			const parsed = parsePermissionRequestOutput(result.stdout);
+			if (parsed.behavior === "deny") {
+				return {
+					blocked: true,
+					reason: parsed.message || "Permission denied by hook",
+					behavior: "deny",
+					interrupt: parsed.interrupt,
+				};
+			}
+			if (parsed.behavior === "allow") {
+				return {
+					blocked: false,
+					behavior: "allow",
+					updatedInput: parsed.updatedInput,
+				};
+			}
+		}
+	}
+	return { blocked: false };
+}
+
+async function runPermissionDeniedGroups(
+	groups: HookGroup[],
+	ccToolName: string,
+	stdin: string,
+	ctx?: ExtensionContext,
+): Promise<SyntheticHookInvocationResult> {
+	let retry = false;
+	for (const group of matchingGroups(groups, ccToolName)) {
+		for (const entry of group.hooks) {
+			const result = await runHook(entry, stdin, 10);
+			if (result.exitCode !== 0) {
+				ctx?.ui.notify(`PermissionDenied hook error (${entry.command.split("/").at(-1)}): ${result.stderr}`, "error");
+				continue;
+			}
+			const parsed = parsePermissionDeniedOutput(result.stdout);
+			if (parsed.retry) retry = true;
+		}
+	}
+	return { retry };
+}
+
+const NON_BLOCKING_HOOK_EVENTS = new Set<HookEventName>([
+	"SessionStart",
+	"Setup",
+	"SessionEnd",
+	"SubagentStart",
+	"Notification",
+	"PostCompact",
+	"StopFailure",
+	"InstructionsLoaded",
+	"CwdChanged",
+	"FileChanged",
+	"WorktreeRemove",
+]);
+
+async function runDecisionHooks(
+	hookName: HookEventName,
+	groups: HookGroup[],
+	stdin: string,
+	ctx?: ExtensionContext,
+): Promise<{ blocked: boolean; reason?: string; additionalContext?: string }> {
+	let blocked = false;
+	let blockReason = "";
+	const contexts: string[] = [];
+	for (const group of groups) {
+		for (const entry of group.hooks) {
+			const result = await runHook(entry, stdin, 15);
+			if (result.exitCode === 2 && result.stderr.trim()) {
+				blocked = true;
+				blockReason = result.stderr.trim();
+				continue;
+			}
+			if (result.exitCode !== 0) {
+				ctx?.ui.notify(`${hookName} hook error (${entry.command.split("/").at(-1)}): ${result.stderr}`, "error");
+				continue;
+			}
+			const parsed = parseDecisionOutput(result.stdout, hookName);
+			if (parsed.block) {
+				blocked = true;
+				blockReason = parsed.reason || blockReason || `${hookName} blocked by hook`;
+			}
+			if (parsed.additionalContext) {
+				contexts.push(parsed.additionalContext);
+			} else if (result.stdout.trim() && !parseJsonObject(result.stdout)) {
+				// Non-JSON stdout acts as extra context for events like UserPromptExpansion
+				contexts.push(result.stdout.trim());
+			}
+		}
+	}
+	return {
+		blocked,
+		reason: blockReason || undefined,
+		additionalContext: contexts.join("\n").trim() || undefined,
 	};
 }
 
@@ -267,13 +850,137 @@ function baseStdin(hookEventName: string, ctx: ExtensionContext): Record<string,
 // ---------------------------------------------------------------------------
 
 export default function (pi: ExtensionAPI): void {
-	// --- SessionStart → SessionStart or SubagentStart ---
+	let pendingPromptExpansionContext = "";
+	let lastHookCwd: string | undefined;
+	const toolInputByCallId = new Map<string, Record<string, unknown>>();
+
+	pi.registerCommand("hooks", {
+		description: "Manage hook-runner config (.pi/hooks.json)",
+		handler: async (_args, ctx) => {
+			if (!ctx.hasUI) {
+				ctx.ui.notify("Hooks UI is only available in interactive mode.", "warning");
+				return;
+			}
+			loadConfig(ctx.cwd);
+			const options = readProjectHookRunnerOptions(ctx.cwd);
+			const disableBundled = options.disableBundledHooks === true;
+			const choice = await ctx.ui.select("Hook runner", [
+				"Show active hooks",
+				disableBundled ? "Enable bundled hooks" : "Disable bundled hooks",
+				"Edit .pi/hooks.json",
+			]);
+			if (choice === "Show active hooks") {
+				ctx.ui.notify(hooksSummary(resolvedConfig()), "info");
+				return;
+			}
+			if (choice === "Edit .pi/hooks.json") {
+				const path = projectHooksConfigPath(ctx.cwd);
+				let initial = "{}\n";
+				try {
+					initial = readFileSync(path, "utf-8");
+				} catch {
+					// keep default
+				}
+				const edited = await ctx.ui.editor("Edit .pi/hooks.json:", initial);
+				if (!edited || !edited.trim()) return;
+				try {
+					const parsed = JSON.parse(edited) as unknown;
+					if (!isRecord(parsed)) {
+						ctx.ui.notify(".pi/hooks.json must be a JSON object.", "error");
+						return;
+					}
+					writeProjectHooksConfig(ctx.cwd, parsed);
+					loadConfig(ctx.cwd, true);
+					ctx.ui.notify("Updated .pi/hooks.json", "info");
+				} catch {
+					ctx.ui.notify("Invalid JSON. Not saved.", "error");
+				}
+				return;
+			}
+			if (choice === "Disable bundled hooks" || choice === "Enable bundled hooks") {
+				const path = projectHooksConfigPath(ctx.cwd);
+				let parsed: Record<string, unknown> = {};
+				try {
+					const raw = readFileSync(path, "utf-8");
+					const current = JSON.parse(raw) as unknown;
+					if (isRecord(current)) parsed = current;
+				} catch {
+					// start from empty object
+				}
+				const hookRunner = isRecord(parsed.hookRunner) ? (parsed.hookRunner as Record<string, unknown>) : {};
+				hookRunner.disableBundledHooks = choice === "Disable bundled hooks";
+				parsed.hookRunner = hookRunner;
+				writeProjectHooksConfig(ctx.cwd, parsed);
+				loadConfig(ctx.cwd, true);
+				ctx.ui.notify(choice === "Disable bundled hooks" ? "Bundled hooks disabled in .pi/hooks.json" : "Bundled hooks enabled in .pi/hooks.json", "info");
+			}
+		},
+	});
+
+	// --- extension-to-extension synthetic hook bridge ---
+	pi.events.on(HOOK_RUNNER_INVOKE_CHANNEL, (raw) => {
+		void (async () => {
+			if (!isRecord(raw)) return;
+			const req = raw as Partial<SyntheticHookInvocationRequest>;
+			if (typeof req.onResult !== "function") return;
+			if (!isRecord(req.stdin)) {
+				req.onResult({ blocked: true, reason: "invalid synthetic hook payload" });
+				return;
+			}
+			if (!isHookEventName(req.hookEventName)) {
+				req.onResult({ blocked: true, reason: `unsupported synthetic hook event: ${String(req.hookEventName)}` });
+				return;
+			}
+
+			const hookEventName = req.hookEventName;
+			const cwd = typeof req.stdin.cwd === "string" ? req.stdin.cwd : process.cwd();
+			loadConfig(cwd, hookEventName === "ConfigChange");
+
+			const withBase = {
+				...baseStdinFromRecord(hookEventName, req.stdin),
+				...req.stdin,
+				hook_event_name: hookEventName,
+			};
+
+			if (hookEventName === "PreToolUse") {
+				const ccToolName = typeof req.ccToolName === "string" ? req.ccToolName : typeof req.stdin.tool_name === "string" ? req.stdin.tool_name : "";
+				const stdin = JSON.stringify({ ...withBase, tool_name: ccToolName });
+				const result = await runPreToolUseGroups(resolvedConfig().PreToolUse ?? [], ccToolName, stdin, undefined, req.timeoutSec ?? 10);
+				req.onResult(result);
+				return;
+			}
+
+			if (hookEventName === "PermissionRequest") {
+				const ccToolName = typeof req.ccToolName === "string" ? req.ccToolName : typeof req.stdin.tool_name === "string" ? req.stdin.tool_name : "";
+				const stdin = JSON.stringify({ ...withBase, tool_name: ccToolName });
+				const result = await runPermissionRequestGroups(resolvedConfig().PermissionRequest ?? [], ccToolName, stdin, undefined, req.timeoutSec ?? 10);
+				req.onResult(result);
+				return;
+			}
+
+			if (hookEventName === "PermissionDenied") {
+				const ccToolName = typeof req.ccToolName === "string" ? req.ccToolName : typeof req.stdin.tool_name === "string" ? req.stdin.tool_name : "";
+				const stdin = JSON.stringify({ ...withBase, tool_name: ccToolName });
+				const result = await runPermissionDeniedGroups(resolvedConfig().PermissionDenied ?? [], ccToolName, stdin);
+				req.onResult(result);
+				return;
+			}
+
+			const stdin = JSON.stringify(withBase);
+			const groups = resolvedConfig()[hookEventName] ?? [];
+			const parsed = await runDecisionHooks(hookEventName, groups, stdin);
+			const blocked = NON_BLOCKING_HOOK_EVENTS.has(hookEventName) ? false : parsed.blocked;
+			req.onResult({ blocked, reason: parsed.reason, additionalContext: parsed.additionalContext });
+		})();
+	});
+
+	// --- SessionStart → SessionStart (+ InstructionsLoaded snapshot) ---
 	pi.on("session_start", async (event: SessionStartEvent, ctx: ExtensionContext) => {
 		if (event.reason === "reload") return;
 		loadConfig(ctx.cwd);
+		lastHookCwd = ctx.cwd;
 
-		// Pi has no built-in subagent detection on session_start; treat all as SessionStart
-		const hookName = "SessionStart";
+		const hookName: HookEventName = "SessionStart";
 		const stdin = JSON.stringify({
 			...baseStdin(hookName, ctx),
 			source: event.reason,
@@ -295,6 +1002,22 @@ export default function (pi: ExtensionAPI): void {
 				}
 			}
 		}
+
+		const instructionsHookName: HookEventName = "InstructionsLoaded";
+		for (const file of discoverInstructionFiles(ctx.cwd)) {
+			const fileStdin = JSON.stringify({
+				...baseStdin(instructionsHookName, ctx),
+				file_path: file.file_path,
+				memory_type: file.memory_type,
+				load_reason: file.load_reason,
+			});
+			const groups = matchingGroups(resolvedConfig()[instructionsHookName] ?? [], file.load_reason);
+			for (const group of groups) {
+				for (const entry of group.hooks) {
+					runHookAsync(entry, fileStdin, (msg, lvl) => ctx.ui.notify(msg, lvl));
+				}
+			}
+		}
 	});
 
 	// --- agent_start → SubagentStart ---
@@ -308,9 +1031,9 @@ export default function (pi: ExtensionAPI): void {
 		}
 	});
 
-	// --- session_shutdown → SessionEnd or SubagentStop ---
+	// --- session_shutdown → SessionEnd ---
 	pi.on("session_shutdown", async (event: SessionShutdownEvent, ctx: ExtensionContext) => {
-		const hookName = "SessionEnd";
+		const hookName: HookEventName = "SessionEnd";
 		const stdin = JSON.stringify({
 			...baseStdin(hookName, ctx),
 			end_reason: event.reason,
@@ -322,25 +1045,47 @@ export default function (pi: ExtensionAPI): void {
 		}
 	});
 
-	// --- agent_end → Stop + Notification ---
-	pi.on("agent_end", async (_event: AgentEndEvent, ctx: ExtensionContext) => {
-		const stdin = JSON.stringify(baseStdin("Stop", ctx));
-		for (const group of resolvedConfig().Stop ?? []) {
-			for (const entry of group.hooks) {
-				if (entry.async) {
-					runHookAsync(entry, stdin, (msg, lvl) => ctx.ui.notify(msg, lvl));
-					continue;
+	// --- agent_end → Stop / StopFailure + Notification ---
+	pi.on("agent_end", async (event: AgentEndEvent, ctx: ExtensionContext) => {
+		const lastAssistant = [...event.messages].reverse().find((m) => m.role === "assistant") as
+			| { role: "assistant"; stopReason?: string; errorMessage?: string; content?: Array<{ type: string; text?: string }> }
+			| undefined;
+		const isFailure = lastAssistant?.stopReason === "error";
+
+		if (isFailure) {
+			const hookName: HookEventName = "StopFailure";
+			const lastText =
+				lastAssistant?.errorMessage ||
+				(lastAssistant?.content ?? [])
+					.filter((p) => p.type === "text" && typeof p.text === "string")
+					.map((p) => p.text)
+					.join("\n");
+			const failureStdin = JSON.stringify({
+				...baseStdin(hookName, ctx),
+				error: "unknown",
+				error_details: lastAssistant?.errorMessage,
+				last_assistant_message: lastText || "",
+			});
+			for (const group of resolvedConfig()[hookName] ?? []) {
+				for (const entry of group.hooks) {
+					runHookAsync(entry, failureStdin, (msg, lvl) => ctx.ui.notify(msg, lvl));
 				}
-				const result = await runHook(entry, stdin);
-				if (result.exitCode === 2 && result.stderr.trim()) {
-					// Simulate CC's "prevent stop": inject reason as a continuation prompt
-					try {
-						pi.sendUserMessage(result.stderr.trim(), { deliverAs: "followUp" });
-					} catch {
-						ctx.ui.notify(result.stderr.trim(), "warning");
+			}
+		} else {
+			const stdin = JSON.stringify(baseStdin("Stop", ctx));
+			for (const group of resolvedConfig().Stop ?? []) {
+				for (const entry of group.hooks) {
+					if (entry.async) {
+						runHookAsync(entry, stdin, (msg, lvl) => ctx.ui.notify(msg, lvl));
+						continue;
 					}
-				} else if (result.exitCode !== 0) {
-					ctx.ui.notify(`Stop hook error: ${result.stderr}`, "error");
+					const result = await runHook(entry, stdin);
+					if (result.exitCode === 2 && result.stderr.trim()) {
+						// Simulate CC's "prevent stop": inject reason as a continuation prompt
+						sendHookMessageToAgent(pi, ctx, result.stderr.trim());
+					} else if (result.exitCode !== 0) {
+						ctx.ui.notify(`Stop hook error: ${result.stderr}`, "error");
+					}
 				}
 			}
 		}
@@ -392,8 +1137,50 @@ export default function (pi: ExtensionAPI): void {
 		}
 	});
 
-	// --- before_agent_start → UserPromptSubmit ---
+	// --- input → UserPromptExpansion ---
+	pi.on("input", async (event: InputEvent, ctx: ExtensionContext): Promise<InputEventResult | undefined> => {
+		const parsed = parseSlashCommand(event.text);
+		if (!parsed) return undefined;
+
+		const hookName: HookEventName = "UserPromptExpansion";
+		const stdin = JSON.stringify({
+			...baseStdin(hookName, ctx),
+			expansion_type: "slash_command",
+			command_name: parsed.commandName,
+			command_args: parsed.commandArgs,
+			command_source: event.source,
+			prompt: parsed.prompt,
+		});
+
+		const groups = matchingGroups(resolvedConfig()[hookName] ?? [], parsed.commandName);
+		const result = await runDecisionHooks(hookName, groups, stdin, ctx);
+		if (result.additionalContext) {
+			pendingPromptExpansionContext = [pendingPromptExpansionContext, result.additionalContext].filter(Boolean).join("\n").trim();
+		}
+		if (result.blocked) {
+			ctx.ui.notify(result.reason ?? "Command expansion blocked by hook", "warning");
+			return { action: "handled" };
+		}
+		return undefined;
+	});
+
+	// --- before_agent_start → CwdChanged + UserPromptSubmit ---
 	pi.on("before_agent_start", async (event: BeforeAgentStartEvent, ctx: ExtensionContext): Promise<BeforeAgentStartEventResult | undefined> => {
+		if (lastHookCwd && lastHookCwd !== ctx.cwd) {
+			loadConfig(ctx.cwd);
+			const cwdHookName: HookEventName = "CwdChanged";
+			const cwdStdin = JSON.stringify({
+				...baseStdin(cwdHookName, ctx),
+				old_cwd: lastHookCwd,
+				new_cwd: ctx.cwd,
+			});
+			const cwdResult = await runDecisionHooks(cwdHookName, resolvedConfig()[cwdHookName] ?? [], cwdStdin, ctx);
+			if (cwdResult.additionalContext) {
+				sendHookMessageToAgent(pi, ctx, cwdResult.additionalContext);
+			}
+		}
+		lastHookCwd = ctx.cwd;
+
 		const stdin = JSON.stringify({
 			...baseStdin("UserPromptSubmit", ctx),
 			prompt: event.prompt,
@@ -407,12 +1194,17 @@ export default function (pi: ExtensionAPI): void {
 					// Hook tried to block — surface as injected context (Pi can't block before_agent_start)
 					injected += result.stderr.trim() + "\n";
 				} else if (result.exitCode === 0 && result.stdout.trim()) {
-					// Stdout (e.g. skill-enforcer's "→ Consider skills: ...") injected as LLM context
+					// Stdout injected as LLM context
 					injected += result.stdout.trim() + "\n";
 				} else if (result.exitCode !== 0) {
 					ctx.ui.notify(`Prompt hook error: ${result.stderr}`, "error");
 				}
 			}
+		}
+
+		if (pendingPromptExpansionContext.trim()) {
+			injected += pendingPromptExpansionContext.trim() + "\n";
+			pendingPromptExpansionContext = "";
 		}
 
 		if (!injected.trim()) return undefined;
@@ -426,7 +1218,7 @@ export default function (pi: ExtensionAPI): void {
 		};
 	});
 
-	// --- tool_call → PreToolUse (blocking) ---
+	// --- tool_call → PreToolUse (blocking + input patching) ---
 	pi.on("tool_call", async (event: ToolCallEvent, ctx: ExtensionContext): Promise<ToolCallEventResult | undefined> => {
 		const ccName = toCcToolName(event.toolName);
 		const stdin = JSON.stringify({
@@ -436,16 +1228,21 @@ export default function (pi: ExtensionAPI): void {
 			tool_use_id: event.toolCallId,
 		});
 
-		for (const group of matchingGroups(resolvedConfig().PreToolUse ?? [], ccName)) {
-			for (const entry of group.hooks) {
-				const result = await runHook(entry, stdin, 10);
-				if (result.exitCode === 2) {
-					return { block: true, reason: result.stderr.trim() || "Blocked by hook" };
-				}
-				if (result.exitCode !== 0) {
-					ctx.ui.notify(`Pre-tool hook error (${entry.command.split("/").at(-1)}): ${result.stderr}`, "error");
-				}
+		const result = await runPreToolUseGroups(resolvedConfig().PreToolUse ?? [], ccName, stdin, ctx, 10);
+		if (result.updatedInput) {
+			if (!isRecord(event.input)) {
+				return { block: true, reason: "Hook updatedInput rejected: tool input is not a mutable object" };
 			}
+			replaceInput(event.input, result.updatedInput);
+		}
+		if (result.blocked) {
+			if (isRecord(event.input)) {
+				toolInputByCallId.set(event.toolCallId, structuredClone(event.input));
+			}
+			return { block: true, reason: result.reason || "Blocked by hook" };
+		}
+		if (isRecord(event.input)) {
+			toolInputByCallId.set(event.toolCallId, structuredClone(event.input));
 		}
 		return undefined;
 	});
@@ -453,7 +1250,10 @@ export default function (pi: ExtensionAPI): void {
 	// --- tool_result → PostToolUse / PostToolUseFailure (LLM feedback loop) ---
 	pi.on("tool_result", async (event: ToolResultEvent, ctx: ExtensionContext) => {
 		const ccName = toCcToolName(event.toolName);
-		const hookName = event.isError ? "PostToolUseFailure" : "PostToolUse";
+		const hookName: HookEventName = event.isError ? "PostToolUseFailure" : "PostToolUse";
+		if (isRecord(event.input)) {
+			toolInputByCallId.set(event.toolCallId, structuredClone(event.input));
+		}
 		const stdin = JSON.stringify({
 			...baseStdin(hookName, ctx),
 			tool_name: ccName,
@@ -471,6 +1271,7 @@ export default function (pi: ExtensionAPI): void {
 
 		const groups = matchingGroups(resolvedConfig()[hookName] ?? [], ccName);
 		const feedbackLines: string[] = [];
+		const extraContexts: string[] = [];
 
 		for (const group of groups) {
 			for (const entry of group.hooks) {
@@ -482,16 +1283,59 @@ export default function (pi: ExtensionAPI): void {
 				if (result.exitCode === 2 && result.stderr.trim()) {
 					// Feedback loop: append stderr to tool result content so LLM sees and fixes issues
 					feedbackLines.push(result.stderr.trim());
-				} else if (result.exitCode !== 0) {
+					continue;
+				}
+				if (result.exitCode !== 0) {
 					ctx.ui.notify(`Post-tool hook error (${entry.command.split("/").at(-1)}): ${result.stderr}`, "error");
+					continue;
+				}
+				const parsed = parseDecisionOutput(result.stdout, hookName);
+				if (parsed.block && parsed.reason) {
+					feedbackLines.push(parsed.reason);
+				}
+				if (parsed.additionalContext) {
+					extraContexts.push(parsed.additionalContext);
 				}
 			}
 		}
 
-		if (feedbackLines.length === 0) return undefined;
-		const feedbackText = "⚠️ Hook output:\n" + feedbackLines.join("\n---\n");
+		if (feedbackLines.length === 0 && extraContexts.length === 0) return undefined;
+		const appended: Array<{ type: "text"; text: string }> = [];
+		if (feedbackLines.length > 0) {
+			appended.push({ type: "text", text: "⚠️ Hook output:\n" + feedbackLines.join("\n---\n") });
+		}
+		if (extraContexts.length > 0) {
+			appended.push({ type: "text", text: extraContexts.join("\n") });
+		}
 		return {
-			content: [...event.content, { type: "text", text: feedbackText }],
+			content: [...event.content, ...appended],
 		};
+	});
+
+	// --- turn_end → PostToolBatch ---
+	pi.on("turn_end", async (event: TurnEndEvent, ctx: ExtensionContext) => {
+		if (!event.toolResults || event.toolResults.length === 0) return;
+		const hookName: HookEventName = "PostToolBatch";
+		const toolCalls = event.toolResults.map((result) => ({
+			tool_name: toCcToolName(result.toolName),
+			tool_input: toolInputByCallId.get(result.toolCallId) ?? {},
+			tool_use_id: result.toolCallId,
+			tool_response: serializeToolContent(result.content as Array<{ type: string; text?: string }>),
+			is_error: result.isError,
+		}));
+		for (const result of event.toolResults) {
+			toolInputByCallId.delete(result.toolCallId);
+		}
+		const stdin = JSON.stringify({
+			...baseStdin(hookName, ctx),
+			tool_calls: toolCalls,
+		});
+		const result = await runDecisionHooks(hookName, resolvedConfig()[hookName] ?? [], stdin, ctx);
+		if (result.additionalContext) {
+			sendHookMessageToAgent(pi, ctx, result.additionalContext);
+		}
+		if (result.blocked && result.reason) {
+			sendHookMessageToAgent(pi, ctx, result.reason);
+		}
 	});
 }

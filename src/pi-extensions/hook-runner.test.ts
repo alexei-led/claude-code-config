@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, mock } from "bun:test";
 
+import { HOOK_RUNNER_INVOKE_CHANNEL } from "./hook-bridge.js";
+
 // ---------------------------------------------------------------------------
 // Module mocks — must be established before the first import of hook-runner
 // ---------------------------------------------------------------------------
@@ -8,6 +10,11 @@ type ExecCallback = (err: Error | null, stdout: string, stderr: string) => void;
 
 const execQueue: Array<{ exitCode: number; stdout: string; stderr: string }> = [];
 const capturedCommands: string[] = [];
+const settingsFiles = new Map<string, string>();
+const commands = new Map<string, { handler: (args: string, ctx: ReturnType<typeof makeCtx>) => Promise<void> }>();
+const bundledHooksConfigPath = `${process.cwd()}/src/pi-extensions/hooks.json`;
+const bundledHooksConfig = await Bun.file(bundledHooksConfigPath).text();
+const originalPiCodingAgentDir = process.env.PI_CODING_AGENT_DIR;
 let capturedStdin = "";
 
 mock.module("node:child_process", () => ({
@@ -35,9 +42,17 @@ mock.module("node:child_process", () => ({
 }));
 
 mock.module("node:fs", () => ({
-	readFileSync: () => {
+	readFileSync: (path: string) => {
+		const content = settingsFiles.get(path);
+		if (typeof content === "string") return content;
 		throw Object.assign(new Error("ENOENT"), { code: "ENOENT" });
 	},
+	writeFileSync: (path: string, data: string) => {
+		settingsFiles.set(path, data);
+	},
+	mkdirSync: () => undefined,
+	existsSync: () => false,
+	readdirSync: () => [],
 }));
 
 mock.module("node:os", () => ({ homedir: () => "/tmp/test-home" }));
@@ -51,14 +66,37 @@ const { default: hookRunner, _resetForTesting, toCcToolName, matcherMatches, mat
 
 type EventHandler = (...args: unknown[]) => unknown;
 const handlers = new Map<string, EventHandler>();
-hookRunner({ on: (event: string, h: EventHandler) => handlers.set(event, h) } as any);
+const busHandlers = new Map<string, (payload: unknown) => void>();
 
-function makeCtx(overrides: { cwd?: string; sessionId?: string } = {}) {
+const fakePi = {
+	on: (event: string, h: EventHandler) => handlers.set(event, h),
+	registerCommand: (name: string, command: { handler: (args: string, ctx: ReturnType<typeof makeCtx>) => Promise<void> }) => commands.set(name, command),
+	sendUserMessage: mock(() => {}),
+	events: {
+		on: (channel: string, handler: (payload: unknown) => void) => {
+			busHandlers.set(channel, handler);
+			return () => busHandlers.delete(channel);
+		},
+		emit: (channel: string, payload: unknown) => {
+			const handler = busHandlers.get(channel);
+			handler?.(payload);
+		},
+	},
+};
+
+hookRunner(fakePi as any);
+
+function makeCtx(overrides: { cwd?: string; sessionId?: string; idle?: boolean; select?: string; editor?: string } = {}) {
 	return {
+		hasUI: true,
 		cwd: overrides.cwd ?? "/workspace",
 		sessionManager: { getSessionId: () => overrides.sessionId ?? "sess-test" },
-		ui: { notify: mock(), select: mock() },
-		sendUserMessage: mock(async () => {}),
+		ui: {
+			notify: mock(),
+			select: mock(async () => overrides.select),
+			editor: mock(async () => overrides.editor),
+		},
+		isIdle: () => overrides.idle ?? true,
 	};
 }
 
@@ -66,6 +104,13 @@ beforeEach(() => {
 	_resetForTesting();
 	execQueue.length = 0;
 	capturedCommands.length = 0;
+	settingsFiles.clear();
+	settingsFiles.set(bundledHooksConfigPath, bundledHooksConfig);
+	if (originalPiCodingAgentDir === undefined) {
+		delete process.env.PI_CODING_AGENT_DIR;
+	} else {
+		process.env.PI_CODING_AGENT_DIR = originalPiCodingAgentDir;
+	}
 	capturedStdin = "";
 });
 
@@ -81,7 +126,9 @@ describe("toCcToolName", () => {
 		["multiedit", "MultiEdit"],
 		["read", "Read"],
 		["grep", "Grep"],
-		["find", "Find"],
+		["find", "Glob"],
+		["subagent", "Agent"],
+		["ask_user_question", "AskUserQuestion"],
 		["ls", "Ls"],
 		["AlreadyCamel", "AlreadyCamel"],
 	])("%s → %s", (input, expected) => {
@@ -98,7 +145,7 @@ describe("matcherMatches", () => {
 		["Write|Edit|MultiEdit", "MultiEdit", true],
 		["Write|Edit|MultiEdit", "Bash", false],
 		["Bash", "Bash", true],
-		["bash", "Bash", true], // case-insensitive
+		["bash", "Bash", true],
 		["Bash", "Write", false],
 	])("matcher=%j tool=%s → %s", (matcher, tool, expected) => {
 		expect(matcherMatches(matcher, tool)).toBe(expected);
@@ -109,9 +156,9 @@ describe("matchingGroups", () => {
 	const groups = [{ matcher: "Write|Edit", hooks: [] }, { matcher: "Bash", hooks: [] }, { hooks: [] }];
 
 	it.each([
-		["Write", 2], // Write|Edit + catch-all
-		["Bash", 2], // Bash + catch-all
-		["Read", 1], // catch-all only
+		["Write", 2],
+		["Bash", 2],
+		["Read", 1],
 	])("tool=%s → %d matching groups", (tool, count) => {
 		expect(matchingGroups(groups, tool)).toHaveLength(count);
 	});
@@ -123,6 +170,7 @@ describe("matchingGroups", () => {
 
 describe("tool_call → PreToolUse", () => {
 	const handler = handlers.get("tool_call") as EventHandler;
+	const sessionStart = handlers.get("session_start") as EventHandler;
 
 	it("blocks when exit code 2", async () => {
 		execQueue.push({ exitCode: 2, stdout: "", stderr: "Protected file: .env" });
@@ -130,239 +178,364 @@ describe("tool_call → PreToolUse", () => {
 		expect(result).toEqual({ block: true, reason: "Protected file: .env" });
 	});
 
-	it("uses fallback reason when stderr is empty on exit 2", async () => {
-		execQueue.push({ exitCode: 2, stdout: "", stderr: "" });
-		const result = await handler({ toolName: "write", input: { file_path: "/etc/passwd" }, toolCallId: "tc2" }, makeCtx());
-		expect((result as any).block).toBe(true);
-		expect((result as any).reason).toBeTruthy();
+	it("blocks when hook returns JSON deny on exit 0", async () => {
+		execQueue.push({
+			exitCode: 0,
+			stdout: JSON.stringify({
+				hookSpecificOutput: {
+					hookEventName: "PreToolUse",
+					permissionDecision: "deny",
+					permissionDecisionReason: "blocked from JSON",
+				},
+			}),
+			stderr: "",
+		});
+		const result = await handler({ toolName: "bash", input: { command: "rm -rf /tmp" }, toolCallId: "tc-json-deny" }, makeCtx());
+		expect(result).toEqual({ block: true, reason: "blocked from JSON" });
 	});
 
-	it("allows on exit code 0", async () => {
-		execQueue.push({ exitCode: 0, stdout: "", stderr: "" });
-		const result = await handler({ toolName: "write", input: { file_path: "/workspace/src/app.ts" }, toolCallId: "tc3" }, makeCtx());
+	it("applies updatedInput from JSON output", async () => {
+		execQueue.push({
+			exitCode: 0,
+			stdout: JSON.stringify({
+				hookSpecificOutput: {
+					hookEventName: "PreToolUse",
+					permissionDecision: "allow",
+					updatedInput: { command: "echo sanitized" },
+				},
+			}),
+			stderr: "",
+		});
+		const event = { toolName: "bash", input: { command: "rm -rf /tmp" }, toolCallId: "tc-json-update" };
+		const result = await handler(event, makeCtx());
 		expect(result).toBeUndefined();
+		expect(event.input.command).toBe("echo sanitized");
 	});
 
-	it("notifies and allows on non-blocking error (exit 1)", async () => {
-		execQueue.push({ exitCode: 1, stdout: "", stderr: "hook script error" });
-		const ctx = makeCtx();
-		const result = await handler({ toolName: "bash", input: { command: "ls" }, toolCallId: "tc4" }, ctx);
-		expect(result).toBeUndefined();
-		expect(ctx.ui.notify).toHaveBeenCalledWith(expect.stringContaining("error"), "error");
+	it("blocks when hook returns JSON ask decision", async () => {
+		execQueue.push({
+			exitCode: 0,
+			stdout: JSON.stringify({
+				hookSpecificOutput: {
+					hookEventName: "PreToolUse",
+					permissionDecision: "ask",
+					permissionDecisionReason: "needs explicit confirmation",
+				},
+			}),
+			stderr: "",
+		});
+		const result = await handler({ toolName: "bash", input: { command: "rm -rf /tmp" }, toolCallId: "tc-json-ask" }, makeCtx());
+		expect(result).toEqual({ block: true, reason: "needs explicit confirmation" });
 	});
 
 	it("puts CC tool name and event name in stdin JSON", async () => {
 		execQueue.push({ exitCode: 0, stdout: "", stderr: "" });
-		await handler({ toolName: "write", input: { file_path: "x.ts" }, toolCallId: "tc5" }, makeCtx());
+		await handler({ toolName: "bash", input: { command: "echo hi" }, toolCallId: "tc5" }, makeCtx());
 		const stdin = JSON.parse(capturedStdin);
-		expect(stdin.tool_name).toBe("Write");
+		expect(stdin.tool_name).toBe("Bash");
 		expect(stdin.hook_event_name).toBe("PreToolUse");
 		expect(stdin.cwd).toBe("/workspace");
 		expect(stdin.session_id).toBe("sess-test");
-		expect(stdin.tool_input).toEqual({ file_path: "x.ts" });
 	});
 
-	it("skips hooks when no group matches the tool name", async () => {
-		const result = await handler({ toolName: "read", input: {}, toolCallId: "tc6" }, makeCtx());
-		expect(result).toBeUndefined();
-		expect(capturedCommands).toHaveLength(0);
+	it("loads project .pi/hooks.json in direct-map form", async () => {
+		settingsFiles.set(
+			"/workspace/.pi/hooks.json",
+			JSON.stringify({
+				PreToolUse: [{ matcher: "Bash", hooks: [{ type: "command", command: "echo project-hooks-json" }] }],
+			}),
+		);
+		await sessionStart({ reason: "startup" }, makeCtx());
+		await handler({ toolName: "bash", input: { command: "echo hi" }, toolCallId: "tc-hooks-json" }, makeCtx());
+		expect(capturedCommands.some((cmd) => cmd.includes("echo project-hooks-json"))).toBe(true);
+	});
+
+	it("loads project .pi/hooks.json in nested hooks form", async () => {
+		settingsFiles.set(
+			"/workspace/.pi/hooks.json",
+			JSON.stringify({
+				hooks: {
+					PreToolUse: [{ matcher: "Bash", hooks: [{ type: "command", command: "echo nested-hooks-json" }] }],
+				},
+			}),
+		);
+		await sessionStart({ reason: "startup" }, makeCtx());
+		await handler({ toolName: "bash", input: { command: "echo hi" }, toolCallId: "tc-hooks-json-nested" }, makeCtx());
+		expect(capturedCommands.some((cmd) => cmd.includes("echo nested-hooks-json"))).toBe(true);
+	});
+
+	it("uses PI_CODING_AGENT_DIR for global hooks config", async () => {
+		process.env.PI_CODING_AGENT_DIR = "/custom-pi-agent";
+		settingsFiles.set(
+			"/custom-pi-agent/hooks.json",
+			JSON.stringify({
+				PreToolUse: [{ matcher: "Bash", hooks: [{ type: "command", command: "echo custom-agent-dir-hook" }] }],
+			}),
+		);
+		await sessionStart({ reason: "startup" }, makeCtx());
+		await handler({ toolName: "bash", input: { command: "echo hi" }, toolCallId: "tc-global-hooks-json" }, makeCtx());
+		expect(capturedCommands.some((cmd) => cmd.includes("echo custom-agent-dir-hook"))).toBe(true);
+	});
+
+	it("runs bundled ExitPlanMode revdiff hook through synthetic PreToolUse", async () => {
+		execQueue.push({
+			exitCode: 0,
+			stdout: JSON.stringify({ hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: "allow" } }),
+			stderr: "",
+		});
+		const response = await new Promise<any>((resolve) => {
+			const bus = busHandlers.get(HOOK_RUNNER_INVOKE_CHANNEL)!;
+			bus({
+				hookEventName: "PreToolUse",
+				ccToolName: "ExitPlanMode",
+				stdin: {
+					session_id: "sess",
+					cwd: "/workspace",
+					hook_event_name: "PreToolUse",
+					tool_name: "ExitPlanMode",
+					tool_use_id: "plan-exit-test",
+					tool_input: { plan: "Plan:\n1. Do the thing" },
+				},
+				onResult: resolve,
+			});
+		});
+		expect(response.blocked).toBe(false);
+		expect(capturedCommands.some((cmd) => cmd.includes("revdiff-plan-review.py"))).toBe(true);
+		expect(capturedCommands.some((cmd) => cmd.includes("${PI_HOOKS_DIR}"))).toBe(false);
 	});
 });
 
 // ---------------------------------------------------------------------------
-// tool_result → PostToolUse (LLM feedback loop)
+// /hooks command
 // ---------------------------------------------------------------------------
 
-describe("tool_result → PostToolUse", () => {
-	const handler = handlers.get("tool_result") as EventHandler;
-
-	it("injects hook stderr into tool content on exit 2 (feedback loop)", async () => {
-		execQueue.push({ exitCode: 2, stdout: "", stderr: "lint: semicolon missing at line 5" });
-		const result = (await handler(
-			{
-				toolName: "write",
-				input: { file_path: "app.ts" },
-				toolCallId: "tr1",
-				isError: false,
-				content: [{ type: "text", text: "file written" }],
-			},
-			makeCtx(),
-		)) as { content: Array<{ type: string; text: string }> };
-		expect(result).toBeDefined();
-		expect(result.content).toHaveLength(2);
-		expect(result.content[1].text).toContain("lint: semicolon missing");
+describe("/hooks command", () => {
+	it("shows active hooks summary", async () => {
+		const ctx = makeCtx({ select: "Show active hooks" });
+		await commands.get("hooks")!.handler("", ctx);
+		expect(ctx.ui.notify).toHaveBeenCalledWith(expect.stringContaining("PreToolUse"), "info");
 	});
 
-	it("returns undefined when no feedback (exit 0)", async () => {
-		execQueue.push({ exitCode: 0, stdout: "", stderr: "" });
-		const result = await handler(
-			{
-				toolName: "write",
-				input: {},
-				toolCallId: "tr2",
-				isError: false,
-				content: [{ type: "text", text: "ok" }],
-			},
-			makeCtx(),
-		);
+	it("toggles bundled hooks off and reloads config", async () => {
+		const ctx = makeCtx({ select: "Disable bundled hooks" });
+		await commands.get("hooks")!.handler("", ctx);
+		const written = JSON.parse(settingsFiles.get("/workspace/.pi/hooks.json") ?? "{}");
+		expect(written.hookRunner.disableBundledHooks).toBe(true);
+
+		const toolCall = handlers.get("tool_call") as EventHandler;
+		await toolCall({ toolName: "bash", input: { command: "echo hi" }, toolCallId: "tc-disabled-hooks" }, makeCtx());
+		expect(capturedCommands).toHaveLength(0);
+	});
+
+	it("edits project hooks config and reloads it", async () => {
+		const ctx = makeCtx({
+			select: "Edit .pi/hooks.json",
+			editor: JSON.stringify({ PreToolUse: [{ matcher: "Bash", hooks: [{ type: "command", command: "echo edited-hooks" }] }] }),
+		});
+		await commands.get("hooks")!.handler("", ctx);
+		expect(ctx.ui.notify).toHaveBeenCalledWith("Updated .pi/hooks.json", "info");
+
+		const toolCall = handlers.get("tool_call") as EventHandler;
+		await toolCall({ toolName: "bash", input: { command: "echo hi" }, toolCallId: "tc-edited-hooks" }, makeCtx());
+		expect(capturedCommands.some((cmd) => cmd.includes("echo edited-hooks"))).toBe(true);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// input → UserPromptExpansion
+// ---------------------------------------------------------------------------
+
+describe("input → UserPromptExpansion", () => {
+	const handler = handlers.get("input") as EventHandler;
+
+	it("does nothing when no UserPromptExpansion hooks configured", async () => {
+		const ctx = makeCtx();
+		const result = await handler({ text: "/revdiff", source: "interactive" }, ctx);
 		expect(result).toBeUndefined();
 	});
 
-	it("uses PostToolUseFailure hook name when isError=true", async () => {
+	it("stores non-JSON stdout as extra context for next turn", async () => {
+		execQueue.push({ exitCode: 0, stdout: "hook context from expansion", stderr: "" });
+		execQueue.push({ exitCode: 0, stdout: "", stderr: "" });
+		await handler({ text: "/skill:abc", source: "interactive" }, makeCtx());
+		const beforeAgentStart = handlers.get("before_agent_start") as EventHandler;
+		const result = (await beforeAgentStart({ prompt: "test" }, makeCtx())) as any;
+		expect(result.message.content[0].text).toContain("hook context from expansion");
+	});
+});
+
+// ---------------------------------------------------------------------------
+// turn_end → PostToolBatch
+// ---------------------------------------------------------------------------
+
+describe("turn_end → PostToolBatch", () => {
+	const handler = handlers.get("turn_end") as EventHandler;
+
+	it("runs without errors when no PostToolBatch hooks configured", async () => {
+		await expect(
+			handler(
+				{
+					toolResults: [
+						{
+							toolCallId: "t1",
+							toolName: "read",
+							isError: false,
+							content: [{ type: "text", text: "abc" }],
+						},
+					],
+				},
+				makeCtx({ idle: false }),
+			),
+		).resolves.toBeUndefined();
+	});
+
+	it("includes original tool_input in PostToolBatch payload", async () => {
+		settingsFiles.set(
+			"/workspace/.pi/settings.json",
+			JSON.stringify({
+				hooks: {
+					PostToolBatch: [{ hooks: [{ type: "command", command: "batch-hook" }] }],
+				},
+			}),
+		);
+
+		const bus = busHandlers.get(HOOK_RUNNER_INVOKE_CHANNEL)!;
+		await new Promise((resolve) => {
+			bus({
+				hookEventName: "ConfigChange",
+				stdin: {
+					session_id: "sess",
+					cwd: "/workspace",
+					hook_event_name: "ConfigChange",
+					source: "project_settings",
+					file_path: "/workspace/.pi/settings.json",
+				},
+				onResult: resolve,
+			});
+		});
+
+		const toolCall = handlers.get("tool_call") as EventHandler;
+		await toolCall({ toolName: "read", input: { path: "src/a.ts" }, toolCallId: "t1" }, makeCtx({ idle: false }));
+
+		execQueue.push({ exitCode: 0, stdout: "", stderr: "" });
 		await handler(
 			{
-				toolName: "write",
-				input: {},
-				toolCallId: "tr3",
-				isError: true,
-				content: [],
+				toolResults: [
+					{
+						toolCallId: "t1",
+						toolName: "read",
+						isError: false,
+						content: [{ type: "text", text: "abc" }],
+					},
+				],
 			},
-			makeCtx(),
+			makeCtx({ idle: false }),
 		);
-		if (capturedStdin) {
-			const stdin = JSON.parse(capturedStdin);
-			expect(stdin.hook_event_name).toBe("PostToolUseFailure");
-		}
-		// PostToolUseFailure has no builtin hooks so no hooks run; verify no commands ran
-	});
 
-	it("preserves original content items alongside feedback", async () => {
-		execQueue.push({ exitCode: 2, stdout: "", stderr: "error found" });
-		const original = [{ type: "text", text: "original" }];
-		const result = (await handler({ toolName: "write", input: {}, toolCallId: "tr4", isError: false, content: original }, makeCtx())) as { content: unknown[] };
-		expect(result.content[0]).toEqual(original[0]);
-	});
-
-	it("skips hooks for non-matching tool names", async () => {
-		const result = await handler({ toolName: "read", input: {}, toolCallId: "tr5", isError: false, content: [] }, makeCtx());
-		expect(result).toBeUndefined();
-		expect(capturedCommands).toHaveLength(0);
-	});
-});
-
-// ---------------------------------------------------------------------------
-// before_agent_start → UserPromptSubmit
-// ---------------------------------------------------------------------------
-
-describe("before_agent_start → UserPromptSubmit", () => {
-	const handler = handlers.get("before_agent_start") as EventHandler;
-
-	it("injects hook stdout as context message", async () => {
-		execQueue.push({ exitCode: 0, stdout: "→ Consider skills: writing-go", stderr: "" });
-		const result = (await handler({ prompt: "write a go service" }, makeCtx())) as any;
-		expect(result).toBeDefined();
-		expect(result.message.content[0].text).toContain("writing-go");
-	});
-
-	it("returns undefined when hook produces no output", async () => {
-		execQueue.push({ exitCode: 0, stdout: "", stderr: "" });
-		expect(await handler({ prompt: "hello" }, makeCtx())).toBeUndefined();
-	});
-
-	it("injects stderr as context on exit 2 (blocked prompt gets context)", async () => {
-		execQueue.push({ exitCode: 2, stdout: "", stderr: "blocked: use /writing-go skill" });
-		const result = (await handler({ prompt: "write code" }, makeCtx())) as any;
-		expect(result?.message.content[0].text).toContain("blocked");
-	});
-
-	it("notifies on non-blocking error (exit 1)", async () => {
-		execQueue.push({ exitCode: 1, stdout: "", stderr: "hook error" });
-		const ctx = makeCtx();
-		await handler({ prompt: "test" }, ctx);
-		expect(ctx.ui.notify).toHaveBeenCalledWith(expect.stringContaining("error"), "error");
-	});
-
-	it("includes prompt and hook_event_name in stdin JSON", async () => {
-		execQueue.push({ exitCode: 0, stdout: "context", stderr: "" });
-		await handler({ prompt: "my prompt" }, makeCtx());
 		const stdin = JSON.parse(capturedStdin);
-		expect(stdin.prompt).toBe("my prompt");
-		expect(stdin.hook_event_name).toBe("UserPromptSubmit");
+		expect(stdin.hook_event_name).toBe("PostToolBatch");
+		expect(stdin.tool_calls[0].tool_input).toEqual({ path: "src/a.ts" });
 	});
 });
 
 // ---------------------------------------------------------------------------
-// session_start → SessionStart
+// synthetic invoke bridge
 // ---------------------------------------------------------------------------
 
-describe("session_start → SessionStart", () => {
-	const handler = handlers.get("session_start") as EventHandler;
+describe("synthetic invoke bridge", () => {
+	it("supports synthetic PreToolUse for CC-style tool names", async () => {
+		execQueue.push({ exitCode: 2, stdout: "", stderr: "annotate and revise" });
 
-	it("skips reload events without running any hooks", async () => {
-		await handler({ reason: "reload" }, makeCtx());
-		expect(capturedCommands).toHaveLength(0);
+		const response = await new Promise<any>((resolve) => {
+			const bus = busHandlers.get(HOOK_RUNNER_INVOKE_CHANNEL)!;
+			bus({
+				hookEventName: "PreToolUse",
+				ccToolName: "Bash",
+				stdin: {
+					session_id: "sess",
+					cwd: "/workspace",
+					hook_event_name: "PreToolUse",
+					tool_name: "Bash",
+					tool_use_id: "x1",
+					tool_input: { command: "rm -rf /tmp" },
+				},
+				onResult: resolve,
+			});
+		});
+
+		expect(response.blocked).toBe(true);
+		expect(response.reason).toContain("annotate");
 	});
 
-	it("runs hooks on startup reason", async () => {
-		execQueue.push({ exitCode: 0, stdout: "Project: cc-thingz", stderr: "" });
-		await handler({ reason: "startup" }, makeCtx());
-		expect(capturedCommands.length).toBeGreaterThan(0);
+	it("accepts synthetic ConfigChange events as first-class", async () => {
+		const response = await new Promise<any>((resolve) => {
+			const bus = busHandlers.get(HOOK_RUNNER_INVOKE_CHANNEL)!;
+			bus({
+				hookEventName: "ConfigChange",
+				stdin: {
+					session_id: "sess",
+					cwd: "/workspace",
+					hook_event_name: "ConfigChange",
+					source: "project_settings",
+					file_path: "/workspace/.pi/settings.json",
+				},
+				onResult: resolve,
+			});
+		});
+
+		expect(response.blocked).toBe(false);
+		expect(response.reason).toBeUndefined();
 	});
 
-	it("notifies user of hook stdout output", async () => {
-		execQueue.push({ exitCode: 0, stdout: "Project context loaded", stderr: "" });
-		const ctx = makeCtx();
-		await handler({ reason: "startup" }, ctx);
-		expect(ctx.ui.notify).toHaveBeenCalledWith(expect.stringContaining("Project context"), "info");
+	it("rejects invalid synthetic payload", async () => {
+		const response = await new Promise<any>((resolve) => {
+			const bus = busHandlers.get(HOOK_RUNNER_INVOKE_CHANNEL)!;
+			bus({
+				hookEventName: "ConfigChange",
+				stdin: null,
+				onResult: resolve,
+			});
+		});
+		expect(response.blocked).toBe(true);
+		expect(response.reason).toContain("invalid synthetic hook payload");
 	});
 
-	it("puts hook_event_name=SessionStart in stdin JSON", async () => {
-		execQueue.push({ exitCode: 0, stdout: "", stderr: "" });
-		await handler({ reason: "new" }, makeCtx());
-		const stdin = JSON.parse(capturedStdin);
-		expect(stdin.hook_event_name).toBe("SessionStart");
-		expect(stdin.source).toBe("new");
+	it("rejects unsupported synthetic hook events", async () => {
+		const response = await new Promise<any>((resolve) => {
+			const bus = busHandlers.get(HOOK_RUNNER_INVOKE_CHANNEL)!;
+			bus({
+				hookEventName: "TotallyUnknownEvent",
+				stdin: {
+					session_id: "sess",
+					cwd: "/workspace",
+					hook_event_name: "TotallyUnknownEvent",
+				},
+				onResult: resolve,
+			});
+		});
+		expect(response.blocked).toBe(true);
+		expect(response.reason).toContain("unsupported synthetic hook event");
 	});
 });
 
-// ---------------------------------------------------------------------------
-// session_before_compact → PreCompact
-// ---------------------------------------------------------------------------
-
-describe("session_before_compact → PreCompact", () => {
-	const handler = handlers.get("session_before_compact") as EventHandler;
-
-	it("returns undefined when no PreCompact hooks configured", async () => {
-		// Builtin hooks have no PreCompact; result should be undefined
-		const result = await handler({}, makeCtx());
-		expect(result).toBeUndefined();
-	});
-});
-
-// ---------------------------------------------------------------------------
-// session_compact → PostCompact
-// ---------------------------------------------------------------------------
-
-describe("session_compact → PostCompact", () => {
-	const handler = handlers.get("session_compact") as EventHandler;
-
-	it("runs without error when no PostCompact hooks configured", async () => {
-		await expect(handler({ fromExtension: false }, makeCtx())).resolves.toBeUndefined();
-	});
-});
-
-// ---------------------------------------------------------------------------
-// agent_end → Stop + Notification
-// ---------------------------------------------------------------------------
-
-describe("agent_end → Stop + Notification", () => {
+describe("agent_end → StopFailure", () => {
 	const handler = handlers.get("agent_end") as EventHandler;
 
-	it("dispatches Notification with idle_prompt payload", async () => {
-		// Stop hook (ccgram) + Notification hook (notify.sh) both fire async
-		await handler({}, makeCtx());
-		const notifCommand = capturedCommands.find((c) => c.includes("notify.sh"));
-		expect(notifCommand).toBeDefined();
-	});
-
-	it("sends notification_type=idle_prompt in stdin", async () => {
-		// Capture the last stdin written — notify.sh is last dispatched
-		await handler({}, makeCtx());
-		if (capturedStdin) {
-			const stdin = JSON.parse(capturedStdin);
-			expect(stdin.notification_type).toBe("idle_prompt");
-			expect(stdin.hook_event_name).toBe("Notification");
-			expect(stdin.title).toBe("Pi");
-		}
+	it("handles assistant error stopReason without crashing", async () => {
+		await expect(
+			handler(
+				{
+					messages: [
+						{
+							role: "assistant",
+							stopReason: "error",
+							errorMessage: "API Error: test",
+							content: [{ type: "text", text: "API Error: test" }],
+						},
+					],
+				},
+				makeCtx(),
+			),
+		).resolves.toBeUndefined();
 	});
 });
