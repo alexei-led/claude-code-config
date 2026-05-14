@@ -1,5 +1,9 @@
 import { SYNTHETIC_HOOK_EVENT_NAMES } from "../hook-bridge.js";
 
+// `SubagentStop` is included for CC schema compatibility (Claude Code emits it
+// natively). Pi has no `agent_stop`-for-subagent runtime event yet, so user
+// hooks registered under this key never fire — see docs/pi-extensions.md for
+// the supported-events table.
 export const CORE_HOOK_EVENT_NAMES = [
 	"PostToolUse",
 	"PostToolUseFailure",
@@ -47,6 +51,13 @@ export interface HookEntryRuntime {
 	config: HookEntryConfig;
 	source: HookSource;
 	disabled: boolean;
+	/**
+	 * Event key the entry was loaded under (e.g. `PreToolUse`, `Stop`). Kept
+	 * for telemetry so JSONL lines carry the event name regardless of which
+	 * dispatcher invoked the entry. Typed as `string` because `HooksConfig`
+	 * accepts arbitrary keys via its index signature.
+	 */
+	eventName: string;
 }
 
 export interface HookGroup {

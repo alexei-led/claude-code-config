@@ -157,7 +157,9 @@ best-effort — telemetry failures never break dispatch.
 Use `/hooks` in Pi for an interactive TUI:
 
 - **Show active hooks** — lists every loaded hook grouped by event, with its
-  matcher, source (`bundled` / `global` / `project`), and disabled status.
+  matcher, source (`bundled` / `global` / `project` / `package`), and disabled status.
+  `package` is for hooks contributed by installed Pi packages via the
+  `cc-thingz.hooks` field in their `package.json` (auto-discovered at session start).
 - **Toggle individual hook** — pick a hook from the list, then choose whether
   to record the toggle in project (`.pi/hooks.json`) or global
   (`~/.pi/agent/hooks.json`) `hookRunner.disabledHooks`.
@@ -212,8 +214,10 @@ Additional compatibility behavior:
 - `1` — non-blocking error; logged and shown to user, execution continues
 - `2` — significant: blocks the tool call (`PreToolUse`), injects stderr into
   tool result so the LLM self-corrects (`PostToolUse`), blocks slash-command
-  expansion (`UserPromptExpansion`), or injects context before the prompt
-  (`UserPromptSubmit`)
+  expansion (`UserPromptExpansion`), injects context before the prompt
+  (`UserPromptSubmit`), or — for `Stop` — surfaces stderr as an agent-visible
+  message that triggers a follow-up turn (handled via
+  `sendHookMessageToAgent` in `hook-runner/index.ts`).
 
 #### Revdiff plan-review integration (Pi + hook-runner)
 
@@ -227,7 +231,7 @@ The bundled `hooks.json` includes a default `PreToolUse` hook for
     {
       "type": "command",
       "command": "${PI_HOOKS_DIR}/revdiff-plan-review.py",
-      "timeout": 345600,
+      "timeout": 1740,
     },
   ],
 }
@@ -269,6 +273,10 @@ Supported CC hook events in this Pi bridge:
   `PermissionDenied`, `TaskCreated`, `TaskCompleted`, `TeammateIdle`,
   `ConfigChange`, `FileChanged`, `WorktreeCreate`, `WorktreeRemove`,
   `Elicitation`, `ElicitationResult`
+- Reserved for CC schema compatibility but **not currently emitted by Pi**:
+  `SubagentStop`. Hooks configured under this key load but never fire — Pi
+  has no subagent-stop runtime event yet. Use `Stop` / `StopFailure` for the
+  outer agent turn instead.
 
 `FileChanged`, `WorktreeCreate/Remove`, and MCP elicitation events are extension-driven in Pi (no built-in runtime event), so emit them through the synthetic bridge when your integration owns those flows.
 
