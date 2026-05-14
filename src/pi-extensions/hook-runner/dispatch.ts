@@ -69,11 +69,6 @@ const TELEMETRY_MAX_BYTES = 10 * 1024 * 1024;
 
 let _telemetryPathCache: string | undefined;
 
-/** Resolve `~/.pi/agent/logs/hooks.log` once per process; exposed for tests. */
-export function _resetTelemetryPathForTesting(): void {
-	_telemetryPathCache = undefined;
-}
-
 function telemetryLogPath(): string {
 	if (_telemetryPathCache === undefined) {
 		_telemetryPathCache = join(agentDir(), "logs", "hooks.log");
@@ -92,20 +87,26 @@ function rotateTelemetryIfTooLarge(path: string): void {
 	}
 }
 
+/** Build the JSONL line that `logHookTelemetry` would append. Pure function so
+ * tests don't need a writable fs (the test harness module-mocks `node:fs`). */
+export function buildTelemetryLine(entry: HookEntryRuntime, result: HookRunResult, durationMs: number, now: () => Date = () => new Date()): string {
+	return JSON.stringify({
+		ts: now().toISOString(),
+		hook: basename(entry.config.command),
+		event: entry.eventName,
+		source: entry.source,
+		exit_code: result.exitCode,
+		duration_ms: durationMs,
+		timed_out: result.timedOut,
+		stderr_head: result.stderr.slice(0, STDERR_HEAD_LIMIT),
+	});
+}
+
 /** Append one JSONL line describing the hook run. Swallows all errors. */
-export function logHookTelemetry(entry: HookEntryRuntime, hookEvent: HookEventName | string, result: HookRunResult, durationMs: number): void {
+export function logHookTelemetry(entry: HookEntryRuntime, result: HookRunResult, durationMs: number): void {
 	try {
 		if (process.env.PI_HOOKS_DISABLE_TELEMETRY === "1") return;
-		const line = JSON.stringify({
-			ts: new Date().toISOString(),
-			hook: basename(entry.config.command),
-			event: hookEvent,
-			source: entry.source,
-			exit_code: result.exitCode,
-			duration_ms: durationMs,
-			timed_out: result.timedOut,
-			stderr_head: result.stderr.slice(0, STDERR_HEAD_LIMIT),
-		});
+		const line = buildTelemetryLine(entry, result, durationMs);
 		const path = telemetryLogPath();
 		mkdirSync(dirname(path), { recursive: true });
 		rotateTelemetryIfTooLarge(path);
@@ -200,7 +201,7 @@ export function runHook(entry: HookEntryRuntime, stdinJson: string, optionsOrDef
 				} else {
 					result = { exitCode: 0, stdout, stderr: cleanedStderr, timedOut: false };
 				}
-				logHookTelemetry(entry, entry.config.command, result, Date.now() - started);
+				logHookTelemetry(entry, result, Date.now() - started);
 				resolve(result);
 			},
 		);
@@ -420,6 +421,11 @@ export async function runDecisionHooks(
 			const result = await runHook(entry, stdin, 15);
 			const blockingMsg = blockingError(result);
 			if (blockingMsg !== undefined) {
+				// Record the block but keep iterating: callers of runDecisionHooks
+				// (UserPromptSubmit, UserPromptExpansion, CwdChanged, PostToolBatch,
+				// bridge events) accumulate `additionalContext` from every entry. The
+				// PreToolUse / PermissionRequest dispatchers short-circuit instead,
+				// because their decisions are mutually exclusive.
 				blocked = true;
 				blockReason = blockingMsg;
 				continue;

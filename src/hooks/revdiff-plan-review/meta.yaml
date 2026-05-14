@@ -1,6 +1,9 @@
 name: revdiff-plan-review
 event: exitplanmode
-timeout: 345600
+# Top-level timeout is required by the schema but unused: `targets: [pi]` filters
+# out Claude/Codex/Gemini, so only the `pi.timeout` override is ever emitted.
+# Kept as a sane non-interactive ceiling in case the targets filter is widened.
+timeout: 300
 status_message: Reviewing plan with revdiff
 targets:
   - pi

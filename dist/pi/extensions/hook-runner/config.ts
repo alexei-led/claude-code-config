@@ -83,7 +83,7 @@ function normalizeHookConfig(raw: unknown): HooksConfig {
 				if (typeof entry.timeout === "number") config.timeout = entry.timeout;
 				if (typeof entry.async === "boolean") config.async = entry.async;
 				// Source/disabled are filled in later by tagEntries / applyDisabled.
-				validEntries.push({ config, source: "bundled", disabled: false });
+				validEntries.push({ config, source: "bundled", disabled: false, eventName: key });
 			}
 			if (validEntries.length === 0) continue;
 			validGroups.push({
