@@ -94,8 +94,34 @@ Disable bundled defaults while keeping user/project hooks by adding this to
 }
 ```
 
-Use `/hooks` in Pi to show active hooks, toggle bundled defaults for the
-current project, or edit `.pi/hooks.json` in the TUI.
+Mute individual hooks (bundled or user) by basename without disabling the
+whole bundled set:
+
+```jsonc
+{
+  "hookRunner": {
+    "disabledHooks": ["smart-lint.sh", "test-runner.sh"],
+  },
+}
+```
+
+`disabledHooks` is merged from every config file that hook-runner reads
+(global and project). Entries still appear in `/hooks` → **Show active hooks**
+with a `(disabled)` marker so they remain discoverable.
+
+Use `/hooks` in Pi for an interactive TUI:
+
+- **Show active hooks** — lists every loaded hook grouped by event, with its
+  matcher, source (`bundled` / `global` / `project`), and disabled status.
+- **Toggle individual hook** — pick a hook from the list, then choose whether
+  to record the toggle in project (`.pi/hooks.json`) or global
+  (`~/.pi/agent/hooks.json`) `hookRunner.disabledHooks`.
+- **Disable/Enable bundled hooks (project)** — flips
+  `hookRunner.disableBundledHooks` in `.pi/hooks.json`.
+- **Edit project hooks (`.pi/hooks.json`)** — opens the project config in the
+  TUI editor; saves are JSON-validated and trigger a reload.
+- **Edit global hooks (`~/.pi/agent/hooks.json`)** — same flow for the global
+  scope so the same hook can apply across projects.
 
 **Synthetic event bridge for extensions:** other Pi extensions can invoke
 hook-runner directly via `cc-hooks:invoke` event-bus channel to trigger
