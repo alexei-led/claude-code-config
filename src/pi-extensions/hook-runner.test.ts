@@ -317,7 +317,7 @@ describe("/hooks command", () => {
 	});
 
 	it("toggles bundled hooks off and reloads config", async () => {
-		const ctx = makeCtx({ select: "Disable bundled hooks" });
+		const ctx = makeCtx({ select: "Disable bundled hooks (project)" });
 		await commands.get("hooks")!.handler("", ctx);
 		const written = JSON.parse(settingsFiles.get("/workspace/.pi/hooks.json") ?? "{}");
 		expect(written.hookRunner.disableBundledHooks).toBe(true);
@@ -329,15 +329,35 @@ describe("/hooks command", () => {
 
 	it("edits project hooks config and reloads it", async () => {
 		const ctx = makeCtx({
-			select: "Edit .pi/hooks.json",
+			select: "Edit project hooks (.pi/hooks.json)",
 			editor: JSON.stringify({ PreToolUse: [{ matcher: "Bash", hooks: [{ type: "command", command: "echo edited-hooks" }] }] }),
 		});
 		await commands.get("hooks")!.handler("", ctx);
-		expect(ctx.ui.notify).toHaveBeenCalledWith("Updated .pi/hooks.json", "info");
+		expect(ctx.ui.notify).toHaveBeenCalledWith("Updated project hooks.json", "info");
 
 		const toolCall = handlers.get("tool_call") as EventHandler;
 		await toolCall({ toolName: "bash", input: { command: "echo hi" }, toolCallId: "tc-edited-hooks" }, makeCtx());
 		expect(capturedCommands.some((cmd) => cmd.includes("echo edited-hooks"))).toBe(true);
+	});
+
+	it("Show active hooks lists source and disabled markers", async () => {
+		settingsFiles.set("/workspace/.pi/hooks.json", JSON.stringify({ hookRunner: { disabledHooks: ["git-guardrails.sh"] } }));
+		const ctx = makeCtx({ select: "Show active hooks" });
+		await commands.get("hooks")!.handler("", ctx);
+		const summary = (ctx.ui.notify as any).mock.calls.at(-1)?.[0] ?? "";
+		expect(summary).toContain("(bundled)");
+		expect(summary).toContain("git-guardrails.sh");
+		expect(summary).toContain("(disabled)");
+	});
+
+	it("disabledHooks list prevents the hook from running", async () => {
+		settingsFiles.set("/workspace/.pi/hooks.json", JSON.stringify({ hookRunner: { disabledHooks: ["git-guardrails.sh"] } }));
+		const sessionStart = handlers.get("session_start") as EventHandler;
+		await sessionStart({ reason: "new" }, makeCtx());
+		capturedCommands.length = 0;
+		const toolCall = handlers.get("tool_call") as EventHandler;
+		await toolCall({ toolName: "bash", input: { command: "rm -rf /" }, toolCallId: "tc-disabled-entry" }, makeCtx());
+		expect(capturedCommands.some((cmd) => cmd.includes("git-guardrails.sh"))).toBe(false);
 	});
 });
 

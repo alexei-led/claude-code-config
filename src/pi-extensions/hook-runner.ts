@@ -78,11 +78,16 @@ function isHookEventName(value: unknown): value is HookEventName {
 	return typeof value === "string" && (HOOK_EVENT_NAMES as readonly string[]).includes(value);
 }
 
+type HookSource = "bundled" | "global" | "project";
+
 interface HookEntry {
 	type: "command";
 	command: string;
 	timeout?: number; // seconds; default varies by hook family
 	async?: boolean; // fire-and-forget
+	// Internal-only metadata, attached during loadConfig. Never persisted.
+	_source?: HookSource;
+	_disabled?: boolean;
 }
 
 interface HookGroup {
@@ -181,9 +186,11 @@ function toCcToolName(piName: string): string {
 
 interface HookRunnerOptions {
 	disableBundledHooks?: boolean;
+	disabledHooks?: string[]; // command basenames to skip
 }
 
 let _config: HooksConfig | null = null;
+let _configRaw: HooksConfig | null = null; // pre-filter view for /hooks summary
 let _configLoadedForCwd = "";
 let _ifWarningShown = false;
 let _lastForcedReloadMs = 0;
@@ -227,9 +234,61 @@ function extractHookRunnerOptions(parsed: unknown): HookRunnerOptions {
 	if (!isRecord(parsed)) return {};
 	const raw = parsed.hookRunner;
 	if (!isRecord(raw)) return {};
-	return {
+	const opts: HookRunnerOptions = {
 		disableBundledHooks: raw.disableBundledHooks === true,
 	};
+	if (Array.isArray(raw.disabledHooks)) {
+		opts.disabledHooks = raw.disabledHooks.filter((v): v is string => typeof v === "string");
+	}
+	return opts;
+}
+
+function tagEntries(config: HooksConfig, source: HookSource): HooksConfig {
+	const out: HooksConfig = {};
+	for (const [eventName, groups] of Object.entries(config)) {
+		if (!groups) continue;
+		out[eventName] = groups.map((group) => ({
+			matcher: group.matcher,
+			hooks: group.hooks.map((entry) => ({ ...entry, _source: source })),
+		}));
+	}
+	return out;
+}
+
+function basename(commandPath: string): string {
+	const trimmed = commandPath.trim().split(/\s+/)[0] ?? "";
+	return trimmed.split("/").pop() ?? trimmed;
+}
+
+function applyDisabled(config: HooksConfig, disabled: Set<string>): void {
+	if (disabled.size === 0) return;
+	for (const groups of Object.values(config)) {
+		if (!groups) continue;
+		for (const group of groups) {
+			for (const entry of group.hooks) {
+				if (disabled.has(basename(entry.command))) {
+					entry._disabled = true;
+				}
+			}
+		}
+	}
+}
+
+function filterEnabled(config: HooksConfig): HooksConfig {
+	const out: HooksConfig = {};
+	for (const [eventName, groups] of Object.entries(config)) {
+		if (!groups) continue;
+		const filteredGroups = groups
+			.map((group) => ({
+				matcher: group.matcher,
+				hooks: group.hooks.filter((entry) => entry._disabled !== true),
+			}))
+			.filter((group) => group.hooks.length > 0);
+		if (filteredGroups.length > 0) {
+			out[eventName] = filteredGroups;
+		}
+	}
+	return out;
 }
 
 function extractHooksConfig(parsed: unknown, configPath: string): HooksConfig {
@@ -267,17 +326,18 @@ function loadConfig(cwd: string, force = false): void {
 	_configLoadedForCwd = cwd;
 
 	const globalAgentDir = agentDir();
-	const configPaths = [
-		join(globalAgentDir, "settings.json"),
-		join(globalAgentDir, "hooks.json"),
-		join(cwd, ".pi", "settings.json"),
-		join(cwd, ".pi", "hooks.json"),
+	const configPaths: Array<{ path: string; source: HookSource }> = [
+		{ path: join(globalAgentDir, "settings.json"), source: "global" },
+		{ path: join(globalAgentDir, "hooks.json"), source: "global" },
+		{ path: join(cwd, ".pi", "settings.json"), source: "project" },
+		{ path: join(cwd, ".pi", "hooks.json"), source: "project" },
 	];
 
 	let disableBundledHooks = false;
-	const hookConfigs: HooksConfig[] = [];
+	const disabledNames = new Set<string>();
+	const hookConfigs: Array<{ config: HooksConfig; source: HookSource }> = [];
 
-	for (const configPath of configPaths) {
+	for (const { path: configPath, source } of configPaths) {
 		try {
 			const raw = readFileSync(configPath, "utf-8");
 			const parsed = JSON.parse(raw) as unknown;
@@ -285,26 +345,31 @@ function loadConfig(cwd: string, force = false): void {
 			if (typeof options.disableBundledHooks === "boolean") {
 				disableBundledHooks = options.disableBundledHooks;
 			}
+			if (options.disabledHooks) {
+				for (const name of options.disabledHooks) disabledNames.add(name);
+			}
 			const hooksConfig = extractHooksConfig(parsed, configPath);
 			if (Object.keys(hooksConfig).length > 0) {
-				hookConfigs.push(hooksConfig);
+				hookConfigs.push({ config: hooksConfig, source });
 			}
 		} catch {
 			// File absent or malformed: silently skip
 		}
 	}
 
-	const base = disableBundledHooks ? {} : loadBundledHooksConfig();
-	for (const hooksConfig of hookConfigs) {
-		mergeHooks(base, hooksConfig);
+	const base = disableBundledHooks ? {} : tagEntries(loadBundledHooksConfig(), "bundled");
+	for (const { config, source } of hookConfigs) {
+		mergeHooks(base, tagEntries(config, source));
 		if (_ifWarningShown) continue;
-		if (hasUnsupportedIfPredicate(hooksConfig)) {
+		if (hasUnsupportedIfPredicate(config)) {
 			_ifWarningShown = true;
 			console.warn("[hook-runner] 'if' predicate in hooks config is not supported in v1; use 'matcher' instead");
 		}
 	}
 
-	_config = base;
+	applyDisabled(base, disabledNames);
+	_configRaw = base;
+	_config = filterEnabled(base);
 }
 
 function resolvedConfig(): HooksConfig {
@@ -313,6 +378,7 @@ function resolvedConfig(): HooksConfig {
 
 export function _resetForTesting(): void {
 	_config = null;
+	_configRaw = null;
 	_configLoadedForCwd = "";
 	_ifWarningShown = false;
 }
@@ -556,8 +622,11 @@ function projectHooksConfigPath(cwd: string): string {
 	return join(cwd, ".pi", "hooks.json");
 }
 
-function readProjectHookRunnerOptions(cwd: string): HookRunnerOptions {
-	const path = projectHooksConfigPath(cwd);
+function globalHooksConfigPath(): string {
+	return join(agentDir(), "hooks.json");
+}
+
+function readHookRunnerOptions(path: string): HookRunnerOptions {
 	try {
 		const raw = readFileSync(path, "utf-8");
 		const parsed = JSON.parse(raw) as unknown;
@@ -567,21 +636,58 @@ function readProjectHookRunnerOptions(cwd: string): HookRunnerOptions {
 	}
 }
 
-function writeProjectHooksConfig(cwd: string, parsed: Record<string, unknown>): void {
-	const path = projectHooksConfigPath(cwd);
+function readProjectHookRunnerOptions(cwd: string): HookRunnerOptions {
+	return readHookRunnerOptions(projectHooksConfigPath(cwd));
+}
+
+function writeHooksConfig(path: string, parsed: Record<string, unknown>): void {
 	mkdirSync(dirname(path), { recursive: true });
 	writeFileSync(path, JSON.stringify(parsed, null, 2) + "\n", "utf-8");
 }
 
+function rawConfig(): HooksConfig {
+	return _configRaw ?? loadBundledHooksConfig();
+}
+
 function hooksSummary(config: HooksConfig): string {
-	const rows: string[] = [];
-	for (const [eventName, groups] of Object.entries(config)) {
+	const lines: string[] = [];
+	const events = Object.keys(config).sort();
+	for (const eventName of events) {
+		const groups = config[eventName];
 		if (!groups || groups.length === 0) continue;
-		const hookCount = groups.reduce((acc, group) => acc + group.hooks.length, 0);
-		rows.push(`${eventName}: ${groups.length} group(s), ${hookCount} hook(s)`);
+		lines.push(`${eventName}:`);
+		for (const group of groups) {
+			const matcher = group.matcher ? `[${group.matcher}]` : "[*]";
+			for (const entry of group.hooks) {
+				const source = entry._source ?? "?";
+				const status = entry._disabled ? " (disabled)" : "";
+				const flags = entry.async ? " async" : "";
+				lines.push(`  ${matcher} ${basename(entry.command)} (${source})${flags}${status}`);
+			}
+		}
 	}
-	if (rows.length === 0) return "No hooks configured.";
-	return rows.sort().join("\n");
+	if (lines.length === 0) return "No hooks configured.";
+	return lines.join("\n");
+}
+
+function listAllHookNames(config: HooksConfig): { name: string; disabled: boolean; source: HookSource | "?" }[] {
+	const seen = new Map<string, { name: string; disabled: boolean; source: HookSource | "?" }>();
+	for (const groups of Object.values(config)) {
+		if (!groups) continue;
+		for (const group of groups) {
+			for (const entry of group.hooks) {
+				const name = basename(entry.command);
+				if (!name) continue;
+				const existing = seen.get(name);
+				if (!existing) {
+					seen.set(name, { name, disabled: entry._disabled === true, source: entry._source ?? "?" });
+				} else if (entry._disabled) {
+					existing.disabled = true;
+				}
+			}
+		}
+	}
+	return [...seen.values()].sort((a, b) => a.name.localeCompare(b.name));
 }
 
 // ---------------------------------------------------------------------------
@@ -858,7 +964,7 @@ export default function (pi: ExtensionAPI): void {
 	const toolInputByCallId = new Map<string, Record<string, unknown>>();
 
 	pi.registerCommand("hooks", {
-		description: "Manage hook-runner config (.pi/hooks.json)",
+		description: "Manage hook-runner config (project and global hooks.json)",
 		handler: async (_args, ctx) => {
 			if (!ctx.hasUI) {
 				ctx.ui.notify("Hooks UI is only available in interactive mode.", "warning");
@@ -869,56 +975,110 @@ export default function (pi: ExtensionAPI): void {
 			const disableBundled = options.disableBundledHooks === true;
 			const choice = await ctx.ui.select("Hook runner", [
 				"Show active hooks",
-				disableBundled ? "Enable bundled hooks" : "Disable bundled hooks",
-				"Edit .pi/hooks.json",
+				"Toggle individual hook",
+				disableBundled ? "Enable bundled hooks (project)" : "Disable bundled hooks (project)",
+				"Edit project hooks (.pi/hooks.json)",
+				"Edit global hooks (~/.pi/agent/hooks.json)",
 			]);
 			if (choice === "Show active hooks") {
-				ctx.ui.notify(hooksSummary(resolvedConfig()), "info");
+				ctx.ui.notify(hooksSummary(rawConfig()), "info");
 				return;
 			}
-			if (choice === "Edit .pi/hooks.json") {
-				const path = projectHooksConfigPath(ctx.cwd);
-				let initial = "{}\n";
-				try {
-					initial = readFileSync(path, "utf-8");
-				} catch {
-					// keep default
-				}
-				const edited = await ctx.ui.editor("Edit .pi/hooks.json:", initial);
-				if (!edited || !edited.trim()) return;
-				try {
-					const parsed = JSON.parse(edited) as unknown;
-					if (!isRecord(parsed)) {
-						ctx.ui.notify(".pi/hooks.json must be a JSON object.", "error");
-						return;
-					}
-					writeProjectHooksConfig(ctx.cwd, parsed);
-					loadConfig(ctx.cwd, true);
-					ctx.ui.notify("Updated .pi/hooks.json", "info");
-				} catch {
-					ctx.ui.notify("Invalid JSON. Not saved.", "error");
-				}
+			if (choice === "Toggle individual hook") {
+				await toggleIndividualHook(ctx);
 				return;
 			}
-			if (choice === "Disable bundled hooks" || choice === "Enable bundled hooks") {
-				const path = projectHooksConfigPath(ctx.cwd);
-				let parsed: Record<string, unknown> = {};
-				try {
-					const raw = readFileSync(path, "utf-8");
-					const current = JSON.parse(raw) as unknown;
-					if (isRecord(current)) parsed = current;
-				} catch {
-					// start from empty object
-				}
-				const hookRunner = isRecord(parsed.hookRunner) ? (parsed.hookRunner as Record<string, unknown>) : {};
-				hookRunner.disableBundledHooks = choice === "Disable bundled hooks";
-				parsed.hookRunner = hookRunner;
-				writeProjectHooksConfig(ctx.cwd, parsed);
+			if (choice === "Edit project hooks (.pi/hooks.json)") {
+				await editHooksFile(ctx, projectHooksConfigPath(ctx.cwd), "project");
+				return;
+			}
+			if (choice === "Edit global hooks (~/.pi/agent/hooks.json)") {
+				await editHooksFile(ctx, globalHooksConfigPath(), "global");
+				return;
+			}
+			if (choice === "Disable bundled hooks (project)" || choice === "Enable bundled hooks (project)") {
+				toggleBundledHooks(projectHooksConfigPath(ctx.cwd), choice.startsWith("Disable"));
 				loadConfig(ctx.cwd, true);
-				ctx.ui.notify(choice === "Disable bundled hooks" ? "Bundled hooks disabled in .pi/hooks.json" : "Bundled hooks enabled in .pi/hooks.json", "info");
+				ctx.ui.notify(choice.startsWith("Disable") ? "Bundled hooks disabled in .pi/hooks.json" : "Bundled hooks enabled in .pi/hooks.json", "info");
 			}
 		},
 	});
+
+	async function toggleIndividualHook(ctx: ExtensionContext): Promise<void> {
+		const names = listAllHookNames(rawConfig());
+		if (names.length === 0) {
+			ctx.ui.notify("No hooks to toggle.", "info");
+			return;
+		}
+		const label = (e: { name: string; disabled: boolean; source: HookSource | "?" }) => `${e.disabled ? "[ ]" : "[x]"} ${e.name} (${e.source})`;
+		const scope = await ctx.ui.select("Write toggle to:", ["Project (.pi/hooks.json)", "Global (~/.pi/agent/hooks.json)"]);
+		if (!scope) return;
+		const path = scope.startsWith("Project") ? projectHooksConfigPath(ctx.cwd) : globalHooksConfigPath();
+		const picked = await ctx.ui.select("Toggle hook:", names.map(label));
+		if (!picked) return;
+		const idx = names.findIndex((e) => label(e) === picked);
+		if (idx < 0) return;
+		const target = names[idx];
+		const willDisable = !target.disabled;
+		updateDisabledList(path, target.name, willDisable);
+		loadConfig(ctx.cwd, true);
+		ctx.ui.notify(`${willDisable ? "Disabled" : "Enabled"} ${target.name} (${scope.startsWith("Project") ? "project" : "global"})`, "info");
+	}
+
+	async function editHooksFile(ctx: ExtensionContext, path: string, scope: HookSource): Promise<void> {
+		let initial = "{}\n";
+		try {
+			initial = readFileSync(path, "utf-8");
+		} catch {
+			// keep default
+		}
+		const edited = await ctx.ui.editor(`Edit ${scope} hooks (${path}):`, initial);
+		if (!edited || !edited.trim()) return;
+		try {
+			const parsed = JSON.parse(edited) as unknown;
+			if (!isRecord(parsed)) {
+				ctx.ui.notify("hooks.json must be a JSON object.", "error");
+				return;
+			}
+			writeHooksConfig(path, parsed);
+			loadConfig(ctx.cwd, true);
+			ctx.ui.notify(`Updated ${scope} hooks.json`, "info");
+		} catch {
+			ctx.ui.notify("Invalid JSON. Not saved.", "error");
+		}
+	}
+
+	function toggleBundledHooks(path: string, disable: boolean): void {
+		let parsed: Record<string, unknown> = {};
+		try {
+			const raw = readFileSync(path, "utf-8");
+			const current = JSON.parse(raw) as unknown;
+			if (isRecord(current)) parsed = current;
+		} catch {
+			// start from empty object
+		}
+		const hookRunner = isRecord(parsed.hookRunner) ? (parsed.hookRunner as Record<string, unknown>) : {};
+		hookRunner.disableBundledHooks = disable;
+		parsed.hookRunner = hookRunner;
+		writeHooksConfig(path, parsed);
+	}
+
+	function updateDisabledList(path: string, name: string, disable: boolean): void {
+		let parsed: Record<string, unknown> = {};
+		try {
+			const raw = readFileSync(path, "utf-8");
+			const current = JSON.parse(raw) as unknown;
+			if (isRecord(current)) parsed = current;
+		} catch {
+			// start from empty object
+		}
+		const hookRunner = isRecord(parsed.hookRunner) ? (parsed.hookRunner as Record<string, unknown>) : {};
+		const current = Array.isArray(hookRunner.disabledHooks) ? hookRunner.disabledHooks.filter((v): v is string => typeof v === "string") : [];
+		const next = disable ? [...new Set([...current, name])] : current.filter((n) => n !== name);
+		hookRunner.disabledHooks = next;
+		parsed.hookRunner = hookRunner;
+		writeHooksConfig(path, parsed);
+	}
 
 	// --- extension-to-extension synthetic hook bridge ---
 	pi.events.on(HOOK_RUNNER_INVOKE_CHANNEL, (raw) => {
