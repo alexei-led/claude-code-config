@@ -138,6 +138,11 @@ export default function planModeExtension(pi: ExtensionAPI): void {
 		if (typeof sessionId !== "string") {
 			return { blocked: false };
 		}
+		// Fail-open on empty plan content: no plan means there is nothing for the
+		// review hook to inspect, so skip the hook rather than send `plan: ""`.
+		if (!planMarkdown.trim()) {
+			return { blocked: false };
+		}
 		const toolUseId = `plan-exit-${Date.now()}-${++planExitAttempt}`;
 		const stdin = {
 			session_id: sessionId,
@@ -152,14 +157,16 @@ export default function planModeExtension(pi: ExtensionAPI): void {
 			},
 		};
 		// ExitPlanMode review can be interactive (e.g., revdiff annotation by the user).
-		// Outer wait set to 30 minutes; per-entry `timeout` in hooks.json still caps the
-		// hook subprocess. On wait expiry we fail-open (empty result), so plan proceeds.
+		// Outer wait set to 30 minutes; per-entry `timeout` in hooks.json must fire
+		// first so hook-runner returns a blocked deny instead of the outer wait
+		// firing here. If the outer wait does fire, treat it as blocking: a stuck
+		// hook-runner is a malfunction, not an approval.
 		const result = await invokeSyntheticHook(pi, ctx, {
 			hookEventName: "PreToolUse",
 			ccToolName: "ExitPlanMode",
 			stdin,
 			timeoutMs: 30 * 60 * 1000,
-			timeoutResult: {},
+			timeoutResult: { blocked: true, reason: "Plan exit review timed out." },
 		});
 		const updatedPlan = result.updatedInput && typeof result.updatedInput.plan === "string" ? result.updatedInput.plan : undefined;
 

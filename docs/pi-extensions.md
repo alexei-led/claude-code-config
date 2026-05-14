@@ -259,7 +259,9 @@ restricted to an allowlisted read-only set while plan mode is active.
 
 On **Execute the plan**, plan-mode emits synthetic `PreToolUse` with
 `tool_name: ExitPlanMode` to support hook-based plan review (for example,
-revdiff plan-review loop). Empty plan content and review timeouts block exit.
+revdiff plan-review loop). Empty plan content skips the hook (fail-open).
+Review hook timeouts block exit (fail-closed); align per-entry `timeout` in
+`hooks.json` to fire before the 30-minute outer wait.
 
 No configuration.
 

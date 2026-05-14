@@ -210,7 +210,15 @@ function normalizeHookConfig(raw: unknown): HooksConfig {
 	for (const [key, groups] of Object.entries(raw)) {
 		if (key === "hookRunner") continue;
 		if (!Array.isArray(groups)) continue;
-		normalized[key] = groups as HookGroup[];
+		const validGroups: HookGroup[] = [];
+		for (const group of groups) {
+			if (!isRecord(group)) continue;
+			if (!Array.isArray(group.hooks)) continue;
+			const validEntries = group.hooks.filter((e): e is HookEntry => isRecord(e) && typeof e.command === "string");
+			if (validEntries.length === 0) continue;
+			validGroups.push({ matcher: typeof group.matcher === "string" ? group.matcher : undefined, hooks: validEntries });
+		}
+		if (validGroups.length > 0) normalized[key] = validGroups;
 	}
 	return normalized;
 }
@@ -774,6 +782,13 @@ async function runPreToolUseGroups(
 	for (const group of matchingGroups(groups, ccToolName)) {
 		for (const entry of group.hooks) {
 			const result = await runHook(entry, stdin, defaultTimeout);
+			if (result.timedOut) {
+				return {
+					blocked: true,
+					reason: result.stderr.trim() || `Hook timed out: ${entry.command.split("/").at(-1)}`,
+					decision: "deny",
+				};
+			}
 			if (result.exitCode === 2) {
 				return {
 					blocked: true,
@@ -1019,7 +1034,8 @@ export default function (pi: ExtensionAPI): void {
 		const idx = names.findIndex((e) => label(e) === picked);
 		if (idx < 0) return;
 		const target = names[idx];
-		const willDisable = !target.disabled;
+		const scopeDisabled = readDisabledList(path).includes(target.name);
+		const willDisable = !scopeDisabled;
 		updateDisabledList(path, target.name, willDisable);
 		loadConfig(ctx.cwd, true);
 		ctx.ui.notify(`${willDisable ? "Disabled" : "Enabled"} ${target.name} (${scope.startsWith("Project") ? "project" : "global"})`, "info");
@@ -1061,6 +1077,20 @@ export default function (pi: ExtensionAPI): void {
 		hookRunner.disableBundledHooks = disable;
 		parsed.hookRunner = hookRunner;
 		writeHooksConfig(path, parsed);
+	}
+
+	function readDisabledList(path: string): string[] {
+		try {
+			const raw = readFileSync(path, "utf-8");
+			const parsed = JSON.parse(raw) as unknown;
+			if (!isRecord(parsed)) return [];
+			const hookRunner = parsed.hookRunner;
+			if (!isRecord(hookRunner)) return [];
+			if (!Array.isArray(hookRunner.disabledHooks)) return [];
+			return hookRunner.disabledHooks.filter((v): v is string => typeof v === "string");
+		} catch {
+			return [];
+		}
 	}
 
 	function updateDisabledList(path: string, name: string, disable: boolean): void {
