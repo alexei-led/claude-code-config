@@ -6,7 +6,7 @@
  * the same Node runtime across sessions.
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -225,6 +225,84 @@ function mergeHooks(base: HooksConfig, user: HooksConfig): void {
 	}
 }
 
+/**
+ * Scan installed Pi packages for hook contributions.
+ *
+ * A Pi package may declare `cc-thingz.hooks: { <eventName>: HookGroup[] }`
+ * inside its `package.json`; cc-thingz merges those entries with `source:
+ * "package"` so a plugin can register hooks without editing cc-thingz.
+ *
+ * Layout: Pi installs each git package under `~/.pi/agent/git/<host>/<org>/<repo>/`,
+ * so we look three levels deep from `agentDir()/git/`. Errors during scan
+ * are silently swallowed — a misshapen package.json must never break
+ * session_start.
+ */
+export function discoverPackageHookContributions(): HooksConfig {
+	const base = join(agentDir(), "git");
+	if (!existsSync(base)) return {};
+	const merged: HooksConfig = {};
+	try {
+		for (const host of readdirSync(base)) {
+			const hostDir = join(base, host);
+			if (!safeIsDirectory(hostDir)) continue;
+			for (const org of readdirSync(hostDir)) {
+				const orgDir = join(hostDir, org);
+				if (!safeIsDirectory(orgDir)) continue;
+				for (const repo of readdirSync(orgDir)) {
+					const repoDir = join(orgDir, repo);
+					if (!safeIsDirectory(repoDir)) continue;
+					const contributed = readPackageContribution(repoDir);
+					if (contributed) {
+						mergeHooks(merged, contributed);
+					}
+				}
+			}
+		}
+	} catch {
+		// Best-effort scan.
+	}
+	return merged;
+}
+
+function safeIsDirectory(path: string): boolean {
+	try {
+		return statSync(path).isDirectory();
+	} catch {
+		return false;
+	}
+}
+
+function readPackageContribution(repoDir: string): HooksConfig | undefined {
+	const manifest = join(repoDir, "package.json");
+	if (!existsSync(manifest)) return undefined;
+	try {
+		const raw = readFileSync(manifest, "utf-8");
+		return parsePackageContribution(raw);
+	} catch {
+		return undefined;
+	}
+}
+
+/**
+ * Parse a `package.json` body looking for `cc-thingz.hooks` contributions.
+ *
+ * Pure function — tests can exercise it without spinning up a filesystem
+ * fixture. Returns undefined when the package does not contribute hooks.
+ */
+export function parsePackageContribution(packageJsonContent: string): HooksConfig | undefined {
+	try {
+		const parsed = JSON.parse(packageJsonContent) as unknown;
+		if (!isRecord(parsed)) return undefined;
+		const ccThingz = parsed["cc-thingz"];
+		if (!isRecord(ccThingz)) return undefined;
+		const hooks = ccThingz.hooks;
+		if (!isRecord(hooks)) return undefined;
+		return normalizeHookConfig(hooks);
+	} catch {
+		return undefined;
+	}
+}
+
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
@@ -266,6 +344,15 @@ export function loadConfig(cwd: string, force = false): void {
 	}
 
 	const base = disableBundledHooks ? {} : tagEntries(loadBundledHooksConfig(), "bundled");
+
+	// Plugin-contributed hooks land between bundled and user configs: user
+	// configs still win on conflict, but plugins can extend the default set
+	// without cc-thingz edits.
+	const packageContributions = discoverPackageHookContributions();
+	if (Object.keys(packageContributions).length > 0) {
+		mergeHooks(base, tagEntries(packageContributions, "package"));
+	}
+
 	for (const { config, source } of hookConfigs) {
 		mergeHooks(base, tagEntries(config, source));
 		if (_ifWarningShown) continue;
