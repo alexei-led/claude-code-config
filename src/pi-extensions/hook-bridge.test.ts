@@ -146,4 +146,27 @@ describe("invokeSyntheticHook", () => {
 		});
 		expect(result).toEqual({});
 	});
+
+	it("returns empty result immediately when emit throws (event bus torn down)", async () => {
+		const pi = {
+			events: {
+				emit: () => {
+					throw new Error("session ended");
+				},
+				on: () => {},
+			},
+			sendUserMessage: () => {},
+		} as unknown as ExtensionAPI;
+		const started = Date.now();
+		const result = await invokeSyntheticHook(pi, makeCtx(), {
+			hookEventName: "PreToolUse",
+			stdin: { session_id: "sess-1", cwd: "/tmp/work" },
+			timeoutMs: 5000,
+			timeoutResult: { blocked: true, reason: "should not see this" },
+		});
+		const elapsed = Date.now() - started;
+		// Emit threw → done({}) fires synchronously, no waiting on outer timer.
+		expect(result).toEqual({});
+		expect(elapsed).toBeLessThan(500);
+	});
 });
