@@ -134,8 +134,12 @@ ln -snf \
 ```
 
 Project-local custom agents are read from `.pi/agents/*.md`. This repo adds
-`.pi/agents/advisor.md` as a strategic reviewer (recommendations only, no
-execution by default).
+an `advisor` agent in source layout:
+
+- `src/agents/advisor/AGENT.md`
+- `src/agents/advisor/pi/frontmatter.yaml`
+
+Compiled artifact: `dist/pi/agents/advisor.md`.
 
 Expected advisor output:
 

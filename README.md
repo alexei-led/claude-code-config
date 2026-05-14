@@ -10,7 +10,7 @@
 [![Plugins](https://img.shields.io/badge/plugins-9-green)](src/plugins/)
 [![Skills](https://img.shields.io/badge/skills-44-green)](src/plugins/)
 
-A multi-agent skill suite for **Claude Code**, **Codex CLI**, **Gemini CLI**, and **Pi** — 44 skills, 38 agents, and 9 hooks. One source of truth in `src/`, compiled to platform-optimized output for each tool. Supports [AGENTS.md](https://agents.md)-compatible tools too. Built over 6+ months of daily use and continuous refinement.
+A multi-agent skill suite for **Claude Code**, **Codex CLI**, **Gemini CLI**, and **Pi** — 44 skills, 39 agents, and 9 hooks. One source of truth in `src/`, compiled to platform-optimized output for each tool. Supports [AGENTS.md](https://agents.md)-compatible tools too. Built over 6+ months of daily use and continuous refinement.
 
 ## Why This Exists
 
@@ -179,31 +179,38 @@ ln -snf \
 Override the agent dir with `PI_CODING_AGENT_DIR=<DIR>` if you run Pi from a
 non-default location. Restart Pi or run `/reload` after installing.
 
-**Project-local advisor subagent** — this repo now includes
-`.pi/agents/advisor.md` for strategic review only. It inherits parent context,
-runs in a separate background agent by default, and returns recommendations in
-three sections: `Verdict`, `Top Risks`, `Next Actions`.
+**Advisor subagent (`advisor`)** — follows the standard source layout used by
+other Pi agents:
 
-Background (default for `advisor`):
+- `src/agents/advisor/AGENT.md`
+- `src/agents/advisor/pi/frontmatter.yaml`
+
+Compiled output is `dist/pi/agents/advisor.md`. Behavior: strategic review only
+with output sections `Verdict`, `Top Risks`, and `Next Actions`.
+
+Background usage (separate context + parent context inherited):
 
 ```ts
 const run = Agent({
   subagent_type: "advisor",
   description: "Architecture risk review",
   prompt: "Review my plan and propose the safest next steps.",
+  inherit_context: true,
+  run_in_background: true,
 });
 
 get_subagent_result({ agent_id: run.agent_id, wait: true });
 ```
 
-Foreground (optional): clone `.pi/agents/advisor.md` to
-`.pi/agents/advisor-fg.md`, set `run_in_background: false`, then call:
+Foreground usage:
 
 ```ts
 Agent({
-  subagent_type: "advisor-fg",
+  subagent_type: "advisor",
   description: "Blocking strategy check",
   prompt: "Challenge this implementation plan and suggest corrections.",
+  inherit_context: true,
+  run_in_background: false,
 });
 ```
 
@@ -220,7 +227,7 @@ Agent({
 | `structured-output.ts` | `structured_output` tool that terminates the agent loop                                          |
 | `notify.ts`            | macOS notification via `terminal-notifier` on completion (requires Homebrew `terminal-notifier`) |
 
-**Pi gets**: all 38 agents (requires `@tintinweb/pi-subagents`), all 44 skills,
+**Pi gets**: all 39 agents (requires `@tintinweb/pi-subagents`), all 44 skills,
 and 8 bundled extensions. Each agent has a Pi-specific frontmatter overlay tuned
 for OpenAI Codex models (`openai-codex/gpt-5.5`, `gpt-5.4`, `gpt-5.4-mini`),
 thinking levels, tool restrictions, and turn limits. The four pipeline agents
