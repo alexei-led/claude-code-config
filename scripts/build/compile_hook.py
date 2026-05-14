@@ -439,6 +439,10 @@ def _build_pi(specs: Sequence[HookSpec], external: dict | None = None) -> dict:
     (third-party commands like `ccgram hook` that aren't owned by `src/hooks/`).
     External groups are merged in alongside meta.yaml-derived groups; both
     survive the build with no hand-maintained duplication.
+
+    Fails loudly if any spec maps to a Pi event name absent from PI_EVENT_ORDER —
+    silently dropping a hook from the manifest because the order list is stale
+    has been a real source of "hook didn't fire and nobody noticed" bugs.
     """
     groups: dict[tuple[str, str | None], list[dict]] = {}
     for spec in specs:
@@ -446,6 +450,12 @@ def _build_pi(specs: Sequence[HookSpec], external: dict | None = None) -> dict:
         if mapping is None:
             continue
         event_name, matcher = mapping
+        if event_name not in PI_EVENT_ORDER:
+            raise ValueError(
+                f"hook {spec.name!r} maps to Pi event {event_name!r} which is "
+                "not in PI_EVENT_ORDER; add it to scripts/build/compile_hook.py "
+                "to emit a manifest entry"
+            )
         key = (event_name, matcher)
         groups.setdefault(key, []).append(_pi_hook_entry(spec))
 
