@@ -141,6 +141,9 @@ an `advisor` agent in source layout:
 
 Compiled artifact: `dist/pi/agents/advisor.md`.
 
+Advisor can use read-only exploration tools (`read`, `grep`, `find`, `ls`,
+read-only `bash`) and must avoid file edits.
+
 Expected advisor output:
 
 - `Verdict`

@@ -185,8 +185,9 @@ other Pi agents:
 - `src/agents/advisor/AGENT.md`
 - `src/agents/advisor/pi/frontmatter.yaml`
 
-Compiled output is `dist/pi/agents/advisor.md`. Behavior: strategic review only
-with output sections `Verdict`, `Top Risks`, and `Next Actions`.
+Compiled output is `dist/pi/agents/advisor.md`. Behavior: strategic review with
+read-only code exploration (no file edits) and output sections `Verdict`,
+`Top Risks`, and `Next Actions`.
 
 Background usage (separate context + parent context inherited):
 
