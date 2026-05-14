@@ -523,9 +523,9 @@ def test_pi_manifest_merges_external(ch, tmp_path):
     """Pi hooks.json merges entries from src/pi-extensions/hooks-external.json."""
     src = tmp_path / "src"
     hook = _write_hook(src, "smart-lint", "postedit")
-    pi_ext = src / "pi-extensions"
-    pi_ext.mkdir(parents=True, exist_ok=True)
-    (pi_ext / "hooks-external.json").write_text(
+    build_dir = tmp_path / "scripts" / "build"
+    build_dir.mkdir(parents=True, exist_ok=True)
+    (build_dir / "pi-hooks-external.json").write_text(
         json.dumps(
             {
                 "hooks": {
