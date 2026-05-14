@@ -22,7 +22,15 @@ export function isHookEventName(value: unknown): value is HookEventName {
 	return typeof value === "string" && (HOOK_EVENT_NAMES as readonly string[]).includes(value);
 }
 
-export type HookSource = "bundled" | "global" | "project";
+/**
+ * Where a loaded hook entry came from.
+ * - `bundled`: ships with cc-thingz under dist/pi/extensions/hooks.json
+ * - `global`: user-level `~/.pi/agent/{settings,hooks}.json`
+ * - `project`: per-project `.pi/{settings,hooks}.json`
+ * - `package`: contributed by an installed Pi package via `cc-thingz.hooks`
+ *   in its `package.json` (auto-discovered at session start).
+ */
+export type HookSource = "bundled" | "global" | "project" | "package";
 
 /** Wire shape parsed verbatim from hooks.json (bundled or user-supplied). */
 export interface HookEntryConfig {

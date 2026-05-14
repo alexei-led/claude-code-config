@@ -10,6 +10,8 @@
 
 import type { ExtensionContext } from "@earendil-works/pi-coding-agent";
 import { execFile } from "node:child_process";
+import { appendFileSync, mkdirSync } from "node:fs";
+import { dirname, join } from "node:path";
 
 import type { SyntheticHookInvocationResult } from "../hook-bridge.js";
 import {
@@ -21,7 +23,71 @@ import {
 	plainTextContext,
 	type PreToolPermission,
 } from "./cc-protocol.js";
+import { agentDir, basename } from "./config.js";
 import type { HookEntryRuntime, HookEventName, HookGroup, HookRunResult } from "./types.js";
+
+// ---------------------------------------------------------------------------
+// Progress protocol — hooks may emit `^^PROGRESS <0-100> <message>` lines on
+// stderr to surface a status string while running. The marker is stripped
+// from the stderr that reaches the dispatcher (and ultimately the LLM
+// feedback loop) so the protocol stays invisible to consumers that don't
+// opt in.
+// ---------------------------------------------------------------------------
+
+const PROGRESS_LINE_RE = /^\^\^PROGRESS\s+(\d{1,3})\s+(.*)$/;
+
+export interface ProgressUpdate {
+	percent: number;
+	message: string;
+}
+
+/** Strip `^^PROGRESS` markers from stderr; return the last update seen. */
+export function extractProgress(stderr: string): { stderr: string; last?: ProgressUpdate } {
+	if (!stderr.includes("^^PROGRESS")) return { stderr };
+	const keep: string[] = [];
+	let last: ProgressUpdate | undefined;
+	for (const line of stderr.split(/\r?\n/)) {
+		const match = PROGRESS_LINE_RE.exec(line);
+		if (!match) {
+			keep.push(line);
+			continue;
+		}
+		const percent = Math.min(100, Math.max(0, Number.parseInt(match[1], 10)));
+		const message = match[2].trim();
+		last = { percent, message };
+	}
+	return { stderr: keep.join("\n"), last };
+}
+
+// ---------------------------------------------------------------------------
+// Telemetry — JSONL append to ~/.pi/agent/logs/hooks.log. Best-effort: errors
+// here must never propagate into dispatch.
+// ---------------------------------------------------------------------------
+
+const TELEMETRY_LOG_PATH = (): string => join(agentDir(), "logs", "hooks.log");
+const STDERR_HEAD_LIMIT = 500;
+
+/** Append one JSONL line describing the hook run. Swallows all errors. */
+export function logHookTelemetry(entry: HookEntryRuntime, hookEvent: HookEventName | string, result: HookRunResult, durationMs: number): void {
+	try {
+		if (process.env.PI_HOOKS_DISABLE_TELEMETRY === "1") return;
+		const line = JSON.stringify({
+			ts: new Date().toISOString(),
+			hook: basename(entry.config.command),
+			event: hookEvent,
+			source: entry.source,
+			exit_code: result.exitCode,
+			duration_ms: durationMs,
+			timed_out: result.timedOut,
+			stderr_head: result.stderr.slice(0, STDERR_HEAD_LIMIT),
+		});
+		const path = TELEMETRY_LOG_PATH();
+		mkdirSync(dirname(path), { recursive: true });
+		appendFileSync(path, line + "\n");
+	} catch {
+		// Telemetry must never break dispatch.
+	}
+}
 
 // ---------------------------------------------------------------------------
 // Matcher evaluation
@@ -44,18 +110,39 @@ export function matchingGroups(groups: HookGroup[], ccToolName: string): HookGro
 // Subprocess execution
 // ---------------------------------------------------------------------------
 
-export function runHook(entry: HookEntryRuntime, stdinJson: string, defaultTimeoutSec = 30): Promise<HookRunResult> {
+export interface RunHookOptions {
+	defaultTimeoutSec?: number;
+	/** Fires whenever the hook emits a `^^PROGRESS N msg` line on stderr. */
+	onProgress?: (update: ProgressUpdate) => void;
+}
+
+export function runHook(entry: HookEntryRuntime, stdinJson: string, optionsOrDefault?: RunHookOptions | number): Promise<HookRunResult> {
+	const options: RunHookOptions = typeof optionsOrDefault === "number" ? { defaultTimeoutSec: optionsOrDefault } : (optionsOrDefault ?? {});
+	const defaultTimeoutSec = options.defaultTimeoutSec ?? 30;
+	const started = Date.now();
 	return new Promise((resolve) => {
 		const timeoutMs = (entry.config.timeout ?? defaultTimeoutSec) * 1000;
 		const child = execFile("bash", ["-c", entry.config.command], { timeout: timeoutMs, env: process.env, maxBuffer: 1024 * 1024 }, (error, stdout, stderr) => {
+			const rawStderr = stderr ?? "";
+			const { stderr: cleanedStderr, last } = extractProgress(rawStderr);
+			if (last && options.onProgress) {
+				try {
+					options.onProgress(last);
+				} catch {
+					// Progress callback never breaks the dispatcher.
+				}
+			}
+			let result: HookRunResult;
 			if (error) {
 				const err = error as Error & { killed?: boolean; code?: unknown };
 				const killed = err.killed ?? false;
 				const exitCode = typeof err.code === "number" ? err.code : 1;
-				resolve({ exitCode, stdout, stderr, timedOut: killed });
+				result = { exitCode, stdout, stderr: cleanedStderr, timedOut: killed };
 			} else {
-				resolve({ exitCode: 0, stdout, stderr: stderr ?? "", timedOut: false });
+				result = { exitCode: 0, stdout, stderr: cleanedStderr, timedOut: false };
 			}
+			logHookTelemetry(entry, entry.config.command, result, Date.now() - started);
+			resolve(result);
 		});
 		child.stdin?.write(stdinJson);
 		child.stdin?.end();

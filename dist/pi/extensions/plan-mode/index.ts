@@ -167,6 +167,7 @@ export default function planModeExtension(pi: ExtensionAPI): void {
 			ccToolName: exitPlanMode,
 			stdin,
 			timeoutMs: 30 * 60 * 1000,
+			enforceFloor: true,
 			timeoutResult: { blocked: true, reason: "Plan exit review timed out." },
 		});
 		const updatedPlan = result.updatedInput && typeof result.updatedInput.plan === "string" ? result.updatedInput.plan : undefined;

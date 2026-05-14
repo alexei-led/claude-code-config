@@ -57,6 +57,10 @@ mock.module("node:fs", () => ({
 	mkdirSync: () => undefined,
 	existsSync: () => false,
 	readdirSync: () => [],
+	statSync: () => ({ isDirectory: () => false }),
+	rmSync: () => undefined,
+	mkdtempSync: (prefix: string) => `${prefix}mock`,
+	appendFileSync: () => undefined,
 }));
 
 mock.module("node:os", () => ({ homedir: () => "/tmp/test-home" }));
