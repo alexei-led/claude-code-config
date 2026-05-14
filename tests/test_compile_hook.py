@@ -32,6 +32,7 @@ VALID_EVENTS = frozenset(
         "notification",
         "worktreecreate",
         "worktreeremove",
+        "exitplanmode",
     }
 )
 
@@ -46,6 +47,7 @@ EXPECTED_HOOK_NAMES = frozenset(
         "test-runner",
         "worktree-create",
         "worktree-remove",
+        "revdiff-plan-review",
     }
 )
 
@@ -80,6 +82,9 @@ def test_meta_required_fields(hook_dir: Path):
     assert isinstance(meta["timeout"], int) and meta["timeout"] > 0
     if "status_message" in meta:
         assert isinstance(meta["status_message"], str) and meta["status_message"]
+    if "targets" in meta:
+        assert isinstance(meta["targets"], list)
+        assert all(isinstance(target, str) for target in meta["targets"])
 
 
 def test_hook_scripts_are_executable():
@@ -122,6 +127,7 @@ def test_known_event_assignments():
         "notify": ("notification", None),
         "worktree-create": ("worktreecreate", None),
         "worktree-remove": ("worktreeremove", None),
+        "revdiff-plan-review": ("exitplanmode", "Reviewing plan with revdiff"),
     }
     for hook_dir in hook_dirs(REPO):
         meta = load_meta(hook_dir)
@@ -186,7 +192,13 @@ def test_no_world_writable_scripts():
 
 
 def test_status_message_present_when_expected():
-    must_have = {"git-guardrails", "smart-lint", "session-start", "test-runner"}
+    must_have = {
+        "git-guardrails",
+        "smart-lint",
+        "session-start",
+        "test-runner",
+        "revdiff-plan-review",
+    }
     for hook_dir in hook_dirs(REPO):
         meta = load_meta(hook_dir)
         if hook_dir.name in must_have:

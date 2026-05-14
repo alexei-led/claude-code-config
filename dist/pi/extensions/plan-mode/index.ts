@@ -8,6 +8,7 @@
  * - /plan command or Ctrl+Alt+P to toggle
  * - Bash restricted to allowlisted read-only commands
  * - Extracts numbered plan steps from "Plan:" sections
+ * - ExitPlanMode synthetic PreToolUse review before execution starts
  * - [DONE:n] markers to complete steps during execution
  * - Progress tracking widget during execution
  */
@@ -16,6 +17,7 @@ import type { AgentMessage } from "@earendil-works/pi-agent-core";
 import type { AssistantMessage, TextContent } from "@earendil-works/pi-ai";
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
 import { Key } from "@earendil-works/pi-tui";
+import { invokeSyntheticHook } from "../hook-bridge.js";
 import { extractTodoItems, isSafeCommand, markCompletedSteps, type TodoItem } from "./utils.js";
 
 // Tools
@@ -34,11 +36,30 @@ function getTextContent(message: AssistantMessage): string {
 		.join("\n");
 }
 
+function extractPlanMarkdown(message: string): string {
+	const header = message.match(/\*{0,2}Plan:\*{0,2}\s*\n/i);
+	if (!header) return "";
+	const start = message.indexOf(header[0]);
+	if (start === -1) return "";
+	return message.slice(start).trim();
+}
+
+function buildPlanMarkdownFromTodos(items: TodoItem[]): string {
+	if (items.length === 0) return "";
+	const lines = ["Plan:"];
+	for (const item of items) {
+		lines.push(`${item.step}. ${item.text}`);
+	}
+	return lines.join("\n");
+}
+
 export default function planModeExtension(pi: ExtensionAPI): void {
 	let planModeEnabled = false;
 	let executionMode = false;
 	let todoItems: TodoItem[] = [];
 	let normalModeTools: string[] = [];
+	let latestPlanMarkdown = "";
+	let planExitAttempt = 0;
 
 	function getPlanModeTools(): string[] {
 		const available = new Set(pi.getAllTools().map((tool) => tool.name));
@@ -88,6 +109,8 @@ export default function planModeExtension(pi: ExtensionAPI): void {
 		planModeEnabled = !planModeEnabled;
 		executionMode = false;
 		todoItems = [];
+		latestPlanMarkdown = "";
+		planExitAttempt = 0;
 
 		if (planModeEnabled) {
 			normalModeTools = pi.getActiveTools();
@@ -107,6 +130,56 @@ export default function planModeExtension(pi: ExtensionAPI): void {
 			todos: todoItems,
 			executing: executionMode,
 		});
+	}
+
+	async function invokeExitPlanHook(
+		ctx: ExtensionContext,
+		planMarkdown: string,
+	): Promise<{ blocked: boolean; reason?: string; updatedPlan?: string; additionalContext?: string }> {
+		const sessionId = ctx.sessionManager.getSessionId();
+		if (typeof sessionId !== "string") {
+			return { blocked: false };
+		}
+		const toolUseId = `plan-exit-${Date.now()}-${++planExitAttempt}`;
+		const stdin = {
+			session_id: sessionId,
+			cwd: ctx.cwd,
+			hook_event_name: "PreToolUse",
+			tool_name: "ExitPlanMode",
+			tool_use_id: toolUseId,
+			tool_input: {
+				plan: planMarkdown,
+				planFilePath: "",
+				allowedPrompts: [],
+			},
+		};
+		const result = await invokeSyntheticHook(pi, ctx, {
+			hookEventName: "PreToolUse",
+			ccToolName: "ExitPlanMode",
+			stdin,
+			timeoutMs: 4000,
+			timeoutResult: {},
+		});
+		const updatedPlan = result.updatedInput && typeof result.updatedInput.plan === "string" ? result.updatedInput.plan : undefined;
+
+		if (result.decision === "ask") {
+			const question = (result.reason ?? "").trim() || "ExitPlanMode review needs clarification before the plan can run.";
+			const askContext = [
+				question,
+				"Use the `ask_user_question` tool to surface this to the user, then re-issue the plan once you have an answer.",
+				result.additionalContext?.trim() ? result.additionalContext.trim() : "",
+			]
+				.filter(Boolean)
+				.join("\n\n");
+			return { blocked: true, reason: question, updatedPlan, additionalContext: askContext };
+		}
+
+		return {
+			blocked: result.blocked === true,
+			reason: result.reason,
+			updatedPlan,
+			additionalContext: result.additionalContext,
+		};
 	}
 
 	pi.registerCommand("plan", {
@@ -135,11 +208,18 @@ export default function planModeExtension(pi: ExtensionAPI): void {
 	pi.on("tool_call", async (event) => {
 		if (!planModeEnabled || event.toolName !== "bash") return;
 
-		const command = event.input.command as string;
-		if (!isSafeCommand(command)) {
+		const commandRaw = event.input.command;
+		if (typeof commandRaw !== "string" || commandRaw.trim() === "") {
 			return {
 				block: true,
-				reason: `Plan mode: command blocked (not allowlisted). Use /plan to disable plan mode first.\nCommand: ${command}`,
+				reason: "Plan mode: invalid bash command input.",
+			};
+		}
+
+		if (!isSafeCommand(commandRaw)) {
+			return {
+				block: true,
+				reason: `Plan mode: command blocked (not allowlisted). Use /plan to disable plan mode first.\nCommand: ${commandRaw}`,
 			};
 		}
 	});
@@ -236,6 +316,7 @@ After completing a step, include a [DONE:n] tag in your response.`,
 				pi.sendMessage({ customType: "plan-complete", content: `**Plan Complete!** ✓\n\n${completedList}`, display: true }, { triggerTurn: false });
 				executionMode = false;
 				todoItems = [];
+				latestPlanMarkdown = "";
 				restoreNormalTools();
 				updateStatus(ctx);
 				persistState(); // Save cleared state so resume doesn't restore old execution mode
@@ -248,9 +329,14 @@ After completing a step, include a [DONE:n] tag in your response.`,
 		// Extract todos from last assistant message
 		const lastAssistant = [...event.messages].reverse().find(isAssistantMessage);
 		if (lastAssistant) {
-			const extracted = extractTodoItems(getTextContent(lastAssistant));
+			const text = getTextContent(lastAssistant);
+			const extracted = extractTodoItems(text);
 			if (extracted.length > 0) {
 				todoItems = extracted;
+			}
+			const planMarkdown = extractPlanMarkdown(text);
+			if (planMarkdown) {
+				latestPlanMarkdown = planMarkdown;
 			}
 		}
 
@@ -274,12 +360,31 @@ After completing a step, include a [DONE:n] tag in your response.`,
 		]);
 
 		if (choice?.startsWith("Execute")) {
+			const currentPlan = latestPlanMarkdown || buildPlanMarkdownFromTodos(todoItems);
+			const hookResult = await invokeExitPlanHook(ctx, currentPlan);
+			if (hookResult.updatedPlan) {
+				latestPlanMarkdown = hookResult.updatedPlan;
+				const extracted = extractTodoItems(hookResult.updatedPlan);
+				if (extracted.length > 0) {
+					todoItems = extracted;
+				}
+			}
+			if (hookResult.blocked) {
+				const reason = hookResult.reason?.trim() || "Plan exit blocked by hook.";
+				ctx.ui.notify(reason, "warning");
+				persistState();
+				pi.sendUserMessage(reason);
+				return;
+			}
+
 			planModeEnabled = false;
 			executionMode = todoItems.length > 0;
 			restoreNormalTools();
 			updateStatus(ctx);
 
-			const execMessage = todoItems.length > 0 ? `Execute the plan. Start with: ${todoItems[0].text}` : "Execute the plan you just created.";
+			const contextSuffix = hookResult.additionalContext?.trim() ? `\n\n${hookResult.additionalContext.trim()}` : "";
+			const execMessage =
+				todoItems.length > 0 ? `Execute the plan. Start with: ${todoItems[0].text}${contextSuffix}` : `Execute the plan you just created.${contextSuffix}`;
 			pi.sendMessage({ customType: "plan-mode-execute", content: execMessage, display: true }, { triggerTurn: true });
 		} else if (choice === "Refine the plan") {
 			const refinement = await ctx.ui.editor("Refine the plan:", "");
