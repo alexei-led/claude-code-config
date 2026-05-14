@@ -28,9 +28,14 @@ Pi and the rest of cc-thingz.
 | `turn_end` (tool batches)  | user-configured     | Emits `PostToolBatch` hooks with per-turn tool call summaries |
 
 **Hook configuration:** default hook wiring is data, not hard-coded. The
-package ships `dist/pi/extensions/hooks.json`, and hook-runner loads it at
-runtime. User/project hooks are merged on top using either:
+package ships `dist/pi/extensions/hooks.json` (generated at build time from
+`src/hooks/*/meta.yaml` plus `scripts/build/pi-hooks-external.json`), and
+hook-runner loads it at runtime. Sources are merged in this order
+(bundled → package → global → project):
 
+- bundled defaults from `dist/pi/extensions/hooks.json`
+- per-package contributions via `cc-thingz.hooks` in any installed Pi
+  package's `package.json` (auto-discovered under `~/.pi/agent/git/`)
 - `hooks` key in global `settings.json` or project `.pi/settings.json`
 - dedicated global `hooks.json` or project `.pi/hooks.json`
 
@@ -108,6 +113,46 @@ whole bundled set:
 `disabledHooks` is merged from every config file that hook-runner reads
 (global and project). Entries still appear in `/hooks` → **Show active hooks**
 with a `(disabled)` marker so they remain discoverable.
+
+**Package-contributed hooks:** any Pi package installed via `pi install` may
+register hooks declaratively. Add a `cc-thingz.hooks` field to the package's
+`package.json` mirroring the standard hook config shape:
+
+```jsonc
+{
+  "name": "my-pi-plugin",
+  "cc-thingz": {
+    "hooks": {
+      "PostToolUse": [
+        {
+          "matcher": "Write|Edit",
+          "hooks": [
+            { "type": "command", "command": "/usr/local/bin/my-audit" },
+          ],
+        },
+      ],
+    },
+  },
+}
+```
+
+Hook-runner scans `~/.pi/agent/git/<host>/<org>/<repo>/package.json` at
+session start and merges contributions under `source: "package"`. The
+`/hooks` UI labels them accordingly. This removes the need for cc-thingz
+edits when a third-party Pi extension wants to ship a hook.
+
+**Progress protocol:** long-running hooks may emit lines on stderr matching
+`^^PROGRESS <0-100> <message>` to report progress. Hook-runner strips the
+markers from the stderr that reaches the LLM feedback loop and surfaces the
+last update through an internal `onProgress` callback. Hooks that don't emit
+the marker behave unchanged.
+
+**Telemetry:** every hook run appends a JSONL line to
+`~/.pi/agent/logs/hooks.log` recording `ts`, `hook`, `event`, `source`,
+`exit_code`, `duration_ms`, `timed_out`, and `stderr_head` (first 500
+characters). Useful for diagnosing flaky hooks. Disable by setting
+`PI_HOOKS_DISABLE_TELEMETRY=1` in the environment. The writer is
+best-effort — telemetry failures never break dispatch.
 
 Use `/hooks` in Pi for an interactive TUI:
 
