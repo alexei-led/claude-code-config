@@ -179,6 +179,34 @@ ln -snf \
 Override the agent dir with `PI_CODING_AGENT_DIR=<DIR>` if you run Pi from a
 non-default location. Restart Pi or run `/reload` after installing.
 
+**Project-local advisor subagent** — this repo now includes
+`.pi/agents/advisor.md` for strategic review only. It inherits parent context,
+runs in a separate background agent by default, and returns recommendations in
+three sections: `Verdict`, `Top Risks`, `Next Actions`.
+
+Background (default for `advisor`):
+
+```ts
+const run = Agent({
+  subagent_type: "advisor",
+  description: "Architecture risk review",
+  prompt: "Review my plan and propose the safest next steps.",
+});
+
+get_subagent_result({ agent_id: run.agent_id, wait: true });
+```
+
+Foreground (optional): clone `.pi/agents/advisor.md` to
+`.pi/agents/advisor-fg.md`, set `run_in_background: false`, then call:
+
+```ts
+Agent({
+  subagent_type: "advisor-fg",
+  description: "Blocking strategy check",
+  prompt: "Challenge this implementation plan and suggest corrections.",
+});
+```
+
 **Bundled Pi extensions** (`dist/pi/extensions/`):
 
 | Extension              | Role                                                                                             |

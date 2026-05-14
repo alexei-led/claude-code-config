@@ -133,6 +133,18 @@ ln -snf \
   ~/.pi/agent/agents
 ```
 
+Project-local custom agents are read from `.pi/agents/*.md`. This repo adds
+`.pi/agents/advisor.md` as a strategic reviewer (recommendations only, no
+execution by default).
+
+Expected advisor output:
+
+- `Verdict`
+- `Top Risks` (ranked)
+- `Next Actions` (ordered, concrete)
+
+Invoke with `Agent({ subagent_type: "advisor", ... })`.
+
 ### revdiff
 
 Used by the `reviewing-code` skill for rendering code review diffs in Pi.
