@@ -187,15 +187,24 @@ export async function invokeSyntheticHook(
 			resolve(value);
 		};
 		const timer = setTimeout(() => done(request.timeoutResult ?? {}), timeoutMs);
-		pi.events.emit(HOOK_RUNNER_INVOKE_CHANNEL, {
-			hookEventName: request.hookEventName,
-			ccToolName: request.ccToolName,
-			stdin: request.stdin,
-			timeoutSec,
-			onResult: (result: SyntheticHookInvocationResult) => {
-				clearTimeout(timer);
-				done(result);
-			},
-		});
+		try {
+			pi.events.emit(HOOK_RUNNER_INVOKE_CHANNEL, {
+				hookEventName: request.hookEventName,
+				ccToolName: request.ccToolName,
+				stdin: request.stdin,
+				timeoutSec,
+				onResult: (result: SyntheticHookInvocationResult) => {
+					clearTimeout(timer);
+					done(result);
+				},
+			});
+		} catch {
+			// Event bus torn down (e.g., session ended mid-call). Fail-closed for
+			// non-interactive callers requires the caller to set timeoutResult;
+			// without one, return an empty result so callers treat it as "no
+			// decision" rather than waiting out the full outer timeout.
+			clearTimeout(timer);
+			done({});
+		}
 	});
 }

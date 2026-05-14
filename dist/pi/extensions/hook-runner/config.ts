@@ -8,7 +8,7 @@
 
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync, statSync } from "node:fs";
 import { homedir } from "node:os";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve as resolvePath } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import type { HookEntryConfig, HookEntryRuntime, HookGroup, HooksConfig, HookRunnerOptions, HookSource } from "./types.js";
@@ -48,6 +48,7 @@ let _configRaw: HooksConfig | null = null;
 let _configLoadedForCwd = "";
 let _ifWarningShown = false;
 let _lastForcedReloadMs = 0;
+let _bundledCache: HooksConfig | null = null;
 
 export function _resetForTesting(): void {
 	_config = null;
@@ -55,6 +56,7 @@ export function _resetForTesting(): void {
 	_configLoadedForCwd = "";
 	_ifWarningShown = false;
 	_lastForcedReloadMs = 0;
+	_bundledCache = null;
 }
 
 // ---------------------------------------------------------------------------
@@ -200,14 +202,16 @@ function extractHooksConfig(parsed: unknown, configPath: string): HooksConfig {
 }
 
 function loadBundledHooksConfig(): HooksConfig {
+	if (_bundledCache) return _bundledCache;
 	try {
 		const raw = readFileSync(BUNDLED_HOOKS_CONFIG_PATH, "utf-8");
 		const parsed = JSON.parse(raw) as unknown;
 		const bundled = extractHooksConfig(parsed, BUNDLED_HOOKS_CONFIG_PATH);
-		return resolveBundledHookPaths(bundled);
+		_bundledCache = resolveBundledHookPaths(bundled);
 	} catch {
-		return {};
+		_bundledCache = {};
 	}
+	return _bundledCache;
 }
 
 function hasUnsupportedIfPredicate(config: HooksConfig): boolean {
@@ -277,19 +281,73 @@ function readPackageContribution(repoDir: string): HooksConfig | undefined {
 	if (!existsSync(manifest)) return undefined;
 	try {
 		const raw = readFileSync(manifest, "utf-8");
-		return parsePackageContribution(raw);
+		return parsePackageContribution(raw, repoDir);
 	} catch {
 		return undefined;
 	}
 }
 
+export const PKG_DIR_PLACEHOLDER = "${PKG_DIR}";
+// Shell metacharacters that change interpretation when passed to `bash -c`.
+// Plugin-contributed commands run inside the user's shell so any of these is
+// a potential injection vector from a malicious package.
+const PACKAGE_CMD_FORBIDDEN_RE = /[;&|<>`$()\\{}]/;
+
+/**
+ * Validate a package-contributed hook command.
+ *
+ * Returns the resolved command string when safe, or `undefined` when the
+ * command would escape the package's directory or contain shell metachars.
+ * Plugin authors can use `${PKG_DIR}` as a stand-in for the package root;
+ * everything else must be an absolute path that resolves inside `repoDir`.
+ */
+export function validatePackageCommand(command: string, repoDir: string): string | undefined {
+	if (typeof command !== "string") return undefined;
+	const substituted = command.replaceAll(PKG_DIR_PLACEHOLDER, repoDir);
+	const trimmed = substituted.trim();
+	if (!trimmed) return undefined;
+	if (PACKAGE_CMD_FORBIDDEN_RE.test(substituted)) return undefined;
+	const firstToken = trimmed.split(/\s+/)[0] ?? "";
+	if (!firstToken.startsWith("/")) return undefined;
+	const repoAbs = resolvePath(repoDir);
+	const cmdAbs = resolvePath(firstToken);
+	if (cmdAbs !== repoAbs && !cmdAbs.startsWith(repoAbs + "/")) return undefined;
+	return substituted;
+}
+
+function sanitisePackageContribution(config: HooksConfig, repoDir: string): HooksConfig {
+	const out: HooksConfig = {};
+	for (const [eventName, groups] of Object.entries(config)) {
+		if (!groups) continue;
+		const cleanGroups: HookGroup[] = [];
+		for (const group of groups) {
+			const cleanHooks: HookEntryRuntime[] = [];
+			for (const entry of group.hooks) {
+				const safe = validatePackageCommand(entry.config.command, repoDir);
+				if (!safe) continue;
+				cleanHooks.push({
+					...entry,
+					config: { ...entry.config, command: safe },
+				});
+			}
+			if (cleanHooks.length === 0) continue;
+			cleanGroups.push({ matcher: group.matcher, hooks: cleanHooks });
+		}
+		if (cleanGroups.length > 0) out[eventName] = cleanGroups;
+	}
+	return out;
+}
+
 /**
  * Parse a `package.json` body looking for `cc-thingz.hooks` contributions.
  *
- * Pure function — tests can exercise it without spinning up a filesystem
- * fixture. Returns undefined when the package does not contribute hooks.
+ * When `repoDir` is provided, every contributed command must either be an
+ * absolute path inside `repoDir` or use the `${PKG_DIR}` placeholder; commands
+ * with shell metacharacters are rejected. When `repoDir` is omitted the parser
+ * skips path validation — useful for round-trip parsing in tooling tests but
+ * never the path taken at runtime.
  */
-export function parsePackageContribution(packageJsonContent: string): HooksConfig | undefined {
+export function parsePackageContribution(packageJsonContent: string, repoDir?: string): HooksConfig | undefined {
 	try {
 		const parsed = JSON.parse(packageJsonContent) as unknown;
 		if (!isRecord(parsed)) return undefined;
@@ -297,7 +355,10 @@ export function parsePackageContribution(packageJsonContent: string): HooksConfi
 		if (!isRecord(ccThingz)) return undefined;
 		const hooks = ccThingz.hooks;
 		if (!isRecord(hooks)) return undefined;
-		return normalizeHookConfig(hooks);
+		const normalized = normalizeHookConfig(hooks);
+		if (repoDir === undefined) return normalized;
+		const cleaned = sanitisePackageContribution(normalized, repoDir);
+		return Object.keys(cleaned).length > 0 ? cleaned : undefined;
 	} catch {
 		return undefined;
 	}

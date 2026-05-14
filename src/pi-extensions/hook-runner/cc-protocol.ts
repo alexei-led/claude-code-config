@@ -148,6 +148,9 @@ export function decodeGeneric(stdout: string, hookEventName: HookEventName): Gen
 	const continueField = typeof hso.continue === "boolean" ? hso.continue : typeof parsed.continue === "boolean" ? parsed.continue : undefined;
 	const reason = stringField(hso.reason) ?? stringField(parsed.reason) ?? stringField(hso.stopReason) ?? stringField(parsed.stopReason);
 	const additionalContext = stringField(hso.additionalContext) ?? stringField(parsed.additionalContext);
+	// Precedence: either signal blocks. A hook that emits `decision: "block"`
+	// alongside `continue: true` is still blocked — explicit `decision` always
+	// wins. CC's spec treats both as blocking signals, OR'd together.
 	return {
 		block: decision === "block" || continueField === false,
 		reason,
