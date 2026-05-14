@@ -17,7 +17,7 @@ import type { AgentMessage } from "@earendil-works/pi-agent-core";
 import type { AssistantMessage, TextContent } from "@earendil-works/pi-ai";
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
 import { Key } from "@earendil-works/pi-tui";
-import { invokeSyntheticHook } from "../hook-bridge.js";
+import { invokeSyntheticHook, toCcToolName } from "../hook-bridge.js";
 import { extractTodoItems, isSafeCommand, markCompletedSteps, type TodoItem } from "./utils.js";
 
 // Tools
@@ -144,11 +144,12 @@ export default function planModeExtension(pi: ExtensionAPI): void {
 			return { blocked: false };
 		}
 		const toolUseId = `plan-exit-${Date.now()}-${++planExitAttempt}`;
+		const exitPlanMode = toCcToolName("exit_plan_mode");
 		const stdin = {
 			session_id: sessionId,
 			cwd: ctx.cwd,
 			hook_event_name: "PreToolUse",
-			tool_name: "ExitPlanMode",
+			tool_name: exitPlanMode,
 			tool_use_id: toolUseId,
 			tool_input: {
 				plan: planMarkdown,
@@ -163,7 +164,7 @@ export default function planModeExtension(pi: ExtensionAPI): void {
 		// hook-runner is a malfunction, not an approval.
 		const result = await invokeSyntheticHook(pi, ctx, {
 			hookEventName: "PreToolUse",
-			ccToolName: "ExitPlanMode",
+			ccToolName: exitPlanMode,
 			stdin,
 			timeoutMs: 30 * 60 * 1000,
 			timeoutResult: { blocked: true, reason: "Plan exit review timed out." },

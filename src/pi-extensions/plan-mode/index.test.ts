@@ -1,6 +1,44 @@
 import { beforeEach, describe, expect, it, mock } from "bun:test";
 
-import { HOOK_RUNNER_INVOKE_CHANNEL } from "../hook-bridge.js";
+import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
+import { HOOK_RUNNER_INVOKE_CHANNEL, type SyntheticHookInvocationResult } from "../hook-bridge.js";
+
+// ---------------------------------------------------------------------------
+// Controllable invokeSyntheticHook mock — defaults to the real bus-routing
+// implementation so existing tests that wire busHandlers work unchanged.
+// Individual tests can override invokeHookImpl to inject synthetic results.
+// ---------------------------------------------------------------------------
+
+type InvokeHookFn = (
+	pi: ExtensionAPI,
+	ctx: ExtensionContext,
+	request: {
+		hookEventName: string;
+		stdin: Record<string, unknown>;
+		ccToolName?: string;
+		timeoutMs?: number;
+		timeoutResult?: SyntheticHookInvocationResult;
+	},
+) => Promise<SyntheticHookInvocationResult>;
+
+let invokeHookImpl: InvokeHookFn = async (pi, _ctx, request) => {
+	// Real bus-routing: emit on HOOK_RUNNER_INVOKE_CHANNEL and wait for onResult.
+	// This is the same logic as the real invokeSyntheticHook, minus outer timeout,
+	// so existing busHandlers-based tests work without change.
+	return await new Promise((resolve) => {
+		pi.events.emit(HOOK_RUNNER_INVOKE_CHANNEL, {
+			hookEventName: request.hookEventName,
+			ccToolName: request.ccToolName,
+			stdin: request.stdin,
+			onResult: resolve,
+		});
+	});
+};
+
+mock.module("../hook-bridge.js", () => ({
+	HOOK_RUNNER_INVOKE_CHANNEL,
+	invokeSyntheticHook: (pi: ExtensionAPI, ctx: ExtensionContext, request: Parameters<InvokeHookFn>[2]) => invokeHookImpl(pi, ctx, request),
+}));
 
 mock.module("@earendil-works/pi-agent-core", () => ({}));
 mock.module("@earendil-works/pi-ai", () => ({}));
@@ -200,7 +238,7 @@ describe("plan-mode / ExitPlanMode hook integration", () => {
 	it("blocks execution when hook-runner returns an explicit blocked decision", async () => {
 		// Hook-runner delivers an explicit blocked verdict (e.g., a per-entry
 		// timeout that fired inside the runner). The outer-wait timeout path is
-		// exercised separately — see fail-closed coverage below.
+		// exercised separately in the describe block below.
 		const { pi, ctx, getActiveTools } = await runAgentEndWithHook({
 			blocked: true,
 			reason: "Plan exit review timed out.",
@@ -209,5 +247,36 @@ describe("plan-mode / ExitPlanMode hook integration", () => {
 		expect(ctx.ui.notify).toHaveBeenCalledWith("Plan exit review timed out.", "warning");
 		expect(pi.sendUserMessage).toHaveBeenCalledWith("Plan exit review timed out.");
 		expect(getActiveTools()).toEqual(["read", "bash", "ask_user_question"]);
+	});
+});
+
+describe("plan-mode / ExitPlanMode outer-wait timeout (fail-closed)", () => {
+	const savedImpl = invokeHookImpl;
+
+	beforeEach(() => {
+		mock.restore();
+		invokeHookImpl = savedImpl;
+	});
+
+	it("blocks execution and stays in plan mode when outer-wait timeout fires", async () => {
+		// Simulate the 30-minute outer-wait timer firing by making invokeSyntheticHook
+		// return the timeoutResult directly — the same value plan-mode passes to it.
+		// This tests plan-mode's response to the timeout, not the timer mechanism itself.
+		invokeHookImpl = async (_pi, _ctx, request) => request.timeoutResult ?? {};
+
+		const { pi, handlers, commands, getActiveTools } = makePi();
+		const ctx = makeCtx(["Execute the plan (track progress)"]);
+		await commands.get("plan")!.handler([], ctx);
+
+		const lastMessage = {
+			role: "assistant",
+			content: [{ type: "text", text: PLAN_WITH_STEPS }],
+		};
+		await handlers.get("agent_end")!({ messages: [lastMessage] }, ctx);
+
+		expect(ctx.ui.notify).toHaveBeenCalledWith("Plan exit review timed out.", "warning");
+		expect(pi.sendUserMessage).toHaveBeenCalledWith("Plan exit review timed out.");
+		expect(getActiveTools()).toEqual(["read", "bash", "ask_user_question"]);
+		expect(pi.sendMessage).not.toHaveBeenCalledWith(expect.objectContaining({ customType: "plan-mode-execute" }), expect.any(Object));
 	});
 });

@@ -6,7 +6,7 @@
  */
 
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
-import { invokeSyntheticHook, type SyntheticHookInvocationResult } from "./hook-bridge.js";
+import { invokeSyntheticHook, type SyntheticHookInvocationResult, toCcToolName } from "./hook-bridge.js";
 
 export default function (pi: ExtensionAPI) {
 	const dangerousPatterns = [/\brm\s+(-rf?|--recursive)/i, /\bsudo\b/i, /\b(chmod|chown)\b.*777/i];
@@ -22,17 +22,18 @@ export default function (pi: ExtensionAPI) {
 		if (typeof sessionId !== "string" || typeof cwd !== "string") {
 			return {};
 		}
+		const ccToolName = toCcToolName("bash");
 		const stdin: Record<string, unknown> = {
 			session_id: sessionId,
 			cwd,
 			hook_event_name: hookEventName,
-			tool_name: "Bash",
+			tool_name: ccToolName,
 			tool_input: toolInput,
 		};
 		if (reason) stdin.reason = reason;
 		return await invokeSyntheticHook(pi, ctx, {
 			hookEventName,
-			ccToolName: "Bash",
+			ccToolName,
 			stdin,
 			timeoutMs: 2000,
 			timeoutResult: hookEventName === "PermissionRequest" ? { blocked: true, behavior: "deny", reason: "Permission request hook timed out." } : {},
