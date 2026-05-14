@@ -11,7 +11,7 @@ Covers:
   SessionStart, `$PLUGIN_ROOT/hooks/<script>` substitution, statusMessage)
 - Claude per-plugin `hooks.json` shape (PreToolUse/PostToolUse/SessionStart,
   `${CLAUDE_PLUGIN_ROOT}/hooks/<script>` substitution)
-- Pi receives no manifest
+- Pi manifest generated from meta.yaml + merged with hooks-external.json
 - CC-only events (notification, worktreecreate, worktreeremove) are dropped
   from Gemini/Codex manifests
 """
@@ -502,12 +502,97 @@ def test_claude_manifest_skips_when_no_plugin(ch, tmp_path):
     assert written == []
 
 
-def test_pi_no_manifest(ch, tmp_path):
+def test_pi_manifest_from_meta_yaml(ch, tmp_path):
+    """Pi hooks.json is generated from meta.yaml — no hand-maintained file."""
     src = tmp_path / "src"
-    hook = _write_hook(src, "smart-lint", "postedit")
+    hook = _write_hook(src, "smart-lint", "postedit", timeout=60)
     results = _compile_all(ch, [hook], "pi", {}, tmp_path)
     written = ch.write_hook_manifests(results, "pi", tmp_path)
-    assert written == []
+    assert len(written) == 1
+    manifest_path = written[0]
+    assert manifest_path == tmp_path / "dist" / "pi" / "extensions" / "hooks.json"
+    manifest = json.loads(manifest_path.read_text())
+    post = manifest["hooks"]["PostToolUse"][0]
+    assert post["matcher"] == "Write|Edit|MultiEdit"
+    assert post["hooks"][0]["command"] == "${PI_HOOKS_DIR}/smart-lint.sh"
+    assert post["hooks"][0]["timeout"] == 60
+    assert "async" not in post["hooks"][0]
+
+
+def test_pi_manifest_merges_external(ch, tmp_path):
+    """Pi hooks.json merges entries from src/pi-extensions/hooks-external.json."""
+    src = tmp_path / "src"
+    hook = _write_hook(src, "smart-lint", "postedit")
+    pi_ext = src / "pi-extensions"
+    pi_ext.mkdir(parents=True, exist_ok=True)
+    (pi_ext / "hooks-external.json").write_text(
+        json.dumps(
+            {
+                "hooks": {
+                    "SessionStart": [
+                        {
+                            "hooks": [
+                                {
+                                    "type": "command",
+                                    "command": "ccgram hook",
+                                    "timeout": 5,
+                                    "async": True,
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        )
+    )
+    results = _compile_all(ch, [hook], "pi", {}, tmp_path)
+    written = ch.write_hook_manifests(results, "pi", tmp_path)
+    assert len(written) == 1
+    manifest = json.loads(written[0].read_text())
+    assert "SessionStart" in manifest["hooks"]
+    assert manifest["hooks"]["SessionStart"][0]["hooks"][0]["command"] == "ccgram hook"
+
+
+def test_pi_manifest_honors_pi_async(ch, tmp_path):
+    """meta.yaml `pi: { async: true }` flows through to the Pi entry."""
+    src = tmp_path / "src"
+    hook_dir = src / "hooks" / "test-runner"
+    hook_dir.mkdir(parents=True, exist_ok=True)
+    (hook_dir / "hook.sh").write_text("#!/bin/sh\nexit 0\n")
+    (hook_dir / "meta.yaml").write_text(
+        "name: test-runner\nevent: postedit\ntimeout: 120\npi:\n  async: true\n"
+    )
+    spec = ch.load_hook(hook_dir)
+    assert spec.pi_async is True
+    results = _compile_all(ch, [hook_dir], "pi", {}, tmp_path)
+    written = ch.write_hook_manifests(results, "pi", tmp_path)
+    manifest = json.loads(written[0].read_text())
+    entry = manifest["hooks"]["PostToolUse"][0]["hooks"][0]
+    assert entry["async"] is True
+
+
+def test_pi_manifest_honors_pi_timeout_override(ch, tmp_path):
+    """meta.yaml `pi: { timeout: N }` overrides the default `timeout` for Pi only."""
+    src = tmp_path / "src"
+    hook_dir = src / "hooks" / "revdiff-plan-review"
+    hook_dir.mkdir(parents=True, exist_ok=True)
+    (hook_dir / "hook.py").write_text("#!/usr/bin/env python3\n")
+    (hook_dir / "meta.yaml").write_text(
+        "name: revdiff-plan-review\n"
+        "event: exitplanmode\n"
+        "timeout: 345600\n"
+        "pi:\n"
+        "  timeout: 1740\n"
+    )
+    spec = ch.load_hook(hook_dir)
+    assert spec.timeout == 345600
+    assert spec.pi_timeout == 1740
+    assert spec.effective_pi_timeout == 1740
+    results = _compile_all(ch, [hook_dir], "pi", {}, tmp_path)
+    written = ch.write_hook_manifests(results, "pi", tmp_path)
+    manifest = json.loads(written[0].read_text())
+    entry = manifest["hooks"]["PreToolUse"][0]["hooks"][0]
+    assert entry["timeout"] == 1740
 
 
 # --- end-to-end smoke -------------------------------------------------------

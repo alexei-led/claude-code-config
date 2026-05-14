@@ -56,51 +56,61 @@ EVENT_MAP: dict[str, dict[str, tuple[str, str | None] | None]] = {
         "claude": ("SessionStart", None),
         "gemini": ("SessionStart", None),
         "codex": ("SessionStart", None),
+        "pi": ("SessionStart", None),
     },
     "preedit": {
         "claude": ("PreToolUse", "Write|Edit|MultiEdit"),
         "gemini": ("BeforeTool", "write_file|replace"),
         "codex": ("PreToolUse", "^apply_patch$"),
+        "pi": ("PreToolUse", "Write|Edit|MultiEdit"),
     },
     "prebash": {
         "claude": ("PreToolUse", "Bash"),
         "gemini": ("BeforeTool", "run_shell_command"),
         "codex": ("PreToolUse", "^Bash$"),
+        "pi": ("PreToolUse", "Bash"),
     },
     "postedit": {
         "claude": ("PostToolUse", "Write|Edit|MultiEdit"),
         "gemini": ("AfterTool", "write_file|replace"),
         "codex": ("PostToolUse", "^apply_patch$"),
+        "pi": ("PostToolUse", "Write|Edit|MultiEdit"),
     },
     "posttool": {
         "claude": ("PostToolUse", None),
         "gemini": ("AfterTool", None),
         "codex": ("PostToolUse", None),
+        "pi": ("PostToolUse", None),
     },
     "userpromptsubmit": {
         "claude": ("UserPromptSubmit", None),
         "gemini": ("BeforeAgent", None),
         "codex": None,
+        "pi": ("UserPromptSubmit", None),
     },
     "notification": {
         "claude": ("Notification", None),
         "gemini": ("Notification", None),
         "codex": None,
+        "pi": ("Notification", None),
     },
     "exitplanmode": {
         "claude": ("PreToolUse", "ExitPlanMode"),
         "gemini": None,
         "codex": None,
+        "pi": ("PreToolUse", "ExitPlanMode"),
     },
     "worktreecreate": {
         "claude": ("WorktreeCreate", None),
         "gemini": None,
         "codex": None,
+        "pi": None,
     },
     "worktreeremove": {
         "claude": ("WorktreeRemove", None),
         "gemini": None,
         "codex": None,
+        "pi": None,
     },
 }
 
@@ -126,6 +136,17 @@ CLAUDE_EVENT_ORDER: tuple[str, ...] = (
     "WorktreeCreate",
     "WorktreeRemove",
 )
+PI_EVENT_ORDER: tuple[str, ...] = (
+    "SessionStart",
+    "SessionEnd",
+    "SubagentStart",
+    "SubagentStop",
+    "UserPromptSubmit",
+    "PreToolUse",
+    "PostToolUse",
+    "Stop",
+    "Notification",
+)
 
 _TARGET_SUBDIRS: frozenset[str] = frozenset(_compile.TARGETS)
 
@@ -145,11 +166,17 @@ class HookSpec:
     script_path: Path
     status_message: str | None = None
     targets: list[str] | None = None
+    pi_async: bool = False
+    pi_timeout: int | None = None
 
     @property
     def script_basename(self) -> str:
         """Output script filename (`<name>.<ext>` from the source extension)."""
         return f"{self.name}{self.script_path.suffix}"
+
+    @property
+    def effective_pi_timeout(self) -> int:
+        return self.pi_timeout if self.pi_timeout is not None else self.timeout
 
 
 @dataclass
@@ -207,6 +234,21 @@ def load_hook(hook_dir: Path) -> HookSpec:
         if unknown:
             raise ValueError(f"{meta_path}: unknown targets: {unknown}")
 
+    pi_block = meta.get("pi")
+    pi_async = False
+    pi_timeout: int | None = None
+    if pi_block is not None:
+        if not isinstance(pi_block, dict):
+            raise ValueError(f"{meta_path}: pi must be a mapping when present")
+        if "async" in pi_block:
+            if not isinstance(pi_block["async"], bool):
+                raise ValueError(f"{meta_path}: pi.async must be a boolean")
+            pi_async = pi_block["async"]
+        if "timeout" in pi_block:
+            if not isinstance(pi_block["timeout"], int) or pi_block["timeout"] <= 0:
+                raise ValueError(f"{meta_path}: pi.timeout must be a positive integer")
+            pi_timeout = pi_block["timeout"]
+
     return HookSpec(
         name=name,
         event=event,
@@ -214,6 +256,8 @@ def load_hook(hook_dir: Path) -> HookSpec:
         script_path=scripts[0],
         status_message=meta.get("status_message"),
         targets=targets,
+        pi_async=pi_async,
+        pi_timeout=pi_timeout,
     )
 
 
@@ -377,6 +421,59 @@ def _build_codex(specs: Sequence[HookSpec]) -> dict:
     return {"hooks": events}
 
 
+def _pi_hook_entry(spec: HookSpec) -> dict:
+    entry: dict = {
+        "type": "command",
+        "command": f"${{PI_HOOKS_DIR}}/{spec.script_basename}",
+        "timeout": spec.effective_pi_timeout,
+    }
+    if spec.pi_async:
+        entry["async"] = True
+    return entry
+
+
+def _build_pi(specs: Sequence[HookSpec], external: dict | None = None) -> dict:
+    """Assemble Pi `hooks.json`.
+
+    `external` is the optional `src/pi-extensions/hooks-external.json` content
+    (third-party commands like `ccgram hook` that aren't owned by `src/hooks/`).
+    External groups are merged in alongside meta.yaml-derived groups; both
+    survive the build with no hand-maintained duplication.
+    """
+    groups: dict[tuple[str, str | None], list[dict]] = {}
+    for spec in specs:
+        mapping = EVENT_MAP[spec.event].get("pi")
+        if mapping is None:
+            continue
+        event_name, matcher = mapping
+        key = (event_name, matcher)
+        groups.setdefault(key, []).append(_pi_hook_entry(spec))
+
+    events: dict[str, list] = {}
+    for event_name in PI_EVENT_ORDER:
+        event_groups = []
+        for (ev, matcher), hooks in groups.items():
+            if ev != event_name:
+                continue
+            group: dict = {}
+            if matcher is not None:
+                group["matcher"] = matcher
+            group["hooks"] = hooks
+            event_groups.append(group)
+        if event_groups:
+            events[event_name] = event_groups
+
+    if external:
+        external_hooks = external.get("hooks") if isinstance(external, dict) else None
+        if isinstance(external_hooks, dict):
+            for event_name, ext_groups in external_hooks.items():
+                if not isinstance(ext_groups, list):
+                    continue
+                events.setdefault(event_name, []).extend(ext_groups)
+
+    return {"hooks": events}
+
+
 def _build_claude(specs: Sequence[HookSpec]) -> dict:
     groups: dict[tuple[str, str | None], list[dict]] = {}
     for spec in specs:
@@ -412,7 +509,9 @@ def write_hook_manifests(
 
     Gemini receives a single `dist/gemini/hooks/hooks.json` covering every
     hook. Claude and Codex receive one manifest per owning plugin. Pi receives
-    no manifest because it consumes scripts directly.
+    `dist/pi/extensions/hooks.json` merged from meta.yaml-derived entries and
+    `src/pi-extensions/hooks-external.json` (third-party commands not in
+    `src/hooks/`).
     """
     if not results:
         return []
@@ -454,5 +553,21 @@ def write_hook_manifests(
             written.append(path)
         return written
 
-    # pi → no manifest writes.
+    if target == "pi":
+        specs = [r.spec for r in results if r.placements]
+        external_path = root / "src" / "pi-extensions" / "hooks-external.json"
+        external: dict | None = None
+        if external_path.is_file():
+            try:
+                external = json.loads(external_path.read_text())
+            except json.JSONDecodeError as exc:
+                raise ValueError(f"{external_path}: invalid JSON ({exc})") from exc
+        manifest = _build_pi(specs, external)
+        if manifest["hooks"]:
+            path = dist / "extensions" / "hooks.json"
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(_to_bytes(manifest))
+            written.append(path)
+        return written
+
     return written

@@ -26,10 +26,16 @@ import compile as _compile  # noqa: E402
 log = logging.getLogger("compile.pi_extension")
 
 
+_BUILD_INPUT_FILES: frozenset[str] = frozenset({"hooks-external.json"})
+
+
 def discover_pi_extensions(root: Path) -> list[Path]:
     """Return every direct child of `src/pi-extensions/` (files or dirs).
 
-    Hidden entries (leading dot) and test files (*.test.ts) are skipped.
+    Skipped:
+    - hidden entries (leading dot)
+    - test files (*.test.ts)
+    - build-time inputs consumed by other compile steps (`hooks-external.json`)
     """
     src = root / "src" / "pi-extensions"
     if not src.is_dir():
@@ -37,7 +43,9 @@ def discover_pi_extensions(root: Path) -> list[Path]:
     return sorted(
         p
         for p in src.iterdir()
-        if not p.name.startswith(".") and not p.name.endswith(".test.ts")
+        if not p.name.startswith(".")
+        and not p.name.endswith(".test.ts")
+        and p.name not in _BUILD_INPUT_FILES
     )
 
 

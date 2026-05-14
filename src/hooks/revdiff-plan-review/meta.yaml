@@ -4,3 +4,8 @@ timeout: 345600
 status_message: Reviewing plan with revdiff
 targets:
   - pi
+pi:
+  # Outer wait in plan-mode/index.ts is 30 minutes; per-entry timeout must fire
+  # first so hook-runner returns a blocked deny instead of the outer wait timing
+  # out silently. 1740s = 29 minutes leaves a 60s margin.
+  timeout: 1740
