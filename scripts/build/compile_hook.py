@@ -510,8 +510,8 @@ def write_hook_manifests(
     Gemini receives a single `dist/gemini/hooks/hooks.json` covering every
     hook. Claude and Codex receive one manifest per owning plugin. Pi receives
     `dist/pi/extensions/hooks.json` merged from meta.yaml-derived entries and
-    `src/pi-extensions/hooks-external.json` (third-party commands not in
-    `src/hooks/`).
+    `scripts/build/pi-hooks-external.json` (third-party commands not owned by
+    `src/hooks/` — sits next to the build script that reads it).
     """
     if not results:
         return []
@@ -555,7 +555,7 @@ def write_hook_manifests(
 
     if target == "pi":
         specs = [r.spec for r in results if r.placements]
-        external_path = root / "src" / "pi-extensions" / "hooks-external.json"
+        external_path = root / "scripts" / "build" / "pi-hooks-external.json"
         external: dict | None = None
         if external_path.is_file():
             try:
