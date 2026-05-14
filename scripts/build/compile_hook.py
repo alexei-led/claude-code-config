@@ -247,6 +247,9 @@ def _copy_script(src: Path, dest: Path) -> None:
     dest.chmod(src.stat().st_mode)
 
 
+_SUPPORT_IGNORE = shutil.ignore_patterns("__pycache__", "*.pyc", ".DS_Store")
+
+
 def _copy_support_dirs(hook_dir: Path, out_dir: Path) -> None:
     """Copy any non-target sibling directories (support files) into `out_dir`."""
     for child in hook_dir.iterdir():
@@ -254,7 +257,11 @@ def _copy_support_dirs(hook_dir: Path, out_dir: Path) -> None:
             continue
         if child.name in _TARGET_SUBDIRS:
             continue
-        shutil.copytree(child, out_dir / child.name, dirs_exist_ok=True)
+        if child.name == "__pycache__":
+            continue
+        shutil.copytree(
+            child, out_dir / child.name, dirs_exist_ok=True, ignore=_SUPPORT_IGNORE
+        )
 
 
 def compile_hook(
