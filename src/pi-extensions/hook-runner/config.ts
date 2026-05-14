@@ -290,8 +290,12 @@ function readPackageContribution(repoDir: string): HooksConfig | undefined {
 export const PKG_DIR_PLACEHOLDER = "${PKG_DIR}";
 // Shell metacharacters that change interpretation when passed to `bash -c`.
 // Plugin-contributed commands run inside the user's shell so any of these is
-// a potential injection vector from a malicious package.
-const PACKAGE_CMD_FORBIDDEN_RE = /[;&|<>`$()\\{}]/;
+// a potential injection vector from a malicious package. Newlines and
+// carriage returns are included because `bash -c` happily executes every
+// line of a multiline argument; without them, a package.json string like
+// "/pkg/safe.sh\nrm -rf ~" would split into two commands and the second
+// would run despite the first-token path check.
+const PACKAGE_CMD_FORBIDDEN_RE = /[;&|<>`$()\\{}\n\r]/;
 
 /**
  * Validate a package-contributed hook command.

@@ -109,6 +109,14 @@ describe("validatePackageCommand", () => {
 		expect(validatePackageCommand(`${repoDir}/hooks/x.sh > /etc/passwd`, repoDir)).toBeUndefined();
 	});
 
+	it("rejects newline-smuggled second commands (multiline injection)", () => {
+		// `bash -c` executes every line; the first-token path check alone is not
+		// sufficient because it inspects only `/pkg/root/safe.sh` and the second
+		// line still runs.
+		expect(validatePackageCommand(`${repoDir}/safe.sh\nrm -rf ~`, repoDir)).toBeUndefined();
+		expect(validatePackageCommand(`${repoDir}/safe.sh\r\necho injected`, repoDir)).toBeUndefined();
+	});
+
 	it("rejects empty / whitespace-only commands", () => {
 		expect(validatePackageCommand("", repoDir)).toBeUndefined();
 		expect(validatePackageCommand("   ", repoDir)).toBeUndefined();

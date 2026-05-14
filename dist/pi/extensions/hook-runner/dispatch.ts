@@ -190,8 +190,13 @@ export function runHook(entry: HookEntryRuntime, stdinJson: string, optionsOrDef
 					const codeStr = typeof err.code === "string" ? err.code : "";
 					const overflowed = codeStr === "ERR_CHILD_PROCESS_STDIO_MAXBUFFER";
 					const exitCode = overflowed ? 2 : typeof err.code === "number" ? err.code : 1;
-					const overflowMessage = overflowed && !cleanedStderr.trim() ? `Hook output exceeded ${HOOK_OUTPUT_MAX_BYTES / (1024 * 1024)}MB cap` : cleanedStderr;
-					result = { exitCode, stdout, stderr: overflowMessage, timedOut: killed };
+					// `maxBuffer` caps stdout+stderr combined, so a non-empty stderr at
+					// overflow is unrelated noise — prepending the explicit cap notice
+					// keeps the actionable signal first while preserving the captured
+					// stderr for debugging.
+					const overflowStderr = `Hook output exceeded ${HOOK_OUTPUT_MAX_BYTES / (1024 * 1024)}MB cap`;
+					const stderrOut = overflowed ? (cleanedStderr.trim() ? `${overflowStderr}: ${cleanedStderr}` : overflowStderr) : cleanedStderr;
+					result = { exitCode, stdout, stderr: stderrOut, timedOut: killed };
 				} else {
 					result = { exitCode: 0, stdout, stderr: cleanedStderr, timedOut: false };
 				}
@@ -373,6 +378,12 @@ export async function runPermissionDeniedGroups(
 // Generic decision dispatch
 // ---------------------------------------------------------------------------
 
+// Events where a hook's `blocked: true` would have no addressable action to
+// stop (post-fact notifications, idle signals, reload triggers). The bridge
+// path collapses `blocked` to `false` for these so a misbehaving hook can't
+// surface stale "denied" results to callers. UserPromptExpansion is *not*
+// here because its local handler returns `{ action: "handled" }` and blocking
+// is part of the contract.
 export const NON_BLOCKING_HOOK_EVENTS = new Set<HookEventName>([
 	"SessionStart",
 	"Setup",
@@ -384,7 +395,15 @@ export const NON_BLOCKING_HOOK_EVENTS = new Set<HookEventName>([
 	"InstructionsLoaded",
 	"CwdChanged",
 	"FileChanged",
+	"WorktreeCreate",
 	"WorktreeRemove",
+	"PostToolBatch",
+	"TaskCreated",
+	"TaskCompleted",
+	"TeammateIdle",
+	"ConfigChange",
+	"Elicitation",
+	"ElicitationResult",
 ]);
 
 export async function runDecisionHooks(

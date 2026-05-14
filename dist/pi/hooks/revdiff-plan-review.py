@@ -125,6 +125,12 @@ def main() -> None:
         print(f"revdiff plan review timed out after {exc.timeout}s", file=sys.stderr)
         sys.exit(2)
     except (OSError, subprocess.SubprocessError) as exc:
+        # Fail-open by design: this wrapper is opt-in (revdiff installed → review
+        # the plan; not installed → proceed). A permission error or interpreter
+        # failure on the upstream script falls into the same bucket as "plugin
+        # not installed" rather than blocking plan execution. Operators who want
+        # mandatory review should run the upstream hook directly, not via this
+        # wrapper.
         print(f"revdiff plan review skipped: {exc}", file=sys.stderr)
         allow()
 

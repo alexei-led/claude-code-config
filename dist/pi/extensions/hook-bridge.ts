@@ -111,11 +111,20 @@ export type SyntheticHookInvocationResult =
 	| SyntheticPermissionDeniedResult
 	| SyntheticGenericResult;
 
+/**
+ * Wire shape published on `HOOK_RUNNER_INVOKE_CHANNEL`.
+ *
+ * Callers do not construct this directly — they use `invokeSyntheticHook`,
+ * which has its own request type and supplies `onResult` internally. The
+ * field lives on this interface because it travels over the event bus to
+ * the hook-runner side, which must call it to deliver the result.
+ */
 export interface SyntheticHookInvocationRequest {
 	hookEventName: SyntheticHookEventName;
 	stdin: Record<string, unknown>;
 	ccToolName?: string;
 	timeoutSec?: number;
+	/** Set by `invokeSyntheticHook`; consumed by the hook-runner bridge. Not for extension callers. */
 	onResult?: (result: SyntheticHookInvocationResult) => void;
 }
 
