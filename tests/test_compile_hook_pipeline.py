@@ -571,6 +571,26 @@ def test_pi_manifest_honors_pi_async(ch, tmp_path):
     assert entry["async"] is True
 
 
+def test_pi_manifest_fails_loud_when_event_missing_from_order(
+    ch, tmp_path, monkeypatch
+):
+    """Adding a new Pi-mapped event without updating PI_EVENT_ORDER must
+    surface as a build failure, not silently drop the hook."""
+    monkeypatch.setitem(
+        ch.EVENT_MAP,
+        "rogueevent",
+        {"pi": ("RogueEvent", None), "claude": None, "codex": None, "gemini": None},
+    )
+    src = tmp_path / "src"
+    hook_dir = src / "hooks" / "rogue"
+    hook_dir.mkdir(parents=True)
+    (hook_dir / "hook.sh").write_text("#!/bin/sh\nexit 0\n")
+    (hook_dir / "meta.yaml").write_text("name: rogue\nevent: rogueevent\ntimeout: 10\n")
+    spec = ch.load_hook(hook_dir)
+    with pytest.raises(ValueError, match="PI_EVENT_ORDER"):
+        ch._build_pi([spec])
+
+
 def test_pi_manifest_external_only_when_all_meta_hooks_restricted(ch, tmp_path):
     """External-only path: every meta.yaml hook is `targets`-restricted away from Pi,
     but `pi-hooks-external.json` still contributes entries — the Pi manifest must
