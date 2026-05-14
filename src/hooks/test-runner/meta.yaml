@@ -2,3 +2,5 @@ name: test-runner
 event: postedit
 timeout: 120
 status_message: Running tests
+pi:
+  async: true

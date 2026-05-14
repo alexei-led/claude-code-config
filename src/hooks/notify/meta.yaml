@@ -1,3 +1,5 @@
 name: notify
 event: notification
 timeout: 10
+pi:
+  async: true
