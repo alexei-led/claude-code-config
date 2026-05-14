@@ -133,6 +133,25 @@ ln -snf \
   ~/.pi/agent/agents
 ```
 
+Project-local custom agents are read from `.pi/agents/*.md`. This repo adds
+an `advisor` agent in source layout:
+
+- `src/agents/advisor/AGENT.md`
+- `src/agents/advisor/pi/frontmatter.yaml`
+
+Compiled artifact: `dist/pi/agents/advisor.md`.
+
+Advisor can use read-only exploration tools (`read`, `grep`, `find`, `ls`,
+read-only `bash`) and must avoid file edits.
+
+Expected advisor output:
+
+- `Verdict`
+- `Top Risks` (ranked)
+- `Next Actions` (ordered, concrete)
+
+Invoke with `Agent({ subagent_type: "advisor", ... })`.
+
 ### revdiff
 
 Used by the `reviewing-code` skill for rendering code review diffs in Pi.

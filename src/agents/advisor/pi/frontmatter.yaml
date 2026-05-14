@@ -1,0 +1,6 @@
+tools: read, grep, find, ls, bash
+skills: none
+model: openai-codex/gpt-5.5
+thinking: xhigh
+max_turns: 12
+prompt_mode: replace
