@@ -84,6 +84,15 @@ export interface SyntheticHookInvocationRequest {
 /**
  * Shared synthetic-hook caller for extensions.
  *
+ * Two timeouts apply:
+ * - `timeoutSec` bounds the hook subprocess inside hook-runner (default 10s).
+ *   Forwarded to hook-runner; individual hook entries with their own `timeout`
+ *   field override this per-entry.
+ * - `timeoutMs` is the outer wait on this side for hook-runner to call back.
+ *   Must be >= `timeoutSec * 1000` plus some margin, otherwise the caller
+ *   gives up before the dispatcher returns. Default 2s — set higher when
+ *   the hook may run interactively.
+ *
  * Returns `timeoutResult` when hook-runner does not respond before `timeoutMs`.
  * Returns `{}` when context/session/event bus is unavailable.
  */
@@ -94,6 +103,7 @@ export async function invokeSyntheticHook(
 		hookEventName: SyntheticHookEventName;
 		stdin: Record<string, unknown>;
 		ccToolName?: string;
+		timeoutSec?: number;
 		timeoutMs?: number;
 		timeoutResult?: SyntheticHookInvocationResult;
 	},
@@ -115,6 +125,7 @@ export async function invokeSyntheticHook(
 			hookEventName: request.hookEventName,
 			ccToolName: request.ccToolName,
 			stdin: request.stdin,
+			timeoutSec: request.timeoutSec,
 			onResult: (result: SyntheticHookInvocationResult) => {
 				clearTimeout(timer);
 				done(result);

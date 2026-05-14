@@ -59,7 +59,11 @@ def child_env(plugin_root: Path) -> dict[str, str]:
     env = {
         key: value for key, value in os.environ.items() if not key.startswith("PYTHON")
     }
-    env.setdefault("PATH", "/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin")
+    # Always guarantee a usable PATH: inherited PATH may be empty or broken under
+    # some Pi launch contexts, in which case the child can't find `git`/`bash`.
+    fallback_path = "/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin"
+    if not env.get("PATH"):
+        env["PATH"] = fallback_path
     env.setdefault("CLAUDE_PLUGIN_ROOT", str(plugin_root))
     env.setdefault("CLAUDE_PROJECT_DIR", str(Path.cwd()))
     env.setdefault("CLAUDE_PLUGIN_DATA", str(agent_dir() / "data" / "revdiff-planning"))
@@ -93,6 +97,10 @@ def main() -> None:
             timeout=345600,
             env=child_env(plugin_root),
         )
+    except subprocess.TimeoutExpired as exc:
+        # Treat a genuine hang as a hard error rather than silently allowing.
+        print(f"revdiff plan review timed out after {exc.timeout}s", file=sys.stderr)
+        sys.exit(1)
     except (OSError, subprocess.SubprocessError) as exc:
         print(f"revdiff plan review skipped: {exc}", file=sys.stderr)
         allow()
