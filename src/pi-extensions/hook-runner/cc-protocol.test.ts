@@ -167,12 +167,14 @@ describe("decodeGeneric", () => {
 		expect(decodeGeneric(JSON.stringify({ continue: false }), "Stop")).toMatchObject({ block: true });
 	});
 
-	it("prefers hookSpecificOutput.stopReason over top-level reason", () => {
+	it("prefers top-level reason over hookSpecificOutput.stopReason (cascade order)", () => {
 		const stdout = JSON.stringify({
 			hookSpecificOutput: { hookEventName: "Stop", decision: "block", stopReason: "inner" },
 			reason: "outer",
 		});
-		expect(decodeGeneric(stdout, "Stop")).toMatchObject({ block: true, reason: "outer" }); // top-level reason wins per cascade order
+		// Cascade is hso.reason ?? parsed.reason ?? hso.stopReason ?? parsed.stopReason.
+		// No hso.reason here, so top-level `reason` wins over `stopReason`.
+		expect(decodeGeneric(stdout, "Stop")).toMatchObject({ block: true, reason: "outer" });
 	});
 
 	it("captures additionalContext", () => {
