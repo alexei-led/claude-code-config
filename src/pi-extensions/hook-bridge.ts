@@ -138,10 +138,17 @@ export const SYNTHETIC_HOOK_DEFAULT_TIMEOUT_SEC = 10;
  *   override this per-entry. Default 10s.
  * - `timeoutMs` is the outer wait on this side for hook-runner to call back.
  *   When omitted it is computed as `timeoutSec * 1000 + SYNTHETIC_HOOK_OUTER_WAIT_MARGIN_MS`
- *   so the per-entry timer reliably fires first. Explicit values smaller
- *   than that floor are clamped up; the outer wait must never preempt the
- *   per-entry deadline or hook-runner returns to a stuck caller with no
- *   blocking result (silent fail-open).
+ *   so the per-entry timer reliably fires first. Explicit caller-supplied
+ *   values are honored verbatim — short outer waits are valid for interactive
+ *   flows (e.g. permission-gate's 2s deadline) where waiting on a missing
+ *   hook-runner response would block the user.
+ *
+ * Trade-off: a short explicit `timeoutMs` causes the outer wait to fire before
+ * hook-runner's per-entry timer — the caller's `timeoutResult` is returned
+ * regardless of what the hook would have decided. Interactive callers want
+ * this (snappy fail-closed). Non-interactive callers should set
+ * `enforceFloor: true` to clamp `timeoutMs` up to the floor and prevent the
+ * outer wait from preempting the per-entry deadline.
  *
  * Returns `timeoutResult` when hook-runner does not respond before `timeoutMs`.
  * Returns `{}` when context/session/event bus is unavailable.
@@ -155,6 +162,8 @@ export async function invokeSyntheticHook(
 		ccToolName?: string;
 		timeoutSec?: number;
 		timeoutMs?: number;
+		/** Clamp explicit `timeoutMs` up to `timeoutSec*1000 + margin` for non-interactive flows. */
+		enforceFloor?: boolean;
 		timeoutResult?: SyntheticHookInvocationResult;
 	},
 ): Promise<SyntheticHookInvocationResult> {
@@ -164,12 +173,11 @@ export async function invokeSyntheticHook(
 	if (!pi.events || typeof pi.events.emit !== "function") return {};
 
 	const timeoutSec = request.timeoutSec ?? SYNTHETIC_HOOK_DEFAULT_TIMEOUT_SEC;
-	// When the caller omits timeoutMs, derive it from timeoutSec so the outer
-	// wait survives long-running per-entry hooks (the documented invariant).
-	// Explicit caller-supplied values are honored verbatim — short outer waits
-	// are valid for interactive flows where waiting on a missing hook-runner
-	// response would block the user.
-	const timeoutMs = request.timeoutMs ?? timeoutSec * 1000 + SYNTHETIC_HOOK_OUTER_WAIT_MARGIN_MS;
+	const floor = timeoutSec * 1000 + SYNTHETIC_HOOK_OUTER_WAIT_MARGIN_MS;
+	let timeoutMs = request.timeoutMs ?? floor;
+	if (request.enforceFloor && timeoutMs < floor) {
+		timeoutMs = floor;
+	}
 
 	return await new Promise((resolve) => {
 		let settled = false;
