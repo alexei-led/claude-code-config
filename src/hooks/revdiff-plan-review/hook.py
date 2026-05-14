@@ -94,13 +94,14 @@ def main() -> None:
             input=raw_stdin,
             capture_output=True,
             text=True,
-            timeout=345600,
+            timeout=1740,
             env=child_env(plugin_root),
         )
     except subprocess.TimeoutExpired as exc:
-        # Treat a genuine hang as a hard error rather than silently allowing.
+        # Exit 2 = blocking. runPreToolUseGroups treats other non-zero codes as
+        # non-blocking errors and continues, which would silently allow the plan.
         print(f"revdiff plan review timed out after {exc.timeout}s", file=sys.stderr)
-        sys.exit(1)
+        sys.exit(2)
     except (OSError, subprocess.SubprocessError) as exc:
         print(f"revdiff plan review skipped: {exc}", file=sys.stderr)
         allow()

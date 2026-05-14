@@ -197,9 +197,10 @@ describe("plan-mode / ExitPlanMode hook integration", () => {
 		);
 	});
 
-	it("blocks execution when hook-runner responds with timeout result", async () => {
-		// invokeSyntheticHook passes timeoutResult: { blocked: true, reason: "Plan exit review timed out." }
-		// Simulate hook-runner delivering that value synchronously.
+	it("blocks execution when hook-runner returns an explicit blocked decision", async () => {
+		// Hook-runner delivers an explicit blocked verdict (e.g., a per-entry
+		// timeout that fired inside the runner). The outer-wait timeout path is
+		// exercised separately — see fail-closed coverage below.
 		const { pi, ctx, getActiveTools } = await runAgentEndWithHook({
 			blocked: true,
 			reason: "Plan exit review timed out.",

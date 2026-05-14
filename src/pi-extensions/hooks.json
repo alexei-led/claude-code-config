@@ -95,7 +95,7 @@
           {
             "type": "command",
             "command": "${PI_HOOKS_DIR}/revdiff-plan-review.py",
-            "timeout": 345600
+            "timeout": 1740
           }
         ]
       }
