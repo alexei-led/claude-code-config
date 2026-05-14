@@ -38,10 +38,8 @@ function getTextContent(message: AssistantMessage): string {
 
 function extractPlanMarkdown(message: string): string {
 	const header = message.match(/\*{0,2}Plan:\*{0,2}\s*\n/i);
-	if (!header) return "";
-	const start = message.indexOf(header[0]);
-	if (start === -1) return "";
-	return message.slice(start).trim();
+	if (!header || header.index === undefined) return "";
+	return message.slice(header.index).trim();
 }
 
 function buildPlanMarkdownFromTodos(items: TodoItem[]): string {
@@ -153,11 +151,14 @@ export default function planModeExtension(pi: ExtensionAPI): void {
 				allowedPrompts: [],
 			},
 		};
+		// ExitPlanMode review can be interactive (e.g., revdiff annotation by the user).
+		// Outer wait set to 30 minutes; per-entry `timeout` in hooks.json still caps the
+		// hook subprocess. On wait expiry we fail-open (empty result), so plan proceeds.
 		const result = await invokeSyntheticHook(pi, ctx, {
 			hookEventName: "PreToolUse",
 			ccToolName: "ExitPlanMode",
 			stdin,
-			timeoutMs: 4000,
+			timeoutMs: 30 * 60 * 1000,
 			timeoutResult: {},
 		});
 		const updatedPlan = result.updatedInput && typeof result.updatedInput.plan === "string" ? result.updatedInput.plan : undefined;

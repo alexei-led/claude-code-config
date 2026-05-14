@@ -186,6 +186,8 @@ interface HookRunnerOptions {
 let _config: HooksConfig | null = null;
 let _configLoadedForCwd = "";
 let _ifWarningShown = false;
+let _lastForcedReloadMs = 0;
+const FORCED_RELOAD_DEBOUNCE_MS = 500;
 
 function mergeHooks(base: HooksConfig, user: HooksConfig): void {
 	for (const [key, groups] of Object.entries(user)) {
@@ -295,7 +297,8 @@ function loadConfig(cwd: string, force = false): void {
 	const base = disableBundledHooks ? {} : loadBundledHooksConfig();
 	for (const hooksConfig of hookConfigs) {
 		mergeHooks(base, hooksConfig);
-		if (!_ifWarningShown && hasUnsupportedIfPredicate(hooksConfig)) {
+		if (_ifWarningShown) continue;
+		if (hasUnsupportedIfPredicate(hooksConfig)) {
 			_ifWarningShown = true;
 			console.warn("[hook-runner] 'if' predicate in hooks config is not supported in v1; use 'matcher' instead");
 		}
@@ -934,7 +937,15 @@ export default function (pi: ExtensionAPI): void {
 
 			const hookEventName = req.hookEventName;
 			const cwd = typeof req.stdin.cwd === "string" ? req.stdin.cwd : process.cwd();
-			loadConfig(cwd, hookEventName === "ConfigChange");
+			let force = false;
+			if (hookEventName === "ConfigChange") {
+				const now = Date.now();
+				if (now - _lastForcedReloadMs >= FORCED_RELOAD_DEBOUNCE_MS) {
+					_lastForcedReloadMs = now;
+					force = true;
+				}
+			}
+			loadConfig(cwd, force);
 
 			const withBase = {
 				...baseStdinFromRecord(hookEventName, req.stdin),
@@ -1236,9 +1247,6 @@ export default function (pi: ExtensionAPI): void {
 			replaceInput(event.input, result.updatedInput);
 		}
 		if (result.blocked) {
-			if (isRecord(event.input)) {
-				toolInputByCallId.set(event.toolCallId, structuredClone(event.input));
-			}
 			return { block: true, reason: result.reason || "Blocked by hook" };
 		}
 		if (isRecord(event.input)) {
@@ -1251,7 +1259,8 @@ export default function (pi: ExtensionAPI): void {
 	pi.on("tool_result", async (event: ToolResultEvent, ctx: ExtensionContext) => {
 		const ccName = toCcToolName(event.toolName);
 		const hookName: HookEventName = event.isError ? "PostToolUseFailure" : "PostToolUse";
-		if (isRecord(event.input)) {
+		// Prefer the pre-hook-patched snapshot from tool_call; only write if absent.
+		if (isRecord(event.input) && !toolInputByCallId.has(event.toolCallId)) {
 			toolInputByCallId.set(event.toolCallId, structuredClone(event.input));
 		}
 		const stdin = JSON.stringify({
