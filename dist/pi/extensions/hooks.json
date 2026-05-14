@@ -21,42 +21,6 @@
         ]
       }
     ],
-    "SessionEnd": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "ccgram hook",
-            "timeout": 5,
-            "async": true
-          }
-        ]
-      }
-    ],
-    "SubagentStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "ccgram hook",
-            "timeout": 5,
-            "async": true
-          }
-        ]
-      }
-    ],
-    "SubagentStop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "ccgram hook",
-            "timeout": 5,
-            "async": true
-          }
-        ]
-      }
-    ],
     "UserPromptSubmit": [
       {
         "hooks": [
@@ -107,25 +71,12 @@
           {
             "type": "command",
             "command": "${PI_HOOKS_DIR}/smart-lint.sh",
-            "timeout": 60,
-            "async": false
+            "timeout": 60
           },
           {
             "type": "command",
             "command": "${PI_HOOKS_DIR}/test-runner.sh",
             "timeout": 120,
-            "async": true
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "ccgram hook",
-            "timeout": 5,
             "async": true
           }
         ]
@@ -138,6 +89,54 @@
             "type": "command",
             "command": "${PI_HOOKS_DIR}/notify.sh",
             "timeout": 10,
+            "async": true
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "ccgram hook",
+            "timeout": 5,
+            "async": true
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "ccgram hook",
+            "timeout": 5,
+            "async": true
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "ccgram hook",
+            "timeout": 5,
+            "async": true
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "ccgram hook",
+            "timeout": 5,
             "async": true
           }
         ]
