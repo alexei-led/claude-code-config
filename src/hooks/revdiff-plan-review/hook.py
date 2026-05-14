@@ -77,6 +77,28 @@ def python_executable() -> str | None:
     return None
 
 
+# Fallback timeout matches meta.yaml `pi.timeout` so a Pi build without the
+# env var still gets a sane bound. Hook-runner exports PI_HOOK_TIMEOUT_SEC to
+# avoid drift between this constant and the manifest-driven value.
+_FALLBACK_TIMEOUT_SEC = 1740
+# Margin so the inner subprocess exits with a proper blocking message before
+# the parent (hook-runner) SIGKILLs it.
+_PARENT_KILL_MARGIN_SEC = 5
+
+
+def resolve_timeout() -> int:
+    raw = os.environ.get("PI_HOOK_TIMEOUT_SEC")
+    if not raw:
+        return _FALLBACK_TIMEOUT_SEC
+    try:
+        parent_timeout = int(raw)
+    except ValueError:
+        return _FALLBACK_TIMEOUT_SEC
+    if parent_timeout <= 0:
+        return _FALLBACK_TIMEOUT_SEC
+    return max(parent_timeout - _PARENT_KILL_MARGIN_SEC, 1)
+
+
 def main() -> None:
     raw_stdin = sys.stdin.read()
     plugin_root = find_plugin_root()
@@ -94,7 +116,7 @@ def main() -> None:
             input=raw_stdin,
             capture_output=True,
             text=True,
-            timeout=1740,
+            timeout=resolve_timeout(),
             env=child_env(plugin_root),
         )
     except subprocess.TimeoutExpired as exc:

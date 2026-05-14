@@ -571,6 +571,43 @@ def test_pi_manifest_honors_pi_async(ch, tmp_path):
     assert entry["async"] is True
 
 
+def test_pi_manifest_external_only_when_all_meta_hooks_restricted(ch, tmp_path):
+    """External-only path: every meta.yaml hook is `targets`-restricted away from Pi,
+    but `pi-hooks-external.json` still contributes entries — the Pi manifest must
+    still be written from the external alone."""
+    src = tmp_path / "src"
+    # Hook restricted to claude only — no Pi placement.
+    hook = _write_hook(src, "claude-only", "postedit", targets=["claude"])
+    build_dir = tmp_path / "scripts" / "build"
+    build_dir.mkdir(parents=True, exist_ok=True)
+    (build_dir / "pi-hooks-external.json").write_text(
+        json.dumps(
+            {
+                "hooks": {
+                    "SessionStart": [
+                        {
+                            "hooks": [
+                                {
+                                    "type": "command",
+                                    "command": "ccgram hook",
+                                    "timeout": 5,
+                                    "async": True,
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        )
+    )
+    results = _compile_all(ch, [hook], "pi", {}, tmp_path)
+    written = ch.write_hook_manifests(results, "pi", tmp_path)
+    assert len(written) == 1
+    manifest = json.loads(written[0].read_text())
+    assert list(manifest["hooks"].keys()) == ["SessionStart"]
+    assert manifest["hooks"]["SessionStart"][0]["hooks"][0]["command"] == "ccgram hook"
+
+
 def test_pi_manifest_honors_pi_timeout_override(ch, tmp_path):
     """meta.yaml `pi: { timeout: N }` overrides the default `timeout` for Pi only."""
     src = tmp_path / "src"

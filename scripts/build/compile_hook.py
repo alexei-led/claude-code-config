@@ -466,6 +466,11 @@ def _build_pi(specs: Sequence[HookSpec], external: dict | None = None) -> dict:
     if external:
         external_hooks = external.get("hooks") if isinstance(external, dict) else None
         if isinstance(external_hooks, dict):
+            # Merge is additive by design: identical (event, matcher) pairs from
+            # external + meta.yaml both make it into the output. Pi's hook-runner
+            # iterates groups in order, so duplicates run twice — let the
+            # external manifest's author decide if that's intended rather than
+            # second-guessing here.
             for event_name, ext_groups in external_hooks.items():
                 if not isinstance(ext_groups, list):
                     continue

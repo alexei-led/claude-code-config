@@ -73,6 +73,36 @@ def test_candidate_roots_include_project_and_agent_dirs(monkeypatch, tmp_path):
     )
 
 
+def test_resolve_timeout_uses_env_var_with_kill_margin(monkeypatch):
+    hook = load_module()
+    monkeypatch.setenv("PI_HOOK_TIMEOUT_SEC", "600")
+    # Subprocess timeout sits below the parent kill so the child exits with a
+    # blocking message before SIGKILL.
+    assert hook.resolve_timeout() == 600 - hook._PARENT_KILL_MARGIN_SEC
+
+
+def test_resolve_timeout_falls_back_when_env_missing_or_garbage(monkeypatch):
+    hook = load_module()
+    monkeypatch.delenv("PI_HOOK_TIMEOUT_SEC", raising=False)
+    assert hook.resolve_timeout() == hook._FALLBACK_TIMEOUT_SEC
+
+    monkeypatch.setenv("PI_HOOK_TIMEOUT_SEC", "not-a-number")
+    assert hook.resolve_timeout() == hook._FALLBACK_TIMEOUT_SEC
+
+    monkeypatch.setenv("PI_HOOK_TIMEOUT_SEC", "0")
+    assert hook.resolve_timeout() == hook._FALLBACK_TIMEOUT_SEC
+
+    monkeypatch.setenv("PI_HOOK_TIMEOUT_SEC", "-7")
+    assert hook.resolve_timeout() == hook._FALLBACK_TIMEOUT_SEC
+
+
+def test_resolve_timeout_clamps_short_parent_to_one(monkeypatch):
+    hook = load_module()
+    monkeypatch.setenv("PI_HOOK_TIMEOUT_SEC", "1")
+    # 1 - margin would go below 1; clamp keeps a non-zero positive timeout.
+    assert hook.resolve_timeout() == 1
+
+
 def test_main_invokes_plugin_and_passes_through_ask(monkeypatch, tmp_path, capsys):
     hook = load_module()
     plugin_root = (
