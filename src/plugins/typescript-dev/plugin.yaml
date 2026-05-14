@@ -2,7 +2,8 @@ name: typescript-dev
 version: 4.5.3
 description: TypeScript with strict typing, React patterns, and modern tooling
 skills:
-  - writing-typescript
+- writing-typescript
 agents:
-  - typescript-engineer
+- typescript-engineer
 hooks: []
+marketplace_name: typescript-react-dev

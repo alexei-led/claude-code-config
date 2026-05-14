@@ -2,7 +2,8 @@ name: web-dev
 version: 4.5.3
 description: Web frontend with vanilla HTML, CSS, JavaScript, and HTMX
 skills:
-  - writing-web
+- writing-web
 agents:
-  - web-engineer
+- web-engineer
 hooks: []
+marketplace_name: vanilla-web-htmx

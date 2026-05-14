@@ -2,26 +2,27 @@ name: dev-tools
 version: 4.5.3
 description: Modern CLI tools, git worktrees, docs lookup, research, and brainstorming
 skills:
-  - analyzing-usage
-  - brainstorming-ideas
-  - context7-cli
-  - debating-ideas
-  - evolving-config
-  - exploring-repos
-  - grill-me
-  - learning-patterns
-  - reviewing-instructions
-  - looking-up-docs
-  - mem-history
-  - researching-web
-  - reviewing-cc-config
-  - sequential-thinking
-  - smart-explore
-  - using-git-worktrees
-  - using-modern-cli
+- analyzing-usage
+- brainstorming-ideas
+- context7-cli
+- debating-ideas
+- evolving-config
+- exploring-repos
+- grill-me
+- learning-patterns
+- reviewing-instructions
+- looking-up-docs
+- mem-history
+- researching-web
+- reviewing-cc-config
+- sequential-thinking
+- smart-explore
+- using-git-worktrees
+- using-modern-cli
 agents:
-  - pdf-parser
-  - perplexity-researcher
+- pdf-parser
+- perplexity-researcher
 hooks:
-  - worktree-create
-  - worktree-remove
+- worktree-create
+- worktree-remove
+marketplace_name: cli-research-tools
