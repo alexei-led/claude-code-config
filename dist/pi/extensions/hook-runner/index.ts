@@ -106,6 +106,19 @@ function sendHookMessageToAgent(pi: ExtensionAPI, ctx: ExtensionContext, text: s
 // Extension entry
 // ---------------------------------------------------------------------------
 
+// Tool-call input cache cap. Sized for sessions that pile up tool calls without
+// a matching turn_end (which is when the entries get drained). FIFO eviction
+// guarantees the map cannot grow without bound.
+const TOOL_INPUT_CACHE_CAP = 1024;
+
+function trackToolInput(map: Map<string, Record<string, unknown>>, callId: string, input: Record<string, unknown>): void {
+	if (!map.has(callId) && map.size >= TOOL_INPUT_CACHE_CAP) {
+		const oldest = map.keys().next().value;
+		if (oldest !== undefined) map.delete(oldest);
+	}
+	map.set(callId, input);
+}
+
 export default function (pi: ExtensionAPI): void {
 	let pendingPromptExpansionContext = "";
 	let lastHookCwd: string | undefined;
@@ -435,7 +448,7 @@ export default function (pi: ExtensionAPI): void {
 			return { block: true, reason: result.reason || "Blocked by hook" };
 		}
 		if (isRecord(event.input)) {
-			toolInputByCallId.set(event.toolCallId, structuredClone(event.input));
+			trackToolInput(toolInputByCallId, event.toolCallId, structuredClone(event.input));
 		}
 		return undefined;
 	});
@@ -445,7 +458,7 @@ export default function (pi: ExtensionAPI): void {
 		const ccName = toCcToolName(event.toolName);
 		const hookName: HookEventName = event.isError ? "PostToolUseFailure" : "PostToolUse";
 		if (isRecord(event.input) && !toolInputByCallId.has(event.toolCallId)) {
-			toolInputByCallId.set(event.toolCallId, structuredClone(event.input));
+			trackToolInput(toolInputByCallId, event.toolCallId, structuredClone(event.input));
 		}
 		const stdin = JSON.stringify({
 			...baseStdin(hookName, ctx),
