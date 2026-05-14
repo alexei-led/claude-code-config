@@ -10,7 +10,7 @@
 
 import type { ExtensionContext } from "@earendil-works/pi-coding-agent";
 import { execFile } from "node:child_process";
-import { appendFileSync, mkdirSync } from "node:fs";
+import { appendFileSync, mkdirSync, renameSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 
 import type { SyntheticHookInvocationResult } from "../hook-bridge.js";
@@ -64,8 +64,33 @@ export function extractProgress(stderr: string): { stderr: string; last?: Progre
 // here must never propagate into dispatch.
 // ---------------------------------------------------------------------------
 
-const TELEMETRY_LOG_PATH = (): string => join(agentDir(), "logs", "hooks.log");
 const STDERR_HEAD_LIMIT = 500;
+const TELEMETRY_MAX_BYTES = 10 * 1024 * 1024;
+
+let _telemetryPathCache: string | undefined;
+
+/** Resolve `~/.pi/agent/logs/hooks.log` once per process; exposed for tests. */
+export function _resetTelemetryPathForTesting(): void {
+	_telemetryPathCache = undefined;
+}
+
+function telemetryLogPath(): string {
+	if (_telemetryPathCache === undefined) {
+		_telemetryPathCache = join(agentDir(), "logs", "hooks.log");
+	}
+	return _telemetryPathCache;
+}
+
+function rotateTelemetryIfTooLarge(path: string): void {
+	try {
+		const stats = statSync(path);
+		if (stats.size > TELEMETRY_MAX_BYTES) {
+			renameSync(path, path + ".1");
+		}
+	} catch {
+		// File missing or unreadable — nothing to rotate.
+	}
+}
 
 /** Append one JSONL line describing the hook run. Swallows all errors. */
 export function logHookTelemetry(entry: HookEntryRuntime, hookEvent: HookEventName | string, result: HookRunResult, durationMs: number): void {
@@ -81,8 +106,9 @@ export function logHookTelemetry(entry: HookEntryRuntime, hookEvent: HookEventNa
 			timed_out: result.timedOut,
 			stderr_head: result.stderr.slice(0, STDERR_HEAD_LIMIT),
 		});
-		const path = TELEMETRY_LOG_PATH();
+		const path = telemetryLogPath();
 		mkdirSync(dirname(path), { recursive: true });
+		rotateTelemetryIfTooLarge(path);
 		appendFileSync(path, line + "\n");
 	} catch {
 		// Telemetry must never break dispatch.
@@ -116,34 +142,63 @@ export interface RunHookOptions {
 	onProgress?: (update: ProgressUpdate) => void;
 }
 
+const HOOK_OUTPUT_MAX_BYTES = 10 * 1024 * 1024;
+const FALLBACK_PATH = "/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin";
+
+function hookChildEnv(timeoutSec: number): NodeJS.ProcessEnv {
+	const env = { ...process.env };
+	// Guarantee a usable PATH — Pi may launch the runner with an empty or stripped
+	// PATH, in which case `bash` itself can't be located. Mirrors the fallback
+	// used inside individual hook scripts.
+	if (!env.PATH || env.PATH.trim() === "") {
+		env.PATH = FALLBACK_PATH;
+	}
+	// Surface the effective timeout to the hook so it can self-bound and emit a
+	// proper blocking exit (2) before the parent SIGKILLs it.
+	env.PI_HOOK_TIMEOUT_SEC = String(timeoutSec);
+	return env;
+}
+
 export function runHook(entry: HookEntryRuntime, stdinJson: string, optionsOrDefault?: RunHookOptions | number): Promise<HookRunResult> {
 	const options: RunHookOptions = typeof optionsOrDefault === "number" ? { defaultTimeoutSec: optionsOrDefault } : (optionsOrDefault ?? {});
 	const defaultTimeoutSec = options.defaultTimeoutSec ?? 30;
 	const started = Date.now();
 	return new Promise((resolve) => {
-		const timeoutMs = (entry.config.timeout ?? defaultTimeoutSec) * 1000;
-		const child = execFile("bash", ["-c", entry.config.command], { timeout: timeoutMs, env: process.env, maxBuffer: 1024 * 1024 }, (error, stdout, stderr) => {
-			const rawStderr = stderr ?? "";
-			const { stderr: cleanedStderr, last } = extractProgress(rawStderr);
-			if (last && options.onProgress) {
-				try {
-					options.onProgress(last);
-				} catch {
-					// Progress callback never breaks the dispatcher.
+		const timeoutSec = entry.config.timeout ?? defaultTimeoutSec;
+		const timeoutMs = timeoutSec * 1000;
+		const child = execFile(
+			"bash",
+			["-c", entry.config.command],
+			{ timeout: timeoutMs, env: hookChildEnv(timeoutSec), maxBuffer: HOOK_OUTPUT_MAX_BYTES },
+			(error, stdout, stderr) => {
+				const rawStderr = stderr ?? "";
+				const { stderr: cleanedStderr, last } = extractProgress(rawStderr);
+				if (last && options.onProgress) {
+					try {
+						options.onProgress(last);
+					} catch {
+						// Progress callback never breaks the dispatcher.
+					}
 				}
-			}
-			let result: HookRunResult;
-			if (error) {
-				const err = error as Error & { killed?: boolean; code?: unknown };
-				const killed = err.killed ?? false;
-				const exitCode = typeof err.code === "number" ? err.code : 1;
-				result = { exitCode, stdout, stderr: cleanedStderr, timedOut: killed };
-			} else {
-				result = { exitCode: 0, stdout, stderr: cleanedStderr, timedOut: false };
-			}
-			logHookTelemetry(entry, entry.config.command, result, Date.now() - started);
-			resolve(result);
-		});
+				let result: HookRunResult;
+				if (error) {
+					const err = error as Error & { killed?: boolean; code?: unknown };
+					const killed = err.killed ?? false;
+					// Output overflow is reported via a string code, not a numeric exit.
+					// Treat it as a blocking signal so the dispatcher returns a deny rather
+					// than silently dropping the hook's would-be decision.
+					const codeStr = typeof err.code === "string" ? err.code : "";
+					const overflowed = codeStr === "ERR_CHILD_PROCESS_STDIO_MAXBUFFER";
+					const exitCode = overflowed ? 2 : typeof err.code === "number" ? err.code : 1;
+					const overflowMessage = overflowed && !cleanedStderr.trim() ? `Hook output exceeded ${HOOK_OUTPUT_MAX_BYTES / (1024 * 1024)}MB cap` : cleanedStderr;
+					result = { exitCode, stdout, stderr: overflowMessage, timedOut: killed };
+				} else {
+					result = { exitCode: 0, stdout, stderr: cleanedStderr, timedOut: false };
+				}
+				logHookTelemetry(entry, entry.config.command, result, Date.now() - started);
+				resolve(result);
+			},
+		);
 		child.stdin?.write(stdinJson);
 		child.stdin?.end();
 	});
