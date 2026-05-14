@@ -2,8 +2,9 @@ name: testing-e2e
 version: 4.5.3
 description: End-to-end testing with Playwright for browser automation and UI testing
 skills:
-  - playwright-skill
-  - testing-e2e
+- playwright-skill
+- testing-e2e
 agents:
-  - playwright-tester
+- playwright-tester
 hooks: []
+marketplace_name: playwright-e2e

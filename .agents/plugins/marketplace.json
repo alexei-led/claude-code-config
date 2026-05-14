@@ -5,7 +5,7 @@
   },
   "plugins": [
     {
-      "name": "dev-tools",
+      "name": "cli-research-tools",
       "source": {
         "source": "local",
         "path": "./dist/codex/plugins/dev-tools"
@@ -16,7 +16,7 @@
       }
     },
     {
-      "name": "dev-workflow",
+      "name": "review-lint-commit",
       "source": {
         "source": "local",
         "path": "./dist/codex/plugins/dev-workflow"
@@ -38,7 +38,7 @@
       }
     },
     {
-      "name": "infra-ops",
+      "name": "k8s-terraform-ops",
       "source": {
         "source": "local",
         "path": "./dist/codex/plugins/infra-ops"
@@ -49,7 +49,7 @@
       }
     },
     {
-      "name": "python-dev",
+      "name": "python-3-dev",
       "source": {
         "source": "local",
         "path": "./dist/codex/plugins/python-dev"
@@ -71,7 +71,7 @@
       }
     },
     {
-      "name": "testing-e2e",
+      "name": "playwright-e2e",
       "source": {
         "source": "local",
         "path": "./dist/codex/plugins/testing-e2e"
@@ -82,7 +82,7 @@
       }
     },
     {
-      "name": "typescript-dev",
+      "name": "typescript-react-dev",
       "source": {
         "source": "local",
         "path": "./dist/codex/plugins/typescript-dev"
@@ -93,7 +93,7 @@
       }
     },
     {
-      "name": "web-dev",
+      "name": "vanilla-web-htmx",
       "source": {
         "source": "local",
         "path": "./dist/codex/plugins/web-dev"
