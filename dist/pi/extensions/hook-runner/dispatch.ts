@@ -38,9 +38,9 @@ const PROGRESS_LINE_RE = /^\^\^PROGRESS\s+(\d{1,3})\s+(.*)$/;
 
 /**
  * Strip `^^PROGRESS N msg` markers from stderr so they never reach the LLM
- * feedback loop. The progress payload itself is dropped — no Pi consumer
- * subscribes yet, and a noisy hook stderr is more harmful than a missing
- * status update. Re-introduce a callback parameter when a consumer wires up.
+ * feedback loop. The percent/message payload is discarded: nothing inside Pi
+ * subscribes to it, and noisy hook stderr is worse than a missing status
+ * update.
  */
 export function extractProgress(stderr: string): { stderr: string } {
 	if (!stderr.includes("^^PROGRESS")) return { stderr };

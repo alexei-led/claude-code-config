@@ -130,7 +130,7 @@ describe("validatePackageCommand", () => {
 	});
 
 	it("accepts safe args after the executable path", () => {
-		// Whitelist allows letters, digits, dashes, underscores, dots, slashes, spaces.
+		// Arguments without forbidden metachars pass through unchanged.
 		expect(validatePackageCommand(`${repoDir}/hooks/audit.sh --verbose log.txt`, repoDir)).toBe(`${repoDir}/hooks/audit.sh --verbose log.txt`);
 	});
 });
