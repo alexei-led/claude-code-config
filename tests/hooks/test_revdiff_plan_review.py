@@ -4,6 +4,7 @@ import importlib.util
 import io
 import json
 import subprocess
+import sys
 
 import pytest
 from conftest import REPO_ROOT
@@ -101,6 +102,97 @@ def test_resolve_timeout_clamps_short_parent_to_one(monkeypatch):
     monkeypatch.setenv("PI_HOOK_TIMEOUT_SEC", "1")
     # 1 - margin would go below 1; clamp keeps a non-zero positive timeout.
     assert hook.resolve_timeout() == 1
+
+
+def test_main_fails_open_when_upstream_script_raises_oserror(monkeypatch, tmp_path):
+    """Permission errors or missing interpreters fall into the same bucket as
+    'plugin not installed' — block exit would punish operators for a flaky
+    install instead of letting the plan proceed."""
+    hook = load_module()
+    plugin_root = (
+        tmp_path
+        / "agent"
+        / "git"
+        / "github.com"
+        / "umputun"
+        / "revdiff"
+        / "plugins"
+        / "revdiff-planning"
+    )
+    script = plugin_root / "scripts" / "plan-review-hook.py"
+    script.parent.mkdir(parents=True)
+    script.write_text("")
+    monkeypatch.setenv("PI_CODING_AGENT_DIR", str(tmp_path / "agent"))
+    monkeypatch.delenv("PI_PACKAGE_DIR", raising=False)
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(hook.sys, "stdin", io.StringIO(""))
+
+    def boom(*_args, **_kwargs):
+        raise OSError("permission denied")
+
+    monkeypatch.setattr(hook.subprocess, "run", boom)
+
+    with pytest.raises(SystemExit) as exc:
+        hook.main()
+
+    assert exc.value.code == 0
+
+
+def test_main_fails_open_when_upstream_subprocess_error(monkeypatch, tmp_path):
+    hook = load_module()
+    plugin_root = (
+        tmp_path
+        / "agent"
+        / "git"
+        / "github.com"
+        / "umputun"
+        / "revdiff"
+        / "plugins"
+        / "revdiff-planning"
+    )
+    script = plugin_root / "scripts" / "plan-review-hook.py"
+    script.parent.mkdir(parents=True)
+    script.write_text("")
+    monkeypatch.setenv("PI_CODING_AGENT_DIR", str(tmp_path / "agent"))
+    monkeypatch.delenv("PI_PACKAGE_DIR", raising=False)
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(hook.sys, "stdin", io.StringIO(""))
+
+    def boom(*_args, **_kwargs):
+        raise subprocess.SubprocessError("upstream blew up")
+
+    monkeypatch.setattr(hook.subprocess, "run", boom)
+
+    with pytest.raises(SystemExit) as exc:
+        hook.main()
+
+    assert exc.value.code == 0
+
+
+def test_end_to_end_fail_open_when_revdiff_absent(tmp_path):
+    """True e2e: run the hook script as a real subprocess with an empty
+    agent dir (no revdiff anywhere on disk). Exit must be 0 so plan-mode
+    proceeds without blocking."""
+    agent_dir = tmp_path / "agent"
+    agent_dir.mkdir()
+    result = subprocess.run(
+        [sys.executable, str(MODULE_PATH)],
+        input="",
+        capture_output=True,
+        text=True,
+        timeout=15,
+        env={
+            "PATH": "/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin",
+            "PI_CODING_AGENT_DIR": str(agent_dir),
+            # Force HOME to a path without ~/.pi so the agent_dir() fallback
+            # can't accidentally find a real revdiff install.
+            "HOME": str(tmp_path),
+        },
+        cwd=str(tmp_path),
+    )
+    assert result.returncode == 0, (
+        f"fail-open expected, got rc={result.returncode}, stderr={result.stderr}"
+    )
 
 
 def test_main_invokes_plugin_and_passes_through_ask(monkeypatch, tmp_path, capsys):
