@@ -8,6 +8,61 @@ major = breaking config/hook changes, minor = new skills/features, patch = fixes
 
 ## [Unreleased]
 
+## [4.6.0] - 2026-05-15
+
+### Added
+
+- **Pi hook-bridge**: synthetic `cc-hooks:invoke` tool exposes CC-style hook
+  events to Pi (`Setup`, `PermissionRequest`/`Denied`, `TaskCreated`/`Completed`,
+  `TeammateIdle`, `ConfigChange`, `FileChanged`, `WorktreeCreate`/`Remove`,
+  `Elicitation`/`Result`). Existing CC hooks run unmodified.
+- **`ExitPlanMode` plan-review gate**: routes plan submissions through the
+  `revdiff-plan-review` hook (29 min timeout inside a 30 min outer wait), fails
+  open when the plugin is absent or upstream raises.
+- **Plugin-contributed hooks**: Pi packages can register hooks via the
+  `cc-thingz.hooks` field in their `package.json`. Commands are validated:
+  must be absolute paths inside the package dir or use `${PKG_DIR}`, and
+  shell metacharacters (including `\n`, `\r` to block multi-line smuggling)
+  are rejected.
+- **Hook progress protocol**: hooks may emit `^^PROGRESS N msg` lines on
+  stderr; markers are stripped before stderr reaches the LLM feedback loop.
+- **JSONL telemetry**: each hook run appends one line to
+  `~/.pi/agent/logs/hooks.log` with event, source, exit code, duration,
+  timeout flag, and a 500-byte stderr head. Auto-rotates at 10 MB.
+- **`/hooks` UX**: source labels (`bundled` / `global` / `project` / `package`),
+  per-hook toggle, and global-scope disable list.
+- **`PI_HOOK_TIMEOUT_SEC`**: hooks read the parent's effective timeout and
+  self-bound below it so they can exit with a blocking message before SIGKILL.
+- **Two-tier timeouts**: synthetic hook callers opt into a non-interactive
+  floor so interactive flows keep their longer ceiling.
+
+### Changed
+
+- **Hook-runner modularization**: `hook-runner.ts` split into focused
+  sub-modules with a CC anti-corruption layer; `config.ts` further split into
+  `config-paths` / `config-parse` / `config-package` / `config-persist` /
+  `config-summary` (514 → 175-line facade).
+- **`classifyExecResult` extracted** from `runHook` so timeout / overflow /
+  numeric-exit branches are unit-testable; `RunHookOptions.onProgress`
+  removed (no Pi consumer subscribed).
+- **`hooks.json` generated from `meta.yaml`** at build time instead of being
+  hand-maintained; build fails loud when a Pi-mapped event is missing from
+  `PI_EVENT_ORDER`.
+- **`NON_BLOCKING_HOOK_EVENTS` broadened** to cover all post-fact event types
+  so a misbehaving hook can't surface stale "denied" results.
+- **`HooksConfig.SubagentStop` marked `@deprecated`**: Pi has no native
+  subagent-stop runtime event; hooks registered under this key never fire.
+
+### Fixed
+
+- Hook telemetry now records `entry.eventName` (e.g. `PreToolUse`) instead of
+  the command path.
+- `invokeSyntheticHook` guarded against event-bus teardown after session end.
+- Maxbuffer overflow surfaces an explicit cap notice prepended to stderr.
+- Hook-bridge: leak in event-handler registration, timeout off-by-one, empty
+  `PATH` fallback, and config-change reload debounce.
+- `make build` skips `__pycache__` when copying hook support files.
+
 ## [4.5.3] - 2026-05-13
 
 ### Added
