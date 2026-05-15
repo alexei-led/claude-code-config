@@ -401,21 +401,20 @@ describe("turn_end → PostToolBatch", () => {
 	const handler = handlers.get("turn_end") as EventHandler;
 
 	it("runs without errors when no PostToolBatch hooks configured", async () => {
-		await expect(
-			handler(
-				{
-					toolResults: [
-						{
-							toolCallId: "t1",
-							toolName: "read",
-							isError: false,
-							content: [{ type: "text", text: "abc" }],
-						},
-					],
-				},
-				makeCtx({ idle: false }),
-			),
-		).resolves.toBeUndefined();
+		const result = await handler(
+			{
+				toolResults: [
+					{
+						toolCallId: "t1",
+						toolName: "read",
+						isError: false,
+						content: [{ type: "text", text: "abc" }],
+					},
+				],
+			},
+			makeCtx({ idle: false }),
+		);
+		expect(result).toBeUndefined();
 	});
 
 	it("includes original tool_input in PostToolBatch payload", async () => {
@@ -551,20 +550,19 @@ describe("agent_end → StopFailure", () => {
 	const handler = handlers.get("agent_end") as EventHandler;
 
 	it("handles assistant error stopReason without crashing", async () => {
-		await expect(
-			handler(
-				{
-					messages: [
-						{
-							role: "assistant",
-							stopReason: "error",
-							errorMessage: "API Error: test",
-							content: [{ type: "text", text: "API Error: test" }],
-						},
-					],
-				},
-				makeCtx(),
-			),
-		).resolves.toBeUndefined();
+		const result = await handler(
+			{
+				messages: [
+					{
+						role: "assistant",
+						stopReason: "error",
+						errorMessage: "API Error: test",
+						content: [{ type: "text", text: "API Error: test" }],
+					},
+				],
+			},
+			makeCtx(),
+		);
+		expect(result).toBeUndefined();
 	});
 });
