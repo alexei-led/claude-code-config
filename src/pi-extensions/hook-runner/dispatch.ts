@@ -36,27 +36,19 @@ import type { HookEntryRuntime, HookEventName, HookGroup, HookRunResult } from "
 
 const PROGRESS_LINE_RE = /^\^\^PROGRESS\s+(\d{1,3})\s+(.*)$/;
 
-export interface ProgressUpdate {
-	percent: number;
-	message: string;
-}
-
-/** Strip `^^PROGRESS` markers from stderr; return the last update seen. */
-export function extractProgress(stderr: string): { stderr: string; last?: ProgressUpdate } {
+/**
+ * Strip `^^PROGRESS N msg` markers from stderr so they never reach the LLM
+ * feedback loop. The progress payload itself is dropped — no Pi consumer
+ * subscribes yet, and a noisy hook stderr is more harmful than a missing
+ * status update. Re-introduce a callback parameter when a consumer wires up.
+ */
+export function extractProgress(stderr: string): { stderr: string } {
 	if (!stderr.includes("^^PROGRESS")) return { stderr };
 	const keep: string[] = [];
-	let last: ProgressUpdate | undefined;
 	for (const line of stderr.split(/\r?\n/)) {
-		const match = PROGRESS_LINE_RE.exec(line);
-		if (!match) {
-			keep.push(line);
-			continue;
-		}
-		const percent = Math.min(100, Math.max(0, Number.parseInt(match[1], 10)));
-		const message = match[2].trim();
-		last = { percent, message };
+		if (!PROGRESS_LINE_RE.test(line)) keep.push(line);
 	}
-	return { stderr: keep.join("\n"), last };
+	return { stderr: keep.join("\n") };
 }
 
 // ---------------------------------------------------------------------------
@@ -67,13 +59,10 @@ export function extractProgress(stderr: string): { stderr: string; last?: Progre
 const STDERR_HEAD_LIMIT = 500;
 const TELEMETRY_MAX_BYTES = 10 * 1024 * 1024;
 
-let _telemetryPathCache: string | undefined;
-
 function telemetryLogPath(): string {
-	if (_telemetryPathCache === undefined) {
-		_telemetryPathCache = join(agentDir(), "logs", "hooks.log");
-	}
-	return _telemetryPathCache;
+	// Computed on each call so test harnesses (and Pi sessions) that mutate
+	// PI_CODING_AGENT_DIR see the change immediately. join() is cheap.
+	return join(agentDir(), "logs", "hooks.log");
 }
 
 function rotateTelemetryIfTooLarge(path: string): void {
@@ -139,12 +128,37 @@ export function matchingGroups(groups: HookGroup[], ccToolName: string): HookGro
 
 export interface RunHookOptions {
 	defaultTimeoutSec?: number;
-	/** Fires whenever the hook emits a `^^PROGRESS N msg` line on stderr. */
-	onProgress?: (update: ProgressUpdate) => void;
 }
 
-const HOOK_OUTPUT_MAX_BYTES = 10 * 1024 * 1024;
+export const HOOK_OUTPUT_MAX_BYTES = 10 * 1024 * 1024;
 const FALLBACK_PATH = "/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin";
+
+/**
+ * Translate an execFile callback (`error`, `stdout`, `stderr`) into the canonical
+ * `HookRunResult`. Extracted from `runHook` so the timeout/overflow/error-code
+ * branches are testable as a pure function — bun's process-wide module mock on
+ * `node:child_process` makes real-subprocess assertions impossible inside the
+ * shared test suite.
+ */
+export function classifyExecResult(error: unknown, stdout: string, cleanedStderr: string): HookRunResult {
+	if (!error) {
+		return { exitCode: 0, stdout, stderr: cleanedStderr, timedOut: false };
+	}
+	const err = error as Error & { killed?: boolean; code?: unknown };
+	const killed = err.killed ?? false;
+	// Output overflow is reported via a string code, not a numeric exit.
+	// Treat it as a blocking signal so the dispatcher returns a deny rather
+	// than silently dropping the hook's would-be decision.
+	const codeStr = typeof err.code === "string" ? err.code : "";
+	const overflowed = codeStr === "ERR_CHILD_PROCESS_STDIO_MAXBUFFER";
+	const exitCode = overflowed ? 2 : typeof err.code === "number" ? err.code : 1;
+	// `maxBuffer` caps stdout+stderr combined, so a non-empty stderr at
+	// overflow is unrelated noise — prepending the explicit cap notice keeps
+	// the actionable signal first while preserving the captured stderr.
+	const overflowStderr = `Hook output exceeded ${HOOK_OUTPUT_MAX_BYTES / (1024 * 1024)}MB cap`;
+	const stderrOut = overflowed ? (cleanedStderr.trim() ? `${overflowStderr}: ${cleanedStderr}` : overflowStderr) : cleanedStderr;
+	return { exitCode, stdout, stderr: stderrOut, timedOut: killed };
+}
 
 function hookChildEnv(timeoutSec: number): NodeJS.ProcessEnv {
 	const env = { ...process.env };
@@ -172,35 +186,8 @@ export function runHook(entry: HookEntryRuntime, stdinJson: string, optionsOrDef
 			["-c", entry.config.command],
 			{ timeout: timeoutMs, env: hookChildEnv(timeoutSec), maxBuffer: HOOK_OUTPUT_MAX_BYTES },
 			(error, stdout, stderr) => {
-				const rawStderr = stderr ?? "";
-				const { stderr: cleanedStderr, last } = extractProgress(rawStderr);
-				if (last && options.onProgress) {
-					try {
-						options.onProgress(last);
-					} catch {
-						// Progress callback never breaks the dispatcher.
-					}
-				}
-				let result: HookRunResult;
-				if (error) {
-					const err = error as Error & { killed?: boolean; code?: unknown };
-					const killed = err.killed ?? false;
-					// Output overflow is reported via a string code, not a numeric exit.
-					// Treat it as a blocking signal so the dispatcher returns a deny rather
-					// than silently dropping the hook's would-be decision.
-					const codeStr = typeof err.code === "string" ? err.code : "";
-					const overflowed = codeStr === "ERR_CHILD_PROCESS_STDIO_MAXBUFFER";
-					const exitCode = overflowed ? 2 : typeof err.code === "number" ? err.code : 1;
-					// `maxBuffer` caps stdout+stderr combined, so a non-empty stderr at
-					// overflow is unrelated noise — prepending the explicit cap notice
-					// keeps the actionable signal first while preserving the captured
-					// stderr for debugging.
-					const overflowStderr = `Hook output exceeded ${HOOK_OUTPUT_MAX_BYTES / (1024 * 1024)}MB cap`;
-					const stderrOut = overflowed ? (cleanedStderr.trim() ? `${overflowStderr}: ${cleanedStderr}` : overflowStderr) : cleanedStderr;
-					result = { exitCode, stdout, stderr: stderrOut, timedOut: killed };
-				} else {
-					result = { exitCode: 0, stdout, stderr: cleanedStderr, timedOut: false };
-				}
+				const { stderr: cleanedStderr } = extractProgress(stderr ?? "");
+				const result = classifyExecResult(error, stdout, cleanedStderr);
 				logHookTelemetry(entry, result, Date.now() - started);
 				resolve(result);
 			},
