@@ -75,6 +75,7 @@ export interface HooksConfig {
 	Setup?: HookGroup[];
 	SessionEnd?: HookGroup[];
 	SubagentStart?: HookGroup[];
+	/** @deprecated Accepted for Claude Code schema compatibility; Pi has no native subagent-stop event so registered hooks never fire. */
 	SubagentStop?: HookGroup[];
 	UserPromptSubmit?: HookGroup[];
 	UserPromptExpansion?: HookGroup[];
