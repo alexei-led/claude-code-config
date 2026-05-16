@@ -4,10 +4,13 @@
 
 ### 1. Detect Project Name and Root
 
+Derive from the **main** worktree (first porcelain entry), so the path is identical whether invoked from the main repo or from inside another worktree:
+
 ```bash
-repo_root=$(git rev-parse --show-toplevel)
-project=$(basename "$repo_root")
-parent=$(dirname "$repo_root")
+main_wt=$(git worktree list --porcelain | awk '/^worktree /{print $2; exit}')
+project=$(basename "$main_wt")
+parent=$(dirname "$main_wt")
+root="$parent/$project.worktrees"
 ```
 
 ### 2. Determine Worktree Path
@@ -15,12 +18,12 @@ parent=$(dirname "$repo_root")
 **Priority order:**
 
 1. Check CLAUDE.md for explicit preference
-2. Use sibling directory pattern (default): `../<project>-<branch-slug>`
+2. Use the per-project root (default): `<project>.worktrees/<branch-slug>`
 
 ```bash
 # Slugify branch name: feature/auth → feature-auth
 slug=$(echo "$BRANCH_NAME" | tr '/' '-')
-path="$parent/$project-$slug"
+path="$root/$slug"
 ```
 
 ### 3. Check for Conflicts
@@ -38,6 +41,8 @@ git worktree list | grep -q "\[$BRANCH_NAME\]" && echo "Branch already checked o
 ### 1. Create Worktree
 
 ```bash
+mkdir -p "$root"   # per-project root, created on first use
+
 # New branch from base
 git worktree add "$path" -b "$BRANCH_NAME" "$BASE_BRANCH"
 
@@ -90,15 +95,35 @@ To work in this worktree:
 
 ## Cleanup Workflow
 
-### After Merging a Branch
+### After a PR Merges
+
+State what is being removed before running it. Run from the main worktree — never from inside the worktree being deleted.
 
 ```bash
-# Remove the worktree
-git worktree remove ../myproject-feature-auth
+branch=feature/auth
+main_wt=$(git worktree list --porcelain | awk '/^worktree /{print $2; exit}')
+wt=$(git worktree list --porcelain | awk -v b="refs/heads/$branch" '
+  /^worktree /{p=$2} $0=="branch "b{print p; exit}')
 
-# Delete the branch (if merged)
-git branch -d feature/auth
+# 1. Confirm the PR actually merged (source of truth — not local ancestry)
+gh pr view "$branch" --json state,mergedAt
+
+# 2. Remove the worktree from the main repo
+cd "$main_wt"
+git worktree remove "$wt"          # --force only if dirty, after confirming with user
+
+# 3. Delete the branch. -d refuses after squash/rebase merge ("not fully
+#    merged"); that is expected once the PR is MERGED — fall back to -D.
+git branch -d "$branch" 2>/dev/null || git branch -D "$branch"
+
+# 4. Sync refs and drop the per-project root if it is now empty
+git fetch --prune
+rmdir "$(dirname "$wt")" 2>/dev/null || true
 ```
+
+Do not auto-run `git pull`: the main worktree may not be on main, may be dirty, or may have no upstream. Pull only after confirming state.
+
+Scripted equivalent: `scripts/cleanup-worktree.sh [branch]` (defaults to the current worktree's branch). Strict by default — refuses unless `gh` confirms the PR is MERGED; pass `--force` to override (gh absent, or abandoning an unmerged branch).
 
 ### Periodic Maintenance
 
@@ -115,12 +140,12 @@ git worktree list --verbose
 
 ## Quick Reference
 
-- **Creating worktree** — Sibling: `../<project>-<branch-slug>`
+- **Creating worktree** — `<project>.worktrees/<branch-slug>`
 - **CLAUDE.md has preference** — Use specified location
 - **Path already exists** — Report conflict, ask user
 - **Branch already checked out** — Report, suggest existing worktree
 - **Tests fail during baseline** — Report failures + ask
-- **Done with feature** — `git worktree remove` + `git branch -d`
+- **PR merged** — `git worktree remove` + `git branch -d` (fall back to `-D` after squash/rebase)
 - **Stale worktrees** — `git worktree prune`
 
 ## Common Commands
@@ -129,17 +154,17 @@ git worktree list --verbose
 # List all worktrees
 git worktree list
 
-# Remove worktree (after merging branch)
-git worktree remove ../myproject-feature-name
+# Remove worktree (after PR merges)
+git worktree remove myproject.worktrees/feature-name
 
 # Prune stale worktree entries
 git worktree prune
 
 # Move worktree to new location
-git worktree move ../old-name ../new-name
+git worktree move myproject.worktrees/old-name myproject.worktrees/new-name
 
 # Lock worktree (prevent pruning, e.g. on removable drive)
-git worktree lock ../myproject-feature-name
+git worktree lock myproject.worktrees/feature-name
 ```
 
 ## Common Mistakes
@@ -147,17 +172,22 @@ git worktree lock ../myproject-feature-name
 **Nesting worktrees inside the repo**
 
 - Requires .gitignore management, pollutes git status
-- Fix: Always use sibling directories
+- Fix: Keep all worktrees under the sibling `<project>.worktrees/` root
+
+**Scattering worktrees as flat siblings**
+
+- `../proj-a`, `../proj-b` clutter the parent dir, no per-project grouping
+- Fix: One root per project — `<project>.worktrees/<slug>`
 
 **Non-descriptive directory names**
 
-- `../temp`, `../wt2` — requires inspection to understand purpose
-- Fix: Use `<project>-<branch-slug>` convention
+- `temp`, `wt2` — requires inspection to understand purpose
+- Fix: Use the branch slug as the directory name
 
 **Forgetting to clean up**
 
 - Each worktree duplicates working files, wastes disk space
-- Fix: Remove worktrees promptly after merging; run `git worktree prune` periodically
+- Fix: Remove worktree + branch promptly after the PR merges; run `git worktree prune` periodically
 
 **Assuming directory location**
 

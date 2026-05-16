@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Setup a new git worktree as a sibling directory
+# Create a git worktree under the per-project root <project>.worktrees/<slug>
 # Usage: setup-worktree.sh <branch-name> [base-branch]
 
 set -euo pipefail
@@ -7,39 +7,27 @@ set -euo pipefail
 BRANCH_NAME="${1:?Usage: setup-worktree.sh <branch-name> [base-branch]}"
 BASE_BRANCH="${2:-main}"
 
-# Ensure we're in a git repo
-REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || {
+porcelain=$(git worktree list --porcelain 2>/dev/null) || {
 	echo "Error: Not in a git repository"
 	exit 1
 }
 
-PROJECT=$(basename "$REPO_ROOT")
-PARENT=$(dirname "$REPO_ROOT")
+# Root derives from the MAIN worktree (first porcelain entry) so it is the
+# same whether invoked from the main repo or from inside another worktree.
+MAIN_WT=$(awk '/^worktree /{print $2; exit}' <<<"$porcelain")
+PROJECT=$(basename "$MAIN_WT")
+ROOT="$(dirname "$MAIN_WT")/$PROJECT.worktrees"
 
-# Slugify branch name: feature/auth → feature-auth
 SLUG=$(echo "$BRANCH_NAME" | tr '/' '-')
-WORKTREE_PATH="$PARENT/$PROJECT-$SLUG"
+WORKTREE_PATH="$ROOT/$SLUG"
 
-# Check if worktree already exists
-if [ -d "$WORKTREE_PATH" ]; then
-	echo "Error: Directory already exists at $WORKTREE_PATH"
-	exit 1
-fi
+mkdir -p "$ROOT"
 
-# Check if branch is already checked out in another worktree
-if git worktree list | grep -q "\[$BRANCH_NAME\]"; then
-	echo "Error: Branch '$BRANCH_NAME' is already checked out"
-	git worktree list
-	exit 1
-fi
-
-# Create worktree as sibling directory
 echo "Creating worktree at $WORKTREE_PATH from $BASE_BRANCH..."
 git worktree add "$WORKTREE_PATH" -b "$BRANCH_NAME" "$BASE_BRANCH"
 
 cd "$WORKTREE_PATH"
 
-# Auto-detect and run setup
 if [ -f "package.json" ]; then
 	echo "Installing npm dependencies..."
 	npm install
@@ -61,5 +49,5 @@ echo ""
 echo "To work in this worktree:"
 echo "  cd $WORKTREE_PATH"
 echo ""
-echo "When done:"
-echo "  git worktree remove $WORKTREE_PATH"
+echo "When the PR merges, clean up with:"
+echo "  scripts/cleanup-worktree.sh $BRANCH_NAME"
