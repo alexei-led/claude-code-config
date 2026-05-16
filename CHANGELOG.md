@@ -8,6 +8,26 @@ major = breaking config/hook changes, minor = new skills/features, patch = fixes
 
 ## [Unreleased]
 
+## [4.7.0] - 2026-05-16
+
+### Changed
+
+- **`using-git-worktrees`**: worktrees now live under a single per-project
+  root `<project>.worktrees/<branch-slug>` (sibling of the main repo)
+  instead of flat `../<project>-<slug>` siblings. The root is derived from
+  the main worktree, so create and cleanup work correctly even when
+  invoked from inside another worktree, and the root is removed once its
+  last worktree is cleaned up.
+
+### Added
+
+- **`using-git-worktrees` PR-merge cleanup**: `scripts/cleanup-worktree.sh`
+  removes a worktree and deletes its branch, strict by default — refuses
+  unless `gh` confirms the PR is MERGED (`--force` to override). Handles
+  the squash/rebase `git branch -d` "not fully merged" trap, `cd`s out of
+  the worktree before removing it, runs `git fetch --prune`, and prunes
+  the now-empty root.
+
 ## [4.6.0] - 2026-05-15
 
 ### Added
