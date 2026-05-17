@@ -76,7 +76,7 @@ Translate manual flows into Playwright actions and assertions, but first define 
 Task(
   subagent_type="engineer",
   description="Generate E2E test",
-  prompt="Generate E2E test for:
+  prompt="Generate an E2E test using the Playwright browser workflow — real browser automation, not generic unit-test authoring.
   URL: {target URL}
   Flow: {user flow description}
 
@@ -85,7 +85,8 @@ Task(
   - Use semantic locators (getByRole, getByLabel, getByText)
   - Include assertions for expected outcomes
   - No hardcoded waits (use waitFor patterns)
-  - Include accessibility checks where appropriate"
+  - Include accessibility checks where appropriate
+  - Write the script to /tmp/playwright-*.js and run it via the playwright-skill executor: cd ~/.claude/skills/playwright-skill && node run.js /tmp/playwright-*.js"
 )
 ```
 
@@ -97,14 +98,15 @@ Task(
 Task(
   subagent_type="engineer",
   description="Verify feature",
-  prompt="Verify this feature works correctly in the browser:
+  prompt="Verify this feature works correctly in the browser using the Playwright workflow — real browser automation, not generic test authoring.
   Feature: {feature description}
 
   Steps:
   1. Navigate to appropriate page
   2. Execute user flow
   3. Assert expected outcomes
-  4. Report PASS/FAIL with evidence (screenshots if needed)"
+  4. Report PASS/FAIL with evidence (screenshots if needed)
+  Write the Playwright script to /tmp/playwright-*.js and run it via the playwright-skill executor: cd ~/.claude/skills/playwright-skill && node run.js /tmp/playwright-*.js"
 )
 ```
 

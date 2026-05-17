@@ -201,21 +201,19 @@ Detect language from task / epic, then delegate to the `engineer` role (it self-
 ```
 Implement: <task description>
 Plan: <plan>
-Return proposals only — do not apply edits.
+Apply the changes and run the project build/test/lint verification.
 ```
 
-Apply proposals with user approval (every edit shown).
+The engineer applies and verifies (it is the only mutator role). Step 4 re-runs verification; Step 7 shows the scoped diff for review before continuing.
 
 ### Implementation pair
 
 Spawn a two-member team:
 
-- Primary: language engineer — writes implementation code.
-- Secondary: test specialist (the `reviewer` role with the improving-tests skill) — writes tests in parallel, identifies coverage gaps.
+- Primary: `engineer` role — applies implementation code.
+- Secondary: test specialist (the `reviewer` role with the improving-tests skill) — proposes tests in parallel (read-only; emits the Proposed Changes contract), identifies coverage gaps.
 
-Have them coordinate: engineer proposes implementation, tests reviewer proposes tests, both review each other, converge.
-
-Apply proposals with user approval.
+Have them coordinate: engineer drafts implementation, the tests reviewer proposes tests, both critique each other, converge. The engineer applies the converged implementation and the reviewer's test proposals, then verifies. Step 7 shows the scoped diff for review.
 
 ### Team research first
 
@@ -337,7 +335,7 @@ Continue: `spec-work` | `spec-work EPIC-<id>`
 
 ## Key principles
 
-- User control over every edit.
+- User control at every decision gate — task selection (Step 1), plan approval (Step 2), implementation mode (Step 3), and post-apply review of the scoped diff before commit (Step 7). The `engineer` applies edits autonomously within the approved plan; review is post-apply, not per-edit.
 - Dependency-aware selection (`scripts/specctl ready` orders by deps and priority).
 - Evidence-tracked completion (`scripts/specctl done` records what was done).
 - Review and commit are offered, not forced.

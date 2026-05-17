@@ -62,7 +62,7 @@ Do not write all tests first. Bulk RED creates imagined tests coupled to guessed
 
 ## Review workflow
 
-Explore the existing test suite:
+Explore the existing test suite. Engineer runs these commands to gather coverage; reviewer (no Bash) works from the test files in scope plus any coverage output the caller supplies — ask for that context if missing, do not run the commands:
 
 ```bash
 # Go
@@ -96,7 +96,7 @@ Extract helpers only after 3+ repetitions and only when the helper improves read
 
 ## Verify and report
 
-Run and name the relevant verification command for the project. Examples:
+Engineer runs and names the relevant verification command for the project after applying. Reviewer names the command in the Proposed Changes rationale and does not run it (no Bash). Examples:
 
 ```bash
 go test ./...
