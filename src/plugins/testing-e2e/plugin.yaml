@@ -6,5 +6,6 @@ skills:
 - testing-e2e
 agents:
 - playwright-tester
+- engineer
 hooks: []
 marketplace_name: playwright-e2e

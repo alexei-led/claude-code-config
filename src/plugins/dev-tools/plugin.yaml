@@ -22,6 +22,7 @@ skills:
 agents:
 - pdf-parser
 - perplexity-researcher
+- reviewer
 hooks:
 - worktree-create
 - worktree-remove

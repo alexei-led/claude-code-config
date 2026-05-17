@@ -5,4 +5,5 @@ skills:
   - writing-go
 agents:
   - go-engineer
+  - engineer
 hooks: []

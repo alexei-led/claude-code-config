@@ -1,0 +1,4 @@
+tools: read, edit, write, bash, grep, find, ls
+thinking: medium
+model: openai-codex/gpt-5.5
+max_turns: 50

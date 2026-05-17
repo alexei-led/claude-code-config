@@ -38,6 +38,8 @@ agents:
 - web-qa
 - web-simplify
 - web-tests
+- engineer
+- reviewer
 hooks:
 - file-protector
 - git-guardrails
