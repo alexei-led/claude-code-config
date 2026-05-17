@@ -14,7 +14,7 @@ user sounds curious. Curiosity is not a query plan.
 3. Use `fd` to find likely files and `rg` to find symbols, routes, handlers,
    tests, config keys, and shared types.
 4. Read only the files or line ranges needed to verify the map.
-5. For large searches, launch one bounded `Agent` with `scout` to gather
+5. For large searches, launch one bounded `Agent` with `reviewer` to gather
    compressed context. Keep the main loop in control.
 6. Separate verified facts from guesses and unknowns.
 
