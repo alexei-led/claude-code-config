@@ -66,6 +66,7 @@ For shared VPC, service accounts, and app environments:
 ## References
 
 - [KUBERNETES.md](references/KUBERNETES.md) - K8s resource patterns
+- [HELM.md](references/HELM.md) - Helm chart structure and templating patterns
 - [TERRAFORM.md](references/TERRAFORM.md) - Terraform module patterns
 - [GITHUB-ACTIONS.md](references/GITHUB-ACTIONS.md) - CI/CD workflow patterns
 - [MAKEFILE.md](references/MAKEFILE.md) - Build automation patterns
