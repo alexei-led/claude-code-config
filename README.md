@@ -358,17 +358,19 @@ These activate silently when relevant patterns are detected — no `/skill-name`
 
 ## Agents
 
-Three role agents with disjoint **enforced** capability envelopes (tool grants, not prose). Consolidated from 39 → 3 — see `docs/agent-audit-2026-05-16.md` and the executed plan in `docs/plans/completed/`. Domain procedure and output format live in skills; language specifics live in each skill's `references/<lang>.md`. Role × skill × references compose — language is not a routing key.
+Three role agents: a capability envelope plus a reasoning stance no skill can supply. Consolidated from 39 → 3 — see `docs/agent-audit-2026-05-16.md` and the executed plan in `docs/plans/completed/`. Domain procedure and output format live in skills; language specifics live in each skill's `references/<lang>.md`. Role × skill × references compose — language is not a routing key. Envelope enforcement is per-target: Claude grants a hard `tools:` allowlist; Codex blocks writes via `sandbox_mode: read-only`; Gemini and Pi have no tool-allowlist primitive, so the envelope there is a system-prompt directive.
 
-| Role       | Enforced tools                          | Stance                                                           | Claude model | Pi model               |
-| ---------- | --------------------------------------- | ---------------------------------------------------------------- | ------------ | ---------------------- |
-| `engineer` | Read, Edit, Write, Bash, Grep, Glob, LS | Sole mutator: applies changes, runs the build/test/lint gate     | sonnet       | gpt-5.5                |
-| `reviewer` | Read, Grep, Glob, LS only               | Adversarial evaluator: emits findings/proposals, applies nothing | sonnet       | gpt-5.5                |
-| `advisor`  | Read + read-only git Bash _(Pi only)_   | Strategic escalation; xhigh thinking, transcript-forwarding      | —            | gpt-5.5 thinking:xhigh |
+| Role       | Envelope                       | Stance                                                           | Claude model | Pi model               |
+| ---------- | ------------------------------ | ---------------------------------------------------------------- | ------------ | ---------------------- |
+| `engineer` | Read + write + execute         | Sole mutator: applies changes, runs the build/test/lint gate     | sonnet              | gpt-5.4 thinking:high   |
+| `reviewer` | Read, Grep, Glob, LS — no writes | Adversarial evaluator: emits findings/proposals, applies nothing | sonnet              | gpt-5.4 thinking:medium |
+| `advisor`  | Read + read-only Bash          | Strategic escalation: verdict, ranked risks, next actions        | built-in (Opus 4.7) | gpt-5.5 thinking:xhigh  |
 
-`engineer` is the fork target for `writing-{go,python,typescript,web}` and `managing-infra`. `reviewer` absorbs the review family, code search, and planning (via `spec`). `advisor` ships only to the Pi target.
+`engineer` is the fork target for `writing-{go,python,typescript,web}` and `managing-infra`. `reviewer` absorbs the review family, code search, and planning (via `spec`). `advisor` ships to Codex, Gemini, and Pi; Claude is excluded because it has a built-in advisor. On Pi, `advisor` is invoked via transcript forwarding; elsewhere it is spawned as a normal custom agent.
 
-Pi model names use the `openai-codex/` provider prefix (e.g. `openai-codex/gpt-5.5`) to avoid ambiguous fuzzy matching when multiple providers expose the same model ID.
+Model tiers are matched per role across vendors. `engineer`/`reviewer` use Claude `sonnet`; their Pi counterparts pin `gpt-5.4` (not `gpt-5.5`) because GPT-5.5 is a frontier tier above Sonnet 4.6 — using it for the same role would make the Pi agent materially stronger and ~2× costlier for no parity reason. `advisor` is an escalation role: Claude's built-in advisor runs Opus 4.7 (frontier), so the Pi advisor stays at `gpt-5.5 thinking:xhigh` to match that tier. On Codex, the agent inherits the model chosen at `codex` launch, so there is no model to pin without brittleness.
+
+Pi model names use the `openai-codex/` provider prefix (e.g. `openai-codex/gpt-5.4`) to avoid ambiguous fuzzy matching when multiple providers expose the same model ID.
 
 ## Hooks (Claude Code only)
 

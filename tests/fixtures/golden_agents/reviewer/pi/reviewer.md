@@ -1,10 +1,10 @@
 ---
 description: Read-only adversarial evaluator — reviews, audits, locates, or plans.
-  Has Read/Grep/Glob only and provably cannot edit, build, or run commands. Use for
-  code review, security audit, locating code, or planning. Not for applying changes
-  (engineer) or strategic risk verdicts (advisor).
+  Inspects with Read/Grep/Glob and does not modify code, run builds, or execute commands.
+  Use for code review, security audit, locating code, or planning. Not for applying
+  changes (engineer) or strategic risk verdicts (advisor).
 max_turns: 30
-model: openai-codex/gpt-5.5
+model: openai-codex/gpt-5.4
 name: reviewer
 thinking: medium
 tools: read, grep, find, ls

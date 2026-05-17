@@ -31,11 +31,13 @@ Run format lint: `make lint-instructions` or use the `/reviewing-instructions` s
 
 ## Agents
 
-Three role agents. A role is an **enforced capability envelope** (tool grant, not prose) plus a reasoning stance no skill can supply. Domain procedure and output format live in skills; language specifics live in each skill's `references/<lang>.md`. Role × skill × references compose — language is not a routing key. Consolidated 39 → 3 (see `docs/agent-audit-2026-05-16.md` and the executed plan in `docs/plans/completed/`).
+Three role agents. A role is a capability envelope plus a reasoning stance no skill can supply. Domain procedure and output format live in skills; language specifics live in each skill's `references/<lang>.md`. Role × skill × references compose — language is not a routing key. Consolidated 39 → 3 (see `docs/agent-audit-2026-05-16.md` and the executed plan in `docs/plans/completed/`).
 
-- **engineer** — Read + Edit + Write + Bash. The only mutator: applies changes and runs the build/test/lint verification on what it changed. Fork target for `writing-{go,python,typescript,web}` and `managing-infra`.
-- **reviewer** — Read + Grep + Glob + LS only; no Bash, no Edit/Write. Provably non-mutating. Adversarial evaluator (assume bugs exist); emits structured findings/proposals, applies nothing. Absorbs the review family, code search, and planning (via `spec` / `planning:make`).
-- **advisor** (pi only) — Read + read-only git Bash, xhigh thinking, transcript-forwarding invocation. Strategic escalation; ships only to the `pi` target (no Claude/Gemini overlay by design).
+Envelope enforcement is per-target: Claude grants a hard `tools:` allowlist; Codex blocks writes via `sandbox_mode: read-only`; Gemini and Pi have no tool-allowlist primitive, so the envelope there is a system-prompt directive. Descriptions state each role behaviorally so the claim stays true on every target, and omit "use proactively" deliberately — roles are picked by the orchestrator to compose with a skill, not auto-delegated.
+
+- **engineer** — read + write + execute. The only mutator: applies changes and runs the build/test/lint verification on what it changed. Fork target for `writing-{go,python,typescript,web}` and `managing-infra`. Claude preloads `looking-up-docs` + `smart-explore`; `mem-history` and `sequential-thinking` stay Skill-discoverable to keep spawn context lean.
+- **reviewer** — Read + Grep + Glob + LS. Adversarial evaluator (assume bugs exist); emits structured findings/proposals, applies nothing. Non-mutating: tool-enforced on Claude, write-blocked on Codex, directive on Gemini/Pi. Absorbs the review family, code search, and planning (via `spec` / `planning:make`).
+- **advisor** — strategic escalation: verdict, ranked risks, next actions. Ships to Codex, Gemini, and Pi; excluded from Claude, which has a built-in advisor. Codex enforces read-only via sandbox; Pi uses xhigh thinking with read-only Bash and transcript-forwarding invocation; elsewhere it is spawned as a normal custom agent.
 
 ## Development Workflow
 

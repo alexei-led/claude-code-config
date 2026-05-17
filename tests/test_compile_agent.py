@@ -139,11 +139,12 @@ def test_compile_agent_engineer_all_platforms(ca, tmp_path: Path) -> None:
 
 
 def test_compile_agent_reviewer_envelope_is_read_only(ca, tmp_path: Path) -> None:
-    """reviewer's enforced envelope must never include a mutating tool.
+    """reviewer's envelope must never include a mutating tool.
 
-    This is the central invariant of the 39->3 consolidation: reviewer is
-    provably non-mutating. Golden-lock the Claude and Pi outputs and assert
-    no Bash/Edit/Write leaks into the compiled tools list either shape.
+    Central invariant of the 39->3 consolidation, enforced per target:
+    Claude grants a hard `tools:` allowlist; Codex has no tool-allowlist
+    primitive so writes are blocked via `sandbox_mode: read-only`. Golden-lock
+    Claude/Pi and assert no Bash/Edit/Write leaks into either tools shape.
     """
     root = make_agent_staging_root(tmp_path)
     agent_dir = root / "src" / "agents" / "reviewer"
@@ -173,16 +174,32 @@ def test_compile_agent_reviewer_envelope_is_read_only(ca, tmp_path: Path) -> Non
         f"reviewer pi envelope leaked a mutating tool: {pi_tool_set & forbidden}"
     )
 
+    codex_written = ca.compile_agent(
+        agent_dir, "codex", {"reviewer": ["dev-workflow"]}, root
+    )
+    assert len(codex_written) == 1
+    assert codex_written[0].suffix == ".toml"
+    assert 'sandbox_mode = "read-only"' in codex_written[0].read_text(), (
+        "reviewer must be write-blocked on Codex (no tool-allowlist primitive)"
+    )
 
-def test_compile_agent_advisor_pi_only(ca, tmp_path: Path) -> None:
-    """advisor has `targets: [pi]` — only Pi receives an output."""
+
+def test_compile_agent_advisor_excludes_claude(ca, tmp_path: Path) -> None:
+    """advisor has `targets: [codex, gemini, pi]`.
+
+    Claude is excluded by design — it has a built-in advisor tool, so an
+    agent definition there would be redundant. Codex/Gemini/Pi each emit
+    exactly one file; the Pi output is golden-locked.
+    """
     root = make_agent_staging_root(tmp_path)
     agent_dir = root / "src" / "agents" / "advisor"
 
-    for target in ("claude", "codex", "gemini"):
-        assert ca.compile_agent(agent_dir, target, None, root) == [], (
-            f"advisor should not emit for {target}"
-        )
+    assert ca.compile_agent(agent_dir, "claude", None, root) == [], (
+        "advisor must not emit for claude (built-in advisor)"
+    )
+
+    assert len(ca.compile_agent(agent_dir, "codex", None, root)) == 1
+    assert len(ca.compile_agent(agent_dir, "gemini", None, root)) == 1
 
     written = ca.compile_agent(agent_dir, "pi", None, root)
     assert len(written) == 1
@@ -192,6 +209,12 @@ def test_compile_agent_advisor_pi_only(ca, tmp_path: Path) -> None:
     assert golden.is_file(), f"missing golden snapshot: {golden}"
     diff = _diff_files(golden, actual)
     assert diff is None, diff
+
+    codex_advisor = root / "dist" / "codex" / "agents" / "advisor.toml"
+    assert codex_advisor.is_file()
+    assert 'sandbox_mode = "read-only"' in codex_advisor.read_text(), (
+        "advisor must be write-blocked on Codex (no tool-allowlist primitive)"
+    )
 
 
 def test_codex_target_emits_toml_extension(ca, tmp_path: Path) -> None:
