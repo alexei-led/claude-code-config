@@ -80,7 +80,24 @@ For shared VPC, service accounts, and app environments:
 
 ## Output
 
-Engineer (applied after dry-run): report the dry-run/plan diff shown, the confirmation obtained, and the apply result.
+Engineer (applied after dry-run):
+
+```text
+INFRA APPLY COMPLETE
+====================
+Tool: terraform | kubectl | helm
+Dry-run: <command run> — diff shown
+Confirmation: <what the user approved>
+Status: APPLIED | ABORTED | PARTIAL
+
+Changes:
+- <resource> — created/modified/destroyed
+
+Verification:
+- <command> — pass/fail
+```
+
+If the user did not confirm or the plan showed unexpected destruction, status is ABORTED — state the blocker, do not apply.
 
 Reviewer (reviewed only — emit changes as a proposal, apply nothing):
 

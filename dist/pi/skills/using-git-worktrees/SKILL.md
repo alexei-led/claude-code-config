@@ -102,6 +102,23 @@ Use `scripts/cleanup-worktree.sh [branch]`. It is strict by default: unless `gh`
 - `git branch -d` says "not fully merged" after a squash/rebase PR merge: confirm the PR is MERGED, then use `git branch -D` — this is expected, not data loss.
 - Invoked from inside the worktree being removed: `cd` to the main worktree first, or the shell ends up in a deleted directory.
 
+## Output
+
+```text
+WORKTREE READY
+==============
+Action: CREATE | CLEANUP
+Branch: <branch>
+Path: <project>.worktrees/<slug>
+Status: DONE | BLOCKED
+
+Next:
+- cd into the worktree path and open the editor there, or
+- pull main yourself after a confirmed cleanup
+```
+
+For cleanup, only report DONE when the PR is confirmed MERGED (or `--force` was used deliberately); otherwise status is BLOCKED with the single reason the script reported.
+
 ## References
 
 - [WORKFLOW.md](references/WORKFLOW.md) - Detailed steps, project setup, cleanup, common mistakes

@@ -86,6 +86,26 @@ Auth failures, rate limiting, common error patterns, and a retry-with-backoff
 template are vendor-specific. For GCP, read `references/GCP.md` `## Error
 Handling`. For AWS, read `references/AWS.md` `## Error Handling`.
 
+## Output
+
+```text
+CLOUD CLI COMPLETE
+==================
+Provider: GCP | AWS
+Identity: <account/profile> · <project/region>
+Status: DONE | ABORTED | NEEDS CONFIRMATION
+
+Commands run:
+- <command> — result summary
+
+Cost (if BigQuery): <bytes scanned / dry-run estimate>
+
+Next:
+- <follow-up command, or none>
+```
+
+For destructive work not yet confirmed, status is NEEDS CONFIRMATION — show identity, candidate resources, and the exact command; do not present an executable delete as the next action.
+
 ## References
 
 - [GCP.md](references/GCP.md) - GCP service patterns and common commands

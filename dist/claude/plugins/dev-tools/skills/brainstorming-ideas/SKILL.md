@@ -294,6 +294,12 @@ Use AskUserQuestion:
 
 - **Next steps** — Ready to proceed with implementation? Options: 1. **Create worktree** - Isolated workspace via using-git-worktrees 2. **Create plan** - Detailed implementation steps 3. **Done for now** - Just save the design
 
+## Failure handling
+
+- Idea conflicts with `CONTEXT.md` / `CONTEXT-MAP.md`: surface the contradiction explicitly ("the glossary defines X as A, this idea assumes B"). Resolve the term with the user before designing — do not silently pick one.
+- A constraint blocks every approach: stop generating options. State the blocker, what would unblock it, and ask the user to relax the constraint or change scope.
+- Idea is too vague to design (user cannot state the problem in one sentence): stay in Phase 1. Ask one narrowing question at a time; do not fabricate requirements or jump to approaches.
+
 ## Examples
 
 ```
