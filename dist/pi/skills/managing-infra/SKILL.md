@@ -14,6 +14,26 @@ name: managing-infra
 
 # Infrastructure Patterns
 
+## Role-gated action
+
+Detect your capability from your tools, not from prose:
+
+- Write-capable role (engineer): run the read-only dry-run, present the diff, get confirmation, then apply and verify.
+- Read-only role (reviewer): a reviewer has no Bash — it cannot run `terraform plan` or `kubectl diff`. Review the manifests/modules in scope from the files and caller-supplied plan output, and emit changes in the Proposed Changes contract under Output. Apply nothing.
+
+## Detect the infra tool and load references
+
+Detect the tool from the files in scope and load the matching reference:
+
+- `*.tf` / `*.tfvars` → [TERRAFORM.md](references/TERRAFORM.md)
+- K8s manifests / `kustomization.yaml` → [KUBERNETES.md](references/KUBERNETES.md)
+- `Chart.yaml` / `templates/*.yaml` → [HELM.md](references/HELM.md)
+- workflow YAML under `.github/workflows/` → [GITHUB-ACTIONS.md](references/GITHUB-ACTIONS.md)
+- `Dockerfile` → [DOCKERFILE.md](references/DOCKERFILE.md)
+- `Makefile` → [MAKEFILE.md](references/MAKEFILE.md)
+
+Mixed stacks: load each matching reference. Unknown tool: use the core patterns below only.
+
 ## Safety: Dry-Run Before Apply
 
 **NEVER** run state-changing commands (`kubectl apply`, `terraform apply`, `helm upgrade --install`) without first presenting the plan/diff to the user.
@@ -62,6 +82,26 @@ For shared VPC, service accounts, and app environments:
 
 - User asks to apply without reviewing a plan: stop, run the read-only equivalent first, present the diff, then require explicit confirmation.
 - Terraform plan shows unexpected resource destruction: halt, surface the full destroy list, do not proceed until the user explicitly confirms each affected resource.
+
+## Output
+
+Engineer (applied after dry-run): report the dry-run/plan diff shown, the confirmation obtained, and the apply result.
+
+Reviewer (reviewed only — emit changes as a proposal, apply nothing):
+
+```text
+## Proposed Changes
+
+### Change 1: <brief description>
+
+File: `path/to/manifest`
+Action: CREATE | MODIFY | DELETE
+
+Code:
+<the manifest/module content>
+
+Rationale: <security/structure issue this addresses>
+```
 
 ## References
 

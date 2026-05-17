@@ -10,6 +10,24 @@ name: improving-tests
 
 Improve tests by making them behavioral, lean, and useful.
 
+## Role-gated action
+
+Detect your capability from your tools, not from prose:
+
+- Write-capable role (engineer): apply the test changes and run the verification command.
+- Read-only role (reviewer): identify the weak/missing/brittle tests and emit the changes in the Proposed Changes contract under Verify and report. Apply nothing; run nothing — a reviewer has no edit or Bash tools, so the `review` mode is its natural fit.
+
+## Language detection and references
+
+Detect the language from the file extensions in scope and load the matching reference for language-specific test patterns and tooling:
+
+- Go → [references/go.md](references/go.md)
+- Python → [references/python.md](references/python.md)
+- TypeScript → [references/typescript.md](references/typescript.md)
+- Web → [references/web.md](references/web.md)
+
+Mixed languages: load each matching reference. Unknown language: use the generic principles below only.
+
 ## Modes
 
 - `review` → identify weak, duplicate, brittle, or missing tests
@@ -88,7 +106,7 @@ bun test
 
 For Python, mention `pytest` or the project-specific equivalent explicitly. For refactor plans in Python projects, include `pytest -v` or the repository's configured `uv run pytest` command by name instead of only saying "run tests." For other stacks, name the equivalent test command instead of saying only "tests passed."
 
-Output:
+Engineer (applied the changes):
 
 ```text
 TEST IMPROVEMENT COMPLETE
@@ -103,6 +121,22 @@ Key improvements:
 
 Verification:
 - <command> — pass/fail
+```
+
+Reviewer (identified only — emit the changes as a proposal, apply nothing):
+
+```text
+## Proposed Changes
+
+### Change 1: <brief description>
+
+File: `path/to/test_file`
+Action: CREATE | MODIFY | DELETE
+
+Code:
+<complete test code, in the file's language>
+
+Rationale: <weak/missing/brittle test this addresses>
 ```
 
 If no tests or framework exist, report that and ask before creating a new testing stack.

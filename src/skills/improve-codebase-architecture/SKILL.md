@@ -12,6 +12,24 @@ name: improve-codebase-architecture
 
 Surface architectural friction and propose deepening opportunities — refactors that turn shallow modules into deep ones. The aim is testability and AI-navigability.
 
+## Role-gated action
+
+This skill produces a candidate list and an agreed design, not edits. Both roles run it the same way; the difference is what happens after DESIGN AGREED:
+
+- Write-capable role (engineer): hand the agreed design to `refactoring-code` to apply.
+- Read-only role (reviewer): stop at DESIGN AGREED — it is the deliverable. Apply nothing.
+
+## Language detection and references
+
+Detect the language from the file extensions in scope and load the matching reference for language-specific deepening patterns:
+
+- Go → [references/go.md](references/go.md)
+- Python → [references/python.md](references/python.md)
+- TypeScript → [references/typescript.md](references/typescript.md)
+- Web → [references/web.md](references/web.md)
+
+Mixed languages: load each matching reference. Unknown language: use the language-agnostic vocabulary and process below only.
+
 ## Critical Boundary Rules
 
 - Do not use this skill for line-level cleanup: renames, formatting, comment cleanup, or one-file cosmetic edits.

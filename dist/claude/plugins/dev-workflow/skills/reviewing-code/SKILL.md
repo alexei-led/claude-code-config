@@ -33,79 +33,69 @@ Review changed code for security, quality, test coverage, and architecture. Grou
 
 If a task-tracking facility is available, track these phases as tasks.
 
+## Role and output contract
+
+This skill produces findings, not edits. It owns the tiered-findings output contract below. Emit the findings regardless of role; route the actual fixes to `fixing-code` or the refactor to `refactoring-code`. A reviewer (read-only) cannot run `git diff` or builds — work from the files in scope plus any diff context the caller supplies, and ask for that context if it is missing rather than guessing.
+
 ## Workflow
 
 1. Determine review scope.
-2. Detect languages from changed files.
-3. Delegate to reviewer agents (one per detected language for a standard review; the thorough set per language for deep coverage).
+2. Detect languages and load the matching references.
+3. Walk the review dimensions across the scope.
 4. Aggregate findings by severity and report.
 
 Track progress through the workflow phases using `TaskCreate` / `TaskUpdate`.
 
 If `$ARGUMENTS` is passed, the keywords below tune the workflow:
 
-- `deep` — use the thorough-review agent set (full dimension coverage per language).
-- `team` — run the reviewers as an agent team that challenges each other's findings and converges on consensus.
+- `deep` — cover all six review dimensions, not just the security and correctness pair.
+- `team` — fan the dimensions to parallel reviewer sub-tasks that challenge each other's findings and converge.
 - `external` — additionally spawn external AI reviewers. Only when explicitly requested; never run by default.
-- `architecture` — pass the Architecture vocabulary into every reviewer's prompt.
+- `architecture` — include the Architecture vocabulary section in scope for every dimension.
 
-Without `external`, run only the language reviewers from this skill. Never spawn external reviewers implicitly.
+Without `external`, run only this skill's own review. Never spawn external reviewers implicitly.
 
 ## Determine scope
 
-Ask the user which scope to review, with these options:
+Resolve the scope from the request. Options:
 
 - Uncommitted changes
 - Branch compared to the default branch
 - Specific files (user provides paths)
 
-Resolve to the appropriate git invocation and use it consistently across phases. If the user already named a scope in their request, use it without asking.
+If a role with Bash is running this, resolve to the appropriate git invocation and use it consistently across phases. If a read-only role is running this, work from the file list and diff context the caller provides. If the user already named a scope, use it without asking; otherwise ask one clarifying question.
 
 Use `AskUserQuestion` with header "Review scope" and the three options spelled out above.
 
-## Detect languages
+## Detect languages and load references
 
-Scan the changed-file extensions and identify which language reviewers are needed.
+Scan the changed-file extensions. For each language present, load the matching reference for language-specific review checks:
 
-## Delegate to reviewer agents
+- Go → [references/go.md](references/go.md)
+- Python → [references/python.md](references/python.md)
+- TypeScript → [references/typescript.md](references/typescript.md)
+- Web / HTML / CSS / JS → [references/web.md](references/web.md)
 
-For each detected language, delegate to the agent(s) below in parallel if the runtime supports parallel sub-agents. Pass each agent: the scope, the project conventions (read `CONTEXT.md`/`docs/adr/` first), and whether architecture focus is requested.
+Mixed languages: load each matching reference. Unknown or unsupported language: use the generic dimensions below only and note the reduced coverage.
 
-Spawn each agent via `Task(subagent_type="<name>", prompt=...)`. Each agent's model is set in its own metadata; do not pin a model from the skill.
+## Review dimensions
 
-When `team` is set, spawn the reviewers as an agent team so they challenge each other's findings; report format prefixes findings with `[Flagged by: agent1, agent2]`.
+Walk every dimension across the scope. For a standard review, cover the security and correctness dimensions; for a thorough review, cover all six. If the runtime supports parallel sub-tasks and the scope is large, the orchestrator may fan the dimensions out, but the rubric is identical either way.
 
-When `external` is set, additionally spawn in parallel:
+- Logic, security, OWASP, race conditions, unchecked errors, resource leaks
+- Patterns, conventions, stdlib usage, error handling (the language reference sharpens this)
+- Test coverage, edge cases, mocking discipline
+- Requirements match, dependency injection, edge cases
+- Comments, docstrings, API docs (ARIA labels for web)
+- Over-abstraction, dead code, pass-throughs
 
-- `Task(subagent_type="codex-assistant", prompt="review: code from <git_command>")` — security, quality, architecture from a second model.
-- `Task(subagent_type="gemini-consultant", prompt="review: architecture of <git_command>")` — architecture alternatives and trade-offs.
+Run the dimensions as the read-only `reviewer` role. For large scope, the orchestrator may fan them out as parallel `Task(subagent_type="reviewer", prompt=...)` sub-tasks, one per dimension or per file group; each sub-task's model is set in its own metadata — do not pin a model from the skill.
 
-### Standard review — one agent per language
+When `team` is set, run those sub-tasks as an agent team so they challenge each other's findings; the report prefixes each finding with `[Flagged by: <dimension>]`.
 
-- Go → `go-engineer`
-- Python → `python-engineer`
-- TypeScript → `typescript-engineer`
-- Web (HTML / CSS / JS) → `web-engineer`
+When `external` is set, additionally spawn any configured external-AI reviewer bridges in parallel for a second-model pass on security, quality, and architecture. Do not hard-depend on a specific external agent; skip silently if none is configured.
 
-### Thorough review — full dimension coverage per language
-
-- Go: `go-qa`, `go-idioms`, `go-tests`, `go-impl`, `go-docs`, `go-simplify`
-- Python: `py-qa`, `py-idioms`, `py-tests`, `py-impl`, `py-docs`, `py-simplify`
-- TypeScript: `ts-qa`, `ts-idioms`, `ts-tests`, `ts-impl`, `ts-docs`, `ts-simplify`
-- Web: `web-qa`, `web-idioms`, `web-tests`, `web-impl`, `web-docs`, `web-simplify`
-
-Dimension meanings (same across languages):
-
-- `*-qa` — logic, security, OWASP, race conditions, unchecked errors, resource leaks
-- `*-idioms` — patterns, conventions, stdlib usage, error handling
-- `*-tests` — coverage, edge cases, mocking discipline
-- `*-impl` — requirements match, dependency injection, edge cases
-- `*-docs` — comments, docstrings, API docs (ARIA labels for web)
-- `*-simplify` — over-abstraction, dead code, pass-throughs
-
-If the runtime cannot spawn subagents, walk the dimensions sequentially as the main agent.
-
-## Review rules (passed to every reviewer)
+## Review rules
 
 - Cite concrete `file:line` evidence or tool output for every finding. No evidence, no finding.
 - Findings include severity and a concrete fix.
@@ -115,7 +105,7 @@ If the runtime cannot spawn subagents, walk the dimensions sequentially as the m
 
 ## Architecture vocabulary
 
-Apply when the user asks for architecture focus. Pass these terms into reviewer prompts so findings use shared vocabulary:
+Apply when the user asks for architecture focus. Use these terms so findings share vocabulary:
 
 - **Module** — anything with an interface and an implementation: function, class, package, slice.
 - **Interface** — everything callers must know: types, invariants, ordering, error modes, config, performance.
@@ -131,15 +121,15 @@ Seam rule: one adapter means a hypothetical seam; two adapters means a real seam
 
 ## Historical context (optional)
 
-If cross-session memory tooling is available, query for prior observations on the files about to be reviewed. Forward relevant findings into reviewer prompts so old issues are not re-litigated. Skip silently if no such tooling is configured.
+If cross-session memory tooling is available, query for prior observations on the files about to be reviewed. Skip already-litigated issues so old findings are not repeated. Skip silently if no such tooling is configured.
 
-If `mcp__plugin_claude-mem_mcp-search__search` is available, query for past findings on the files being reviewed:
+If `mcp__plugin_claude-mem_mcp-search__search` is available, query for past findings on the files in scope:
 
 ```text
-search({ query: "<file paths from git diff --name-only HEAD>", limit: 10 })
+search({ query: "<file paths in review scope>", limit: 10 })
 ```
 
-Fetch full observations via `get_observations` for relevant hits. Forward key findings into reviewer prompts. Skip silently if the MCP is not installed.
+Fetch full observations via `get_observations` for relevant hits. Skip already-litigated issues. Skip silently if the MCP is not installed.
 ## Report format
 
 ```markdown
@@ -147,27 +137,26 @@ Fetch full observations via `get_observations` for relevant hits. Forward key fi
 
 **Scope**: <description>
 **Languages**: <list>
-**Reviewers**: <agents that ran>
 
-### CRITICAL (must fix)
+### Critical (must fix)
 
-- [<agent>] `file:line` — issue. Fix.
+- `file:line` — issue. Fix.
 
-### IMPORTANT (should fix)
+### Warnings (should fix)
 
-- [<agent>] `file:line` — issue. Fix.
+- `file:line` — issue. Fix.
 
-### SUGGESTIONS
+### Suggestions (consider)
 
-- [<agent>] `file:line` — issue. Fix.
+- `file:line` — improvement.
 
 ### Architecture opportunities (if requested)
 
 - Candidate: `module`. Problem: shallow / pass-through / fake seam. Deepening move: <how>. Test benefit: <how>.
 
-### Recommended actions
+### Summary
 
-1. <prioritized list>
+Overall assessment in 2-3 sentences, then a prioritized list of recommended actions.
 ```
 
 ## Writing style
@@ -180,6 +169,6 @@ Fetch full observations via `get_observations` for relevant hits. Forward key fi
 ## Edge cases
 
 - No changes in scope → "Nothing to review."
-- Linters missing → say so explicitly; still review by reading.
-- Tests missing → flag as a finding under the `*-tests` dimension.
-- Runtime has no subagents → main agent performs the review sequentially using the same rubric.
+- Linters missing or unrunnable (read-only role) → say so explicitly; still review by reading.
+- Tests missing → flag as a finding under the test-coverage dimension.
+- Scope larger than expected → review only what was asked; list adjacent suspicious files as out of scope.

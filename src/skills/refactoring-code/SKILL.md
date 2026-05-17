@@ -13,6 +13,17 @@ MorphLLM `edit_file` provides semantic code merging at 10,500+ tokens/sec with 9
 
 Critical rule: preserve existing behavior unless the user explicitly asks for a behavior change. State the preservation target before editing.
 
+## Role-gated action
+
+Detect your capability from your tools, not from prose:
+
+- Write-capable role (engineer): map the scope, apply the batch edits, run lint/test verification.
+- Read-only role (reviewer): map the scope and produce the refactor plan, then emit it in the Proposed Changes contract under Output. Apply nothing; run nothing — a reviewer has no edit or Bash tools.
+
+## Language detection
+
+Detect the language from the file extensions in scope and preserve that language's idioms in the rewritten code. This skill has no per-language reference files — operate from the generic procedure.
+
 ## When to Use edit_file
 
 Use `edit_file` when:
@@ -122,6 +133,30 @@ code_edit: Shows import section with changes
 instruction: "Rename getUserById to findUser throughout file"
 code_edit: Shows all locations with changes
 ```
+
+## Output
+
+Engineer (applied the refactor): report the preservation target, files changed, and the lint/test verification result per touched file.
+
+Reviewer (planned only — emit the refactor as a proposal, apply nothing):
+
+```text
+## Proposed Changes
+
+Preservation target: <behavior that must not change>
+
+### Change 1: <brief description>
+
+File: `path/to/file`
+Action: CREATE | MODIFY | DELETE
+
+Code:
+<changed regions with // ... existing code ... markers>
+
+Rationale: <why this change>
+```
+
+For multi-file renames, list every occurrence mapped before the proposal so the applier can replay it.
 
 ## Failure handling
 

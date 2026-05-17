@@ -6,34 +6,31 @@ Track progress through the workflow phases using `TaskCreate` / `TaskUpdate`.
 
 If `$ARGUMENTS` is passed, the keywords below tune the workflow:
 
-- `deep` — use the thorough-review agent set (full dimension coverage per language).
-- `team` — run the reviewers as an agent team that challenges each other's findings and converges on consensus.
+- `deep` — cover all six review dimensions, not just the security and correctness pair.
+- `team` — fan the dimensions to parallel reviewer sub-tasks that challenge each other's findings and converge.
 - `external` — additionally spawn external AI reviewers. Only when explicitly requested; never run by default.
-- `architecture` — pass the Architecture vocabulary into every reviewer's prompt.
+- `architecture` — include the Architecture vocabulary section in scope for every dimension.
 
-Without `external`, run only the language reviewers from this skill. Never spawn external reviewers implicitly.
+Without `external`, run only this skill's own review. Never spawn external reviewers implicitly.
 
 ## Determine scope (\_+)
 
 Use `AskUserQuestion` with header "Review scope" and the three options spelled out above.
 
-## Delegate to reviewer agents (\_+)
+## Review dimensions (\_+)
 
-Spawn each agent via `Task(subagent_type="<name>", prompt=...)`. Each agent's model is set in its own metadata; do not pin a model from the skill.
+Run the dimensions as the read-only `reviewer` role. For large scope, the orchestrator may fan them out as parallel `Task(subagent_type="reviewer", prompt=...)` sub-tasks, one per dimension or per file group; each sub-task's model is set in its own metadata — do not pin a model from the skill.
 
-When `team` is set, spawn the reviewers as an agent team so they challenge each other's findings; report format prefixes findings with `[Flagged by: agent1, agent2]`.
+When `team` is set, run those sub-tasks as an agent team so they challenge each other's findings; the report prefixes each finding with `[Flagged by: <dimension>]`.
 
-When `external` is set, additionally spawn in parallel:
-
-- `Task(subagent_type="codex-assistant", prompt="review: code from <git_command>")` — security, quality, architecture from a second model.
-- `Task(subagent_type="gemini-consultant", prompt="review: architecture of <git_command>")` — architecture alternatives and trade-offs.
+When `external` is set, additionally spawn any configured external-AI reviewer bridges in parallel for a second-model pass on security, quality, and architecture. Do not hard-depend on a specific external agent; skip silently if none is configured.
 
 ## Historical context (optional) (\_+)
 
-If `mcp__plugin_claude-mem_mcp-search__search` is available, query for past findings on the files being reviewed:
+If `mcp__plugin_claude-mem_mcp-search__search` is available, query for past findings on the files in scope:
 
 ```text
-search({ query: "<file paths from git diff --name-only HEAD>", limit: 10 })
+search({ query: "<file paths in review scope>", limit: 10 })
 ```
 
-Fetch full observations via `get_observations` for relevant hits. Forward key findings into reviewer prompts. Skip silently if the MCP is not installed.
+Fetch full observations via `get_observations` for relevant hits. Skip already-litigated issues. Skip silently if the MCP is not installed.
