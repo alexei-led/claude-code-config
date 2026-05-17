@@ -34,7 +34,7 @@ find its directory from the loaded skill path and run helper scripts from
 there:
 
 ```bash
-cd <playwright-skill-dir> && node run.js /tmp/e2e-check.js
+cd <playwright-skill-dir> && node scripts/run.js /tmp/e2e-check.js
 ```
 
 If the helper is unavailable, use project-local Playwright commands instead:

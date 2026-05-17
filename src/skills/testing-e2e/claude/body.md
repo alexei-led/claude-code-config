@@ -64,7 +64,7 @@ Write a Playwright script to `/tmp/playwright-record-*.js` that:
 1. Launches browser with `headless: false` and `slowMo: 100`
 2. Navigates to target URL
 3. Captures interactions and generates test with Page Object pattern
-4. Execute via: `cd ~/.claude/skills/playwright-skill && node run.js /tmp/playwright-record-*.js`
+4. Execute via: `cd ~/.claude/skills/playwright-skill && node scripts/run.js /tmp/playwright-record-*.js`
 
 ### Generate Test
 
@@ -86,7 +86,7 @@ Task(
   - Include assertions for expected outcomes
   - No hardcoded waits (use waitFor patterns)
   - Include accessibility checks where appropriate
-  - Write the script to /tmp/playwright-*.js and run it via the playwright-skill executor: cd ~/.claude/skills/playwright-skill && node run.js /tmp/playwright-*.js"
+  - Write the script to /tmp/playwright-*.js and run it via the playwright-skill executor: cd ~/.claude/skills/playwright-skill && node scripts/run.js /tmp/playwright-*.js"
 )
 ```
 
@@ -106,7 +106,7 @@ Task(
   2. Execute user flow
   3. Assert expected outcomes
   4. Report PASS/FAIL with evidence (screenshots if needed)
-  Write the Playwright script to /tmp/playwright-*.js and run it via the playwright-skill executor: cd ~/.claude/skills/playwright-skill && node run.js /tmp/playwright-*.js"
+  Write the Playwright script to /tmp/playwright-*.js and run it via the playwright-skill executor: cd ~/.claude/skills/playwright-skill && node scripts/run.js /tmp/playwright-*.js"
 )
 ```
 
@@ -151,7 +151,7 @@ Details:
 Write Playwright scripts to `/tmp/` and run via the playwright-skill executor:
 
 ```bash
-cd ~/.claude/skills/playwright-skill && node run.js /tmp/playwright-test-*.js
+cd ~/.claude/skills/playwright-skill && node scripts/run.js /tmp/playwright-test-*.js
 ```
 
 The executor handles module resolution, auto-installs Chromium if needed, and provides helper utilities. See `playwright-skill/SKILL.md` for full patterns.

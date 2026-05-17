@@ -1,2 +1,2 @@
-#\!/usr/bin/env bash
+#!/usr/bin/env bash
 exec "$(dirname "$0")/../../spec-status/scripts/specctl.py" "$@"

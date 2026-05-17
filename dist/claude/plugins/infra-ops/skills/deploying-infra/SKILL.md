@@ -71,8 +71,21 @@ Stop: "Missing tools: {list}. Install before proceeding." Do not attempt command
 
 ## Step 3: Pre-flight Validation
 
-Dry-run-before-apply safety doctrine: `managing-infra` `## Safety`. Pre-flight
-checks per infra type: see `references/validation-checklists.md`.
+Dry-run-before-apply safety doctrine: `managing-infra` `## Safety`.
+
+Read `references/validation-checklists.md` (skill-relative). Map
+`{detected_type}` to its section header, then copy that section verbatim into
+`{checklist}` below:
+
+- `k8s` → `## Kubernetes`
+- `helm` → `## Helm`
+- `kustomize` → `## Kustomize`
+- `terraform` → `## Terraform`
+- `docker` → `## Dockerfile`
+- `github-actions` → `## GitHub Actions`
+
+The spawned engineer has no skill-relative access, so the checklist must be
+inlined — do not pass a path.
 
 Spawn the engineer agent for validation:
 
@@ -87,8 +100,8 @@ Task(
   Environment: {environment}
   Mode: {dry-run|apply}
 
-  Run the pre-flight checks for {detected_type} from
-  deploying-infra/references/validation-checklists.md.
+  Run these pre-flight checks:
+  {checklist}
 
   Output format:
   READY/BLOCKED per category with file:line for issues.
