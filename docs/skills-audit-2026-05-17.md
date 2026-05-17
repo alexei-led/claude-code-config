@@ -3,7 +3,7 @@
 ## Status
 
 Tier 1–3 executed 2026-05-17 via `docs/plans/20260517-skills-consolidation.md`
-(45 → 42 skills; folds, progressive-disclosure extraction, boundary tightening).
+(45 → 43 skills; folds, progressive-disclosure extraction, boundary tightening; +1 from context7-cli/looking-up-docs re-split post-execution).
 Tier 4 (`dev-tools` 18-skill split) remains the open decision — a breaking
 marketplace change deferred for an explicit owner call.
 

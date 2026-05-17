@@ -68,19 +68,25 @@ Envelope enforcement is per-target: Claude and Gemini grant a hard `tools:` allo
 
 ## Infrastructure & Operations
 
+- **deploying-infra** — Validate and deploy Kubernetes, Terraform, Helm, Kustomize, GitHub Actions, and Docker configs
 - **managing-infra** — Infrastructure patterns for Kubernetes, Terraform, Helm, Kustomize, and GitHub Actions
 - **using-cloud-cli** — Cloud CLI patterns for GCP and AWS
 
 ## Developer Tools
 
+- **analyzing-usage** — Analyze AI coding agent usage, cost, efficiency, and burn rate (ccusage)
 - **brainstorming-ideas** — Brainstorm ideas and stress-test draft plans before coding
 - **context7-cli** — ctx7 (Context7) CLI mechanics; Tier 1 of looking-up-docs
+- **debating-ideas** — Stress-test design decisions via dialectic thesis/antithesis agents
 - **evolving-config** — Audit Claude Code configuration against latest features and best practices
 - **exploring-repos** — Explore public GitHub repositories via DeepWiki AI-generated documentation
 - **learning-patterns** — Extract learnings and generate project-specific customizations
 - **looking-up-docs** — Find current docs via a fallback chain: ctx7 → Perplexity → platform web tools
 - **mem-history** — Query project history, past decisions, and known gotchas from claude-mem observations
+- **parsing-documents** — Extract structured data from PDF documents
 - **researching-web** — Web research via Perplexity AI
+- **reviewing-cc-config** — Review Claude Code configuration for context efficiency and anti-patterns
+- **reviewing-instructions** — Review and score AI agent/skill instruction files for quality
 - **sequential-thinking** — Structured stepwise reasoning with explicit revisions and branches
 - **smart-explore** — Token-efficient code navigation via AST parsing
 - **using-git-worktrees** — Creates isolated git worktrees for parallel development
