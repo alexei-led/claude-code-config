@@ -397,8 +397,8 @@ pi install git:github.com/umputun/revdiff
 
 ### pi-web-providers
 
-Adds web search and research providers to Pi (used by `researching-web` and
-`looking-up-docs` skills).
+Adds web search and research providers to Pi (used by the `researching-web`
+skill).
 
 ```bash
 pi install npm:pi-web-providers

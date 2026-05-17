@@ -18,10 +18,10 @@
       "id": "boundary-library-api-docs",
       "name": "boundary library api docs",
       "prompt": "A user asks: what are the arguments to the requests.get function? Describe how this repo-exploration skill should respond.",
-      "expected_output": "The response routes narrow API reference questions to looking-up-docs rather than repository architecture exploration.",
+      "expected_output": "The response routes narrow API reference questions to context7-cli rather than repository architecture exploration.",
       "assertions": [
         "The output says the request is a narrow API reference/docs question.",
-        "The output routes to looking-up-docs or official docs lookup.",
+        "The output routes to context7-cli or official docs lookup.",
         "The output avoids using DeepWiki/repo architecture exploration for a single function signature."
       ]
     }

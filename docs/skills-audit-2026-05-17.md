@@ -1,5 +1,12 @@
 # Skills Audit — 2026-05-17
 
+## Status
+
+Tier 1–3 executed 2026-05-17 via `docs/plans/20260517-skills-consolidation.md`
+(45 → 42 skills; folds, progressive-disclosure extraction, boundary tightening).
+Tier 4 (`dev-tools` 18-skill split) remains the open decision — a breaking
+marketplace change deferred for an explicit owner call.
+
 45 skills, 9 plugins. Verdict: the set is already mature. Every aggressive consolidation
 hypothesis (one `writing-code`, merge search skills, collapse `spec-*`, merge the infra
 trio) was tested against body content and rejected with evidence — the prior agent

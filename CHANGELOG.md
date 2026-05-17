@@ -22,6 +22,18 @@ major = breaking config/hook changes, minor = new skills/features, patch = fixes
 - Per-language idioms folded into `writing-<lang>/references/PATTERNS.md`;
   per-language review, test, docs, and architecture content moved into skill
   `references/` directories.
+- **Skills consolidation (45 → 42)**: folded `looking-up-docs` into
+  `context7-cli` (description + skill-enforcer triggers absorb the
+  natural-language doc-lookup path), `grill-me` into
+  `brainstorming-ideas/references/grill-protocol.md`, and `spec-core` into
+  `spec-status` (orientation + `references/specctl-commands.md`; the bundled
+  `specctl.py` relocated and sibling wrappers repointed). Seven heavy skills
+  moved ~1,400 inlined lines into conditionally-loaded `references/` files
+  (`spec-work`, `spec-plan`, `spec-interview`, `deploying-infra`,
+  `using-cloud-cli`, `analyzing-usage`, the four `writing-*`,
+  `reviewing-code`, `reviewing-cc-config`). ~6 routing boundaries tightened.
+  No capability dropped. See `docs/skills-audit-2026-05-17.md` and the
+  executed plan in `docs/plans/`.
 
 ### Added
 

@@ -133,7 +133,7 @@ def test_skills_config_emits_array_of_tables(load_script):
             "skills": {
                 "config": [
                     {"name": "writing-go", "enabled": True},
-                    {"name": "looking-up-docs"},
+                    {"name": "context7-cli"},
                 ],
             },
         },
@@ -142,7 +142,7 @@ def test_skills_config_emits_array_of_tables(load_script):
     data = tomllib.loads(out)
     config = data["skills"]["config"]
     assert config[0] == {"name": "writing-go", "enabled": True}
-    assert config[1] == {"name": "looking-up-docs"}
+    assert config[1] == {"name": "context7-cli"}
 
 
 def test_skills_bare_list_of_strings_lifts_to_config_entries(load_script):

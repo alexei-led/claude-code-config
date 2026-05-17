@@ -299,11 +299,11 @@ All agents and several skills optionally integrate with [claude-mem](https://git
 | [**typescript-dev**](src/plugins/typescript-dev/plugin.yaml) | 1      | 1      | TypeScript with strict typing, React patterns, and modern tooling                  |
 | [**web-dev**](src/plugins/web-dev/plugin.yaml)               | 1      | 1      | Web frontend with vanilla HTML, CSS, JavaScript, and HTMX                          |
 | [**infra-ops**](src/plugins/infra-ops/plugin.yaml)           | 3      | 1      | Kubernetes, Terraform, Helm, GitHub Actions, AWS, GCP                              |
-| [**dev-tools**](src/plugins/dev-tools/plugin.yaml)           | 18     | 1      | Modern CLI, git worktrees, docs lookup, web research, config review, brainstorming |
-| [**spec**](src/plugins/spec/plugin.yaml)                     | 8      | 2      | Spec-driven development: requirements, tasks, and planning workflows               |
+| [**dev-tools**](src/plugins/dev-tools/plugin.yaml)           | 16     | 1      | Modern CLI, git worktrees, docs lookup, web research, config review, brainstorming |
+| [**spec**](src/plugins/spec/plugin.yaml)                     | 7      | 2      | Spec-driven development: requirements, tasks, and planning workflows               |
 | [**testing-e2e**](src/plugins/testing-e2e/plugin.yaml)       | 2      | 1      | E2E testing with Playwright: browser automation and test generation                |
 
-**Totals**: 45 skills, 2 plugin-owned role agents (`engineer`, `reviewer`), 9 hooks
+**Totals**: 42 skills, 2 plugin-owned role agents (`engineer`, `reviewer`), 9 hooks
 
 ## Skills
 
@@ -316,7 +316,6 @@ Invoke as `/skill-name` or let the skill enforcer suggest them.
 | Skill                           | What It Does                                                          | Example Trigger                          |
 | ------------------------------- | --------------------------------------------------------------------- | ---------------------------------------- |
 | `brainstorming-ideas`           | Brainstorm ideas and stress-test draft plans                          | "brainstorm", "design feature"           |
-| `grill-me`                      | Relentless decision-tree interview on one plan                        | "grill me", "stress-test this plan"      |
 | `improve-codebase-architecture` | Find deepening opportunities, module/seam vocab                       | "improve architecture", "deepen modules" |
 | `committing-code`               | Smart git commits with logical grouping                               | "commit", "save changes"                 |
 | `debating-ideas`                | Dialectic agents stress-test design decisions                         | "debate", "pros and cons"                |
@@ -326,8 +325,7 @@ Invoke as `/skill-name` or let the skill enforcer suggest them.
 | `exploring-repos`               | Explore public GitHub repos and architecture                          | "explore repo", "how does repo work"     |
 | `fixing-code`                   | Parallel agents fix all issues, zero tolerance                        | "fix errors", "make it pass"             |
 | `improving-tests`               | Refactor tests: combine to tabular, fill gaps                         | "improve tests", "coverage"              |
-| `context7-cli`                  | Current library docs via ctx7 CLI                                     | "ctx7", "context7", "current docs"       |
-| `looking-up-docs`               | Router for Context7 CLI docs lookup                                   | "look up docs", "API ref"                |
+| `context7-cli`                  | Current library docs via ctx7 CLI; docs/API lookup                    | "ctx7", "look up docs", "API ref"        |
 | `mem-history`                   | Query project history and prior decisions                             | "last session", "what happened"          |
 | `researching-web`               | Web research via Perplexity AI                                        | "research", "X vs Y"                     |
 | `reviewing-code`                | Multi-agent review (security, quality, idioms)                        | "review code", "check this"              |
