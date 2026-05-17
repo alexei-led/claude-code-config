@@ -50,7 +50,13 @@ Envelope enforcement is per-target: Claude and Gemini grant a hard `tools:` allo
 - **refactoring-code** — Batch refactoring via MorphLLM edit_file
 - **reviewing-code** — Sequential code review for security, quality, tests, and architecture
 - **searching-code** — Intelligent codebase search and zoom-out mapping via WarpGrep
-- **spec** — Spec-driven development (init, interview, plan, work, status, done)
+- **spec-init** — Bootstrap a new `.spec/` project or import requirements from a design doc
+- **spec-interview** — Capture PRD-quality requirements via structured Q&A
+- **spec-plan** — Turn a requirement into an EPIC with vertical-slice TASKs
+- **spec-new** — Create a single TASK or REQ file from a template
+- **spec-work** — Implement the next ready task with approval at each step
+- **spec-status** — Report spec progress; quality audit for orphans and cycles
+- **spec-done** — Mark a task complete with evidence and quality gates
 - **watch-team** — Monitor a team in tmux, auto-approve prompts, and report status
 
 ## Language Tooling
