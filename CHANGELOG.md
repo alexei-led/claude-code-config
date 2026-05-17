@@ -13,8 +13,9 @@ major = breaking config/hook changes, minor = new skills/features, patch = fixes
 - **Agent consolidation (39 → 3)**: collapsed 39 language/domain-specific
   agents into 3 role agents with disjoint enforced capability envelopes —
   `engineer` (Read/Edit/Write/Bash, the sole mutator), `reviewer`
-  (Read/Grep/Glob/LS only, provably non-mutating), `advisor` (unchanged,
-  Pi-only). Domain procedure and output contracts moved into role-agnostic
+  (Read/Grep/Glob/LS only, provably non-mutating), `advisor` (unchanged;
+  ships to Codex, Gemini, and Pi — Claude excluded, it has a built-in
+  advisor). Domain procedure and output contracts moved into role-agnostic
   skills; per-language content moved into `references/<lang>.md` inside each
   skill. Routing ambiguity across ~24 indistinct agent keys structurally
   eliminated. See `docs/agent-audit-2026-05-16.md` and the executed plan in
