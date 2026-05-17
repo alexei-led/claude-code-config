@@ -11,6 +11,7 @@
 - [Concurrency](#concurrency)
 - [Configuration](#configuration)
 - [Comments](#comments)
+- [Idioms Checklist](#idioms-checklist)
 - [Style Summary](#style-summary)
 
 ## Project Structure
@@ -437,6 +438,83 @@ func GetUser(id string) (*User, error)
 // Batch size tuned for Postgres query planner; larger batches cause seq scans.
 const batchSize = 100
 ```
+
+## Idioms Checklist
+
+Idiom-specific rules to apply when writing or critiquing Go (control flow, naming, interface design, and stdlib usage covered above; this section adds the slices not detailed elsewhere).
+
+### Naming Idioms
+
+- **No Java-style names**: `userService`, `configurationManager` → `svc`, `cfg`
+- **No verbose locals**: `userIndex`, `errorResult` → `i`, `err`
+- **No redundant type in name**: `userMap`, `orderSlice` → `users`, `orders`
+- **Receiver names**: 1-2 letters (`s`, `h`, `cfg`), never `self` or `this`
+- **Scope-sized**: local/tight scope 1-3 chars (`i`, `n`, `err`, `ctx`); package-level short words (`users`, `cache`); exported clear and concise (`NewClient`, `ParseConfig`)
+
+### External Service Wrappers (Thin Adapter Pattern)
+
+External dependencies (DB, APIs, filesystem, queues) get a thin wrapper struct that encapsulates vendor types and exposes domain-focused methods with domain types. This is idiomatic Go, NOT over-abstraction: the wrapper is concrete (no interface at producer), and each consumer defines the minimal interface it needs.
+
+```go
+// internal/sqs/wrapper.go - thin wrapper hides AWS types
+type Wrapper struct {
+    client   *sqs.Client
+    queueURL string
+}
+
+func (w *Wrapper) Send(ctx context.Context, body string) (string, error) {
+    out, err := w.client.SendMessage(ctx, &sqs.SendMessageInput{
+        QueueUrl:    &w.queueURL,
+        MessageBody: &body,
+    })
+    if err != nil {
+        return "", fmt.Errorf("send message: %w", err)
+    }
+    return *out.MessageId, nil
+}
+
+func (w *Wrapper) Receive(ctx context.Context) ([]Message, error) { ... }
+func (w *Wrapper) Delete(ctx context.Context, receiptHandle string) error { ... }
+
+// Consumer 1 only needs Send
+package notifier
+type queue interface { Send(ctx context.Context, body string) (string, error) }
+
+// Consumer 2 needs Receive and Delete
+package worker
+type queue interface {
+    Receive(ctx context.Context) ([]Message, error)
+    Delete(ctx context.Context, receiptHandle string) error
+}
+```
+
+Same wrapper satisfies multiple consumer interfaces (Go's implicit interfaces); easy to mock 1-2 methods, not the entire client.
+
+### One-Line Functions (Avoid)
+
+- **Trivial wrappers**: single-line functions that just call another → inline unless implementing an interface or adding value (e.g., a `ctx` parameter)
+- **Getters for public fields**: `func (u *User) Name() string { return u.name }` → make the field public
+
+```go
+// BAD: pointless wrapper
+func (s *Service) GetUser(id string) (*User, error) {
+    return s.repo.Get(id)
+}
+
+// GOOD: only if it adds value or satisfies an interface
+func (s *Service) GetUser(ctx context.Context, id string) (*User, error) {
+    return s.repo.Get(ctx, id)  // adds ctx, satisfies interface
+}
+```
+
+### Stdlib-First
+
+- **Prefer stdlib over third-party**: `slog` > logrus, `errors` > pkg/errors
+- **Modern stdlib idioms**: `wg.Go()` over manual Add/Done; `net.JoinHostPort()` over `fmt.Sprintf`; `for i := range n` over C-style loops
+- **testing/synctest**: for deterministic concurrent test synchronization
+- **Ignored errors**: `_` discards an error → handle it or comment why ignored
+- **Sentinel errors**: define at package level, not inline `errors.New()`
+- **panic**: only for programmer errors, never control flow
 
 ## Style Summary
 

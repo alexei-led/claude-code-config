@@ -11,6 +11,7 @@
 - [Dependency Injection](#dependency-injection)
 - [Async Patterns](#async-patterns)
 - [Validation (Zod)](#validation-zod)
+- [Idioms Checklist](#idioms-checklist)
 - [Style Summary](#style-summary)
 
 ## Project Structure
@@ -348,6 +349,76 @@ function parseUser(data: unknown): User {
   return UserSchema.parse(data);
 }
 ```
+
+## Idioms Checklist
+
+Idiom-specific rules to apply when writing or critiquing TypeScript (discriminated unions, control flow, `unknown`, Result type, and DI covered above; this section adds the strict-config and modern-pattern slices).
+
+### Strict Mode (Enforce All)
+
+```jsonc
+{
+  "compilerOptions": {
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noImplicitReturns": true,
+    "exactOptionalPropertyTypes": true,
+    "useUnknownInCatchVariables": true,
+    "noFallthroughCasesInSwitch": true,
+  },
+}
+```
+
+### `satisfies` and `as const`
+
+`satisfies` validates type conformance while preserving narrow inference; a plain type annotation widens.
+
+```typescript
+const routes = {
+  home: { path: "/" },
+  user: { path: "/user/:id", requiresAuth: true },
+} satisfies Routes;
+// routes.home.path inferred as "/" (literal), not string
+
+const ROLES = ["admin", "user", "guest"] as const;
+type Role = (typeof ROLES)[number]; // "admin" | "user" | "guest"
+```
+
+### Composition Over Inheritance
+
+```typescript
+// GOOD: composition with intersection types
+type HasId = { id: string };
+type HasTimestamps = { createdAt: Date; updatedAt: Date };
+type User = HasId & HasTimestamps & { name: string; email: string };
+
+// BAD: deep inheritance chain
+class Entity {}
+class Timestamped extends Entity {}
+class User extends Timestamped {}
+```
+
+### Nullish Coalescing (`??`) vs Logical OR (`||`)
+
+- **`??`**: only null/undefined — preserves `0`, `""`, `false`
+- **`||`**: coerces all falsy values (`config.retries || 3` turns a valid `0` into `3`)
+
+```typescript
+const retries = config.retries ?? 3; // 0 stays 0
+const name = user?.profile?.name ?? "Anonymous";
+```
+
+### Anti-Patterns to Flag
+
+- **`any`**: use `unknown` for untrusted input; `any` inside a type-guard narrowing check is acceptable
+- **Type assertions**: `as` casts bypass checking; `value as unknown as Target` is a code smell — prefer type guards
+- **Non-null assertion**: `user!.name` hides bugs — add a guard or optional chaining
+- **Enums in app code**: use `as const` objects + literal unions
+- **Deep intersection chains**: `A & B & C & D` breaks error messages
+- **God interfaces**: 20+ fields → break into composable pieces
+- **Mixed null/undefined**: pick one for "missing" and stay consistent
 
 ## Style Summary
 

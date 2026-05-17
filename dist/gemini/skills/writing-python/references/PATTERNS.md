@@ -14,6 +14,7 @@
 - [Configuration](#configuration)
 - [Context Managers](#context-managers)
 - [File Operations](#file-operations)
+- [Idioms Checklist](#idioms-checklist)
 - [Style Summary](#style-summary)
 
 ## Project Structure
@@ -392,6 +393,34 @@ def process_files(directory: Path) -> list[Path]:
 def read_config(path: Path) -> dict:
     return json.loads(path.read_text())
 ```
+
+## Idioms Checklist
+
+Idiom-specific rules to apply when writing or critiquing Python (interfaces, dataclasses, control flow, type hints, and errors covered above; this section adds the version-specific and Pythonic-pattern slices).
+
+### Python 3.14 Specifics
+
+- **Deferred annotations (default)**: remove `from __future__ import annotations`; forward references work without string quotes (`def get(self) -> User:`, not `-> "User"`); use `annotationlib` for runtime type introspection
+- **PEP 758 except**: `except ValueError | TypeError:` (no parentheses needed)
+- **Union syntax**: `X | None` over `Optional[X]`; `list[str]` over `List[str]` (no `typing` import)
+- **Stdlib additions**: `Path.copy()` / `Path.move()` instead of `shutil`; `compression.zstd` for new compression needs
+
+### Pythonic Patterns
+
+- **Context managers**: `with` for files, locks, connections — never manual open/close
+- **pathlib**: `pathlib.Path` over `os.path`
+- **enumerate**: `enumerate(items)` over `range(len(items))`
+- **dataclasses**: `@dataclass` over manual `__init__`
+- **f-strings**: over `.format()` or `%`
+- **Comprehensions**: list/dict comprehensions over loop-and-append
+
+### Anti-Patterns to Flag
+
+- **Bare except**: `except:` catches `KeyboardInterrupt`/`SystemExit` — catch specific types
+- **type() comparison**: `type(x) == str` → `isinstance(x, str)`
+- **Membership-then-index**: `if key in d: d[key]` → `d.get(key)`
+- **Boolean comparison**: `if x == True:` → `if x:`
+- **ABC for structural typing**: use `Protocol` at the consumer; reserve ABC for runtime `isinstance()` enforcement
 
 ## Style Summary
 

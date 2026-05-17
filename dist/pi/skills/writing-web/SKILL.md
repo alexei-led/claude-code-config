@@ -107,6 +107,10 @@ document.body.addEventListener("click", (e) => {
 - Deep selector nesting
 - Wrapper div soup
 
+## References
+
+- [PATTERNS.md](references/PATTERNS.md) - Semantic HTML, modern CSS, and minimal-JS idioms
+
 ## Verify Generated Code
 
 After generating code, validate HTML and check behavior:
