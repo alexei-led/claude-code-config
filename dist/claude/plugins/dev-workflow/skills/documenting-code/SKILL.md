@@ -19,8 +19,8 @@ allowed-tools:
 context: fork
 description: Update project documentation based on code changes. Use when the user
   asks to update docs, document behavior, add README content, or align docs with recent
-  implementation changes. NOT for extracting session learnings (use learning-patterns)
-  or code-quality feedback (use reviewing-code).
+  implementation changes. NOT for extracting session learnings or authoring ADRs (use
+  learning-patterns) or code-quality feedback (use reviewing-code).
 name: documenting-code
 user-invocable: true
 ---

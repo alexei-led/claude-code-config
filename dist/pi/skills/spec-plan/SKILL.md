@@ -1,8 +1,10 @@
 ---
-description: Turn a requirement or idea into an EPIC with vertical-slice TASKs. Use
-  when you have a REQ file or feature idea and need an executable plan with dependencies
-  and acceptance criteria. NOT for capturing requirements — use spec-interview. NOT
-  for implementing tasks — use spec-work.
+description: Turn a requirement or a concrete feature idea into an EPIC with vertical-slice
+  TASKs. Use when you have a REQ file, or a feature idea already specific enough for
+  a quick 3–5 question pass, and need an executable plan with dependencies and acceptance
+  criteria. NOT for open-ended idea exploration — use brainstorming-ideas. NOT for
+  capturing PRD-quality requirements — use spec-interview. NOT for implementing tasks
+  — use spec-work.
 name: spec-plan
 ---
 
@@ -23,7 +25,10 @@ The user's input is one of:
 
 - `REQ-id` — read requirement, create epic + tasks
 - `EPIC-id` — refine existing epic
-- `"<idea text>"` — ask 3–5 quick questions, then plan (for deep requirements, use the `spec-interview` skill instead)
+- `"<idea text>"` — only when the idea is already concrete: ask 3–5 quick
+  questions, then plan. For open-ended or unvalidated ideas, use the
+  `brainstorming-ideas` skill first; for deep PRD-quality requirements, use the
+  `spec-interview` skill instead.
 
 If empty, ask: "What should I plan? Give me a REQ id or describe the feature."
 

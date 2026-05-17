@@ -13,6 +13,8 @@ Query cross-session history via claude-mem.
 
 Searches observations stored by claude-mem in the current project only. Does not access git history, file contents, or observations from other projects.
 
+See also `learning-patterns` for encoding new observations.
+
 ## If claude-mem Tools Are Not Available
 
 Tell the user that cross-session memory requires the claude-mem plugin (`/plugin install claude-mem@thedotmack`). Suggest alternatives: check `git log` for recent changes, read CLAUDE.md files for project context, or use `git blame` for file history.

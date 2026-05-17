@@ -16,7 +16,7 @@ description: Review Claude Code configuration for context efficiency, signal den
   "review cc config", "context review", "config review", "review my setup", "review
   skills", "review agents", "review hooks", or wants feedback on their Claude Code
   configuration quality. NOT for editing config files — review only; user applies
-  fixes unless --fix is passed.
+  fixes unless --fix is passed. NOT for applying config changes (use `evolving-config`).
 model: opus
 name: reviewing-cc-config
 user-invocable: true
@@ -151,6 +151,7 @@ Keep under 1500 tokens.
 
 Rules: SD-DESCRIPTION, CB-FORK, SD-TOOL-MINIMAL, AR-VERIFY, AR-MODEL-MATCH, AP-TRIGGER-OVERLAP, AP-OVER-SPECIFIED (>200 lines), CB-PROGRESSIVE.
 Output per skill: `### name (model, invocable, lines)` + rule/verdict/notes list + trigger overlap (conflicts only).
+Do not score instruction prose quality — defer to `reviewing-instructions`.
 Keep under 2000 tokens.
 
 ### Agent 3: Agents & Commands Reviewer
