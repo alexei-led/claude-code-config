@@ -1,7 +1,8 @@
 ---
 description: Current library documentation via the ctx7 CLI. Use when the user mentions
-  "ctx7" or "context7", asks for API docs, syntax, code examples, versioned library
-  behavior, or needs docs lookup without provider-specific tools.
+  "ctx7" or "context7", says "look up docs", "how to use", "API for", "syntax for",
+  "examples of", "show me the docs", or asks for API docs, code examples, versioned
+  library behavior, or docs lookup without provider-specific tools.
 name: context7-cli
 ---
 

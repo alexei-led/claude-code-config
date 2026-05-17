@@ -35,7 +35,7 @@ Three role agents. A role is a capability envelope plus a reasoning stance no sk
 
 Envelope enforcement is per-target: Claude grants a hard `tools:` allowlist; Codex blocks writes via `sandbox_mode: read-only`; Gemini and Pi have no tool-allowlist primitive, so the envelope there is a system-prompt directive. Descriptions state each role behaviorally so the claim stays true on every target, and omit "use proactively" deliberately — roles are picked by the orchestrator to compose with a skill, not auto-delegated.
 
-- **engineer** — read + write + execute. The only mutator: applies changes and runs the build/test/lint verification on what it changed. Fork target for `writing-{go,python,typescript,web}` and `managing-infra`. Claude preloads `looking-up-docs` + `smart-explore`; `mem-history` and `sequential-thinking` stay Skill-discoverable to keep spawn context lean.
+- **engineer** — read + write + execute. The only mutator: applies changes and runs the build/test/lint verification on what it changed. Fork target for `writing-{go,python,typescript,web}` and `managing-infra`. Claude preloads `context7-cli` + `smart-explore`; `mem-history` and `sequential-thinking` stay Skill-discoverable to keep spawn context lean.
 - **reviewer** — Read + Grep + Glob + LS. Adversarial evaluator (assume bugs exist); emits structured findings/proposals, applies nothing. Non-mutating: tool-enforced on Claude, write-blocked on Codex, directive on Gemini/Pi. Absorbs the review family, code search, and planning (via `spec` / `planning:make`).
 - **advisor** — strategic escalation: verdict, ranked risks, next actions. Ships to Codex, Gemini, and Pi; excluded from Claude, which has a built-in advisor. Codex enforces read-only via sandbox; Pi uses xhigh thinking with read-only Bash and transcript-forwarding invocation; elsewhere it is spawned as a normal custom agent.
 
@@ -73,7 +73,6 @@ Envelope enforcement is per-target: Claude grants a hard `tools:` allowlist; Cod
 - **exploring-repos** — Explore public GitHub repositories via DeepWiki AI-generated documentation
 - **grill-me** — Interview the user relentlessly about a plan or design until reaching shared understanding
 - **learning-patterns** — Extract learnings and generate project-specific customizations
-- **looking-up-docs** — Compatibility router for library documentation lookup
 - **mem-history** — Query project history, past decisions, and known gotchas from claude-mem observations
 - **researching-web** — Web research via Perplexity AI
 - **sequential-thinking** — Structured stepwise reasoning with explicit revisions and branches
