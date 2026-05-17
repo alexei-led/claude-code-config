@@ -35,7 +35,7 @@ Three role agents. A role is a capability envelope plus a reasoning stance no sk
 
 Envelope enforcement is per-target: Claude and Gemini grant a hard `tools:` allowlist (Gemini via the subagent frontmatter `tools:` field); Codex blocks writes via `sandbox_mode: read-only`; Pi has no tool-allowlist primitive, so the envelope there is a system-prompt directive. Gemini frontmatter has no read-only sandbox primitive, so `advisor` is granted `run_shell_command` and constrained to read-only by its body directive — the same tradeoff as Pi. Descriptions state each role behaviorally so the claim stays true on every target, and omit "use proactively" deliberately — roles are picked by the orchestrator to compose with a skill, not auto-delegated.
 
-- **engineer** — read + write + execute. The only mutator: applies changes and runs the build/test/lint verification on what it changed. Fork target for `writing-{go,python,typescript,web}` and `managing-infra`. Claude preloads `context7-cli` + `smart-explore`; `mem-history` and `sequential-thinking` stay Skill-discoverable to keep spawn context lean.
+- **engineer** — read + write + execute. The only mutator: applies changes and runs the build/test/lint verification on what it changed. Fork target for `writing-{go,python,typescript,web}` and `managing-infra`. Claude preloads `looking-up-docs` + `smart-explore`; `mem-history` and `sequential-thinking` stay Skill-discoverable to keep spawn context lean.
 - **reviewer** — Read + Grep + Glob + LS. Adversarial evaluator (assume bugs exist); emits structured findings/proposals, applies nothing. Non-mutating: tool-enforced on Claude and Gemini, write-blocked on Codex, directive on Pi. Absorbs the review family, code search, and planning (via `spec` / `planning:make`).
 - **advisor** — strategic escalation: verdict, ranked risks, next actions. Ships to Codex, Gemini, and Pi; excluded from Claude, which has a built-in advisor. Codex enforces read-only via sandbox; Pi uses xhigh thinking with read-only Bash and transcript-forwarding invocation; Gemini grants a read-only `tools:` allowlist plus `run_shell_command` held read-only by the body directive.
 
@@ -68,10 +68,11 @@ Envelope enforcement is per-target: Claude and Gemini grant a hard `tools:` allo
 ## Developer Tools
 
 - **brainstorming-ideas** — Brainstorm ideas and stress-test draft plans before coding
-- **context7-cli** — Current library documentation via the ctx7 CLI
+- **context7-cli** — ctx7 (Context7) CLI mechanics; Tier 1 of looking-up-docs
 - **evolving-config** — Audit Claude Code configuration against latest features and best practices
 - **exploring-repos** — Explore public GitHub repositories via DeepWiki AI-generated documentation
 - **learning-patterns** — Extract learnings and generate project-specific customizations
+- **looking-up-docs** — Find current docs via a fallback chain: ctx7 → Perplexity → platform web tools
 - **mem-history** — Query project history, past decisions, and known gotchas from claude-mem observations
 - **researching-web** — Web research via Perplexity AI
 - **sequential-thinking** — Structured stepwise reasoning with explicit revisions and branches

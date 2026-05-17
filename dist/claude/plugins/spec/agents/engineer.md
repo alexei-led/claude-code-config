@@ -7,7 +7,7 @@ description: Sole mutator role — applies and verifies code, test, doc, and inf
 model: sonnet
 name: engineer
 skills:
-- context7-cli
+- looking-up-docs
 - smart-explore
 tools:
 - Read

@@ -8,9 +8,9 @@
 [![Codex CLI](https://img.shields.io/badge/Codex_CLI-skill_export-10A37F)](https://developers.openai.com/codex/plugins)
 [![Gemini CLI](https://img.shields.io/badge/Gemini_CLI-skill_export-4285F4)](https://geminicli.com/docs/extensions)
 [![Plugins](https://img.shields.io/badge/plugins-9-green)](src/plugins/)
-[![Skills](https://img.shields.io/badge/skills-42-green)](src/plugins/)
+[![Skills](https://img.shields.io/badge/skills-43-green)](src/plugins/)
 
-A multi-agent skill suite for **Claude Code**, **Codex CLI**, **Gemini CLI**, and **Pi** — 42 skills, 3 agents, and 9 hooks. One source of truth in `src/`, compiled to platform-optimized output for each tool. Supports [AGENTS.md](https://agents.md)-compatible tools too. Built over 6+ months of daily use and continuous refinement.
+A multi-agent skill suite for **Claude Code**, **Codex CLI**, **Gemini CLI**, and **Pi** — 43 skills, 3 agents, and 9 hooks. One source of truth in `src/`, compiled to platform-optimized output for each tool. Supports [AGENTS.md](https://agents.md)-compatible tools too. Built over 6+ months of daily use and continuous refinement.
 
 ## Why This Exists
 
@@ -229,7 +229,7 @@ Agent({
 | `notify.ts`            | macOS notification via `terminal-notifier` on completion (requires Homebrew `terminal-notifier`) |
 
 **Pi gets**: all 3 agents — `engineer`, `reviewer`, `advisor` (requires
-`@tintinweb/pi-subagents`) — all 42 skills, and 8 bundled extensions. Each
+`@tintinweb/pi-subagents`) — all 43 skills, and 8 bundled extensions. Each
 agent has a Pi-specific frontmatter overlay tuned for OpenAI Codex models
 (`openai-codex/gpt-5.5`), thinking levels, tool restrictions, and turn limits.
 `advisor` ships to Codex, Gemini, and Pi; Claude is excluded because it has a
@@ -304,7 +304,7 @@ All agents and several skills optionally integrate with [claude-mem](https://git
 | [**spec**](src/plugins/spec/plugin.yaml)                     | 7      | 2      | Spec-driven development: requirements, tasks, and planning workflows               |
 | [**testing-e2e**](src/plugins/testing-e2e/plugin.yaml)       | 2      | 1      | E2E testing with Playwright: browser automation and test generation                |
 
-**Totals**: 42 skills, 2 plugin-owned role agents (`engineer`, `reviewer`), 9 hooks
+**Totals**: 43 skills, 2 plugin-owned role agents (`engineer`, `reviewer`), 9 hooks
 
 ## Skills
 

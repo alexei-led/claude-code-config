@@ -50,22 +50,25 @@ if echo "$PROMPT_LOWER" | grep -qE '\bgcloud\b|\bgsutil\b|\bbq\s|\baws\s|bigquer
 	skills+="using-cloud-cli "
 fi
 
-# context7-cli: Library documentation via the ctx7 CLI (absorbed looking-up-docs)
-# Triggers: explicit "ctx7" / "context7" / library-id queries, plus natural-language
-# doc-seeking language and API reference needs. NOT for comparisons/best-practices
-# (use researching-web).
+# context7-cli: ctx7 (Context7) CLI mechanics — Tier 1 of looking-up-docs
+# Triggers: literal "ctx7" / "context7" / a /org/project library-id query.
 if echo "$PROMPT_LOWER" | grep -qE '\bctx7\b|\bcontext7\b|context7[[:space:]-]cli|/[a-z0-9-]+/[a-z0-9-]+\s+(library|docs|version)'; then
 	skills+="context7-cli "
-elif echo "$PROMPT_LOWER" | grep -qE '\bdocs\b|\bdocumentation\b|api\s*(reference|docs)|look\s*up.*(docs|api|syntax|usage|reference|examples)|find.*(docs|documentation|reference)|check.*(docs|documentation)|man\s*page|reference.*(guide|manual)|official.*(docs|documentation)|library.*docs|version.*specific|syntax\s*for|examples\s*of|how\s*to\s*use\s*\w+'; then
+fi
+
+# looking-up-docs: docs-lookup fallback flow (ctx7 → Perplexity → built-in web)
+# Triggers: natural-language doc-seeking, API reference, or latest-behavior needs.
+# NOT for comparisons/best-practices (use researching-web).
+if echo "$PROMPT_LOWER" | grep -qE '\bdocs\b|\bdocumentation\b|api\s*(reference|docs)|look\s*up.*(docs|api|syntax|usage|reference|examples)|find.*(docs|documentation|reference)|check.*(docs|documentation)|man\s*page|reference.*(guide|manual)|official.*(docs|documentation)|library.*docs|version.*specific|syntax\s*for|examples\s*of|how\s*to\s*use\s*\w+'; then
 	# Exclude comparison/research patterns — those go to researching-web
 	if ! echo "$PROMPT_LOWER" | grep -qE '\bvs\b|\bcompare\b|\bbest\s*practice\b|\bpros\s*(and|&)\s*cons\b|\bwhich.*(better|should)\b'; then
-		skills+="context7-cli "
+		skills+="looking-up-docs "
 	fi
 fi
 
 # researching-web: Web research via Perplexity AI (comparisons, best practices, standards)
 # Triggers: Research language, comparisons, best practices, industry standards
-# NOT for API references or library docs (use context7-cli)
+# NOT for API references or library docs (use looking-up-docs)
 if echo "$PROMPT_LOWER" | grep -qE '\bresearch\b|search.*(web|online)|look\s*up.*online|find\s*out.*(about|if|whether)|compare.*(tool|lib|framework|approach|option|technolog)|(\w+)\s+vs\s+(\w+)|pros\s*(and|&)\s*cons|trade[[:space:]-]?off|which.*(better|should|recommend)|latest.*(version|release|update)|current.*(version|best)|what.?s\s*new\s*in|best\s*practice|up[[:space:]-]?to[[:space:]-]?date|2024|2025|2026|industry\s*standard|owasp|recommended\s*(practice|approach|pattern)|perplexity'; then
 	skills+="researching-web "
 fi
@@ -78,7 +81,7 @@ fi
 
 # searching-code: Intelligent codebase search + zoom-out mapping via WarpGrep
 # Triggers: Understanding code flow, tracing, cross-file exploration, zoom-out requests, large repos
-# "how does X work" only for THIS codebase — external libs go to context7-cli/exploring-repos
+# "how does X work" only for THIS codebase — external libs go to looking-up-docs/exploring-repos
 if echo "$PROMPT_LOWER" | grep -qE 'how\s*does.*(this|our|the\s*(code|project|repo|module|function|class|method)).*work|trace.*(flow|data|request|call)|understand.*(codebase|code|flow|architecture)|find\s*all.*(implementation|usage|call|reference)|cross[[:space:]-]?file|multi[[:space:]-]?hop|where.*implemented|explore.*(codebase|code)|large\s*repo|warpgrep|intelligent\s*search|reason.*about.*code|zoom\s*out|go\s*up\s*a\s*layer|map\s*(this|the)?\s*(area|module|code|flow)|caller\s*map|module\s*map'; then
 	skills+="searching-code "
 fi

@@ -35,7 +35,7 @@ Mixed languages: load each matching reference. Unknown language: use the generic
 1. Identify changed files with `git diff --name-only` unless the user supplied
    paths.
 2. Read the relevant implementation, tests, and existing docs.
-3. Use `context7-cli` only when external API behavior or syntax is uncertain.
+3. Use `looking-up-docs` only when external API behavior or syntax is uncertain.
 4. For large doc audits, launch one bounded `Agent` (read-only Explore) to map
    changed behavior. Verify its claims before editing.
 5. Update the smallest set of docs that users or maintainers need.

@@ -1,36 +1,34 @@
 ---
 description:
-  Current library documentation via the ctx7 CLI. Use when the user mentions
-  "ctx7" or "context7", says "look up docs", "how to use", "API for", "syntax
-  for", "examples of", "show me the docs", or asks for API docs, code examples,
-  versioned library behavior, or docs lookup without provider-specific tools.
+  How to drive the ctx7 (Context7) CLI for library documentation. Use when the
+  user mentions "ctx7" or "context7", passes a `/org/project` library ID, or
+  another skill needs the exact ctx7 command workflow. NOT the docs-lookup
+  decision flow or web fallback — that is looking-up-docs.
 name: context7-cli
 ---
 
-# Context7 CLI Documentation Lookup
+# Context7 CLI Mechanics
 
-Use `ctx7` for narrow library/framework/API documentation. This skill is the
-portable docs lookup path for Claude, Codex, Gemini, Pi, and AGENTS.md-style
-agents.
+Reference for driving the `ctx7` CLI: resolve a library name to an ID, then
+query docs with that ID. This skill is tool mechanics only. The docs-lookup
+decision flow and tool fallback chain live in `looking-up-docs`; this skill is
+Tier 1 of that chain.
 
 ## Scope
 
 Use this skill for:
 
-- API signatures, options, config keys, and syntax.
-- Library or framework examples grounded in current docs.
-- Version-specific behavior when the requested version is known.
-- Checking docs before writing code when training data may be stale.
+- The exact `ctx7 library` / `ctx7 docs` command workflow and selection rules.
+- Library-ID resolution and version-specific docs queries.
+- The `npx` / `bunx` fallback when `ctx7` is not installed.
 
-Do not use this skill as the primary workflow for:
+Do not use this skill for:
 
-- Comparisons, recommendations, market research, or broad best-practice surveys.
-- Debugging private production payloads.
-- Queries that would require sending secrets, credentials, personal data, or
-  proprietary code outside the project.
-
-Route broad research to the repo's web research skill. Use docs lookup later for
-chosen-library syntax.
+- Deciding when to fall back from Context7 to web search — that is
+  `looking-up-docs`.
+- Comparisons, recommendations, or broad research — that is `researching-web`.
+- Queries that would send secrets, credentials, personal data, or proprietary
+  code outside the project.
 
 ## Required Workflow
 
@@ -70,9 +68,9 @@ satisfy this skill.
    bunx ctx7@latest docs /org/project "<specific query>"
    ```
 
-9. If Context7 has no useful match, use available web tools such as
-   `web_search` or `web_answer` for official docs, release notes, or focused
-   factual fallback. Say that a fallback was used.
+9. If Context7 has no useful match after one rephrase and one alternate
+   library name, report that Context7 was exhausted. Escalation to web tools
+   is owned by `looking-up-docs` (Tier 2 onward), not this skill.
 
 ## Hard Limits
 
@@ -82,20 +80,23 @@ satisfy this skill.
 - Do not call `ctx7 library` more than 3 times for one user question.
 - Do not call `ctx7 docs` more than 3 times for one user question.
 - Prefer `ctx7 docs --json` when structured output will reduce ambiguity.
-- If docs remain insufficient after the limit, report the gap and use the best
-  available fallback.
+- If docs remain insufficient after the limit, report the gap and hand back to
+  `looking-up-docs` for the next tier.
 
 ## Response Contract
 
-For docs lookup results, return:
+For ctx7 results, return:
 
 1. Library/version identified, or say version is unknown.
 2. Library ID selected and why.
 3. Concise syntax or example guidance grounded in docs.
-4. Fallback source used, if any.
-5. Boundary note when the user is asking for comparison or broad research.
+4. Whether the `npx`/`bunx` fallback was used.
+5. Whether Context7 was exhausted (hand-off to `looking-up-docs`).
 
 ## Failure Cases
 
-- `ctx7 library` returns no match: try a shorter or alternate name; if still no match, fall back to `web_search` for the library's official docs URL and fetch from there.
-- Docs returned are clearly outdated (version mismatch): note the discrepancy, state the version found vs the version needed, and use `web_search` for the specific version's release notes as fallback.
+- `ctx7 library` returns no match: try a shorter or alternate name once; if
+  still no match, report Context7 exhausted and hand back to `looking-up-docs`.
+- Docs returned are clearly outdated (version mismatch): note the discrepancy,
+  state the version found vs the version needed, and hand back to
+  `looking-up-docs` for the next tier.

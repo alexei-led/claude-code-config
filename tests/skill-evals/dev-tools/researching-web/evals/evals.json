@@ -19,10 +19,10 @@
       "id": "boundary-api-syntax-docs",
       "name": "boundary api syntax docs",
       "prompt": "A user asks: show me the exact syntax for React useEffect cleanup. Describe how this research skill should respond.",
-      "expected_output": "The response identifies this as library/API docs lookup, routes to context7-cli, and avoids broad research unless current external facts are needed.",
+      "expected_output": "The response identifies this as library/API docs lookup, routes to looking-up-docs, and avoids broad research unless current external facts are needed.",
       "assertions": [
         "The output says this is an API syntax/docs lookup rather than broad web research.",
-        "The output routes to context7-cli or documentation lookup.",
+        "The output routes to looking-up-docs or documentation lookup.",
         "The output avoids doing a broad comparison/research workflow for a narrow syntax question.",
         "The output may mention official docs as the preferred source."
       ]
