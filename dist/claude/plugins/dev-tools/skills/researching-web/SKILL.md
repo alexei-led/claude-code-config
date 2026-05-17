@@ -7,10 +7,11 @@ allowed-tools:
 - WebFetch
 - mcp__perplexity-ask__perplexity_ask
 context: fork
-description: Web research via Pi web providers. Use for technical comparisons, recent
-  facts, best practices, standards, pros and cons, or questions needing grounded web
-  evidence. NOT for API syntax lookup or code examples — use looking-up-docs for those.
-  NOT for repo-specific questions — search local files first.
+description: Web research via Perplexity and platform web tools. Use for technical
+  comparisons, recent facts, ecosystem news, best practices, standards, or questions
+  needing grounded web evidence. NOT for API syntax lookup or code examples — use
+  looking-up-docs for those. NOT for repo-specific questions — search local files
+  first.
 name: researching-web
 ---
 

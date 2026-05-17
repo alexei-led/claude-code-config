@@ -317,7 +317,7 @@ Invoke as `/skill-name` or let the skill enforcer suggest them.
 | Skill                           | What It Does                                                          | Example Trigger                          |
 | ------------------------------- | --------------------------------------------------------------------- | ---------------------------------------- |
 | `brainstorming-ideas`           | Brainstorm ideas and stress-test draft plans                          | "brainstorm", "design feature"           |
-| `improve-codebase-architecture` | Find deepening opportunities, module/seam vocab                       | "improve architecture", "deepen modules" |
+| `improving-codebase-architecture` | Find deepening opportunities, module/seam vocab                     | "improve architecture", "deepen modules" |
 | `committing-code`               | Smart git commits with logical grouping                               | "commit", "save changes"                 |
 | `debating-ideas`                | Dialectic agents stress-test design decisions                         | "debate", "pros and cons"                |
 | `deploying-infra`               | Validate + deploy K8s/Terraform/Helm                                  | "deploy to staging", "rollout"           |

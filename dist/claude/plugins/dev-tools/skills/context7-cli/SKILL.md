@@ -6,10 +6,10 @@ allowed-tools:
 - Bash(ctx7 *)
 - Bash(npx ctx7@latest *)
 - Bash(bunx ctx7@latest *)
-description: How to drive the ctx7 (Context7) CLI for library documentation. Use when
-  the user mentions "ctx7" or "context7", passes a `/org/project` library ID, or another
-  skill needs the exact ctx7 command workflow. NOT the docs-lookup decision flow or
-  web fallback — that is looking-up-docs.
+description: ctx7 (Context7) CLI mechanics for querying versioned library documentation.
+  Use when the user mentions "ctx7" or "context7", passes a `/org/project` library
+  ID, or another skill needs the exact ctx7 command workflow. NOT the docs-lookup
+  decision flow or web fallback — that is looking-up-docs.
 name: context7-cli
 ---
 

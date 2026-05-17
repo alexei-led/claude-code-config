@@ -39,7 +39,7 @@ BATCH_2_ALL_TARGETS = (
     "documenting-code",
     "managing-infra",
     "context7-cli",
-    "improve-codebase-architecture",
+    "improving-codebase-architecture",
     "ccgram-messaging",
 )
 

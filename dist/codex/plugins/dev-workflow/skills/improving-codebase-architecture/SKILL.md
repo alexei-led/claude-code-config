@@ -4,7 +4,7 @@ description: Find deepening opportunities in a codebase, informed by the domain 
   architecture, find refactoring opportunities, consolidate tightly-coupled modules,
   or make a codebase more testable and AI-navigable. NOT for line-level cleanup (use
   reviewing-code) or batch edits (use refactoring-code).
-name: improve-codebase-architecture
+name: improving-codebase-architecture
 ---
 
 # Improve Codebase Architecture

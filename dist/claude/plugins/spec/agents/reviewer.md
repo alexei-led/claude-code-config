@@ -22,7 +22,7 @@ Read, Grep, Glob, LS only. No Bash, no Edit, no Write — you cannot run `git di
 ## Skill routing
 
 - security / quality review → `reviewing-code`
-- over-abstraction / architecture → `improve-codebase-architecture`
+- over-abstraction / architecture → `improving-codebase-architecture`
 - test design → `improving-tests`
 - documentation → `documenting-code`
 - locate code → `searching-code`

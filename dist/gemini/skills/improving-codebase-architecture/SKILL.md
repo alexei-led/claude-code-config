@@ -4,13 +4,8 @@ description: Find deepening opportunities in a codebase, informed by the domain 
   architecture, find refactoring opportunities, consolidate tightly-coupled modules,
   or make a codebase more testable and AI-navigable. NOT for line-level cleanup (use
   reviewing-code) or batch edits (use refactoring-code).
-name: improve-codebase-architecture
+name: improving-codebase-architecture
 ---
-
-<!-- Pi platform guidance -->
-<!-- Use Pi tool names exactly: read, bash, edit, write, ask_user_question, structured_output, todo, Agent, get_subagent_result, steer_subagent, web_search, web_answer, web_research. -->
-<!-- Use Agent, get_subagent_result, and steer_subagent for delegated work. -->
-<!-- Use ctx7 or npx ctx7@latest through bash when Context7 documentation lookup is required. -->
 
 # Improve Codebase Architecture
 

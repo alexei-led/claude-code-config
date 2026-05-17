@@ -45,7 +45,7 @@ Envelope enforcement is per-target: Claude and Gemini grant a hard `tools:` allo
 - **committing-code** — Smart git commits with logical grouping
 - **documenting-code** — Update project documentation based on recent changes
 - **fixing-code** — Fix code problems with disciplined diagnosis
-- **improve-codebase-architecture** — Find deepening opportunities informed by domain language in CONTEXT.md and docs/adr/
+- **improving-codebase-architecture** — Find deepening opportunities informed by domain language in CONTEXT.md and docs/adr/
 - **improving-tests** — Improve test design and coverage, including TDD/red-green-refactor guidance
 - **refactoring-code** — Batch refactoring via MorphLLM edit_file
 - **reviewing-code** — Sequential code review for security, quality, tests, and architecture
