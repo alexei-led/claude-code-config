@@ -104,8 +104,8 @@ def _diff_files(golden: Path, actual: Path) -> str | None:
 def _compiled_tools(path: Path) -> object:
     """Return the `tools` value from a compiled agent's frontmatter.
 
-    Pi/Gemini emit a comma string; Claude emits a YAML list. Returned as-is so
-    callers can assert on the native shape.
+    Pi emits a comma string; Claude and Gemini emit a YAML list. Returned
+    as-is so callers can assert on the native shape.
     """
     return frontmatter.loads(path.read_text()).metadata.get("tools")
 
@@ -115,8 +115,9 @@ def test_compile_agent_engineer_all_platforms(ca, tmp_path: Path) -> None:
 
     Claude and Pi carry distinct per-target frontmatter overlays
     (`claude/frontmatter.yaml`, `pi/frontmatter.yaml`) and are golden-locked.
-    Codex/Gemini have no overlay (base AGENT.md only) — asserted to emit
-    exactly one file so a regression that drops them is still caught.
+    Codex has no overlay (base AGENT.md only); Gemini carries a
+    `gemini/frontmatter.yaml` tool-allowlist overlay. Both are asserted to
+    emit exactly one file so a regression that drops them is still caught.
     """
     root = make_agent_staging_root(tmp_path)
     agent_dir = root / "src" / "agents" / "engineer"
@@ -142,9 +143,11 @@ def test_compile_agent_reviewer_envelope_is_read_only(ca, tmp_path: Path) -> Non
     """reviewer's envelope must never include a mutating tool.
 
     Central invariant of the 39->3 consolidation, enforced per target:
-    Claude grants a hard `tools:` allowlist; Codex has no tool-allowlist
-    primitive so writes are blocked via `sandbox_mode: read-only`. Golden-lock
-    Claude/Pi and assert no Bash/Edit/Write leaks into either tools shape.
+    Claude and Gemini grant a hard `tools:` allowlist; Codex has no
+    tool-allowlist primitive so writes are blocked via
+    `sandbox_mode: read-only`; Pi relies on the system-prompt directive.
+    Golden-lock Claude/Pi and assert no mutating tool leaks into the
+    Claude, Pi, or Gemini tools shape.
     """
     root = make_agent_staging_root(tmp_path)
     agent_dir = root / "src" / "agents" / "reviewer"
@@ -172,6 +175,16 @@ def test_compile_agent_reviewer_envelope_is_read_only(ca, tmp_path: Path) -> Non
     forbidden = {"bash", "edit", "write"}
     assert pi_tool_set.isdisjoint(forbidden), (
         f"reviewer pi envelope leaked a mutating tool: {pi_tool_set & forbidden}"
+    )
+
+    gemini_written = ca.compile_agent(agent_dir, "gemini", None, root)
+    assert len(gemini_written) == 1
+    gemini_tools = _compiled_tools(gemini_written[0])
+    assert isinstance(gemini_tools, list), gemini_tools
+    gemini_forbidden = {"run_shell_command", "write_file", "replace"}
+    assert not (set(gemini_tools) & gemini_forbidden), (
+        f"reviewer gemini envelope leaked a mutating tool: "
+        f"{set(gemini_tools) & gemini_forbidden}"
     )
 
     codex_written = ca.compile_agent(
