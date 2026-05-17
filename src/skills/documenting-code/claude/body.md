@@ -26,7 +26,7 @@ Ask one question at a time:
 Use a documentation subagent when available; otherwise inspect and update docs directly.
 
 ```
-Task with docs-keeper agent:
+Task with engineer agent:
 "Update documentation for this project.
 
 ## Your Task

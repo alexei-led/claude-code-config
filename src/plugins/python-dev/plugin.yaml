@@ -4,7 +4,6 @@ description: Python 3.12+ with uv/ruff/pyright toolchain and modern patterns
 skills:
 - writing-python
 agents:
-- python-engineer
 - engineer
 hooks: []
 marketplace_name: python-3-dev

@@ -1,5 +1,0 @@
-tools: read, bash, edit, write, grep, find, ls
-thinking: low
-model: openai-codex/gpt-5.4
-max_turns: 30
-prompt_mode: append

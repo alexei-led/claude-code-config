@@ -21,8 +21,6 @@ skills:
 - using-git-worktrees
 - using-modern-cli
 agents:
-- pdf-parser
-- perplexity-researcher
 - reviewer
 hooks:
 - worktree-create

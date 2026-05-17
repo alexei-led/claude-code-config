@@ -6,7 +6,6 @@ skills:
 - managing-infra
 - using-cloud-cli
 agents:
-- infra-engineer
 - engineer
 hooks: []
 marketplace_name: k8s-terraform-ops

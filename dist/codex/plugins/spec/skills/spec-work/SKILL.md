@@ -107,7 +107,7 @@ If the task needs a product/design decision, credentials, external access, or ma
 
 ### Delegate planning
 
-If the runtime supports subagents, delegate to a planning specialist (named `spec-planner` in this skill suite). Prompt:
+If the runtime supports subagents, delegate to a planning specialist (the `reviewer` role running this skill). Prompt:
 
 ```
 Create an implementation plan.
@@ -163,7 +163,7 @@ Ask multi-choice: "How should we implement this task?"
 
 ### Solo engineer (default)
 
-Detect language from task / epic, then delegate to the matching language engineer (`go-engineer`, `python-engineer`, `typescript-engineer`, `web-engineer`). Prompt:
+Detect language from task / epic, then delegate to the `engineer` role (it self-detects language). Prompt:
 
 ```
 Implement: <task description>
@@ -178,7 +178,7 @@ Apply proposals with user approval (every edit shown).
 Spawn a two-member team:
 
 - Primary: language engineer — writes implementation code.
-- Secondary: language tests reviewer (`go-tests` / `py-tests` / `ts-tests` / `web-tests`) — writes tests in parallel, identifies coverage gaps.
+- Secondary: test specialist (the `reviewer` role with the improving-tests skill) — writes tests in parallel, identifies coverage gaps.
 
 Have them coordinate: engineer proposes implementation, tests reviewer proposes tests, both review each other, converge.
 

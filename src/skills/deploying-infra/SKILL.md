@@ -52,11 +52,11 @@ Stop: "Missing tools: {list}. Install before proceeding." Do not attempt command
 
 ## Step 3: Pre-flight Validation
 
-Spawn the infra-engineer agent for validation:
+Spawn the engineer agent for validation:
 
 ```
 Task(
-  subagent_type="infra-engineer",
+  subagent_type="engineer",
   run_in_background={true if --background else false},
   description="Pre-flight validation",
   prompt="Validate infrastructure before deployment.

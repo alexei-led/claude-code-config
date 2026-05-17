@@ -4,7 +4,6 @@ description: TypeScript with strict typing, React patterns, and modern tooling
 skills:
 - writing-typescript
 agents:
-- typescript-engineer
 - engineer
 hooks: []
 marketplace_name: typescript-react-dev

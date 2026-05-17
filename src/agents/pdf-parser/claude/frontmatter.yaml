@@ -1,9 +1,0 @@
-tools:
-  - Read
-  - Bash
-  - Grep
-  - Glob
-  - LS
-model: sonnet
-color: blue
-skills: []

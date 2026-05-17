@@ -102,11 +102,11 @@ Write a Playwright script to `/tmp/playwright-record-*.js` that:
 
 Translate manual flows into Playwright actions and assertions, but first define deterministic fixtures: seeded users/items/coupons, fixed dates, stable IDs, reset database state, and mocked external services where needed.
 
-### Spawn playwright-tester agent
+### Spawn engineer agent
 
 ```
 Task(
-  subagent_type="playwright-tester",
+  subagent_type="engineer",
   description="Generate E2E test",
   prompt="Generate E2E test for:
   URL: {target URL}
@@ -123,11 +123,11 @@ Task(
 
 ### Verify Feature
 
-### Spawn playwright-tester agent for feature verification
+### Spawn engineer agent for feature verification
 
 ```
 Task(
-  subagent_type="playwright-tester",
+  subagent_type="engineer",
   description="Verify feature",
   prompt="Verify this feature works correctly in the browser:
   Feature: {feature description}

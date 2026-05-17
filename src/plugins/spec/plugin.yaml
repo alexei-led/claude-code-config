@@ -11,6 +11,5 @@ skills:
   - spec-done
   - spec-status
 agents:
-  - spec-planner
   - reviewer
 hooks: []

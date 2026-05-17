@@ -1,8 +1,0 @@
-tools:
-  - mcp__perplexity-ask__perplexity_ask
-  - WebFetch
-  - Read
-  - Grep
-  - Glob
-model: sonnet
-color: cyan

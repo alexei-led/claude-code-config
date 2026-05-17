@@ -96,12 +96,7 @@ Do not write all tests first. Bulk RED creates imagined tests coupled to guessed
 
 ## Phase 4: Review and Improve
 
-Based on language, use the appropriate test agent when available:
-
-- Go → `go-tests`
-- Python → `py-tests`
-- TypeScript → `ts-tests`
-- Web → `web-tests`
+Detect the language from file extensions and load `references/<lang>.md` (go/python/typescript/web; mixed → load several; unknown → generic core). The active role handles it: write-capable (engineer) applies improvements; read-only (reviewer) emits them as a structured proposal.
 
 Focus findings on:
 
