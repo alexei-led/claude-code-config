@@ -122,3 +122,74 @@ aws iam list-attached-role-policies --role-name ROLE
 # First result
 --query 'Reservations[0].Instances[0].InstanceId'
 ```
+
+## Error Handling
+
+### Authentication
+
+```bash
+# Check current identity
+aws sts get-caller-identity
+
+# Verify credentials file
+cat ~/.aws/credentials
+
+# Use specific profile
+aws s3 ls --profile production
+
+# Refresh SSO credentials
+aws sso login --profile my-sso-profile
+```
+
+Common auth errors:
+
+- **`InvalidClientTokenId`** — Bad AWS key; verify credentials file
+- **`ExpiredToken`** — Session expired; re-authenticate
+- **`AccessDenied`** — Wrong permissions; check IAM roles
+
+### Rate Limiting
+
+Symptoms: `429 Too Many Requests`, `Throttling` errors.
+
+```bash
+# Add delays between operations
+for bucket in $(aws s3 ls | awk '{print $3}'); do
+  aws s3 ls "s3://$bucket" --summarize
+  sleep 1  # Prevent throttling
+done
+
+# Use pagination instead of large requests
+aws ec2 describe-instances --max-items 100 --starting-token "$TOKEN"
+```
+
+### Common Error Patterns
+
+```bash
+# Permission denied — check your identity and policies
+aws iam get-user
+aws iam list-attached-user-policies --user-name USERNAME
+
+# Region mismatch — always specify the region explicitly
+aws ec2 run-instances --region us-west-2 ...
+```
+
+### Retry with Backoff
+
+```bash
+retry_cmd() {
+  local max_attempts=3
+  local delay=2
+  local attempt=1
+
+  while [ $attempt -le $max_attempts ]; do
+    if "$@"; then return 0; fi
+    echo "Attempt $attempt failed, retrying in ${delay}s..."
+    sleep $delay
+    delay=$((delay * 2))
+    attempt=$((attempt + 1))
+  done
+  return 1
+}
+
+retry_cmd aws ec2 start-instances --instance-ids i-xxxxx
+```

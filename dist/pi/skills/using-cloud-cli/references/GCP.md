@@ -105,3 +105,77 @@ gcloud projects add-iam-policy-binding PROJECT \
 - **`--format=json`** — JSON output for parsing
 - **`--quiet`** — No prompts (automation)
 - **`--filter="name:pattern"`** — Server-side filter
+
+## Error Handling
+
+### Authentication
+
+```bash
+# Check current auth status
+gcloud auth list
+
+# Re-authenticate user
+gcloud auth login
+
+# Re-authenticate application default credentials
+gcloud auth application-default login
+
+# For service accounts
+gcloud auth activate-service-account --key-file=key.json
+```
+
+Common auth errors:
+
+- **`UNAUTHENTICATED`** — No credentials; run `gcloud auth login`
+- **`AccessDenied`** — Wrong permissions; check IAM roles
+- **`ExpiredToken`** — Session expired; re-authenticate
+
+### Rate Limiting
+
+Symptoms: `RESOURCE_EXHAUSTED`, `429 Too Many Requests`.
+
+```bash
+# BigQuery: batch priority, lower throttling
+bq query --batch 'SELECT ...'
+
+# Check quotas
+gcloud compute project-info describe --project=PROJECT
+```
+
+Request quota increase via Console → IAM → Quotas.
+
+### Common Error Patterns
+
+```bash
+# Resource not found — verify it exists first
+gcloud compute instances describe NAME --zone=ZONE 2>/dev/null || echo "Not found"
+gcloud compute zones list --filter="region:us-central1"
+
+# Permission denied — check your roles
+gcloud projects get-iam-policy PROJECT --flatten="bindings[].members" \
+  --filter="bindings.members:$(gcloud config get-value account)"
+
+# Region/zone mismatch — always specify the zone explicitly
+gcloud compute instances create NAME --zone=us-central1-a  # Not just region!
+```
+
+### Retry with Backoff
+
+```bash
+retry_cmd() {
+  local max_attempts=3
+  local delay=2
+  local attempt=1
+
+  while [ $attempt -le $max_attempts ]; do
+    if "$@"; then return 0; fi
+    echo "Attempt $attempt failed, retrying in ${delay}s..."
+    sleep $delay
+    delay=$((delay * 2))
+    attempt=$((attempt + 1))
+  done
+  return 1
+}
+
+retry_cmd gcloud compute instances start my-instance --zone=us-central1-a
+```
