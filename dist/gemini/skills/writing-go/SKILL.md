@@ -20,34 +20,7 @@ name: writing-go
 
 ## Core Philosophy
 
-### Stdlib and Mature Libraries First
-
-- Prefer Go stdlib solutions; add a library only when concrete requirements beat stdlib simplicity
-- Choose mature, well-maintained libs when needed
-
-### Concrete Types Over `any`
-
-- Never use `interface{}` or `any` when a concrete type works
-- Generics for reusable utilities, concrete types for business logic
-- Accept interfaces, return structs
-
-### Private Interfaces at Consumer
-
-- Define interfaces private (lowercase) where used
-- Decouples code, enables testing
-- Implementation returns concrete types
-
-### Flat Control Flow
-
-- Early returns, guard clauses
-- No nested IFs—max 2 levels
-- Switch for multi-case logic
-
-### Explicit Error Handling
-
-- Always wrap with context
-- Use `errors.Is()`/`errors.As()`
-- No bare `return err`
+Stdlib-first stance, concrete-types-over-`any`, consumer-side interfaces, flat control flow, explicit error handling, the no-destructive-commands safety rule, and the post-generation verification loop are in [references/principles.md](references/principles.md) — read it before generating code.
 
 ## Quick Patterns
 
@@ -158,6 +131,7 @@ for _, tt := range tests {
 
 ## References
 
+- [principles.md](references/principles.md) - Core philosophy, safety rule, and verification loop (read before generating code)
 - [PATTERNS.md](references/PATTERNS.md) - Detailed code patterns
 - [TESTING.md](references/TESTING.md) - Testing with testify/mockery
 - [CLI.md](references/CLI.md) - CLI application patterns
@@ -170,19 +144,6 @@ go test -race ./...      # Test with race detector
 golangci-lint run        # Lint
 mockery --all            # Generate mocks
 ```
-
-## Verify Generated Code
-
-After generating code, always verify it compiles, tests pass, and lint runs when configured:
-
-```bash
-go test ./...
-go test -race ./...
-go vet ./...
-golangci-lint run ./...
-```
-
-Use the project's configured commands if different.
 
 ## Failure Cases
 

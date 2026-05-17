@@ -172,24 +172,7 @@ Report structure:
 
 ## Phase 5: Apply Fixes (only if `--fix` in arguments)
 
-Skip this phase entirely unless `--fix` is in `$ARGUMENTS`.
-
-If `--fix` is NOT present, use `AskUserQuestion`. Ask one question at a time:
-
-- **Action** — Apply fixes from the review? Options: Fix all errors / Fix errors + warnings / Show diffs only / Skip
-
-Apply only approved fixes. Confirm before deleting files, removing hooks, broad rewrites, or changing permissions:
-
-1. **CLAUDE.md**: Remove flagged lines, move content to skills/hooks
-2. **Skills**: Add missing `context: fork`, trim tool lists, fix descriptions
-3. **Agents**: Add scope boundaries, output format sections
-4. **Hooks**: Fix exit codes, event assignments
-
-After each fix, show the diff. Do NOT make changes beyond what was flagged.
-
-### Post-fix verification
-
-After all fixes are applied, re-check modified components against the rules that triggered the fix. Confirm each finding is resolved. Report any regressions.
+Skip this phase entirely unless `--fix` is in `$ARGUMENTS`. When `--fix` is present, load and follow [references/apply-fixes.md](references/apply-fixes.md) — the approval flow, per-component fix list, diff discipline, and post-fix verification.
 
 ## Examples
 

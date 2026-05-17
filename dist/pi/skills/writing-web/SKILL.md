@@ -22,10 +22,7 @@ name: writing-web
 
 ## Philosophy
 
-- HTML first: semantic markup does the work
-- CSS second: small stylesheets, fluid layout, mobile-first, media/container queries only when needed
-- HTMX third: server-driven interactivity
-- JS last: only when nothing else works
+The HTML-first philosophy, the no-destructive-commands safety rule, and the post-generation verification plan are in [references/principles.md](references/principles.md) — read it before generating code.
 
 ## Patterns
 
@@ -109,24 +106,8 @@ document.body.addEventListener("click", (e) => {
 
 ## References
 
+- [principles.md](references/principles.md) - Philosophy, safety rule, and verification plan (read before generating code)
 - [PATTERNS.md](references/PATTERNS.md) - Semantic HTML, modern CSS, and minimal-JS idioms
-
-## Verify Generated Code
-
-After generating code, validate HTML and check behavior:
-
-```bash
-npx html-validate . 2>&1 || true
-# or, with Bun:
-# bunx html-validate . 2>&1 || true
-```
-
-Verification plan must include:
-
-1. Manual/browser check for the changed page or component.
-2. Responsive check at mobile and desktop widths.
-3. Playwright or equivalent browser test when behavior changed.
-4. Screenshot or concise pass/fail notes for visual changes.
 
 ## Failure Cases
 

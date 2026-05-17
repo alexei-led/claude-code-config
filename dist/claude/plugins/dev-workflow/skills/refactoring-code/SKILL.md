@@ -59,21 +59,7 @@ Use Built-in Edit/MultiEdit when:
 
 ## Architecture Deepening
 
-When the request is architectural, use this vocabulary:
-
-- **Module** — anything with an interface and implementation.
-- **Interface** — everything callers must know: types, invariants, error modes, config, performance.
-- **Seam** — where an interface lives.
-- **Adapter** — concrete thing satisfying an interface at a seam.
-- **Depth** — lots of behavior behind a small interface.
-- **Leverage** — caller value from depth.
-- **Locality** — change and verification concentrated in one place.
-
-Deletion test: if deleting a module makes complexity vanish, it was a pass-through. If complexity reappears across callers, the module was earning its keep.
-
-Seam rule: one adapter means a hypothetical seam; two adapters means a real seam. Do not add interfaces without real variation.
-
-Read relevant `CONTEXT.md`, `CONTEXT-MAP.md`, and ADRs when present. Preserve domain names.
+When applying an approved architecture-deepening refactor, keep the seam rule (one adapter means a hypothetical seam; two adapters means a real seam — do not add interfaces without real variation) and the deletion test in mind. The module-depth vocabulary is owned upstream by `improve-codebase-architecture` (`references/LANGUAGE.md`) and `reviewing-code`; match the design agreed there and do not redefine the terms here. Read relevant `CONTEXT.md`, `CONTEXT-MAP.md`, and ADRs when present. Preserve domain names.
 
 ## Workflow
 
