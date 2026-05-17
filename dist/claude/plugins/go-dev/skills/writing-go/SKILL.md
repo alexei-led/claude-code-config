@@ -1,5 +1,5 @@
 ---
-agent: go-engineer
+agent: engineer
 allowed-tools:
 - Read
 - Bash

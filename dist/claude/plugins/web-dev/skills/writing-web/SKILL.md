@@ -1,5 +1,5 @@
 ---
-agent: web-engineer
+agent: engineer
 allowed-tools:
 - Read
 - Bash

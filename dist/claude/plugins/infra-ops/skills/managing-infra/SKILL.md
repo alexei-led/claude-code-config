@@ -1,5 +1,5 @@
 ---
-agent: infra-engineer
+agent: engineer
 allowed-tools:
 - Read
 - Bash

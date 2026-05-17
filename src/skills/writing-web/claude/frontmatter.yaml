@@ -1,6 +1,6 @@
 user-invocable: false
 context: fork
-agent: web-engineer
+agent: engineer
 allowed-tools:
   - Read
   - Bash

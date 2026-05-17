@@ -1,5 +1,5 @@
 ---
-agent: typescript-engineer
+agent: engineer
 allowed-tools:
 - Read
 - Bash

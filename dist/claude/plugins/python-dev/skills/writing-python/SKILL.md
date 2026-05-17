@@ -1,5 +1,5 @@
 ---
-agent: python-engineer
+agent: engineer
 allowed-tools:
 - Read
 - Bash
