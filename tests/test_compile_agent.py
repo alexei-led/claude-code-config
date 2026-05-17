@@ -3,8 +3,10 @@
 Covered cases:
 
 - `engineer` — base + per-target frontmatter overlay (tools/model/skills),
-  no body overlay. Exercises all four targets: three markdown emissions and
-  one Codex TOML conversion.
+  no body overlay. Claude and Pi are golden-locked; Codex/Gemini are
+  asserted to emit one file each.
+- `reviewer` — provably non-mutating envelope. Claude and Pi golden-locked;
+  Bash/Edit/Write asserted absent from the compiled tools in both shapes.
 - `advisor` — `targets: [pi]` restriction. Verifies only Pi receives an
   output; Claude/Codex/Gemini are skipped.
 
@@ -99,19 +101,77 @@ def _diff_files(golden: Path, actual: Path) -> str | None:
     return None
 
 
+def _compiled_tools(path: Path) -> object:
+    """Return the `tools` value from a compiled agent's frontmatter.
+
+    Pi/Gemini emit a comma string; Claude emits a YAML list. Returned as-is so
+    callers can assert on the native shape.
+    """
+    return frontmatter.loads(path.read_text()).metadata.get("tools")
+
+
 def test_compile_agent_engineer_all_platforms(ca, tmp_path: Path) -> None:
-    """engineer has no targets restriction — all platforms receive output."""
+    """engineer has no targets restriction — every platform receives output.
+
+    Claude and Pi carry distinct per-target frontmatter overlays
+    (`claude/frontmatter.yaml`, `pi/frontmatter.yaml`) and are golden-locked.
+    Codex/Gemini have no overlay (base AGENT.md only) — asserted to emit
+    exactly one file so a regression that drops them is still caught.
+    """
     root = make_agent_staging_root(tmp_path)
     agent_dir = root / "src" / "agents" / "engineer"
     plugin_index = {"engineer": ["dev-workflow"]}
 
-    written = ca.compile_agent(agent_dir, "claude", plugin_index, root)
-    assert len(written) == 1
-    actual = written[0]
+    claude_written = ca.compile_agent(agent_dir, "claude", plugin_index, root)
+    assert len(claude_written) == 1
     golden = _GOLDENS / "engineer" / "claude" / "engineer.md"
     assert golden.is_file(), f"missing golden snapshot: {golden}"
-    diff = _diff_files(golden, actual)
-    assert diff is None, diff
+    assert _diff_files(golden, claude_written[0]) is None
+
+    pi_written = ca.compile_agent(agent_dir, "pi", None, root)
+    assert pi_written == [root / "dist" / "pi" / "agents" / "engineer.md"]
+    pi_golden = _GOLDENS / "engineer" / "pi" / "engineer.md"
+    assert pi_golden.is_file(), f"missing golden snapshot: {pi_golden}"
+    assert _diff_files(pi_golden, pi_written[0]) is None
+
+    assert len(ca.compile_agent(agent_dir, "codex", plugin_index, root)) == 1
+    assert len(ca.compile_agent(agent_dir, "gemini", None, root)) == 1
+
+
+def test_compile_agent_reviewer_envelope_is_read_only(ca, tmp_path: Path) -> None:
+    """reviewer's enforced envelope must never include a mutating tool.
+
+    This is the central invariant of the 39->3 consolidation: reviewer is
+    provably non-mutating. Golden-lock the Claude and Pi outputs and assert
+    no Bash/Edit/Write leaks into the compiled tools list either shape.
+    """
+    root = make_agent_staging_root(tmp_path)
+    agent_dir = root / "src" / "agents" / "reviewer"
+
+    claude_written = ca.compile_agent(
+        agent_dir, "claude", {"reviewer": ["dev-workflow"]}, root
+    )
+    assert len(claude_written) == 1
+    claude_golden = _GOLDENS / "reviewer" / "claude" / "reviewer.md"
+    assert claude_golden.is_file(), f"missing golden snapshot: {claude_golden}"
+    assert _diff_files(claude_golden, claude_written[0]) is None
+
+    pi_written = ca.compile_agent(agent_dir, "pi", None, root)
+    assert pi_written == [root / "dist" / "pi" / "agents" / "reviewer.md"]
+    pi_golden = _GOLDENS / "reviewer" / "pi" / "reviewer.md"
+    assert pi_golden.is_file(), f"missing golden snapshot: {pi_golden}"
+    assert _diff_files(pi_golden, pi_written[0]) is None
+
+    claude_tools = _compiled_tools(claude_written[0])
+    assert claude_tools == ["Read", "Grep", "Glob", "LS"], claude_tools
+
+    pi_tools = _compiled_tools(pi_written[0])
+    assert isinstance(pi_tools, str), pi_tools
+    pi_tool_set = {t.strip().lower() for t in pi_tools.split(",")}
+    forbidden = {"bash", "edit", "write"}
+    assert pi_tool_set.isdisjoint(forbidden), (
+        f"reviewer pi envelope leaked a mutating tool: {pi_tool_set & forbidden}"
+    )
 
 
 def test_compile_agent_advisor_pi_only(ca, tmp_path: Path) -> None:
