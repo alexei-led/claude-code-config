@@ -19,13 +19,13 @@
       "version": "4.7.0"
     },
     {
-      "name": "review-lint-commit",
+      "name": "code-workflow",
       "source": "./dist/claude/plugins/dev-workflow",
       "description": "Code review, fixes, commits, and linting for development workflows",
       "version": "4.7.0"
     },
     {
-      "name": "go-dev",
+      "name": "go-1-25-dev",
       "source": "./dist/claude/plugins/go-dev",
       "description": "Idiomatic Go 1.25+ development with stdlib-first patterns",
       "version": "4.7.0"
@@ -43,7 +43,7 @@
       "version": "4.7.0"
     },
     {
-      "name": "spec",
+      "name": "spec-driven-dev",
       "source": "./dist/claude/plugins/spec",
       "description": "Spec-driven development with structured requirements and planning",
       "version": "4.7.0"

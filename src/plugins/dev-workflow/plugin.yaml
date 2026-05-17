@@ -23,4 +23,4 @@ hooks:
 - skill-enforcer
 - smart-lint
 - test-runner
-marketplace_name: review-lint-commit
+marketplace_name: code-workflow

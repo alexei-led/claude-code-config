@@ -13,3 +13,4 @@ agents:
   - engineer
   - reviewer
 hooks: []
+marketplace_name: spec-driven-dev
