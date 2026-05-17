@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 from conftest import REPO_ROOT
 
-SPECCTL = REPO_ROOT / "src" / "skills" / "spec-core" / "scripts" / "specctl.py"
+SPECCTL = REPO_ROOT / "src" / "skills" / "spec-status" / "scripts" / "specctl.py"
 
 
 def run_specctl(*args: str, cwd: str | None = None) -> subprocess.CompletedProcess:

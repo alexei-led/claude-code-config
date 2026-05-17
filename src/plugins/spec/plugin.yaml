@@ -2,7 +2,6 @@ name: spec
 version: 4.7.0
 description: Spec-driven development with structured requirements and planning
 skills:
-  - spec-core
   - spec-init
   - spec-interview
   - spec-plan

@@ -50,7 +50,7 @@ Envelope enforcement is per-target: Claude grants a hard `tools:` allowlist; Cod
 - **refactoring-code** — Batch refactoring via MorphLLM edit_file
 - **reviewing-code** — Sequential code review for security, quality, tests, and architecture
 - **searching-code** — Intelligent codebase search and zoom-out mapping via WarpGrep
-- **spec** — Spec-driven development (init, interview, plan, work, status, done, help)
+- **spec** — Spec-driven development (init, interview, plan, work, status, done)
 - **watch-team** — Monitor a team in tmux, auto-approve prompts, and report status
 
 ## Language Tooling

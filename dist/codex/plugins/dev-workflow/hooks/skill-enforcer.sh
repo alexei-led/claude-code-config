@@ -182,16 +182,11 @@ if echo "$PROMPT_LOWER" | grep -qE '\blearn\b.*\b(from|session|pattern|conversat
 	skills+="learning-patterns "
 fi
 
-# spec-status: Progress overview for spec-driven projects
-# Triggers: project status, progress, how far along, spec status
-if echo "$PROMPT_LOWER" | grep -qE '\b(project|spec|task)\s*(status|progress|overview)\b|\bhow\s*(far|much|many|is)\s*(along|done|progress|left|remain|complete)\b|\bwhat.*(done|left|remain|progress|status)\b|\bshow\s*(me\s*)?(progress|status|overview)\b|\bhow.*project\s*(going|doing)\b'; then
+# spec-status: Progress overview + orientation for spec-driven projects
+# Triggers: project status, progress, how far along, spec status,
+#           how does spec work, spec guide, spec methodology, spec workflow
+if echo "$PROMPT_LOWER" | grep -qE '\b(project|spec|task)\s*(status|progress|overview)\b|\bhow\s*(far|much|many|is)\s*(along|done|progress|left|remain|complete)\b|\bwhat.*(done|left|remain|progress|status)\b|\bshow\s*(me\s*)?(progress|status|overview)\b|\bhow.*project\s*(going|doing)\b|\bhow\s*does\s*spec\b|\bspec\s*(guide|help|methodology|workflow|reference)\b|\bspec[[:space:]-]driven\s*(guide|help|how)\b|\bwhat\s*(are|is)\s*(the)?\s*spec\s*(command|workflow|phase|skill)'; then
 	skills+="spec-status "
-fi
-
-# spec-core: Orientation and quick reference for spec-driven development
-# Triggers: how does spec work, spec guide, spec methodology
-if echo "$PROMPT_LOWER" | grep -qE '\bhow\s*does\s*spec\b|\bspec\s*(guide|help|methodology|workflow|reference)\b|\bspec[[:space:]-]driven\s*(guide|help|how)\b|\bwhat\s*(are|is)\s*(the)?\s*spec\s*(command|workflow|phase|skill)'; then
-	skills+="spec-core "
 fi
 
 # spec-init: Initialize .spec/ project structure
