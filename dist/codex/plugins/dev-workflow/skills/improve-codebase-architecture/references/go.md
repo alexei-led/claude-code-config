@@ -1,4 +1,4 @@
-# Go Simplification Slice
+# Go Architecture Reference
 
 Language-specific over-abstraction and dead-code patterns for Go 1.25+. The shared modularity model lives in [LANGUAGE.md](LANGUAGE.md) and [DEEPENING.md](DEEPENING.md) — this file supplies only the Go-specific smells and detection.
 

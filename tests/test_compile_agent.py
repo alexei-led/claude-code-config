@@ -2,11 +2,11 @@
 
 Covered cases:
 
-- `go-engineer` — base + per-target frontmatter overlay (tools/model/skills),
+- `engineer` — base + per-target frontmatter overlay (tools/model/skills),
   no body overlay. Exercises all four targets: three markdown emissions and
   one Codex TOML conversion.
-- `scout` — `targets: [pi]` restriction. Verifies only Pi receives an output;
-  Claude/Codex/Gemini are skipped.
+- `advisor` — `targets: [pi]` restriction. Verifies only Pi receives an
+  output; Claude/Codex/Gemini are skipped.
 
 Each `(agent, target)` pair has a locked snapshot at
 `tests/fixtures/golden_agents/<agent>/<target>/`. The test compiles each
@@ -99,35 +99,35 @@ def _diff_files(golden: Path, actual: Path) -> str | None:
     return None
 
 
-def test_compile_agent_go_engineer_all_platforms(ca, tmp_path: Path) -> None:
-    """go-engineer has no targets restriction — all platforms receive output."""
+def test_compile_agent_engineer_all_platforms(ca, tmp_path: Path) -> None:
+    """engineer has no targets restriction — all platforms receive output."""
     root = make_agent_staging_root(tmp_path)
-    agent_dir = root / "src" / "agents" / "go-engineer"
-    plugin_index = {"go-engineer": ["go-dev"]}
+    agent_dir = root / "src" / "agents" / "engineer"
+    plugin_index = {"engineer": ["dev-workflow"]}
 
     written = ca.compile_agent(agent_dir, "claude", plugin_index, root)
     assert len(written) == 1
     actual = written[0]
-    golden = _GOLDENS / "go-engineer" / "claude" / "go-engineer.md"
+    golden = _GOLDENS / "engineer" / "claude" / "engineer.md"
     assert golden.is_file(), f"missing golden snapshot: {golden}"
     diff = _diff_files(golden, actual)
     assert diff is None, diff
 
 
-def test_compile_agent_scout_pi_only(ca, tmp_path: Path) -> None:
-    """scout has `targets: [pi]` — only Pi receives an output."""
+def test_compile_agent_advisor_pi_only(ca, tmp_path: Path) -> None:
+    """advisor has `targets: [pi]` — only Pi receives an output."""
     root = make_agent_staging_root(tmp_path)
-    agent_dir = root / "src" / "agents" / "scout"
+    agent_dir = root / "src" / "agents" / "advisor"
 
     for target in ("claude", "codex", "gemini"):
         assert ca.compile_agent(agent_dir, target, None, root) == [], (
-            f"scout should not emit for {target}"
+            f"advisor should not emit for {target}"
         )
 
     written = ca.compile_agent(agent_dir, "pi", None, root)
     assert len(written) == 1
-    actual = root / "dist" / "pi" / "agents" / "scout.md"
-    golden = _GOLDENS / "scout" / "pi" / "scout.md"
+    actual = root / "dist" / "pi" / "agents" / "advisor.md"
+    golden = _GOLDENS / "advisor" / "pi" / "advisor.md"
 
     assert golden.is_file(), f"missing golden snapshot: {golden}"
     diff = _diff_files(golden, actual)

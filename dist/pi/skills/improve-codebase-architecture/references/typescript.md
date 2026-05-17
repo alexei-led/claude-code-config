@@ -1,4 +1,4 @@
-# TypeScript Simplification Slice
+# TypeScript Architecture Reference
 
 Language-specific over-abstraction and dead-code patterns for TypeScript 5.x. The shared modularity model lives in [LANGUAGE.md](LANGUAGE.md) and [DEEPENING.md](DEEPENING.md) — this file supplies only the TypeScript-specific smells and detection.
 

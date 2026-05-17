@@ -169,7 +169,7 @@ Net: 24 review-family agents → 0. Three `dev-workflow` skills gain one `refere
 - Repoint `writing-<lang>` frontmatter: `agent: engineer`.
 - Also fixes the naming inconsistency (no more `python-engineer` vs `py-impl` prefix mismatch — the per-language engineer disappears entirely).
 
-39 → ~12 agents: 1 generic `engineer`, kept standalone (`advisor`, `scout`, `pdf-parser`, `perplexity-researcher`, `playwright-tester`, `infra-engineer`, `spec-planner`), plus the resolutions below.
+39 → ~12 agents (initial design estimate — superseded; see **Executed resolution** below for the actual 39 → 3 outcome): 1 generic `engineer`, kept standalone (`advisor`, `scout`, `pdf-parser`, `perplexity-researcher`, `playwright-tester`, `infra-engineer`, `spec-planner`), plus the resolutions below.
 
 ### Standalone dispositions
 

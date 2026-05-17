@@ -1,4 +1,4 @@
-# Web Simplification Slice
+# Web Architecture Reference
 
 Language-specific over-abstraction and dead-code patterns for modern HTML/CSS/vanilla JS. The shared modularity model lives in [LANGUAGE.md](LANGUAGE.md) and [DEEPENING.md](DEEPENING.md) — this file supplies only the web-specific smells and detection.
 

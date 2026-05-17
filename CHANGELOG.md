@@ -8,6 +8,26 @@ major = breaking config/hook changes, minor = new skills/features, patch = fixes
 
 ## [Unreleased]
 
+### Changed
+
+- **Agent consolidation (39 → 3)**: collapsed 39 language/domain-specific
+  agents into 3 role agents with disjoint enforced capability envelopes —
+  `engineer` (Read/Edit/Write/Bash, the sole mutator), `reviewer`
+  (Read/Grep/Glob/LS only, provably non-mutating), `advisor` (unchanged,
+  Pi-only). Domain procedure and output contracts moved into role-agnostic
+  skills; per-language content moved into `references/<lang>.md` inside each
+  skill. Routing ambiguity across ~24 indistinct agent keys structurally
+  eliminated. See `docs/agent-audit-2026-05-16.md` and the executed plan in
+  `docs/plans/completed/`.
+- Per-language idioms folded into `writing-<lang>/references/PATTERNS.md`;
+  per-language review, test, docs, and architecture content moved into skill
+  `references/` directories.
+
+### Added
+
+- **`parsing-documents`** skill: replaces the deleted `pdf-parser` agent with
+  vendor-neutral document extraction.
+
 ## [4.7.0] - 2026-05-16
 
 ### Changed

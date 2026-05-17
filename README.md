@@ -8,9 +8,9 @@
 [![Codex CLI](https://img.shields.io/badge/Codex_CLI-skill_export-10A37F)](https://developers.openai.com/codex/plugins)
 [![Gemini CLI](https://img.shields.io/badge/Gemini_CLI-skill_export-4285F4)](https://geminicli.com/docs/extensions)
 [![Plugins](https://img.shields.io/badge/plugins-9-green)](src/plugins/)
-[![Skills](https://img.shields.io/badge/skills-44-green)](src/plugins/)
+[![Skills](https://img.shields.io/badge/skills-45-green)](src/plugins/)
 
-A multi-agent skill suite for **Claude Code**, **Codex CLI**, **Gemini CLI**, and **Pi** — 44 skills, 39 agents, and 9 hooks. One source of truth in `src/`, compiled to platform-optimized output for each tool. Supports [AGENTS.md](https://agents.md)-compatible tools too. Built over 6+ months of daily use and continuous refinement.
+A multi-agent skill suite for **Claude Code**, **Codex CLI**, **Gemini CLI**, and **Pi** — 45 skills, 3 agents, and 9 hooks. One source of truth in `src/`, compiled to platform-optimized output for each tool. Supports [AGENTS.md](https://agents.md)-compatible tools too. Built over 6+ months of daily use and continuous refinement.
 
 ## Why This Exists
 
@@ -228,12 +228,12 @@ Agent({
 | `structured-output.ts` | `structured_output` tool that terminates the agent loop                                          |
 | `notify.ts`            | macOS notification via `terminal-notifier` on completion (requires Homebrew `terminal-notifier`) |
 
-**Pi gets**: all 39 agents (requires `@tintinweb/pi-subagents`), all 44 skills,
-and 8 bundled extensions. Each agent has a Pi-specific frontmatter overlay tuned
-for OpenAI Codex models (`openai-codex/gpt-5.5`, `gpt-5.4`, `gpt-5.4-mini`),
-thinking levels, tool restrictions, and turn limits. The four pipeline agents
-(`scout`, `planner`, `reviewer`, `worker`) are Pi-only — they implement the
-scout→planner→worker→reviewer orchestration pattern.
+**Pi gets**: all 3 agents — `engineer`, `reviewer`, `advisor` (requires
+`@tintinweb/pi-subagents`) — all 45 skills, and 8 bundled extensions. Each
+agent has a Pi-specific frontmatter overlay tuned for OpenAI Codex models
+(`openai-codex/gpt-5.5`), thinking levels, tool restrictions, and turn limits.
+`advisor` is Pi-only — it ships no Claude/Gemini overlay by design. The old
+scout→planner→worker→reviewer pipeline is superseded by the 3-role model.
 
 ### Other AGENTS.md-Compatible Tools
 
@@ -262,7 +262,7 @@ assume MCP tools.
 | ------------------------------------------------------------ | ------------------------------------------- | ---------------------------------------------------------- |
 | [DeepWiki](https://cognition.ai/blog/deepwiki-mcp-server)    | AI-generated wiki for public GitHub repos   | Claude Code dev-tools                                      |
 | [Perplexity](https://github.com/ppl-ai/modelcontextprotocol) | Web research and technical comparisons      | Claude Code dev-workflow, dev-tools, infra-ops             |
-| [MorphLLM](https://github.com/morphllm/morph-claude-code)    | Fast codebase search and batch file editing | Claude Code dev-workflow, language, infra, and spec agents |
+| [MorphLLM](https://github.com/morphllm/morph-claude-code)    | Fast codebase search and batch file editing | Claude Code `engineer` role via dev-workflow, language, infra, spec |
 
 > Stepwise reasoning previously came from the
 > [Sequential Thinking MCP](https://github.com/modelcontextprotocol/servers/tree/main/src/sequentialthinking).
@@ -293,17 +293,17 @@ All agents and several skills optionally integrate with [claude-mem](https://git
 
 | Plugin                                                       | Skills | Agents | Description                                                                        |
 | ------------------------------------------------------------ | ------ | ------ | ---------------------------------------------------------------------------------- |
-| [**dev-workflow**](src/plugins/dev-workflow/plugin.yaml)     | 10     | 25     | Code review, fixes, commits, linting hooks, and 24 language-specific review agents |
+| [**dev-workflow**](src/plugins/dev-workflow/plugin.yaml)     | 10     | 2      | Code review, fixes, commits, linting hooks; `engineer` and `reviewer` roles       |
 | [**go-dev**](src/plugins/go-dev/plugin.yaml)                 | 1      | 1      | Idiomatic Go development with stdlib-first patterns, testing, and CLI tooling      |
 | [**python-dev**](src/plugins/python-dev/plugin.yaml)         | 1      | 1      | Python 3.12+ development with uv/ruff/pyright toolchain                            |
 | [**typescript-dev**](src/plugins/typescript-dev/plugin.yaml) | 1      | 1      | TypeScript with strict typing, React patterns, and modern tooling                  |
 | [**web-dev**](src/plugins/web-dev/plugin.yaml)               | 1      | 1      | Web frontend with vanilla HTML, CSS, JavaScript, and HTMX                          |
 | [**infra-ops**](src/plugins/infra-ops/plugin.yaml)           | 3      | 1      | Kubernetes, Terraform, Helm, GitHub Actions, AWS, GCP                              |
-| [**dev-tools**](src/plugins/dev-tools/plugin.yaml)           | 17     | 2      | Modern CLI, git worktrees, docs lookup, web research, config review, brainstorming |
-| [**spec**](src/plugins/spec/plugin.yaml)                     | 8      | 1      | Spec-driven development: requirements, tasks, and planning workflows               |
+| [**dev-tools**](src/plugins/dev-tools/plugin.yaml)           | 18     | 1      | Modern CLI, git worktrees, docs lookup, web research, config review, brainstorming |
+| [**spec**](src/plugins/spec/plugin.yaml)                     | 8      | 2      | Spec-driven development: requirements, tasks, and planning workflows               |
 | [**testing-e2e**](src/plugins/testing-e2e/plugin.yaml)       | 2      | 1      | E2E testing with Playwright: browser automation and test generation                |
 
-**Totals**: 44 skills, 34 agents (plugin-owned), 9 hooks
+**Totals**: 45 skills, 2 plugin-owned role agents (`engineer`, `reviewer`), 9 hooks
 
 ## Skills
 
@@ -358,28 +358,15 @@ These activate silently when relevant patterns are detected — no `/skill-name`
 
 ## Agents
 
-All 34 plugin agents work on Claude Code and Pi. Pi also adds 4 pipeline-only agents (`scout`, `planner`, `reviewer`, `worker`) for orchestration workflows.
+Three role agents with disjoint **enforced** capability envelopes (tool grants, not prose). Consolidated from 39 → 3 — see `docs/agent-audit-2026-05-16.md` and the executed plan in `docs/plans/completed/`. Domain procedure and output format live in skills; language specifics live in each skill's `references/<lang>.md`. Role × skill × references compose — language is not a routing key.
 
-| Need                       | Agent                       | Claude model | Pi model              |
-| -------------------------- | --------------------------- | ------------ | --------------------- |
-| Go implementation          | `go-engineer`               | sonnet       | gpt-5.5               |
-| Python implementation      | `python-engineer`           | sonnet       | gpt-5.5               |
-| TypeScript implementation  | `typescript-engineer`       | sonnet       | gpt-5.5               |
-| Deep Go QA/impl review     | `go-qa`, `go-impl`          | opus         | gpt-5.5 thinking:high |
-| Deep Python QA/impl review | `py-qa`, `py-impl`          | opus         | gpt-5.5 thinking:high |
-| Deep TS QA/impl review     | `ts-qa`, `ts-impl`          | opus         | gpt-5.5 thinking:high |
-| Go/Py/TS/Web review        | `*-idioms`, `*-tests`, etc. | sonnet       | gpt-5.4               |
-| Go/Py/TS/Web docs review   | `*-docs`                    | haiku        | gpt-5.4 thinking:low  |
-| Infrastructure validation  | `infra-engineer`            | sonnet       | gpt-5.5               |
-| E2E browser testing        | `playwright-tester`         | sonnet       | gpt-5.4               |
-| Implementation planning    | `spec-planner`              | sonnet       | gpt-5.4 thinking:high |
-| Documentation updates      | `docs-keeper`               | sonnet       | gpt-5.4               |
-| Web research               | `perplexity-researcher`     | sonnet       | gpt-5.4               |
-| PDF data extraction        | `pdf-parser`                | sonnet       | gpt-5.4-mini          |
-| Codebase recon             | `scout` _(Pi only)_         | —            | gpt-5.4-mini          |
-| Implementation planning    | `planner` _(Pi only)_       | —            | gpt-5.4               |
-| Code review                | `reviewer` _(Pi only)_      | —            | gpt-5.4               |
-| Task execution             | `worker` _(Pi only)_        | —            | gpt-5.5               |
+| Role       | Enforced tools                          | Stance                                                           | Claude model | Pi model               |
+| ---------- | --------------------------------------- | ---------------------------------------------------------------- | ------------ | ---------------------- |
+| `engineer` | Read, Edit, Write, Bash, Grep, Glob, LS | Sole mutator: applies changes, runs the build/test/lint gate     | sonnet       | gpt-5.5                |
+| `reviewer` | Read, Grep, Glob, LS only               | Adversarial evaluator: emits findings/proposals, applies nothing | sonnet       | gpt-5.5                |
+| `advisor`  | Read + read-only git Bash _(Pi only)_   | Strategic escalation; xhigh thinking, transcript-forwarding      | —            | gpt-5.5 thinking:xhigh |
+
+`engineer` is the fork target for `writing-{go,python,typescript,web}` and `managing-infra`. `reviewer` absorbs the review family, code search, and planning (via `spec`). `advisor` ships only to the Pi target.
 
 Pi model names use the `openai-codex/` provider prefix (e.g. `openai-codex/gpt-5.5`) to avoid ambiguous fuzzy matching when multiple providers expose the same model ID.
 

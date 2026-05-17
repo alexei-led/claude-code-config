@@ -70,8 +70,8 @@ def test_build_plugin_index_real_repo(pi_mod):
 
     # committing-code belongs to dev-workflow.
     assert index["skills"]["committing-code"] == ["dev-workflow"]
-    # go-engineer belongs to go-dev.
-    assert index["agents"]["go-engineer"] == ["go-dev"]
+    # engineer is a shared role agent; dev-workflow is one of its owners.
+    assert "dev-workflow" in index["agents"]["engineer"]
     # session-start hook belongs to dev-workflow.
     assert index["hooks"]["session-start"] == ["dev-workflow"]
 

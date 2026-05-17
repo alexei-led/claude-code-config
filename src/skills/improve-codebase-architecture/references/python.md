@@ -1,4 +1,4 @@
-# Python Simplification Slice
+# Python Architecture Reference
 
 Language-specific over-abstraction and dead-code patterns for Python 3.12+. The shared modularity model lives in [LANGUAGE.md](LANGUAGE.md) and [DEEPENING.md](DEEPENING.md) — this file supplies only the Python-specific smells and detection.
 
