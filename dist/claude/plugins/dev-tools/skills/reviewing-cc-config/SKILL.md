@@ -16,7 +16,7 @@ description: Review Claude Code configuration for context efficiency, signal den
   "review cc config", "context review", "config review", "review my setup", "review
   skills", "review agents", "review hooks", or wants feedback on their Claude Code
   configuration quality. NOT for editing config files — review only; user applies
-  fixes unless --fix is passed.
+  fixes unless --fix is passed. NOT for applying config changes (use `evolving-config`).
 model: opus
 name: reviewing-cc-config
 user-invocable: true
@@ -151,6 +151,7 @@ Keep under 1500 tokens.
 
 Rules: SD-DESCRIPTION, CB-FORK, SD-TOOL-MINIMAL, AR-VERIFY, AR-MODEL-MATCH, AP-TRIGGER-OVERLAP, AP-OVER-SPECIFIED (>200 lines), CB-PROGRESSIVE.
 Output per skill: `### name (model, invocable, lines)` + rule/verdict/notes list + trigger overlap (conflicts only).
+Do not score instruction prose quality — defer to `reviewing-instructions`.
 Keep under 2000 tokens.
 
 ### Agent 3: Agents & Commands Reviewer
@@ -181,24 +182,7 @@ Report structure:
 
 ## Phase 5: Apply Fixes (only if `--fix` in arguments)
 
-Skip this phase entirely unless `--fix` is in `$ARGUMENTS`.
-
-If `--fix` is NOT present, use `AskUserQuestion`. Ask one question at a time:
-
-- **Action** — Apply fixes from the review? Options: Fix all errors / Fix errors + warnings / Show diffs only / Skip
-
-Apply only approved fixes. Confirm before deleting files, removing hooks, broad rewrites, or changing permissions:
-
-1. **CLAUDE.md**: Remove flagged lines, move content to skills/hooks
-2. **Skills**: Add missing `context: fork`, trim tool lists, fix descriptions
-3. **Agents**: Add scope boundaries, output format sections
-4. **Hooks**: Fix exit codes, event assignments
-
-After each fix, show the diff. Do NOT make changes beyond what was flagged.
-
-### Post-fix verification
-
-After all fixes are applied, re-check modified components against the rules that triggered the fix. Confirm each finding is resolved. Report any regressions.
+Skip this phase entirely unless `--fix` is in `$ARGUMENTS`. When `--fix` is present, load and follow [references/apply-fixes.md](references/apply-fixes.md) — the approval flow, per-component fix list, diff discipline, and post-fix verification.
 
 ## Examples
 

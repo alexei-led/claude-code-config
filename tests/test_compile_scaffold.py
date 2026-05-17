@@ -92,7 +92,7 @@ def test_discover_finds_real_sources(compile_mod):
     skills = compile_mod.discover(root / "src" / "skills")
     agents = compile_mod.discover(root / "src" / "agents")
     assert any(p.name == "committing-code" for p in skills)
-    assert any(p.name == "go-engineer" for p in agents)
+    assert any(p.name == "engineer" for p in agents)
 
 
 def test_main_dry_run_exits_zero(compile_mod, caplog):

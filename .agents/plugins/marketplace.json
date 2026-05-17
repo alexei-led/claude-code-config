@@ -16,7 +16,7 @@
       }
     },
     {
-      "name": "review-lint-commit",
+      "name": "code-workflow",
       "source": {
         "source": "local",
         "path": "./dist/codex/plugins/dev-workflow"
@@ -27,7 +27,7 @@
       }
     },
     {
-      "name": "go-dev",
+      "name": "go-1-25-dev",
       "source": {
         "source": "local",
         "path": "./dist/codex/plugins/go-dev"
@@ -60,7 +60,7 @@
       }
     },
     {
-      "name": "spec",
+      "name": "spec-driven-dev",
       "source": {
         "source": "local",
         "path": "./dist/codex/plugins/spec"

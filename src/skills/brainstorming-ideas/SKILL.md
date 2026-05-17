@@ -49,6 +49,8 @@ Stop when you can state the problem in one sentence.
 
 If the user passed `plan`, `grill`, or asked to challenge/stress-test a plan, walk the decision tree. Keep it focused on design quality and assumptions, not implementation task breakdown; use the `spec-plan` skill for tasks.
 
+For the full interview discipline (phase order, per-question format, final summary, failure handling), read `references/grill-protocol.md`.
+
 For each question:
 
 - Provide your recommended answer.
@@ -131,6 +133,12 @@ docs/plans/YYYY-MM-DD-<topic>-design.md
 Include only: Problem, Chosen approach, Trade-offs, Open questions, Testing strategy.
 
 If domain terms or decisions crystallized, update `CONTEXT.md` or create a short ADR only with user approval.
+
+## Failure handling
+
+- Idea conflicts with `CONTEXT.md` / `CONTEXT-MAP.md`: surface the contradiction explicitly ("the glossary defines X as A, this idea assumes B"). Resolve the term with the user before designing — do not silently pick one.
+- A constraint blocks every approach: stop generating options. State the blocker, what would unblock it, and ask the user to relax the constraint or change scope.
+- Idea is too vague to design (user cannot state the problem in one sentence): stay in Step 1. Ask one narrowing question at a time; do not fabricate requirements or jump to approaches.
 
 ## Output format
 

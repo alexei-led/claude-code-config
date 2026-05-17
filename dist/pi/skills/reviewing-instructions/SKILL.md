@@ -1,12 +1,9 @@
 ---
-description: 'Review and score AI agent/skill instructions for quality across 8 dimensions:
-  signal density, scope specificity, output structure, format efficiency, failure
-  handling, grounding discipline, routing precision, and progressive disclosure. Use
-  when authoring, reviewing, or improving SKILL.md, AGENT.md, AGENTS.md, or CLAUDE.md
-  files; when asked to "lint", "audit", "review", or "score" prompts or instructions;
-  when checking instruction quality for a specific AI model or generically; when working
-  on plugin agent/skill definitions; or any time the user is editing or creating instruction
-  files for AI coding agents.
+description: 'Review and score AI agent/skill instruction files for quality — signal
+  density, scope specificity, output structure, failure handling, and routing precision.
+  Use when asked to "lint", "audit", "review", or "score" prompts, SKILL.md, AGENT.md,
+  AGENTS.md, or CLAUDE.md files; or when authoring or improving AI agent/skill instruction
+  files.
 
   '
 name: reviewing-instructions

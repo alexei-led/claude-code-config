@@ -19,8 +19,8 @@ allowed-tools:
 context: fork
 description: Update project documentation based on code changes. Use when the user
   asks to update docs, document behavior, add README content, or align docs with recent
-  implementation changes. NOT for extracting session learnings (use learning-patterns)
-  or code-quality feedback (use reviewing-code).
+  implementation changes. NOT for extracting session learnings or authoring ADRs (use
+  learning-patterns) or code-quality feedback (use reviewing-code).
 name: documenting-code
 user-invocable: true
 ---
@@ -30,6 +30,13 @@ user-invocable: true
 Scope: documentation files only. Not for session-learning extraction (use learning-patterns) or code-quality review (use reviewing-code).
 
 Update project documentation to reflect current code state. Do not delete or overwrite existing docs without confirmation. If verification fails or required evidence is unavailable, report the failure instead of claiming docs are current.
+
+## Roles
+
+Detect your capability from your tools, not from prose:
+
+- Write-capable role (engineer): run the 4-phase flow below — apply the doc edits and verify.
+- Read-only role (reviewer): do not run the phases. You have no edit or Bash tools (no `git diff`). Work from the changed-file list the caller supplies, read the relevant code and existing docs, then emit the stale or missing docs as a proposal in the Reviewer Output contract at the end. Apply nothing; run nothing.
 
 **Use TaskCreate / TaskUpdate** to track these 4 phases:
 
@@ -53,7 +60,7 @@ Ask one question at a time:
 Use a documentation subagent when available; otherwise inspect and update docs directly.
 
 ```
-Task with docs-keeper agent:
+Task with engineer agent:
 "Update documentation for this project.
 
 ## Your Task
@@ -89,6 +96,8 @@ Verified: All links valid, examples compile"
 
 ## Phase 4: Verify and Present Summary
 
+Write-capable role only — a read-only reviewer skips Phase 4 and uses the Reviewer Output contract instead.
+
 **Independent verification** (do not trust the agent's self-report):
 
 When describing parent verification, explicitly mention checking runnable code examples or documented commands when practical. If examples/commands cannot be run, state why.
@@ -113,4 +122,22 @@ Verified:
 - <check>: passed / skipped (<reason>)
 
 Issues: <issue> or "none"
+```
+
+## Reviewer Output
+
+Read-only role only. You applied nothing and ran nothing — emit the stale or missing docs as a proposal:
+
+```text
+## Proposed Changes
+
+### Change 1: <brief description>
+
+File: `path/to/doc`
+Action: CREATE | MODIFY | DELETE
+
+Code:
+<the doc content, with enough surrounding context to locate it>
+
+Rationale: <which code change makes this doc stale or missing>
 ```

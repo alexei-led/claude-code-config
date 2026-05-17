@@ -1,6 +1,10 @@
 ---
 name: watch-team
-description: Monitor a Claude Code team in tmux, auto-approve prompts, and report status. Not for single-agent monitoring, non-tmux setups, or general process supervision.
+description:
+  Monitor a Claude Code team in tmux, auto-approve prompts, and report status.
+  Use when the user says "watch the team", "monitor agents", "auto-approve", "babysit
+  team", or "agents are stuck". NOT for single-agent monitoring, non-tmux setups, or
+  general process supervision.
 ---
 
 # Watch Team

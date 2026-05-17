@@ -38,9 +38,8 @@ BATCH_2_ALL_TARGETS = (
     "improving-tests",
     "documenting-code",
     "managing-infra",
-    "looking-up-docs",
     "context7-cli",
-    "improve-codebase-architecture",
+    "improving-codebase-architecture",
     "ccgram-messaging",
 )
 
@@ -52,10 +51,14 @@ BATCH_2_CLAUDE_ONLY = (
 # Skills migrated via swap_claude_body / swap_pi_body must keep the original
 # orchestration body for Claude. The check looks for any Claude-specific
 # token that the swap moved into claude/body.md.
+# researching-web is intentionally excluded: its Claude "Deep Mode: Agent"
+# dispatch block was removed in the 39→3 consolidation (neither surviving role
+# has Perplexity MCP in its envelope), so its claude/body.md no longer carries
+# a Claude-only orchestration token. It still compiles for all targets and is
+# covered by BATCH_2_ALL_TARGETS.
 SWAP_SKILLS_AND_CLAUDE_TOKENS = {
     "testing-e2e": "TaskCreate",
     "exploring-repos": "mcp__deepwiki__",
-    "researching-web": "Task(",
     "evolving-config": "TaskCreate",
     "documenting-code": "TaskCreate",
     "fixing-code": "TaskCreate",

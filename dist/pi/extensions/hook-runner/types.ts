@@ -1,4 +1,4 @@
-import { SYNTHETIC_HOOK_EVENT_NAMES } from "../hook-bridge.js";
+import { SYNTHETIC_HOOK_EVENT_NAMES } from "../shared/hook-bridge.js";
 
 // `SubagentStop` is included for CC schema compatibility (Claude Code emits it
 // natively). Pi has no `agent_stop`-for-subagent runtime event yet, so user

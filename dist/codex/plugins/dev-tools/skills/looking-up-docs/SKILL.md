@@ -1,88 +1,104 @@
 ---
-description: Compatibility router for library documentation lookup. Use when user
-  says "look up docs", "how to use", "API for", "syntax for", "examples of", "show
-  me the docs", or needs API references, code examples, or framework-specific documentation.
-  Routes to the context7-cli workflow.
+description: Find current, factual library/API/framework documentation through a tool-fallback
+  chain. Use when the user says "look up docs", "how to use", "API for", "syntax for",
+  "examples of", "show me the docs", or wants the latest/current/actual behavior of
+  a library, framework, CLI, or API. NOT for comparisons, best-practice surveys, or
+  recent ecosystem news — use researching-web. NOT for raw ctx7 CLI mechanics — that
+  is context7-cli.
 name: looking-up-docs
 ---
 
-# Documentation Lookup Router
+# Documentation Lookup
 
-Thin router: preserve `looking-up-docs` trigger, delegate all work to `context7-cli`. Do not maintain a parallel docs lookup flow here.
+Get grounded, version-correct documentation for a library, framework, CLI, or
+API. Training data goes stale; never answer syntax or API questions from memory
+when a lookup tool is available.
 
-## Route
+This skill owns the lookup flow. Tool mechanics live elsewhere: `ctx7` command
+detail is in the `context7-cli` skill; exact per-platform web tool names are in
+`references/web-tools.md`.
 
-Use the `context7-cli` workflow for narrow docs lookup. SHOW the exact `ctx7`
-commands you ran in the response — claiming "I used Context7" without
-emitting a command does not satisfy this skill.
-
-1. Identify the library and version from project files (`package.json`,
-   `go.mod`, `pyproject.toml`, lockfiles). State the version or say it is
-   unknown.
-2. Unless the user already supplied `/org/project` or `/org/project/version`,
-   resolve a library ID by running and showing:
-
-   ```bash
-   ctx7 library <name> "<specific query>"
-   ```
-
-3. Query docs with a real topic by running and showing:
-
-   ```bash
-   ctx7 docs /org/project "<specific query>"
-   ```
-
-4. Ground syntax and examples in returned docs.
-5. If `ctx7` is missing on `PATH`, fall back to `npx` (or `bunx`) for both
-   `library` and `docs` invocations and say a fallback was used:
-
-   ```bash
-   npx ctx7@latest library <name> "<specific query>"
-   npx ctx7@latest docs /org/project "<specific query>"
-
-   # or, if you use Bun:
-   bunx ctx7@latest library <name> "<specific query>"
-   bunx ctx7@latest docs /org/project "<specific query>"
-   ```
-
-6. Use web tools such as `web_search` or `web_answer` only when Context7 has
-   no useful match, and say a fallback was used.
-
-## Boundaries
+## Scope
 
 Use this skill for:
 
-- API docs, syntax, config keys, and examples.
-- Version-specific library behavior.
-- Documentation checks before writing code.
+- API signatures, options, config keys, syntax, and examples.
+- Version-specific behavior of a known library or framework.
+- Confirming current behavior before writing code against an external API.
 
 Do not use this skill as the primary workflow for:
 
-- Comparisons, recommendations, pros/cons, or market research.
-- Broad best-practice surveys.
-- Recent ecosystem news.
+- Comparisons, recommendations, market research, or best-practice surveys —
+  route to `researching-web`.
+- Repo-specific questions — search local files first.
+- Anything that would require sending secrets, credentials, personal data, or
+  proprietary code to an external service.
 
-Route those to `researching-web`; use docs lookup later for exact syntax in the
-chosen library.
+## Fallback Chain
 
-## Safety Rules
+Run the tiers in order. Stop at the first tier that yields a grounded answer.
+State which tier produced the answer and whether any fallback was used.
 
-- Do not include secrets, credentials, personal data, private payloads, or
-  proprietary code in ctx7 queries.
-- Do not call `ctx7 library` more than 3 times for one question.
-- Do not call `ctx7 docs` more than 3 times for one question.
-- Always pass a real query, not a placeholder.
-- Prefer `ctx7 docs --json` when structured output helps.
+### Tier 1 — Context7 (`ctx7`)
+
+Best for versioned library and framework docs. Follow the `context7-cli`
+workflow: identify the library and version from project files, resolve a
+library ID with `ctx7 library`, then fetch docs with `ctx7 docs`. Show the
+exact commands. See the `context7-cli` skill for command detail and limits.
+
+Escalate to Tier 2 when: `ctx7` is unavailable or not on `PATH` and the
+package-runner fallback also fails; the CLI hits a rate or auth limit; or it
+returns no useful match after one rephrase and one alternate library name.
+
+### Tier 2 — Perplexity
+
+Best for official docs, release notes, and current behavior not covered by
+Context7. Query Perplexity with a focused, version-qualified question and
+require URL-cited sources. The exact tool differs per platform — Perplexity MCP
+on Claude, Codex, and Gemini; the Perplexity-backed web provider on Pi. See
+`references/web-tools.md`.
+
+Escalate to Tier 3 when: Perplexity is unavailable or unconfigured; it returns
+no usable citation; or the answer needs a specific page fetched verbatim.
+
+### Tier 3 — Platform built-in web tools
+
+Last resort. Every supported agent ships native web search and fetch: Claude
+`WebSearch` + `WebFetch`; Codex built-in web search; Gemini `google_web_search`
++ `web_fetch`; Pi `web_search` / `web_research`. See `references/web-tools.md`
+for exact identifiers. Find the official documentation URL, fetch it, and
+ground the answer in the fetched page. Quote only the relevant part and cite
+the URL.
+
+## Hard Limits
+
+- Never send secrets, credentials, private payloads, personal data, or
+  proprietary code to any tier.
+- Always pass a real, specific query — never a one-word placeholder.
+- Do not loop a tier indefinitely: one rephrase and one alternate name per
+  tier, then escalate.
+- Prefer primary sources (official docs, release notes) over blogs.
+- If all tiers fail, report the gap and the exact version mismatch — do not
+  fabricate syntax.
 
 ## Response Contract
 
-When answering a docs lookup, report:
+For a docs lookup, return:
 
-1. Library/version identified, or say version is unknown.
-2. Library ID selected.
-3. Concise syntax/example guidance grounded in docs.
-4. Fallback used, if any.
-5. Boundary note if the request is actually research or comparison.
+1. Library / framework / API and version identified, or state version unknown.
+2. Tier that produced the answer, and any fallback used.
+3. Concise syntax or example guidance grounded in the source.
+4. Source URL or library ID for the grounded claim.
+5. Boundary note when the request is actually comparison or broad research.
 
-If the user asks to describe the workflow, describe these steps instead of
-answering from memory.
+If the user asks to describe the workflow, describe these tiers and the
+escalation rules instead of answering from memory.
+
+## Failure Cases
+
+- All tiers exhausted with no grounded answer: report the gap, state the
+  version needed vs found, and do not invent syntax.
+- Returned docs are version-mismatched: note the discrepancy explicitly and
+  escalate to the next tier for the specific version's release notes.
+- Request requires private code or credentials: refuse the external query and
+  answer from local context only, noting the limitation.

@@ -9,7 +9,6 @@ BANNED = ("mcp__context7", "WebFetch", "WebSearch")
 def _docs_lookup_files() -> list[Path]:
     roots = [
         ROOT / "src" / "skills" / "context7-cli",
-        ROOT / "src" / "skills" / "looking-up-docs",
     ]
     files: list[Path] = []
     for root in roots:

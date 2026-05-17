@@ -29,18 +29,34 @@ Specific rules:
 
 Run format lint: `make lint-instructions` or use the `/reviewing-instructions` skill for full scoring.
 
+## Agents
+
+Three role agents. A role is a capability envelope plus a reasoning stance no skill can supply. Domain procedure and output format live in skills; language specifics live in each skill's `references/<lang>.md`. Role × skill × references compose — language is not a routing key. Consolidated 39 → 3 (see `docs/agent-audit-2026-05-16.md` and the executed plan in `docs/plans/completed/`).
+
+Envelope enforcement is per-target: Claude and Gemini grant a hard `tools:` allowlist (Gemini via the subagent frontmatter `tools:` field); Codex blocks writes via `sandbox_mode: read-only`; Pi has no tool-allowlist primitive, so the envelope there is a system-prompt directive. Gemini frontmatter has no read-only sandbox primitive, so `advisor` is granted `run_shell_command` and constrained to read-only by its body directive — the same tradeoff as Pi. Descriptions state each role behaviorally so the claim stays true on every target, and omit "use proactively" deliberately — roles are picked by the orchestrator to compose with a skill, not auto-delegated.
+
+- **engineer** — read + write + execute. The only mutator: applies changes and runs the build/test/lint verification on what it changed. Fork target for `writing-{go,python,typescript,web}` and `managing-infra`. Claude preloads `looking-up-docs` + `smart-explore`; `mem-history` and `sequential-thinking` stay Skill-discoverable to keep spawn context lean.
+- **reviewer** — Read + Grep + Glob + LS. Adversarial evaluator (assume bugs exist); emits structured findings/proposals, applies nothing. Non-mutating: tool-enforced on Claude and Gemini, write-blocked on Codex, directive on Pi. Absorbs the review family, code search, and planning (via `spec` / `planning:make`).
+- **advisor** — strategic escalation: verdict, ranked risks, next actions. Ships to Codex, Gemini, and Pi; excluded from Claude, which has a built-in advisor. Codex enforces read-only via sandbox; Pi uses xhigh thinking with read-only Bash and transcript-forwarding invocation; Gemini grants a read-only `tools:` allowlist plus `run_shell_command` held read-only by the body directive.
+
 ## Development Workflow
 
 - **ccgram-messaging** — Inter-agent messaging via ccgram swarm
 - **committing-code** — Smart git commits with logical grouping
 - **documenting-code** — Update project documentation based on recent changes
 - **fixing-code** — Fix code problems with disciplined diagnosis
-- **improve-codebase-architecture** — Find deepening opportunities informed by domain language in CONTEXT.md and docs/adr/
+- **improving-codebase-architecture** — Find deepening opportunities informed by domain language in CONTEXT.md and docs/adr/
 - **improving-tests** — Improve test design and coverage, including TDD/red-green-refactor guidance
 - **refactoring-code** — Batch refactoring via MorphLLM edit_file
 - **reviewing-code** — Sequential code review for security, quality, tests, and architecture
 - **searching-code** — Intelligent codebase search and zoom-out mapping via WarpGrep
-- **spec** — Spec-driven development (init, interview, plan, work, status, done, help)
+- **spec-init** — Bootstrap a new `.spec/` project or import requirements from a design doc
+- **spec-interview** — Capture PRD-quality requirements via structured Q&A
+- **spec-plan** — Turn a requirement into an EPIC with vertical-slice TASKs
+- **spec-new** — Create a single TASK or REQ file from a template
+- **spec-work** — Implement the next ready task with approval at each step
+- **spec-status** — Report spec progress; quality audit for orphans and cycles
+- **spec-done** — Mark a task complete with evidence and quality gates
 - **watch-team** — Monitor a team in tmux, auto-approve prompts, and report status
 
 ## Language Tooling
@@ -52,20 +68,25 @@ Run format lint: `make lint-instructions` or use the `/reviewing-instructions` s
 
 ## Infrastructure & Operations
 
+- **deploying-infra** — Validate and deploy Kubernetes, Terraform, Helm, Kustomize, GitHub Actions, and Docker configs
 - **managing-infra** — Infrastructure patterns for Kubernetes, Terraform, Helm, Kustomize, and GitHub Actions
 - **using-cloud-cli** — Cloud CLI patterns for GCP and AWS
 
 ## Developer Tools
 
+- **analyzing-usage** — Analyze AI coding agent usage, cost, efficiency, and burn rate (ccusage)
 - **brainstorming-ideas** — Brainstorm ideas and stress-test draft plans before coding
-- **context7-cli** — Current library documentation via the ctx7 CLI
+- **context7-cli** — ctx7 (Context7) CLI mechanics; Tier 1 of looking-up-docs
+- **debating-ideas** — Stress-test design decisions via dialectic thesis/antithesis agents
 - **evolving-config** — Audit Claude Code configuration against latest features and best practices
 - **exploring-repos** — Explore public GitHub repositories via DeepWiki AI-generated documentation
-- **grill-me** — Interview the user relentlessly about a plan or design until reaching shared understanding
 - **learning-patterns** — Extract learnings and generate project-specific customizations
-- **looking-up-docs** — Compatibility router for library documentation lookup
+- **looking-up-docs** — Find current docs via a fallback chain: ctx7 → Perplexity → platform web tools
 - **mem-history** — Query project history, past decisions, and known gotchas from claude-mem observations
+- **parsing-documents** — Extract structured data from PDF documents
 - **researching-web** — Web research via Perplexity AI
+- **reviewing-cc-config** — Review Claude Code configuration for context efficiency and anti-patterns
+- **reviewing-instructions** — Review and score AI agent/skill instruction files for quality
 - **sequential-thinking** — Structured stepwise reasoning with explicit revisions and branches
 - **smart-explore** — Token-efficient code navigation via AST parsing
 - **using-git-worktrees** — Creates isolated git worktrees for parallel development

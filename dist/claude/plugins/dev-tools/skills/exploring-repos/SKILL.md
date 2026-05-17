@@ -15,7 +15,7 @@ allowed-tools:
 context: fork
 description: Explore public GitHub repositories in Pi using GitHub CLI, local clones,
   and web tools. Use when the user asks how a public repo works, wants architecture
-  orientation, or needs repo-level Q&A. NOT for library API docs (use context7-cli)
+  orientation, or needs repo-level Q&A. NOT for library API docs (use looking-up-docs)
   or local private codebases (use searching-code).
 model: sonnet
 name: exploring-repos
@@ -170,7 +170,7 @@ DeepWiki returns empty or error?
    ```
 
    Use `npx ctx7@latest` (or `bunx ctx7@latest`) when `ctx7` is not globally
-   installed. The `looking-up-docs` skill wraps this workflow.
+   installed. The `context7-cli` skill wraps this workflow.
 
 3. **Perplexity** — for repos not in DeepWiki or Context7:
 

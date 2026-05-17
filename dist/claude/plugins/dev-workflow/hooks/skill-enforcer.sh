@@ -50,15 +50,15 @@ if echo "$PROMPT_LOWER" | grep -qE '\bgcloud\b|\bgsutil\b|\bbq\s|\baws\s|bigquer
 	skills+="using-cloud-cli "
 fi
 
-# context7-cli: Direct ctx7 CLI invocation for library docs
-# Triggers: explicit "ctx7" / "context7" mentions or library-id queries
+# context7-cli: ctx7 (Context7) CLI mechanics — Tier 1 of looking-up-docs
+# Triggers: literal "ctx7" / "context7" / a /org/project library-id query.
 if echo "$PROMPT_LOWER" | grep -qE '\bctx7\b|\bcontext7\b|context7[[:space:]-]cli|/[a-z0-9-]+/[a-z0-9-]+\s+(library|docs|version)'; then
 	skills+="context7-cli "
 fi
 
-# looking-up-docs: Library documentation via Context7 (router → context7-cli)
-# Triggers: Explicit doc-seeking language, API reference needs
-# NOT for comparisons/best-practices (use researching-web)
+# looking-up-docs: docs-lookup fallback flow (ctx7 → Perplexity → built-in web)
+# Triggers: natural-language doc-seeking, API reference, or latest-behavior needs.
+# NOT for comparisons/best-practices (use researching-web).
 if echo "$PROMPT_LOWER" | grep -qE '\bdocs\b|\bdocumentation\b|api\s*(reference|docs)|look\s*up.*(docs|api|syntax|usage|reference|examples)|find.*(docs|documentation|reference)|check.*(docs|documentation)|man\s*page|reference.*(guide|manual)|official.*(docs|documentation)|library.*docs|version.*specific|syntax\s*for|examples\s*of|how\s*to\s*use\s*\w+'; then
 	# Exclude comparison/research patterns — those go to researching-web
 	if ! echo "$PROMPT_LOWER" | grep -qE '\bvs\b|\bcompare\b|\bbest\s*practice\b|\bpros\s*(and|&)\s*cons\b|\bwhich.*(better|should)\b'; then
@@ -153,15 +153,15 @@ fi
 
 # brainstorming-ideas: Brainstorm ideas and stress-test draft plans
 # Triggers: brainstorm/design, plan exploration, resolve design-blocking terms
-# NOT for "grill me" decision-tree interview on a single plan (use grill-me)
+# Also owns the "grill me" decision-tree interview (see grill block below)
 if echo "$PROMPT_LOWER" | grep -qE '\bbrainstorm\b|\bideate\b|\bdesign\s*(a|an|this|the|new)?\s*(\w+\s+)?(feature|component|system|api|flow|architecture)\b|\bexplore\s*(approach|option|idea|design|alternative)s?\b|\bthink\s*through\b|\bbefore\s*(i|we)?\s*(implement|code|build|start)\b|\bplan\s*(out|this|the)?\s*(feature|design|approach)\b|\bsketch\s*out\b|\bfigure\s*out\s*(how|what|the)\b|\bdesign\s*session\b|\bwhat\s*should\s*(i|we)\s*(build|implement|create)\b|\bCONTEXT\.md\b|\bADR\b|domain\s*(language|glossary|term)'; then
 	skills+="brainstorming-ideas "
 fi
 
-# grill-me: Decision-tree interview on a single plan/design
+# brainstorming-ideas (grill): decision-tree interview on a single plan/design
 # Triggers: "grill me", stress-test a SPECIFIC plan, challenge an existing design
 if echo "$PROMPT_LOWER" | grep -qE '\bgrill\s*(me|this|the|my)\b|\bstress[[:space:]-]?test\s*(this|the|my)\s*(plan|design|idea)\b|\bchallenge\s*me\b.*\bplan\b|\binterview\s*me\b.*\b(plan|design|approach)\b'; then
-	skills+="grill-me "
+	skills+="brainstorming-ideas "
 fi
 
 # using-modern-cli: Modern CLI tools for better performance
@@ -182,16 +182,11 @@ if echo "$PROMPT_LOWER" | grep -qE '\blearn\b.*\b(from|session|pattern|conversat
 	skills+="learning-patterns "
 fi
 
-# spec-status: Progress overview for spec-driven projects
-# Triggers: project status, progress, how far along, spec status
-if echo "$PROMPT_LOWER" | grep -qE '\b(project|spec|task)\s*(status|progress|overview)\b|\bhow\s*(far|much|many|is)\s*(along|done|progress|left|remain|complete)\b|\bwhat.*(done|left|remain|progress|status)\b|\bshow\s*(me\s*)?(progress|status|overview)\b|\bhow.*project\s*(going|doing)\b'; then
+# spec-status: Progress overview + orientation for spec-driven projects
+# Triggers: project status, progress, how far along, spec status,
+#           how does spec work, spec guide, spec methodology, spec workflow
+if echo "$PROMPT_LOWER" | grep -qE '\b(project|spec|task)\s*(status|progress|overview)\b|\bhow\s*(far|much|many|is)\s*(along|done|progress|left|remain|complete)\b|\bwhat.*(done|left|remain|progress|status)\b|\bshow\s*(me\s*)?(progress|status|overview)\b|\bhow.*project\s*(going|doing)\b|\bhow\s*does\s*spec\b|\bspec\s*(guide|help|methodology|workflow|reference)\b|\bspec[[:space:]-]driven\s*(guide|help|how)\b|\bwhat\s*(are|is)\s*(the)?\s*spec\s*(command|workflow|phase|skill)'; then
 	skills+="spec-status "
-fi
-
-# spec-core: Orientation and quick reference for spec-driven development
-# Triggers: how does spec work, spec guide, spec methodology
-if echo "$PROMPT_LOWER" | grep -qE '\bhow\s*does\s*spec\b|\bspec\s*(guide|help|methodology|workflow|reference)\b|\bspec[[:space:]-]driven\s*(guide|help|how)\b|\bwhat\s*(are|is)\s*(the)?\s*spec\s*(command|workflow|phase|skill)'; then
-	skills+="spec-core "
 fi
 
 # spec-init: Initialize .spec/ project structure

@@ -83,5 +83,5 @@ When the docs are missing or weak:
 1. Broaden or rephrase the query once.
 2. Try a more specific library name once.
 3. Use the best result if it is good enough.
-4. Otherwise use available web tools such as `web_search` or `web_answer` for
-   official docs or release notes, and say that a fallback was used.
+4. Otherwise report that Context7 is exhausted and hand back to
+   `looking-up-docs`, which owns escalation to web tools (Tier 2 onward).

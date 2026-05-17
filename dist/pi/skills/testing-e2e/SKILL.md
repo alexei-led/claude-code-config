@@ -1,8 +1,8 @@
 ---
-description: Sequential E2E workflow. Use when running existing Playwright tests,
-  generating browser checks, recording a visible session, or verifying a user flow
-  end-to-end. Not for unit tests, API-only tests, or logic tests where curl or JSDOM
-  suffices — use improving-tests or fixing-code instead.
+description: Playwright-based end-to-end browser testing of user flows. Use when running
+  existing Playwright tests, generating browser checks, recording a visible session,
+  or verifying a user journey end-to-end. NOT for unit tests, API-only tests, or logic
+  tests where curl or JSDOM suffices — use improving-tests or fixing-code instead.
 name: testing-e2e
 ---
 
@@ -39,7 +39,7 @@ find its directory from the loaded skill path and run helper scripts from
 there:
 
 ```bash
-cd <playwright-skill-dir> && node run.js /tmp/e2e-check.js
+cd <playwright-skill-dir> && node scripts/run.js /tmp/e2e-check.js
 ```
 
 If the helper is unavailable, use project-local Playwright commands instead:

@@ -1,4 +1,0 @@
-tools: read, grep, find, ls, bash
-thinking: high
-model: openai-codex/gpt-5.5
-max_turns: 15

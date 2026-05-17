@@ -140,7 +140,7 @@ If the task needs a product/design decision, credentials, external access, or ma
 
 ### Delegate planning
 
-If the runtime supports subagents, delegate to a planning specialist (named `spec-planner` in this skill suite). Prompt:
+If the runtime supports subagents, delegate to a planning specialist (the `reviewer` role running this skill). Prompt:
 
 ```
 Create an implementation plan.
@@ -188,38 +188,7 @@ Use the runtime's task-tracking facility (if any) to materialize the plan as tra
 
 ### Implementation mode
 
-Ask multi-choice: "How should we implement this task?"
-
-- Solo engineer — single agent implements
-- Implementation pair — engineer + test specialist work as a team (tests written in parallel)
-- Team research first — explore with team before implementing
-
-### Solo engineer (default)
-
-Detect language from task / epic, then delegate to the matching language engineer (`go-engineer`, `python-engineer`, `typescript-engineer`, `web-engineer`). Prompt:
-
-```
-Implement: <task description>
-Plan: <plan>
-Return proposals only — do not apply edits.
-```
-
-Apply proposals with user approval (every edit shown).
-
-### Implementation pair
-
-Spawn a two-member team:
-
-- Primary: language engineer — writes implementation code.
-- Secondary: language tests reviewer (`go-tests` / `py-tests` / `ts-tests` / `web-tests`) — writes tests in parallel, identifies coverage gaps.
-
-Have them coordinate: engineer proposes implementation, tests reviewer proposes tests, both review each other, converge.
-
-Apply proposals with user approval.
-
-### Team research first
-
-Spawn a research team — exploration agent, language engineer, language tests reviewer — to share findings and converge on approach. Then proceed with solo or pair.
+Ask the user which mode to use — solo engineer (default), implementation pair, or team research first — then delegate accordingly. For the mode options, agent composition, and delegation prompts, read `references/implementation-modes.md`.
 
 ## Step 4: Verify (max 3 attempts)
 
@@ -265,16 +234,7 @@ Ask multi-choice: "Record any lesson or follow-up task?"
 - File task — new task found
 - No — continue
 
-If recording a note:
-
-- Pitfall or convention → `.spec/memory/`
-- Domain term → `CONTEXT.md` (user approves wording)
-- Rejected enhancement → `.out-of-scope/<concept>.md`
-
-If filing a discovered task:
-
-- Ask the user to describe it, then use the `spec-new` skill: `spec-new task <slug>`.
-- Link back: `scripts/specctl dep add TASK-<new-slug> TASK-<id> --type discovered-from`.
+For where each note type lands and how to link a discovered task back to this one, read `references/capture-learnings.md`.
 
 ## Step 7: Review & commit (user choice)
 
@@ -337,7 +297,7 @@ Continue: `spec-work` | `spec-work EPIC-<id>`
 
 ## Key principles
 
-- User control over every edit.
+- User control at every decision gate — task selection (Step 1), plan approval (Step 2), implementation mode (Step 3), and post-apply review of the scoped diff before commit (Step 7). The `engineer` applies edits autonomously within the approved plan; review is post-apply, not per-edit.
 - Dependency-aware selection (`scripts/specctl ready` orders by deps and priority).
 - Evidence-tracked completion (`scripts/specctl done` records what was done).
 - Review and commit are offered, not forced.

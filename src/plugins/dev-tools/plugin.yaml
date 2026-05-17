@@ -8,11 +8,11 @@ skills:
 - debating-ideas
 - evolving-config
 - exploring-repos
-- grill-me
 - learning-patterns
-- reviewing-instructions
 - looking-up-docs
+- reviewing-instructions
 - mem-history
+- parsing-documents
 - researching-web
 - reviewing-cc-config
 - sequential-thinking
@@ -20,8 +20,7 @@ skills:
 - using-git-worktrees
 - using-modern-cli
 agents:
-- pdf-parser
-- perplexity-researcher
+- reviewer
 hooks:
 - worktree-create
 - worktree-remove

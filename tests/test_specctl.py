@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 from conftest import REPO_ROOT
 
-SPECCTL = REPO_ROOT / "src" / "skills" / "spec-core" / "scripts" / "specctl.py"
+SPECCTL = REPO_ROOT / "src" / "skills" / "spec-status" / "scripts" / "specctl.py"
 
 
 def run_specctl(*args: str, cwd: str | None = None) -> subprocess.CompletedProcess:
@@ -110,7 +110,7 @@ def test_validate_empty(empty_spec: Path):
 
 def test_status_counts_task(empty_spec: Path):
     (empty_spec / ".spec" / "tasks" / "TASK-smoke.md").write_text(
-        "---\nid: TASK-smoke\nstatus: todo\npriority: high\n---\n# Smoke\n"
+        "---\nid: TASK-smoke\nstatus: todo\npriority: normal\n---\n# Smoke\n"
     )
     result = run_specctl("status", "--json", cwd=str(empty_spec))
     assert result.returncode == 0

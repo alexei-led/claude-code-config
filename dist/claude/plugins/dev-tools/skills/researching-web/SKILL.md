@@ -7,16 +7,17 @@ allowed-tools:
 - WebFetch
 - mcp__perplexity-ask__perplexity_ask
 context: fork
-description: Web research via Pi web providers. Use for technical comparisons, recent
-  facts, best practices, standards, pros and cons, or questions needing grounded web
-  evidence. NOT for API syntax lookup or code examples — use context7-cli for those.
-  NOT for repo-specific questions — search local files first.
+description: Web research via Perplexity and platform web tools. Use for technical
+  comparisons, recent facts, ecosystem news, best practices, standards, or questions
+  needing grounded web evidence. NOT for API syntax lookup or code examples — use
+  looking-up-docs for those. NOT for repo-specific questions — search local files
+  first.
 name: researching-web
 ---
 
 # Web Research with Perplexity
 
-**Default**: Call Perplexity MCP directly. Only spawn agent when codebase context is explicitly needed.
+**Default**: Call Perplexity MCP directly.
 
 ## Critical Routing Rules
 
@@ -49,26 +50,6 @@ For research output, include:
 Use this for 90% of research requests. When user says "ask Perplexity", "research", "look up", etc., use the available web research tool with a scoped research question.
 
 This is fast, reliable, and what users expect.
-
-## Deep Mode: Agent (Rare)
-
-### Only use when user explicitly asks to compare research with their current code
-
-Trigger phrases that warrant agent:
-
-- "compare my code to best practices"
-- "is my implementation following standards"
-- "research and show how my code differs"
-
-```
-Task(subagent_type="perplexity-researcher", prompt="Research: <topic>", run_in_background=true)
-```
-
-### DO NOT use agent for
-
-- Simple "ask Perplexity about X" requests
-- General research questions
-- "What is the best way to do X" (unless they mention their code)
 
 ## Query Formulation Tips
 

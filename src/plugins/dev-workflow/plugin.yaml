@@ -6,38 +6,15 @@ skills:
 - committing-code
 - documenting-code
 - fixing-code
-- improve-codebase-architecture
+- improving-codebase-architecture
 - improving-tests
 - refactoring-code
 - reviewing-code
 - searching-code
 - watch-team
 agents:
-- docs-keeper
-- go-docs
-- go-idioms
-- go-impl
-- go-qa
-- go-simplify
-- go-tests
-- py-docs
-- py-idioms
-- py-impl
-- py-qa
-- py-simplify
-- py-tests
-- ts-docs
-- ts-idioms
-- ts-impl
-- ts-qa
-- ts-simplify
-- ts-tests
-- web-docs
-- web-idioms
-- web-impl
-- web-qa
-- web-simplify
-- web-tests
+- engineer
+- reviewer
 hooks:
 - file-protector
 - git-guardrails
@@ -46,4 +23,4 @@ hooks:
 - skill-enforcer
 - smart-lint
 - test-runner
-marketplace_name: review-lint-commit
+marketplace_name: code-workflow

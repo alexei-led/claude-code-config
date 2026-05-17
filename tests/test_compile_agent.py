@@ -2,11 +2,13 @@
 
 Covered cases:
 
-- `go-engineer` — base + per-target frontmatter overlay (tools/model/skills),
-  no body overlay. Exercises all four targets: three markdown emissions and
-  one Codex TOML conversion.
-- `scout` — `targets: [pi]` restriction. Verifies only Pi receives an output;
-  Claude/Codex/Gemini are skipped.
+- `engineer` — base + per-target frontmatter overlay (tools/model/skills),
+  no body overlay. Claude and Pi are golden-locked; Codex/Gemini are
+  asserted to emit one file each.
+- `reviewer` — provably non-mutating envelope. Claude and Pi golden-locked;
+  Bash/Edit/Write asserted absent from the compiled tools in both shapes.
+- `advisor` — `targets: [pi]` restriction. Verifies only Pi receives an
+  output; Claude/Codex/Gemini are skipped.
 
 Each `(agent, target)` pair has a locked snapshot at
 `tests/fixtures/golden_agents/<agent>/<target>/`. The test compiles each
@@ -99,39 +101,133 @@ def _diff_files(golden: Path, actual: Path) -> str | None:
     return None
 
 
-def test_compile_agent_go_engineer_all_platforms(ca, tmp_path: Path) -> None:
-    """go-engineer has no targets restriction — all platforms receive output."""
-    root = make_agent_staging_root(tmp_path)
-    agent_dir = root / "src" / "agents" / "go-engineer"
-    plugin_index = {"go-engineer": ["go-dev"]}
+def _compiled_tools(path: Path) -> object:
+    """Return the `tools` value from a compiled agent's frontmatter.
 
-    written = ca.compile_agent(agent_dir, "claude", plugin_index, root)
-    assert len(written) == 1
-    actual = written[0]
-    golden = _GOLDENS / "go-engineer" / "claude" / "go-engineer.md"
+    Pi emits a comma string; Claude and Gemini emit a YAML list. Returned
+    as-is so callers can assert on the native shape.
+    """
+    return frontmatter.loads(path.read_text()).metadata.get("tools")
+
+
+def test_compile_agent_engineer_all_platforms(ca, tmp_path: Path) -> None:
+    """engineer has no targets restriction — every platform receives output.
+
+    Claude and Pi carry distinct per-target frontmatter overlays
+    (`claude/frontmatter.yaml`, `pi/frontmatter.yaml`) and are golden-locked.
+    Codex has no overlay (base AGENT.md only); Gemini carries a
+    `gemini/frontmatter.yaml` tool-allowlist overlay. Both are asserted to
+    emit exactly one file so a regression that drops them is still caught.
+    """
+    root = make_agent_staging_root(tmp_path)
+    agent_dir = root / "src" / "agents" / "engineer"
+    plugin_index = {"engineer": ["dev-workflow"]}
+
+    claude_written = ca.compile_agent(agent_dir, "claude", plugin_index, root)
+    assert len(claude_written) == 1
+    golden = _GOLDENS / "engineer" / "claude" / "engineer.md"
     assert golden.is_file(), f"missing golden snapshot: {golden}"
-    diff = _diff_files(golden, actual)
-    assert diff is None, diff
+    assert _diff_files(golden, claude_written[0]) is None
+
+    pi_written = ca.compile_agent(agent_dir, "pi", None, root)
+    assert pi_written == [root / "dist" / "pi" / "agents" / "engineer.md"]
+    pi_golden = _GOLDENS / "engineer" / "pi" / "engineer.md"
+    assert pi_golden.is_file(), f"missing golden snapshot: {pi_golden}"
+    assert _diff_files(pi_golden, pi_written[0]) is None
+
+    assert len(ca.compile_agent(agent_dir, "codex", plugin_index, root)) == 1
+    assert len(ca.compile_agent(agent_dir, "gemini", None, root)) == 1
 
 
-def test_compile_agent_scout_pi_only(ca, tmp_path: Path) -> None:
-    """scout has `targets: [pi]` — only Pi receives an output."""
+def test_compile_agent_reviewer_envelope_is_read_only(ca, tmp_path: Path) -> None:
+    """reviewer's envelope must never include a mutating tool.
+
+    Central invariant of the 39->3 consolidation, enforced per target:
+    Claude and Gemini grant a hard `tools:` allowlist; Codex has no
+    tool-allowlist primitive so writes are blocked via
+    `sandbox_mode: read-only`; Pi relies on the system-prompt directive.
+    Golden-lock Claude/Pi and assert no mutating tool leaks into the
+    Claude, Pi, or Gemini tools shape.
+    """
     root = make_agent_staging_root(tmp_path)
-    agent_dir = root / "src" / "agents" / "scout"
+    agent_dir = root / "src" / "agents" / "reviewer"
 
-    for target in ("claude", "codex", "gemini"):
-        assert ca.compile_agent(agent_dir, target, None, root) == [], (
-            f"scout should not emit for {target}"
-        )
+    claude_written = ca.compile_agent(
+        agent_dir, "claude", {"reviewer": ["dev-workflow"]}, root
+    )
+    assert len(claude_written) == 1
+    claude_golden = _GOLDENS / "reviewer" / "claude" / "reviewer.md"
+    assert claude_golden.is_file(), f"missing golden snapshot: {claude_golden}"
+    assert _diff_files(claude_golden, claude_written[0]) is None
+
+    pi_written = ca.compile_agent(agent_dir, "pi", None, root)
+    assert pi_written == [root / "dist" / "pi" / "agents" / "reviewer.md"]
+    pi_golden = _GOLDENS / "reviewer" / "pi" / "reviewer.md"
+    assert pi_golden.is_file(), f"missing golden snapshot: {pi_golden}"
+    assert _diff_files(pi_golden, pi_written[0]) is None
+
+    claude_tools = _compiled_tools(claude_written[0])
+    assert claude_tools == ["Read", "Grep", "Glob", "LS"], claude_tools
+
+    pi_tools = _compiled_tools(pi_written[0])
+    assert isinstance(pi_tools, str), pi_tools
+    pi_tool_set = {t.strip().lower() for t in pi_tools.split(",")}
+    forbidden = {"bash", "edit", "write"}
+    assert pi_tool_set.isdisjoint(forbidden), (
+        f"reviewer pi envelope leaked a mutating tool: {pi_tool_set & forbidden}"
+    )
+
+    gemini_written = ca.compile_agent(agent_dir, "gemini", None, root)
+    assert len(gemini_written) == 1
+    gemini_tools = _compiled_tools(gemini_written[0])
+    assert isinstance(gemini_tools, list), gemini_tools
+    gemini_forbidden = {"run_shell_command", "write_file", "replace"}
+    assert not (set(gemini_tools) & gemini_forbidden), (
+        f"reviewer gemini envelope leaked a mutating tool: "
+        f"{set(gemini_tools) & gemini_forbidden}"
+    )
+
+    codex_written = ca.compile_agent(
+        agent_dir, "codex", {"reviewer": ["dev-workflow"]}, root
+    )
+    assert len(codex_written) == 1
+    assert codex_written[0].suffix == ".toml"
+    assert 'sandbox_mode = "read-only"' in codex_written[0].read_text(), (
+        "reviewer must be write-blocked on Codex (no tool-allowlist primitive)"
+    )
+
+
+def test_compile_agent_advisor_excludes_claude(ca, tmp_path: Path) -> None:
+    """advisor has `targets: [codex, gemini, pi]`.
+
+    Claude is excluded by design — it has a built-in advisor tool, so an
+    agent definition there would be redundant. Codex/Gemini/Pi each emit
+    exactly one file; the Pi output is golden-locked.
+    """
+    root = make_agent_staging_root(tmp_path)
+    agent_dir = root / "src" / "agents" / "advisor"
+
+    assert ca.compile_agent(agent_dir, "claude", None, root) == [], (
+        "advisor must not emit for claude (built-in advisor)"
+    )
+
+    assert len(ca.compile_agent(agent_dir, "codex", None, root)) == 1
+    assert len(ca.compile_agent(agent_dir, "gemini", None, root)) == 1
 
     written = ca.compile_agent(agent_dir, "pi", None, root)
     assert len(written) == 1
-    actual = root / "dist" / "pi" / "agents" / "scout.md"
-    golden = _GOLDENS / "scout" / "pi" / "scout.md"
+    actual = root / "dist" / "pi" / "agents" / "advisor.md"
+    golden = _GOLDENS / "advisor" / "pi" / "advisor.md"
 
     assert golden.is_file(), f"missing golden snapshot: {golden}"
     diff = _diff_files(golden, actual)
     assert diff is None, diff
+
+    codex_advisor = root / "dist" / "codex" / "agents" / "advisor.toml"
+    assert codex_advisor.is_file()
+    assert 'sandbox_mode = "read-only"' in codex_advisor.read_text(), (
+        "advisor must be write-blocked on Codex (no tool-allowlist primitive)"
+    )
 
 
 def test_codex_target_emits_toml_extension(ca, tmp_path: Path) -> None:

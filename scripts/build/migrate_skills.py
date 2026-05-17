@@ -428,7 +428,7 @@ BATCH_2[:] = [
         source_plugin_dir=ROOT / "plugins" / "dev-tools",
     ),
     MigrationSpec(
-        name="improve-codebase-architecture",
+        name="improving-codebase-architecture",
         source_plugin_dir=ROOT / "plugins" / "dev-workflow",
     ),
     MigrationSpec(

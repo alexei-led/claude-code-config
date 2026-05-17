@@ -9,6 +9,14 @@ name: spec-new
 
 CLI at `scripts/specctl`. Input: `<type> <name>` where `<type>` is `task` or `req`. If `<name>` contains `/`, the leading part is a topic folder.
 
+## Failure handling
+
+Validate before doing any work:
+
+- Missing or empty `<name>`: ask for the name; do not invent a placeholder.
+- `<type>` not `task` or `req`: state the allowed values and stop; do not guess.
+- Target file already exists: do not overwrite. Report the existing path and ask whether to open it, pick a new name, or confirm overwrite.
+
 ## Step 1: Ensure `.spec/` exists
 
 ```bash

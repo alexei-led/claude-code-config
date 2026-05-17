@@ -1,7 +1,9 @@
 ---
-description: Use when you need strategic risk review and next-step recommendations without code changes
+description: Strategic risk reviewer — delivers a verdict, ranked risks, and ordered next actions, no code changes. Use for go/no-go calls, risk triage, and escalation when stuck. Not for applying changes (engineer) or line-level code review (reviewer).
 name: advisor
 targets:
+  - codex
+  - gemini
   - pi
 ---
 

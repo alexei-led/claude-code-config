@@ -4,5 +4,6 @@ description: Idiomatic Go 1.25+ development with stdlib-first patterns
 skills:
   - writing-go
 agents:
-  - go-engineer
+  - engineer
 hooks: []
+marketplace_name: go-1-25-dev

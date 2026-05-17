@@ -1,2 +1,3 @@
-#\!/usr/bin/env bash
-exec "$(dirname "$0")/../../spec-core/scripts/specctl.py" "$@"
+#!/usr/bin/env bash
+# Wrapper script for specctl.py
+exec "$(dirname "$0")/specctl.py" "$@"

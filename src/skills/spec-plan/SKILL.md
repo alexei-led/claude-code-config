@@ -1,6 +1,6 @@
 ---
 name: spec-plan
-description: Turn a requirement or idea into an EPIC with vertical-slice TASKs. Use when you have a REQ file or feature idea and need an executable plan with dependencies and acceptance criteria. NOT for capturing requirements — use spec-interview. NOT for implementing tasks — use spec-work.
+description: Turn a requirement or a concrete feature idea into an EPIC with vertical-slice TASKs. Use when you have a REQ file, or a feature idea already specific enough for a quick 3–5 question pass, and need an executable plan with dependencies and acceptance criteria. NOT for open-ended idea exploration — use brainstorming-ideas. NOT for capturing PRD-quality requirements — use spec-interview. NOT for implementing tasks — use spec-work.
 ---
 
 # `spec plan` — create an epic with vertical-slice tasks
@@ -15,7 +15,10 @@ The user's input is one of:
 
 - `REQ-id` — read requirement, create epic + tasks
 - `EPIC-id` — refine existing epic
-- `"<idea text>"` — ask 3–5 quick questions, then plan (for deep requirements, use the `spec-interview` skill instead)
+- `"<idea text>"` — only when the idea is already concrete: ask 3–5 quick
+  questions, then plan. For open-ended or unvalidated ideas, use the
+  `brainstorming-ideas` skill first; for deep PRD-quality requirements, use the
+  `spec-interview` skill instead.
 
 If empty, ask: "What should I plan? Give me a REQ id or describe the feature."
 
@@ -52,41 +55,7 @@ Capture from the research:
 
 ## Step 3: Create the plan
 
-### Vertical-slice rules
-
-Tasks should be tracer bullets, not horizontal layers.
-
-- Each task delivers a narrow but complete path through the system.
-- A completed task is demoable or independently verifiable.
-- Prefer many thin slices over one thick slice.
-- Avoid "schema task" → "API task" → "UI task" unless one layer is the whole product.
-- Include tests in the same slice as the behavior.
-
-If a slice needs a human decision, external access, or manual validation before completion, capture it as a blocker or open question. Don't create a separate task taxonomy for it.
-
-### Task sizing
-
-- **S** — 1–2 files, 1–3 acceptance criteria → combine with a related task
-- **M** — 3–5 files, 3–5 criteria → **target size**
-- **L** — 5+ files, 5+ criteria → split into M tasks
-
-M is ideal: meaningful progress, fits one session.
-
-### Dependency rules
-
-- Tasks that must complete before others → `blocked-by`
-- Minimize file overlap for parallel work
-- Sequential S tasks → combine into M
-
-### Plan mental model
-
-Before writing, answer:
-
-1. What vertical slices are needed?
-2. What order (dependencies)?
-3. What size is each task?
-4. Which can run in parallel?
-5. Which unresolved questions block implementation?
+Build vertical-slice tasks: each is a tracer bullet (narrow but complete path through the system), M-sized (3–5 files / 3–5 criteria) is the target, ordering via `blocked-by`, tests in the same slice as the behavior. For the full vertical-slice rules, task sizing, dependency rules, and the pre-write mental-model checklist, read `references/planning-rules.md`.
 
 ## Step 4: Present plan for approval
 

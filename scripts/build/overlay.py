@@ -102,6 +102,7 @@ ALLOWED_KEYS: dict[str, frozenset[str]] = {
             "metadata",
             "allowed-tools",
             "tools",
+            "max_turns",
         }
     ),
     "pi": frozenset(

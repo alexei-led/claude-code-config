@@ -2,7 +2,8 @@
 description: Audit AI coding-agent configuration against current features and local
   usage. Use when the user wants to improve Claude Code, Pi, Codex, Gemini, skill,
   hook, or agent configuration. NOT for writing new application code, fixing bugs,
-  or any task that isn't about agent/tool configuration files.
+  or any task that isn't about agent/tool configuration files. NOT for review-only
+  audits without applying changes (use `reviewing-cc-config`).
 name: evolving-config
 ---
 
@@ -31,7 +32,7 @@ Review:
 1. Identify the config surface and the user's goal.
 2. Read current files before suggesting changes.
 3. Check generated-file rules before editing generated outputs.
-4. Use `context7-cli` for library or tool docs when syntax is uncertain.
+4. Use `looking-up-docs` for library or tool docs when syntax is uncertain.
 5. Use `web_search` or `web_answer` for current public docs, release notes, or
    feature availability.
 6. Prefer small, reversible changes. Ask before deleting or moving private

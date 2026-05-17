@@ -14,6 +14,17 @@ name: fixing-code
 
 Fix until clean. For hard bugs, diagnose before editing. No guessing. Confirm before any destructive command; never use `git reset --hard`, `git clean`, or force push as a fix.
 
+## Role-gated action
+
+Detect your capability from your tools, not from prose:
+
+- Write-capable role (engineer): run all steps — diagnose, apply the fix, run verification.
+- Read-only role (reviewer): run Steps 1–3 to diagnose (a reviewer has no Bash — work from the files in scope and caller-supplied error/diff context, skipping any command), then stop before Step 4. Instead of editing, emit the fix in the Proposed Changes contract below. Apply nothing; run nothing.
+
+## Language detection
+
+Detect the language from the file extensions in scope and use the matching toolchain in Step 1 (build/test/lint commands shown per language). This skill has no per-language reference files — operate from the generic procedure; the language only selects which verification commands to run.
+
 ## Step 1: Build a feedback loop
 
 For lint/build/test failures, run validation first:
@@ -113,6 +124,8 @@ Or language equivalents. Loop back to root-cause analysis if anything still fail
 
 ## Output format
 
+Engineer (applied the fix):
+
 ```text
 FIX COMPLETE
 ============
@@ -133,3 +146,24 @@ Verification:
 ```
 
 If unresolved, state the blocker and exact artifact/access needed. Do not pretend clean.
+
+Reviewer (diagnosed only — emit the fix as a proposal, apply nothing):
+
+```text
+## Proposed Changes
+
+Root cause:
+- <short verified cause>
+
+### Change 1: <brief description>
+
+File: `path/to/file`
+Action: CREATE | MODIFY | DELETE
+
+Code:
+<complete code block, in the file's language>
+
+Rationale: <why this change>
+```
+
+For MODIFY, include enough surrounding context (signatures, nearby lines) to locate the change precisely. For large fixes, show one representative change and describe the pattern rather than every file.

@@ -64,19 +64,19 @@ Write a Playwright script to `/tmp/playwright-record-*.js` that:
 1. Launches browser with `headless: false` and `slowMo: 100`
 2. Navigates to target URL
 3. Captures interactions and generates test with Page Object pattern
-4. Execute via: `cd ~/.claude/skills/playwright-skill && node run.js /tmp/playwright-record-*.js`
+4. Execute via: `cd ~/.claude/skills/playwright-skill && node scripts/run.js /tmp/playwright-record-*.js`
 
 ### Generate Test
 
 Translate manual flows into Playwright actions and assertions, but first define deterministic fixtures: seeded users/items/coupons, fixed dates, stable IDs, reset database state, and mocked external services where needed.
 
-### Spawn playwright-tester agent
+### Spawn engineer agent
 
 ```
 Task(
-  subagent_type="playwright-tester",
+  subagent_type="engineer",
   description="Generate E2E test",
-  prompt="Generate E2E test for:
+  prompt="Generate an E2E test using the Playwright browser workflow — real browser automation, not generic unit-test authoring.
   URL: {target URL}
   Flow: {user flow description}
 
@@ -85,26 +85,28 @@ Task(
   - Use semantic locators (getByRole, getByLabel, getByText)
   - Include assertions for expected outcomes
   - No hardcoded waits (use waitFor patterns)
-  - Include accessibility checks where appropriate"
+  - Include accessibility checks where appropriate
+  - Write the script to /tmp/playwright-*.js and run it via the playwright-skill executor: cd ~/.claude/skills/playwright-skill && node scripts/run.js /tmp/playwright-*.js"
 )
 ```
 
 ### Verify Feature
 
-### Spawn playwright-tester agent for feature verification
+### Spawn engineer agent for feature verification
 
 ```
 Task(
-  subagent_type="playwright-tester",
+  subagent_type="engineer",
   description="Verify feature",
-  prompt="Verify this feature works correctly in the browser:
+  prompt="Verify this feature works correctly in the browser using the Playwright workflow — real browser automation, not generic test authoring.
   Feature: {feature description}
 
   Steps:
   1. Navigate to appropriate page
   2. Execute user flow
   3. Assert expected outcomes
-  4. Report PASS/FAIL with evidence (screenshots if needed)"
+  4. Report PASS/FAIL with evidence (screenshots if needed)
+  Write the Playwright script to /tmp/playwright-*.js and run it via the playwright-skill executor: cd ~/.claude/skills/playwright-skill && node scripts/run.js /tmp/playwright-*.js"
 )
 ```
 
@@ -149,7 +151,7 @@ Details:
 Write Playwright scripts to `/tmp/` and run via the playwright-skill executor:
 
 ```bash
-cd ~/.claude/skills/playwright-skill && node run.js /tmp/playwright-test-*.js
+cd ~/.claude/skills/playwright-skill && node scripts/run.js /tmp/playwright-test-*.js
 ```
 
 The executor handles module resolution, auto-installs Chromium if needed, and provides helper utilities. See `playwright-skill/SKILL.md` for full patterns.

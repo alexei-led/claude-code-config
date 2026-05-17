@@ -2,7 +2,7 @@
 description:
   Explore public GitHub repositories in Pi using GitHub CLI, local clones,
   and web tools. Use when the user asks how a public repo works, wants architecture
-  orientation, or needs repo-level Q&A. NOT for library API docs (use context7-cli)
+  orientation, or needs repo-level Q&A. NOT for library API docs (use looking-up-docs)
   or local private codebases (use searching-code).
 name: exploring-repos
 ---
@@ -22,7 +22,7 @@ exist.
    notes, or architecture articles.
 5. Use `gh` or a shallow clone for code structure when needed.
 6. Map architecture from files, not reputation.
-7. Use `context7-cli` for library API docs, not repo architecture.
+7. Use `looking-up-docs` for library API docs, not repo architecture.
 
 ## Commands
 
