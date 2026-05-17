@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, mock } from "bun:test";
 
-import { HOOK_RUNNER_INVOKE_CHANNEL } from "./hook-bridge.js";
+import { HOOK_RUNNER_INVOKE_CHANNEL } from "./shared/hook-bridge.js";
 
 // ---------------------------------------------------------------------------
 // Module mocks — must be established before the first import of hook-runner

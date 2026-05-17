@@ -34,7 +34,7 @@ import type {
 	TurnEndEvent,
 } from "@earendil-works/pi-coding-agent";
 
-import { HOOK_RUNNER_INVOKE_CHANNEL, type SyntheticHookInvocationRequest, toCcToolName } from "../hook-bridge.js";
+import { HOOK_RUNNER_INVOKE_CHANNEL, type SyntheticHookInvocationRequest, toCcToolName } from "../shared/hook-bridge.js";
 import { decodeGeneric } from "./cc-protocol.js";
 import { loadConfig, resolvedConfig, shouldForceReloadForConfigChange } from "./config.js";
 import {
@@ -58,7 +58,7 @@ import { registerHooksCommand } from "./ui.js";
 // Re-export the legacy public surface for tests and external callers.
 export { _resetForTesting } from "./config.js";
 export { matcherMatches, matchingGroups } from "./dispatch.js";
-export { toCcToolName } from "../hook-bridge.js";
+export { toCcToolName } from "../shared/hook-bridge.js";
 
 // ---------------------------------------------------------------------------
 // stdin builders

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, mock } from "bun:test";
 
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
-import { HOOK_RUNNER_INVOKE_CHANNEL, type SyntheticHookInvocationResult } from "../hook-bridge.js";
+import { HOOK_RUNNER_INVOKE_CHANNEL, type SyntheticHookInvocationResult } from "../shared/hook-bridge.js";
 
 // ---------------------------------------------------------------------------
 // Controllable invokeSyntheticHook mock — defaults to the real bus-routing
@@ -35,7 +35,7 @@ let invokeHookImpl: InvokeHookFn = async (pi, _ctx, request) => {
 	});
 };
 
-mock.module("../hook-bridge.js", () => ({
+mock.module("../shared/hook-bridge.js", () => ({
 	HOOK_RUNNER_INVOKE_CHANNEL,
 	invokeSyntheticHook: (pi: ExtensionAPI, ctx: ExtensionContext, request: Parameters<InvokeHookFn>[2]) => invokeHookImpl(pi, ctx, request),
 }));

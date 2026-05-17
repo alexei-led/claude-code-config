@@ -13,7 +13,7 @@ import { execFile } from "node:child_process";
 import { appendFileSync, mkdirSync, renameSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 
-import type { SyntheticHookInvocationResult } from "../hook-bridge.js";
+import type { SyntheticHookInvocationResult } from "../shared/hook-bridge.js";
 import {
 	blockingError,
 	decodeGeneric,
