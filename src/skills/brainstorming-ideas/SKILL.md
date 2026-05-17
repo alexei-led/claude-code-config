@@ -49,6 +49,8 @@ Stop when you can state the problem in one sentence.
 
 If the user passed `plan`, `grill`, or asked to challenge/stress-test a plan, walk the decision tree. Keep it focused on design quality and assumptions, not implementation task breakdown; use the `spec-plan` skill for tasks.
 
+For the full interview discipline (phase order, per-question format, final summary, failure handling), read `references/grill-protocol.md`.
+
 For each question:
 
 - Provide your recommended answer.

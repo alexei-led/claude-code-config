@@ -71,7 +71,6 @@ Envelope enforcement is per-target: Claude grants a hard `tools:` allowlist; Cod
 - **context7-cli** — Current library documentation via the ctx7 CLI
 - **evolving-config** — Audit Claude Code configuration against latest features and best practices
 - **exploring-repos** — Explore public GitHub repositories via DeepWiki AI-generated documentation
-- **grill-me** — Interview the user relentlessly about a plan or design until reaching shared understanding
 - **learning-patterns** — Extract learnings and generate project-specific customizations
 - **mem-history** — Query project history, past decisions, and known gotchas from claude-mem observations
 - **researching-web** — Web research via Perplexity AI

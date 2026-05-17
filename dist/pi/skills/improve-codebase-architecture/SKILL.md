@@ -98,7 +98,7 @@ Do NOT propose interfaces yet. Ask the user: "Which of these would you like to e
 
 ### 3. Grilling loop
 
-Once the user picks a candidate, drop into a grilling conversation (see the `grill-me` skill for the interview discipline). Walk the design tree with them — constraints, dependencies, the shape of the deepened module, what sits behind the seam, what tests survive.
+Once the user picks a candidate, drop into a grilling conversation (see the `brainstorming-ideas` skill's `references/grill-protocol.md` for the interview discipline). Walk the design tree with them — constraints, dependencies, the shape of the deepened module, what sits behind the seam, what tests survive.
 
 Side effects happen inline as decisions crystallize:
 

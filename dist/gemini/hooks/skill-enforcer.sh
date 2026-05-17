@@ -153,15 +153,15 @@ fi
 
 # brainstorming-ideas: Brainstorm ideas and stress-test draft plans
 # Triggers: brainstorm/design, plan exploration, resolve design-blocking terms
-# NOT for "grill me" decision-tree interview on a single plan (use grill-me)
+# Also owns the "grill me" decision-tree interview (see grill block below)
 if echo "$PROMPT_LOWER" | grep -qE '\bbrainstorm\b|\bideate\b|\bdesign\s*(a|an|this|the|new)?\s*(\w+\s+)?(feature|component|system|api|flow|architecture)\b|\bexplore\s*(approach|option|idea|design|alternative)s?\b|\bthink\s*through\b|\bbefore\s*(i|we)?\s*(implement|code|build|start)\b|\bplan\s*(out|this|the)?\s*(feature|design|approach)\b|\bsketch\s*out\b|\bfigure\s*out\s*(how|what|the)\b|\bdesign\s*session\b|\bwhat\s*should\s*(i|we)\s*(build|implement|create)\b|\bCONTEXT\.md\b|\bADR\b|domain\s*(language|glossary|term)'; then
 	skills+="brainstorming-ideas "
 fi
 
-# grill-me: Decision-tree interview on a single plan/design
+# brainstorming-ideas (grill): decision-tree interview on a single plan/design
 # Triggers: "grill me", stress-test a SPECIFIC plan, challenge an existing design
 if echo "$PROMPT_LOWER" | grep -qE '\bgrill\s*(me|this|the|my)\b|\bstress[[:space:]-]?test\s*(this|the|my)\s*(plan|design|idea)\b|\bchallenge\s*me\b.*\bplan\b|\binterview\s*me\b.*\b(plan|design|approach)\b'; then
-	skills+="grill-me "
+	skills+="brainstorming-ideas "
 fi
 
 # using-modern-cli: Modern CLI tools for better performance

@@ -1,14 +1,4 @@
----
-description:
-  Interview the user relentlessly about a plan or design until reaching
-  shared understanding, resolving each branch of the decision tree. Use when user
-  says "grill me", wants to stress-test a single plan, or asks to be challenged on
-  a specific design. NOT for full ideation/feature design (use brainstorming-ideas)
-  or thesis-vs-antithesis debates (use debating-ideas).
-name: grill-me
----
-
-# Grill Me
+# Grill Protocol
 
 Interview the user about every decision branch in the plan until every node is resolved or explicitly deferred. Walk the decision tree depth-first. For each question, give your own recommended answer before waiting for theirs.
 
@@ -52,3 +42,5 @@ Constraints surfaced:
 - **User deflects** — restate the same question; do not move to the next until this one is answered or explicitly deferred.
 - **Codebase contradicts a stated assumption** — surface the discrepancy and resolve it before continuing.
 - **Scope creep during grilling** — note the new topic as a deferred item; finish the current branch first.
+
+Adapted from [mattpocock/skills](https://github.com/mattpocock/skills) (MIT).
