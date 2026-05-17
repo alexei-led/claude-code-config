@@ -48,7 +48,7 @@ test: ## Run pytest suite
 	uv run --extra test python -m pytest tests/ -v
 
 test-ts: ## Run Bun TypeScript tests (Pi extensions)
-	bun test src/pi-extensions
+	bun test src/pi-extensions --isolate
 
 skill-evals-prepare: ## Build temporary Agent Skills eval tree under /tmp
 	uv run python scripts/evals/prepare-skill-evals.py --out $(SKILL_EVAL_ROOT) --source-dir $(SKILL_EVAL_SOURCE)
