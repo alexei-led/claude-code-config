@@ -203,3 +203,9 @@ Net: 24 review-family agents → 0. Three `dev-workflow` skills gain one `refere
 ## Notes
 
 This report uses markdown tables deliberately — it is a human-facing diagnostic, not an LLM instruction file, so the repo's "no tables in instructions" rule (AGENTS.md) does not apply. Scores were produced by eight role-clustered audit subagents using the shared rubric above and concrete `diff`/`wc` overlap measurements; four subagent-reported totals were arithmetic errors and have been corrected by re-summing F1..F7. The per-cluster raw evidence is not persisted beyond this session — regenerate via the same role-clustered audit if deeper line-level detail is needed.
+
+## Executed resolution
+
+This diagnostic was acted on. The consolidation plan `docs/plans/completed/20260516-agent-role-skill-consolidation.md` executed the chosen direction (Option A, refined): instead of a build-time template, the two conflated axes — role and domain/language — were fully separated. Role became an agent (an enforced tool-grant envelope, not prose); domain became a role-agnostic skill that owns its output contract; language became `references/<lang>.md` inside each skill.
+
+Outcome: 39 → 3 agents (`engineer`, `reviewer`, `advisor`) with disjoint enforced envelopes — `reviewer` is provably non-mutating (Read/Grep/Glob/LS only), `engineer` is the sole mutator (Edit/Write/Bash). The dominant defect this audit identified (finding #1, routing ambiguity across ~24 indistinct keys) is structurally eliminated: language is no longer a routing key. Per-language tutorials moved out of agent bodies into skill references (findings #3, #4, #6). See the plan file for the per-task record and the scenario-parity verification.

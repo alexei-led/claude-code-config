@@ -29,6 +29,14 @@ Specific rules:
 
 Run format lint: `make lint-instructions` or use the `/reviewing-instructions` skill for full scoring.
 
+## Agents
+
+Three role agents. A role is an **enforced capability envelope** (tool grant, not prose) plus a reasoning stance no skill can supply. Domain procedure and output format live in skills; language specifics live in each skill's `references/<lang>.md`. Role × skill × references compose — language is not a routing key. Consolidated 39 → 3 (see `docs/agent-audit-2026-05-16.md` and the executed plan in `docs/plans/completed/`).
+
+- **engineer** — Read + Edit + Write + Bash. The only mutator: applies changes and runs the build/test/lint verification on what it changed. Fork target for `writing-{go,python,typescript,web}` and `managing-infra`.
+- **reviewer** — Read + Grep + Glob + LS only; no Bash, no Edit/Write. Provably non-mutating. Adversarial evaluator (assume bugs exist); emits structured findings/proposals, applies nothing. Absorbs the review family, code search, and planning (via `spec` / `planning:make`).
+- **advisor** — Read + read-only git Bash, xhigh thinking, transcript-forwarding invocation. Strategic escalation; unchanged by the consolidation.
+
 ## Development Workflow
 
 - **ccgram-messaging** — Inter-agent messaging via ccgram swarm
