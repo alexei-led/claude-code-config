@@ -110,7 +110,7 @@ def test_validate_empty(empty_spec: Path):
 
 def test_status_counts_task(empty_spec: Path):
     (empty_spec / ".spec" / "tasks" / "TASK-smoke.md").write_text(
-        "---\nid: TASK-smoke\nstatus: todo\npriority: high\n---\n# Smoke\n"
+        "---\nid: TASK-smoke\nstatus: todo\npriority: normal\n---\n# Smoke\n"
     )
     result = run_specctl("status", "--json", cwd=str(empty_spec))
     assert result.returncode == 0

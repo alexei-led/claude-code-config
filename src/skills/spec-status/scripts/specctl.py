@@ -276,9 +276,6 @@ def would_create_cycle(
             return path + [current]  # Found cycle
 
         deps = get_deps(current)
-        # Also consider the new dependency we're about to add
-        if current == task_id:
-            deps = deps + [new_dep_id]
 
         for dep in deps:
             if dep in path:
@@ -533,7 +530,7 @@ def cmd_init(args: argparse.Namespace) -> None:
         success_print("Installed git pre-commit hook for .spec/ validation")
 
     print("\nNext steps:")
-    print("  1. Create a requirement: specctl new req auth")
+    print("  1. Use the spec-new skill to create a requirement: spec-new req auth")
     print("  2. Or use the spec-interview skill: spec-interview 'your feature idea'")
 
 
