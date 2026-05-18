@@ -1,0 +1,8 @@
+name: py-dev
+version: 4.7.0
+description: Python 3.12+ with uv/ruff/pyright toolchain and modern patterns
+skills:
+- writing-python
+agents:
+- engineer
+hooks: []

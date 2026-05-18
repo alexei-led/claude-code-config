@@ -26,14 +26,14 @@ SOURCE_URL = f"https://github.com/{SOURCE_REPO}"
 # Per-mirror plugin rename maps: dir-name → new plugin (marketplace) name
 MIRROR_NAMES: dict[str, dict[str, str]] = {
     "cc-forge": {
-        "dev-workflow": "review-lint-commit",
-        "testing-e2e": "playwright-e2e",
-        "python-dev": "python-3-dev",
+        "dev-flow": "review-lint-commit",
+        "test-e2e": "playwright-e2e",
+        "py-dev": "python-3-dev",
         "dev-tools": "cli-research-tools",
-        "spec-system": "spec-driven-planning",
+        "spec-dev": "spec-driven-planning",
         "web-dev": "vanilla-web-htmx",
         "infra-ops": "k8s-terraform-ops",
-        "typescript-dev": "typescript-react-dev",
+        "ts-dev": "typescript-react-dev",
     },
 }
 

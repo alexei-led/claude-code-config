@@ -24,4 +24,3 @@ agents:
 hooks:
 - worktree-create
 - worktree-remove
-marketplace_name: cli-research-tools

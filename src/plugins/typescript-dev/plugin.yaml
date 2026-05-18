@@ -1,9 +1,0 @@
-name: typescript-dev
-version: 4.7.0
-description: TypeScript with strict typing, React patterns, and modern tooling
-skills:
-- writing-typescript
-agents:
-- engineer
-hooks: []
-marketplace_name: typescript-react-dev
