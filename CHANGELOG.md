@@ -8,6 +8,15 @@ major = breaking config/hook changes, minor = new skills/features, patch = fixes
 
 ## [Unreleased]
 
+## [4.8.2] - 2026-05-18
+
+### Changed
+
+- Clarified Python skill guidance for catching multiple exception types: prefer
+  parenthesized tuple syntax like `except (KeyError, json.JSONDecodeError) as exc:`
+  and avoid Python 3.14-only bare comma syntax.
+- Plugin and marketplace versions bumped to 4.8.2.
+
 ## [4.8.1] - 2026-05-18
 
 ### Changed
