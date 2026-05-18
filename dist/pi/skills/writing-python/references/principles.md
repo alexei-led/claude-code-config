@@ -37,6 +37,7 @@ Do not run destructive shell commands. For broad or risky changes, state the ris
 - Custom exception hierarchy for domain errors
 - Raise early, handle at boundaries
 - Specific exception types (never bare `except Exception`)
+- Multiple exception types use tuple syntax: `except (KeyError, json.JSONDecodeError) as exc:`. Avoid bare comma syntax (`except KeyError, json.JSONDecodeError:`): it is Python 3.14-only, cannot be used with `as exc`, and is visually easy to confuse with legacy exception binding.
 
 ### Structured Logging
 

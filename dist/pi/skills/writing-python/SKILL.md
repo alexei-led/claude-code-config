@@ -17,6 +17,7 @@ name: writing-python
 - State Python 3.12+ typing choices explicitly and include a small example when planning code: concrete types, `X | Y`, generics/Protocol where useful, and `Any` is not the default.
 - Prefer stdlib first for small tools: `argparse`, `pathlib`, `json`, `dataclasses`, `urllib`, `typing`.
 - Prefer flat control flow with guard clauses and early returns; keep the happy path visually obvious. In implementation plans, explicitly say validation/parsing should fail fast with guard clauses before the happy path summary logic.
+- Catch multiple exception types with tuple syntax: `except (KeyError, json.JSONDecodeError):`, not `except KeyError, json.JSONDecodeError:`. Parenthesized tuples work on Python 3.12+, allow `as exc`, and avoid 3.14-only comma syntax that looks like a parsing accident.
 - Include behavior tests with `pytest` for the happy path and invalid input/error paths.
 - Include verification commands when code changes: `uv run pytest`, `uv run ruff check .`, `uv run ruff format --check .`, and `uv run pyright` when configured.
 - Keep dependencies minimal; add one only when real requirements beat stdlib simplicity. Dependency guidance must still mention typed boundaries and pytest coverage for the script.
@@ -96,6 +97,13 @@ class NotFoundError(AppError):
         self.id = id
         super().__init__(f"{resource} not found: {id}")
 
+# Multiple exception types: always parenthesize the tuple
+try:
+    raw = json.loads(payload)
+    value = raw["required"]
+except (KeyError, json.JSONDecodeError) as exc:
+    raise ConfigError("invalid payload") from exc
+
 # Exception chaining
 raise ProcessingError("failed") from original_error
 ```
@@ -110,7 +118,7 @@ raise ProcessingError("failed") from original_error
 
 - **Deferred annotations**: No `from __future__ import annotations` needed
 - **Template strings (t"")**: `t"Hello {name}"` returns Template (safe interpolation)
-- **except without parens**: `except ValueError, TypeError:` (PEP 758)
+- **PEP 758 except syntax**: Python 3.14 permits `except ValueError, TypeError:`, but do not generate it. Use `except (ValueError, TypeError):` for Python 3.12+ compatibility and consistent `as exc` binding.
 - **concurrent.interpreters**: True multi-core parallelism
 - **compression.zstd**: Zstandard in stdlib
 

@@ -275,13 +275,19 @@ except json.JSONDecodeError as e:
 # GOOD
 except OSError:
     handle_io_error()
-except (ValueError, KeyError) as e:
-    log_error(e)
+except (KeyError, json.JSONDecodeError) as exc:
+    raise ConfigError("invalid config") from exc
+except (ValueError, KeyError) as exc:
+    log_error(exc)
 
 # BAD
+except KeyError, json.JSONDecodeError:  # 3.14-only, no `as exc`, ambiguous
+    pass
 except Exception:  # too broad
     pass
 ```
+
+Multiple exception types always use parenthesized tuple syntax, even when targeting Python 3.14. It is valid in Python 3.12+, supports `as exc`, and makes the catch set explicit.
 
 ## Structured Logging
 
@@ -401,7 +407,7 @@ Idiom-specific rules to apply when writing or critiquing Python (interfaces, dat
 ### Python 3.14 Specifics
 
 - **Deferred annotations (default)**: remove `from __future__ import annotations`; forward references work without string quotes (`def get(self) -> User:`, not `-> "User"`); use `annotationlib` for runtime type introspection
-- **PEP 758 except**: `except ValueError | TypeError:` (no parentheses needed)
+- **PEP 758 except syntax**: Python 3.14 permits `except ValueError, TypeError:`, but prefer `except (ValueError, TypeError):` for Python 3.12+ compatibility and `as exc` support
 - **Union syntax**: `X | None` over `Optional[X]`; `list[str]` over `List[str]` (no `typing` import)
 - **Stdlib additions**: `Path.copy()` / `Path.move()` instead of `shutil`; `compression.zstd` for new compression needs
 
