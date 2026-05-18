@@ -5,7 +5,9 @@ lint_yaml() {
 	log_debug "yaml checks"
 
 	local files=()
-	mapfile -t files < <(get_changed_files ".yaml" ".yml")
+	while IFS= read -r file; do
+		files+=("$file")
+	done < <(get_changed_files ".yaml" ".yml")
 	if [[ "${#files[@]}" -eq 0 ]]; then
 		log_debug "No uncommitted YAML files, skipping YAML checks"
 		return 0
@@ -28,7 +30,9 @@ lint_json() {
 	log_debug "json checks"
 
 	local files=()
-	mapfile -t files < <(get_changed_files ".json")
+	while IFS= read -r file; do
+		files+=("$file")
+	done < <(get_changed_files ".json")
 	if [[ "${#files[@]}" -eq 0 ]]; then
 		log_debug "No uncommitted JSON files, skipping JSON checks"
 		return 0
@@ -63,7 +67,9 @@ lint_github_actions() {
 	fi
 
 	local files=()
-	mapfile -t files < <(get_changed_files ".yaml" ".yml" | grep ".github/workflows/")
+	while IFS= read -r file; do
+		files+=("$file")
+	done < <(get_changed_files ".yaml" ".yml" | grep -F ".github/workflows/" || true)
 	if [[ "${#files[@]}" -eq 0 ]]; then
 		log_debug "No uncommitted GitHub Actions workflow files, skipping actionlint"
 		return 0
@@ -78,7 +84,9 @@ lint_terraform() {
 	log_debug "terraform checks"
 
 	local files=()
-	mapfile -t files < <(get_changed_files ".tf" ".tfvars")
+	while IFS= read -r file; do
+		files+=("$file")
+	done < <(get_changed_files ".tf" ".tfvars")
 	if [[ "${#files[@]}" -eq 0 ]]; then
 		log_debug "No uncommitted Terraform files, skipping Terraform checks"
 		return 0
@@ -105,7 +113,9 @@ lint_markdown() {
 	log_debug "markdown checks"
 
 	local files=()
-	mapfile -t files < <(get_changed_files ".md")
+	while IFS= read -r file; do
+		files+=("$file")
+	done < <(get_changed_files ".md")
 	if [[ "${#files[@]}" -eq 0 ]]; then
 		log_debug "No uncommitted Markdown files, skipping Markdown checks"
 		return 0

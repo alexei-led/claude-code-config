@@ -5,7 +5,9 @@ lint_python() {
 	log_debug "python checks"
 
 	local files=()
-	mapfile -t files < <(get_changed_files ".py")
+	while IFS= read -r file; do
+		files+=("$file")
+	done < <(get_changed_files ".py")
 	if [[ "${#files[@]}" -eq 0 ]]; then
 		log_debug "No uncommitted Python files, skipping Python checks"
 		return 0

@@ -5,7 +5,9 @@ lint_shell() {
 	log_debug "shell checks"
 
 	local files=()
-	mapfile -t files < <(get_changed_files ".sh" ".bash")
+	while IFS= read -r file; do
+		files+=("$file")
+	done < <(get_changed_files ".sh" ".bash")
 	if [[ "${#files[@]}" -eq 0 ]]; then
 		log_debug "No uncommitted shell files, skipping shell checks"
 		return 0

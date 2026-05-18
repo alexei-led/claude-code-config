@@ -5,7 +5,9 @@ lint_go() {
 	log_debug "go checks"
 
 	local files=()
-	mapfile -t files < <(get_changed_files ".go")
+	while IFS= read -r file; do
+		files+=("$file")
+	done < <(get_changed_files ".go")
 	if [[ "${#files[@]}" -eq 0 ]]; then
 		log_debug "No uncommitted Go files, skipping Go checks"
 		return 0
@@ -18,13 +20,15 @@ lint_go() {
 			run_formatter_on_files "Go Formatter (gofmt)" "gofmt -w" "gofmt -d" "${files[@]}"
 		fi
 		# golangci-lint and go vet both expect package dirs, not individual files
-		local -A pkg_map
+		local pkg_dirs=()
 		for file in "${files[@]}"; do
-			local pkg_dir
-			pkg_dir=$(dirname "$file")
-			pkg_map["$pkg_dir"]=1
+			pkg_dirs+=("$(dirname "$file")")
 		done
-		local unique_packages=("${!pkg_map[@]}")
+		local unique_packages=()
+		local pkg_dir
+		while IFS= read -r pkg_dir; do
+			[[ -n "$pkg_dir" ]] && unique_packages+=("$pkg_dir")
+		done < <(printf '%s\n' "${pkg_dirs[@]}" | sort -u)
 
 		if command_exists golangci-lint; then
 			local version

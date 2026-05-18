@@ -5,7 +5,9 @@ lint_typescript() {
 	log_debug "js/ts checks"
 
 	local files=()
-	mapfile -t files < <(get_changed_files ".js" ".ts" ".jsx" ".tsx")
+	while IFS= read -r file; do
+		files+=("$file")
+	done < <(get_changed_files ".js" ".ts" ".jsx" ".tsx")
 	if [[ "${#files[@]}" -eq 0 ]]; then
 		log_debug "No uncommitted JS/TS files, skipping JavaScript checks"
 		return 0
