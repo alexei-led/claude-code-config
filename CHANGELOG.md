@@ -8,6 +8,15 @@ major = breaking config/hook changes, minor = new skills/features, patch = fixes
 
 ## [Unreleased]
 
+## [4.8.3] - 2026-05-18
+
+### Fixed
+
+- Made `smart-lint` compatible with macOS Bash 3.2 so post-edit linting no
+  longer false-passes when `mapfile` or associative arrays are unavailable.
+- Added regression coverage to keep Bash 4-only constructs out of `smart-lint`.
+- Plugin and marketplace versions bumped to 4.8.3.
+
 ## [4.8.2] - 2026-05-18
 
 ### Changed
