@@ -68,12 +68,12 @@ def test_build_plugin_index_real_repo(pi_mod):
     # All three kinds present.
     assert set(index) == {"skills", "agents", "hooks"}
 
-    # committing-code belongs to dev-workflow.
-    assert index["skills"]["committing-code"] == ["dev-workflow"]
-    # engineer is a shared role agent; dev-workflow is one of its owners.
-    assert "dev-workflow" in index["agents"]["engineer"]
-    # session-start hook belongs to dev-workflow.
-    assert index["hooks"]["session-start"] == ["dev-workflow"]
+    # committing-code belongs to dev-flow.
+    assert index["skills"]["committing-code"] == ["dev-flow"]
+    # engineer is a shared role agent; dev-flow is one of its owners.
+    assert "dev-flow" in index["agents"]["engineer"]
+    # session-start hook belongs to dev-flow.
+    assert index["hooks"]["session-start"] == ["dev-flow"]
 
 
 def test_build_plugin_index_reverse_mapping(pi_mod, fake_plugins_root):
