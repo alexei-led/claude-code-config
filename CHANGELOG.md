@@ -8,6 +8,8 @@ major = breaking config/hook changes, minor = new skills/features, patch = fixes
 
 ## [Unreleased]
 
+## [4.8.0] - 2026-05-17
+
 ### Changed
 
 - **Agent consolidation (39 → 3)**: collapsed 39 language/domain-specific
@@ -23,10 +25,8 @@ major = breaking config/hook changes, minor = new skills/features, patch = fixes
 - Per-language idioms folded into `writing-<lang>/references/PATTERNS.md`;
   per-language review, test, docs, and architecture content moved into skill
   `references/` directories.
-- **Skills consolidation (45 → 42)**: folded `looking-up-docs` into
-  `context7-cli` (description + skill-enforcer triggers absorb the
-  natural-language doc-lookup path), `grill-me` into
-  `brainstorming-ideas/references/grill-protocol.md`, and `spec-core` into
+- **Skills consolidation (45 → 43)**: folded `grill-me` into
+  `brainstorming-ideas/references/grill-protocol.md` and `spec-core` into
   `spec-status` (orientation + `references/specctl-commands.md`; the bundled
   `specctl.py` relocated and sibling wrappers repointed). Seven heavy skills
   moved ~1,400 inlined lines into conditionally-loaded `references/` files
@@ -35,9 +35,17 @@ major = breaking config/hook changes, minor = new skills/features, patch = fixes
   `reviewing-code`, `reviewing-cc-config`). ~6 routing boundaries tightened.
   No capability dropped. See `docs/skills-audit-2026-05-17.md` and the
   executed plan in `docs/plans/`.
+- **Gemini CLI agents**: all three role agents now compile to Gemini CLI
+  format with a hard `tools:` allowlist in frontmatter; `reviewer` is
+  enforced read-only, `advisor` restricted to read + `run_shell_command`.
+- **`bun test --isolate`**: each Pi extension test file now runs in a fresh
+  module registry, preventing `mock.module` leakage across files on Linux.
 
 ### Added
 
+- **`looking-up-docs`** skill: re-split from `context7-cli` as a
+  three-tier fallback chain (ctx7 → Perplexity → platform web tools)
+  with its own tool permissions.
 - **`parsing-documents`** skill: replaces the deleted `pdf-parser` agent with
   vendor-neutral document extraction.
 
