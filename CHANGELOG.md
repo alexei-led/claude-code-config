@@ -8,6 +8,19 @@ major = breaking config/hook changes, minor = new skills/features, patch = fixes
 
 ## [Unreleased]
 
+## [4.8.1] - 2026-05-18
+
+### Changed
+
+- **Plugin renames**: shorter, consistent names across all 9 plugins.
+  `dev-workflow` → `dev-flow`, `python-dev` → `py-dev`,
+  `typescript-dev` → `ts-dev`, `testing-e2e` → `test-e2e`,
+  `spec` → `spec-dev`. The `marketplace_name` override is removed — the
+  plugin directory name is now the marketplace display name. cc-forge mirror
+  names are unchanged (managed by `MIRROR_NAMES` in `rewrite-mirror.py`).
+- Plugin and marketplace versions bumped to 4.8.1.
+- README and docs updated to reflect new plugin names.
+
 ## [4.8.0] - 2026-05-17
 
 ### Changed

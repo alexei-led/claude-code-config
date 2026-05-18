@@ -40,15 +40,15 @@ Every skill has been manually crafted and refined through real-world use — not
 ```bash
 /plugin marketplace add alexei-led/cc-thingz
 # then install any plugin(s) you want:
-/plugin install code-workflow@cc-thingz
-/plugin install cli-research-tools@cc-thingz
-/plugin install go-1-25-dev@cc-thingz
-# ... repeat for python-3-dev, typescript-react-dev, vanilla-web-htmx, k8s-terraform-ops, spec-driven-dev, playwright-e2e
+/plugin install dev-flow@cc-thingz
+/plugin install dev-tools@cc-thingz
+/plugin install go-dev@cc-thingz
+# ... repeat for py-dev, ts-dev, web-dev, infra-ops, spec-dev, test-e2e
 ```
 
 Use `--scope project` to install into `.claude/settings.json` for team sharing.
 
-`dev-workflow` wires five hooks automatically on install:
+`dev-flow` wires five hooks automatically on install:
 
 | Event              | Matcher       | Hook                | Effect                                   |
 | ------------------ | ------------- | ------------------- | ---------------------------------------- |
@@ -76,11 +76,11 @@ per-plugin skill directory directly:
 ```jsonc
 // ~/.codex/config.json (excerpt)
 {
-  "skills": ["~/src/cc-thingz/dist/codex/plugins/dev-workflow/skills"],
+  "skills": ["~/src/cc-thingz/dist/codex/plugins/dev-flow/skills"],
 }
 ```
 
-`dev-workflow` wires five hooks via `dist/codex/plugins/dev-workflow/hooks/hooks.json`:
+`dev-flow` wires five hooks via `dist/codex/plugins/dev-flow/hooks/hooks.json`:
 
 | Event          | Matcher         | Hook                | Effect                                   |
 | -------------- | --------------- | ------------------- | ---------------------------------------- |
@@ -262,8 +262,8 @@ assume MCP tools.
 | MCP Server                                                   | Purpose                                     | Used By                                                    |
 | ------------------------------------------------------------ | ------------------------------------------- | ---------------------------------------------------------- |
 | [DeepWiki](https://cognition.ai/blog/deepwiki-mcp-server)    | AI-generated wiki for public GitHub repos   | Claude Code dev-tools                                      |
-| [Perplexity](https://github.com/ppl-ai/modelcontextprotocol) | Web research and technical comparisons      | Claude Code dev-workflow, dev-tools, infra-ops             |
-| [MorphLLM](https://github.com/morphllm/morph-claude-code)    | Fast codebase search and batch file editing | Claude Code `engineer` role via dev-workflow, language, infra, spec |
+| [Perplexity](https://github.com/ppl-ai/modelcontextprotocol) | Web research and technical comparisons      | Claude Code dev-flow, dev-tools, infra-ops                 |
+| [MorphLLM](https://github.com/morphllm/morph-claude-code)    | Fast codebase search and batch file editing | Claude Code `engineer` role via dev-flow, language, infra, spec-dev |
 
 > Stepwise reasoning previously came from the
 > [Sequential Thinking MCP](https://github.com/modelcontextprotocol/servers/tree/main/src/sequentialthinking).
@@ -294,15 +294,15 @@ All agents and several skills optionally integrate with [claude-mem](https://git
 
 | Plugin                                                       | Skills | Agents | Description                                                                        |
 | ------------------------------------------------------------ | ------ | ------ | ---------------------------------------------------------------------------------- |
-| [**dev-workflow**](src/plugins/dev-workflow/plugin.yaml)     | 10     | 2      | Fix, refactor, review, document, commit; `engineer` and `reviewer` roles; 7 hooks |
+| [**dev-flow**](src/plugins/dev-flow/plugin.yaml)             | 10     | 2      | Fix, refactor, review, document, commit; `engineer` and `reviewer` roles; 7 hooks |
 | [**go-dev**](src/plugins/go-dev/plugin.yaml)                 | 1      | 1      | Idiomatic Go development with stdlib-first patterns, testing, and CLI tooling      |
-| [**python-dev**](src/plugins/python-dev/plugin.yaml)         | 1      | 1      | Python 3.12+ development with uv/ruff/pyright toolchain                            |
-| [**typescript-dev**](src/plugins/typescript-dev/plugin.yaml) | 1      | 1      | TypeScript with strict typing, React patterns, and modern tooling                  |
+| [**py-dev**](src/plugins/py-dev/plugin.yaml)                 | 1      | 1      | Python 3.12+ development with uv/ruff/pyright toolchain                            |
+| [**ts-dev**](src/plugins/ts-dev/plugin.yaml)                 | 1      | 1      | TypeScript with strict typing, React patterns, and modern tooling                  |
 | [**web-dev**](src/plugins/web-dev/plugin.yaml)               | 1      | 1      | Web frontend with vanilla HTML, CSS, JavaScript, and HTMX                          |
 | [**infra-ops**](src/plugins/infra-ops/plugin.yaml)           | 3      | 1      | Kubernetes, Terraform, Helm, GitHub Actions, AWS, GCP                              |
 | [**dev-tools**](src/plugins/dev-tools/plugin.yaml)           | 17     | 1      | Modern CLI, git worktrees, docs lookup, web research, config review, brainstorming |
-| [**spec**](src/plugins/spec/plugin.yaml)                     | 7      | 2      | Spec-driven development: requirements, tasks, and planning workflows               |
-| [**testing-e2e**](src/plugins/testing-e2e/plugin.yaml)       | 2      | 1      | E2E testing with Playwright: browser automation and test generation                |
+| [**spec-dev**](src/plugins/spec-dev/plugin.yaml)             | 7      | 2      | Spec-driven development: requirements, tasks, and planning workflows               |
+| [**test-e2e**](src/plugins/test-e2e/plugin.yaml)             | 2      | 1      | E2E testing with Playwright: browser automation and test generation                |
 
 **Totals**: 43 skills, 2 plugin-owned role agents (`engineer`, `reviewer`), 9 hooks
 
